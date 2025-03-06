@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>[[${goods_info['goods_nm']}]]</title>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script>
+    <script src="/vendors/glightbox/glightbox.min.js" aria-hidden="true"></script>
+    <script type="text/javascript" src="https://cdn.plyr.io/3.6.12/plyr.js" aria-hidden="true"></script>
+  </head>
+  <script th:inline="none">
+    $(document).ready(function () {
+      $('.navbar').css('display', 'none');
+      $('#goods_submit').click(function () {
+        var formData = $('#frm').serialize();
+        var form = $('#frm');
+        var checked = true;
+        $.each(form, function (i, val) {
+          if (!val.checkValidity()) {
+            checked = false;
+          }
+        });
+        if (checked) {
+          Swal.fire({
+            title: '저장 하시겠습니까?',
+            showCancelButton: true,
+            icon: 'question',
+            confirmButtonColor: '#DD6B55',
+            confirmButtonText: '예',
+            cancelButtonText: '아니요',
+          }).then((result) => {
+            if (result.isConfirmed) {
+              Swal.fire('저장되었습니다.', '', 'success').then((result) => {
+                $('#frm')[0].reset();
+              });
+            }
+          });
+        }
+      });
+    });
+  </script>
+  <div class="content" style="max-width: 1000px !important">
+    <div class="card overflow-hidden mb-3 py-3" data-bs-theme="light">
+      <div class="card-body bg-black">
+        <div class="bg-holder rounded-3" style="background-image: url(/img/icons/spot-illustrations/course-details-bg.png)"></div>
+        <div class="row">
+          <div class="col-xl-12 position-relative">
+            <div class="row g-3 align-items-center">
+              <div class="col-lg-5">
+                <div class="position-relative">
+                  <div class="bg-holder rounded-1 overlay" th:style="'background-image: url('+${goods_info['image_url']}+');'"></div>
+                  <a class="text-decoration-none position-relative d-block py-7 text-center" th:href="${goods_info['video_url']}" data-gallery="attachment-bg"><img class="rounded-1" src="/img/icons/play.svg" width="60" alt="" /></a>
+                </div>
+              </div>
+              <div class="col-lg-7">
+                <h2 class="fw-bold text-white" th:text="${goods_info['goods_nm']}"></h2>
+                <p class="mb-0 fw-medium text-400" th:text="${#strings.replace(goods_info['contents'], '<p>', '') }"></p>
+              </div>
+            </div>
+            <hr class="text-secondary text-opacity-50" />
+            <ul class="list-unstyled d-flex flex-wrap gap-3 fs-10 fw-semi-bold text-300 mt-3 mb-0">
+              <li><span class="fas fa-graduation-cap text-white me-1"> </span>[[${goods_info['category_nm']}]] > [[${goods_info['sub_category_nm']}]]</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5 class="mb-0">Lesson Plans</h5>
+      </div>
+      <div class="card-body p-0">
+        <div th:each="chapter, stat : ${chapter_info}" class="d-flex align-items-center px-x1 py-2 border-bottom border-200">
+          <div class="flex-1">
+            <h5 class="fs-9"><a class="text-decoration-none" th:text="${stat.count}"></a>.&nbsp;<a class="text-decoration-none" th:text="${chapter.title}"></a></h5>
+            <p class="fs-10 mb-0" th:text="${chapter.description}"></p>
+          </div>
+          <div class="flex-2 text-end">
+            <p class="fs-10 mb-0" th:text="${chapter.duration}"></p>
+            <p class="fs-10 mb-0" th:text="${chapter.resources}"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5 class="mb-0">Requirements</h5>
+      </div>
+      <div class="card-body position-relative">
+        <div class="bg-holder bg-card d-none d-md-block" style="background-image: url(/img/icons/spot-illustrations/corner-7.png)"></div>
+        <ul class="list-unstyled position-relative fs-10 p-0 m-0">
+          <li class="mb-2" th:each="requirement : ${requirements_info}">
+            <div class="d-flex"><span class="fas fa-circle me-2 mt-1" data-fa-transform="shrink-8"></span><span th:text="${requirement}"></span></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5 class="mb-0">Goals</h5>
+      </div>
+      <div class="card-body position-relative">
+        <div class="bg-holder bg-card d-none d-md-block" style="background-image: url(/img/icons/spot-illustrations/corner-7.png)"></div>
+        <ul class="list-unstyled position-relative fs-10 p-0 m-0">
+          <li class="mb-2" th:each="goals : ${goals_info}">
+            <div class="d-flex"><span class="fas fa-circle me-2 mt-1" data-fa-transform="shrink-8"></span><span th:text="${goals}"></span></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="card mb-3">
+      <div class="card-body p-4 p-sm-5">
+        <div class="row flex-between-center mb-2">
+          <div class="col-auto">
+            <h5>신청하기</h5>
+          </div>
+        </div>
+        <form name="frm" id="frm" onsubmit="return false;" method="post" class="needs-validation" novalidate>
+          <div class="mb-3">
+            <input class="form-control" type="text" autocomplete="off" placeholder="이름" required />
+          </div>
+          <div class="mb-3">
+            <input class="form-control" type="text" autocomplete="off" placeholder="연락처 (-없이)" maxlength="11" required />
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="basic-register-checkbox" required />
+            <label class="form-label" for="basic-register-checkbox">I accept the <a href="#!">terms </a>and <a class="white-space-nowrap" href="#!">privacy policy</a></label>
+          </div>
+          <div class="mb-3">
+            <button class="btn btn-primary d-block w-100 mt-3" type="submit" id="goods_submit" name="submit">신청하기</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="card mb-3">
+      <div class="card-header d-flex flex-between-center">
+        <h5 class="mb-0">Trainer</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-4 text-center text-md-start">
+          <div class="col-md-auto">
+            <div class="avatar avatar-4xl">
+              <img class="rounded-circle" src="/img/team/avatar.png" alt="" />
+            </div>
+          </div>
+          <div class="col">
+            <h5 class="mb-2">SOLRAM KIM</h5>
+            <h6 class="fs-10 text-800 fw-normal mb-3">개발자 | 프리랜서, 자바</h6>
+            <p class="fs-10 text-700">
+              1980년대에 태어나 초등학교때 IMF를 격고 대학입학후 군대를 입대하여 창고행정병으로 <strong>병장만기전역하였다</strong> 그후 대학교를 졸업하고 개발자가 되었다. 그는 <strong>프리랜서</strong>로 일하고 있으며, <strong>자바</strong>를 가르치고 있다. 그는 <strong>코딩</strong>을 가르치는
+              것을 좋아하며, <strong>학생들</strong>에게 <strong>코딩</strong>을 가르치는 것을 좋아한다.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</html>

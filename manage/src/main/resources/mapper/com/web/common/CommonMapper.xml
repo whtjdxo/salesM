@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.web.manage.common.mapper.CommonMapper">
+    <select id="getTotalCodelist" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT code         AS "code"
+             , code_nm      AS "codeNm"
+             , code_grp_cd  AS "group_code"
+             , chk_cd1      AS "chk_cd1"
+             , chk_cd2      AS "chk_cd2"
+          FROM TB_CODE
+         WHERE CODE_GRP_CD IN ${code_grp_cd}
+           AND USE_YN = 'Y'
+           AND CODE !='CODE'
+      ORDER BY CODE_GRP_CD, ORD_NO
+	</select>
+</mapper>

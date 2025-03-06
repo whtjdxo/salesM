@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.web.manage.center.mapper.CenterMngMapper">
+    <select id="getQueryTotalCnt" resultType="int">
+    SELECT FOUND_ROWS()
+    </select>
+    <select id="centerMngListRetrieve" parameterType="hashMap" resultType="hashMap">
+        SELECT SQL_CALC_FOUND_ROWS 
+              aca_id
+            , parent_aca_id
+            , CASE WHEN aca_gb != '0' THEN (SELECT aca_nm FROM tb_aca WHERE aca_id = tb.parent_aca_id) ELSE '본사' END AS parent_aca_nm 
+            , aca_gb
+            , (SELECT code_nm FROM tb_code WHERE code = tb.aca_gb AND code_grp_cd = 'ACA_GB') AS aca_gb_nm
+            , aca_nm
+            , boss_id
+            , biz_no
+            , biz_nm
+            , tel_no
+            , email
+            , zip_cd
+            , addr
+            , addr_detail
+            , homepage_url
+            , logo_img
+            , favicon_img
+            , use_yn
+            , DATE_FORMAT(ent_dttm, '%Y-%m-%m %H:%i:%s') AS ent_dttm
+            , ent_user_id
+            , DATE_FORMAT(upt_dttm, '%Y-%m-%m %H:%i:%s') AS upt_dttm
+            , upt_user_id
+        FROM tb_aca tb
+        WHERE 1 = 1
+        <choose>
+			<when test="sidx != ''">
+				ORDER BY ${sidx} ${sord}
+			</when>
+			<otherwise>
+				ORDER BY ent_dttm DESC
+			</otherwise>
+		</choose>
+		LIMIT ${start}, ${end}
+    </select>
+    <select id="getBossInfo" parameterType="string" resultType="hashMap">
+        SELECT
+            user_id
+            , aca_id
+            , user_nm
+            , user_pwd
+            , user_gb
+            , auth_grp_cd
+            , hp_no
+            , tel_no
+            , email
+            , zip_code
+            , addr
+            , addr_detail
+            , use_yn
+            , ent_dttm
+            , ent_user_id
+            FROM tb_user
+        WHERE user_id = #{boss_id}
+    </select>
+    <insert id="centerCreate" parameterType="hashMap">
+        INSERT INTO tb_aca (
+                aca_id
+                , parent_aca_id
+                , aca_gb
+                , aca_nm
+                , boss_id
+                , biz_no
+                , biz_nm
+                , tel_no
+                , email
+                , zip_cd
+                , addr
+                , addr_detail
+                , homepage_url
+                , logo_img
+                , favicon_img
+                , use_yn
+                , ent_dttm
+                , ent_user_id
+                , upt_dttm
+                , upt_user_id
+                )
+                VALUES
+                (
+                    #{aca_id}
+                    , #{parent_aca_id}
+                    , '1'
+                    , #{aca_nm}
+                    , #{boss_id}
+                    , #{biz_no}
+                    , #{biz_nm}
+                    , #{tel_no}
+                    , #{email}
+                    , #{zip_cd}
+                    , #{addr}
+                    , #{addr_detail}
+                    , #{homepage_url}
+                    , #{logo_img}
+                    , #{favicon_img}
+                    , #{use_yn}
+                    , NOW()
+                    , #{ent_user_id}
+                    , NOW()
+                    , #{ent_user_id}
+                )
+    </insert>
+    <update id="centerUpdate" parameterType="hashMap">
+        update tb_aca
+        set  aca_nm = #{aca_nm}
+            , biz_no = #{biz_no}
+            , biz_nm = #{biz_nm}
+            , tel_no = #{tel_no}
+            , email = #{email}
+            , zip_cd = #{zip_cd}
+            , addr = #{addr}
+            , addr_detail = #{addr_detail}
+            , homepage_url = #{homepage_url}
+            <if test="logo_img != ''">, logo_img = #{logo_img}</if>
+            <if test="favicon_img != ''">, favicon_img = #{favicon_img}</if>
+            , use_yn = #{use_yn}
+            , upt_dttm = NOW()
+            , upt_user_id = #{ent_user_id}
+        where aca_id = #{aca_id}
+    </update>
+    <insert id="bossCreate" parameterType="hashMap">
+        INSERT INTO tb_user (
+                    user_id
+                    , aca_id
+                    , user_nm
+                    , user_pwd
+                    , user_gb
+                    , auth_grp_cd
+                    , hp_no
+                    , email
+                    , addr
+                    , addr_detail
+                    , use_yn
+                    , ent_dttm
+                    , ent_user_id
+                    )
+                    VALUES
+                    (
+                        #{boss_id}
+                        , #{aca_id}
+                        , #{user_nm}
+                        , #{user_pwd}
+                        , '01'
+                        , #{auth_grp_cd}
+                        , #{user_hp_no}
+                        , #{user_email}
+                        , #{user_addr}
+                        , #{user_addr_detail}
+                        , 'Y'
+                        , NOW()
+                        , #{ent_user_id}
+                    )
+
+
+    </insert>
+    <update id="bossUpdate" parameterType="hashMap">
+        update tb_user
+        set  user_nm = #{user_nm}
+            , user_pwd = SHA2(#{user_pwd}, 256)
+            , hp_no = #{user_hp_no}
+            , email = #{user_email}
+            , addr = #{user_addr}
+            , addr_detail = #{user_addr_detail}
+            , upt_dttm = NOW()
+            , upt_user_id = #{ent_user_id}
+        where user_id = #{boss_id}
+    </update>
+
+</mapper>
+  

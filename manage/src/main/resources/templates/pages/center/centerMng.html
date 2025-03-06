@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>학원 관리</title>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script>
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script th:inline="none">
+      function execDaumPostcode(target) {
+        new daum.Postcode({
+          oncomplete: function (data) {
+            var roadAddr = data.roadAddress;
+            if (target == 'center') {
+              document.getElementById('addr').value = roadAddr;
+              document.getElementById('zip_code').value = data.zonecode;
+            } else if (target == 'user') {
+              document.getElementById('user_addr').value = roadAddr;
+              document.getElementById('user_zip_code').value = data.zonecode;
+            }
+          },
+        }).open();
+      }
+      $(document).ready(function () {
+        var tbl_center = $('#tbl_center').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          responsive: true,
+          ajax: {
+            url: '/center/center/centerMng/list',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',
+            data: function (d) {
+              return JSON.stringify(d);
+            },
+          },
+          columns: [{ data: 'aca_nm' }, { data: 'aca_gb_nm' }, { data: 'parent_aca_nm' }, { data: 'boss_id' }, { data: 'tel_no' }, { data: 'addr' }, { data: 'email' }, { data: 'use_yn' }, { data: 'ent_dttm' }],
+          order: [[8, 'desc']],
+          paging: true,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          autoWidth: false,
+          responsive: true,
+          scrollCollapse: true,
+          pageLength: 20,
+          scrollY: '550px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
+        });
+        $('#tbl_center').on('click', 'tr', function () {
+          var data = tbl_center.row(this).data();
+          if (data) {
+            $('#center_add_form')[0].reset();
+            $('#aca_id').val(data.aca_id);
+            $('#aca_nm').val(data.aca_nm);
+            $('#biz_no').val(data.biz_no);
+            $('#tel_no').val(data.tel_no);
+            $('#email').val(data.email);
+            $('#addr').val(data.addr);
+            $('#addr_detail').val(data.addr_detail);
+            $('#homepage_url').val(data.homepage_url);
+            $('#use_yn_' + data.use_yn).prop('checked', true);
+            callAjax('/center/center/centerMng/getBossInfo', { boss_id: data.boss_id }, function (result) {
+              var user = result.data;
+              $('#user_nm').val(user.user_nm);
+              $('#boss_id').val(user.user_id);
+              $('#user_pwd').val(user.user_pwd);
+              $('#user_pwd_cnfm').val(user.user_pwd);
+              $('#user_hp_no').val(user.hp_no);
+              $('#user_email').val(user.email);
+              $('#user_addr').val(user.addr);
+              $('#user_addr_detail').val(user.addr_detail);
+              $('#boss_id').attr('readonly', true);
+            });
+            $('#crud').val('update');
+            $('#center-add-modal').modal('show');
+          }
+        });
+        $('#center_add_modal').click(function () {
+          $('#center_add_form')[0].reset();
+          $('#crud').val('create');
+          $('#center_add_form').find('input:radio').prop('checked', false);
+          $('#boss_id').attr('readonly', false);
+          $('#center-add-modal').modal('show');
+        });
+        $('#btn_submit').click(function () {
+          var formData = $('#center_add_form').serialize();
+          var form = $('#center_add_form');
+          var checked = true;
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          });
+          if (checked) {
+            var crud = $('#crud').val();
+
+            if (crud == 'create') {
+              //  ConfirmdialogToAjax("create", "/center/center/centerMng/create", formData, fn_return_submit);
+              $('#center_add_form').attr('action', '/center/center/centerMng/create');
+            } else if (crud == 'update') {
+              //  ConfirmdialogToAjax("update", "/center/center/centerMng/update", formData, fn_return_submit);
+              $('#center_add_form').attr('action', '/center/center/centerMng/update');
+            }
+            Swal.fire({
+              title: '저장 하시겠습니까?',
+              showCancelButton: true,
+              icon: 'question',
+              confirmButtonColor: '#DD6B55',
+              confirmButtonText: '예',
+              cancelButtonText: '아니요',
+            }).then((result) => {
+              if (result.isConfirmed) {
+                $('#center_add_form').ajaxForm({
+                  dataType: 'json',
+                  type: 'POST',
+                });
+
+                $('#center_add_form').ajaxSubmit({
+                  success: function (data) {
+                    var resultCode = data.resultCode;
+                    var resultMsg = data.resultMsg;
+                    if (resultCode == 'S000') {
+                      swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+                      $('#center-add-modal').modal('hide');
+                      tbl_center.ajax.reload();
+                    } else {
+                      swal('실패', '작업수행에 실패하였습니다.', 'error');
+                    }
+                  },
+                  error: function (jqXHR, textStatus, errorThrown) {
+                    swal('실패', '작업수행에 실패하였습니다.', 'error');
+                  },
+                });
+              } else if (result.isDismissed) {
+                return false;
+              }
+            });
+          }
+        });
+      });
+    </script>
+  </head>
+  <div class="content">
+    <div class="card mb-3" style="height: 85px">
+      <div class="bg-holder d-none d-lg-block bg-card"></div>
+      <div class="card-body position-relative">
+        <div class="row">
+          <div class="col-lg-8">
+            <h4>학원 관리</h4>
+            <nav style="--falcon-breadcrumb-divider: '»'" aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/main">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">학원관리</li>
+                <li class="breadcrumb-item active" aria-current="page">학원</li>
+                <li class="breadcrumb-item active nav-item dropdown dropdown-hover" aria-current="page">
+                  <a class="nav-link dropdown-toggle link-primary d-block" href="#" aria-haspopup="true" data-bs-toggle="dropdown" aria-expanded="false">학원관리</a>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item link-600 fw-medium" href="#">학원정보관리</a></li>
+                    <li><a class="dropdown-item link-600 fw-medium" link-body-emphasis href="#">학원관리</a></li>
+                  </ul>
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-header">
+            <div class="row flex-between-end">
+              <div class="col-auto align-self-center">
+                <h5 class="mb-0">게시글 목록</h5>
+              </div>
+              <div class="col-auto">
+                <button class="btn btn-primary" id="center_add_modal" data-bs-toggle="modal" data-bs-target="#center-add-modal">신규</button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body px-0 py-0">
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0" id="tbl_center">
+                <thead class="bg-200">
+                  <tr>
+                    <th class="text-900">학원명</th>
+                    <th class="text-900">학원구분</th>
+                    <th class="text-900">본사명</th>
+                    <th class="text-900">대표자명</th>
+                    <th class="text-900">연락처</th>
+                    <th class="text-900">주소</th>
+                    <th class="text-900">이메일</th>
+                    <th class="text-900">사용여부</th>
+                    <th class="text-900">등록일</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="center-add-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form class="needs-validation" novalidate="" id="center_add_form" name="center_add_form" onsubmit="return false;" method="post" enctype="multipart/form-data">
+          <input type="hidden" name="aca_id" id="aca_id" />
+          <input type="hidden" name="crud" id="crud" />
+          <div class="modal-header">
+            <h5 class="modal-title">학원 등록</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+              <li class="nav-item"><a class="nav-link active" id="center-tab" data-bs-toggle="tab" href="#tab-center" role="tab" aria-controls="tab-home" aria-selected="true">학원정보</a></li>
+              <li class="nav-item"><a class="nav-link" id="user-tab" data-bs-toggle="tab" href="#tab-user" role="tab" aria-controls="tab-profile" aria-selected="false">원장정보</a></li>
+            </ul>
+            <div class="tab-content border border-top-0 p-3" id="myTabContent">
+              <div class="tab-pane fade show active" id="tab-center" role="tabpanel" aria-labelledby="center-tab">
+                <div class="row mb-3 px-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="aca_nm">학원명</label>
+                    <input type="text" class="form-control form-control-sm" id="aca_nm" name="aca_nm" required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="biz_no">사업자번호</label>
+                    <input type="text" class="form-control form-control-sm" id="biz_no" name="biz_no" required />
+                  </div>
+                </div>
+                <div class="row mb-3 px-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="tel_no">연락처</label>
+                    <input type="text" class="form-control form-control-sm" id="tel_no" name="tel_no" required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="email">이메일</label>
+                    <input type="text" class="form-control form-control-sm" id="email" name="email" required />
+                  </div>
+                </div>
+                <div class="row mb-3 px-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="addr">주소</label>
+                    <div class="input-group input-group-sm">
+                      <input type="hidden" class="form-control form-control-sm" id="zip_code" name="zip_code" required />
+                      <input type="text" class="form-control form-control-sm" id="addr" name="addr" readonly="readonly" required />
+                      <button type="button" class="btn btn-primary" onclick="execDaumPostcode('center')">주소검색</button>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="addr_detail">상세주소</label>
+                    <input type="text" class="form-control form-control-sm" id="addr_detail" name="addr_detail" required />
+                  </div>
+                </div>
+                <div class="row mb-3 px-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="addr">로고파일(100px*40px 권장)</label>
+                    <input type="file" class="form-control form-control-sm" id="logo_img" name="logo_img" readonly="readonly" required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="addr_detail">파비콘파일</label>
+                    <input type="file" class="form-control form-control-sm" id="favicon_img" name="favicon_img" required />
+                  </div>
+                </div>
+                <div class="row mb-3 px-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="homepage_url">홈페이지url</label>
+                    <input type="text" class="form-control form-control-sm" id="homepage_url" name="homepage_url" required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="use_yn">사용여부</label>
+                    <div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" id="use_yn_Y" type="radio" name="use_yn" value="Y" required />
+                        <label class="form-check-label" for="use_yn_Y">예</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" id="use_yn_N" type="radio" name="use_yn" value="N" required />
+                        <label class="form-check-label" for="use_yn_N">아니요</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="tab-user" role="tabpanel" aria-labelledby="user-tab">
+                <div class="row mb-3 px-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="user_nm">대표자명</label>
+                    <input type="text" class="form-control form-control-sm" id="user_nm" name="user_nm" required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="boss_id">아이디</label>
+                    <input type="text" class="form-control form-control-sm" id="boss_id" name="boss_id" required />
+                  </div>
+                </div>
+                <div class="row mb-3 px-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="user_pwd">비밀번호</label>
+                    <input type="password" class="form-control form-control-sm" id="user_pwd" name="user_pwd" required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="user_pwd">비밀번호 확인</label>
+                    <input type="password" class="form-control form-control-sm" id="user_pwd_cnfm" name="user_pwd_cnfm" required />
+                  </div>
+                </div>
+                <div class="row mb-3 px-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="user_hp_no">연락처</label>
+                    <input type="text" class="form-control form-control-sm" id="user_hp_no" name="user_hp_no" required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="user_email">이메일</label>
+                    <input type="text" class="form-control form-control-sm" id="user_email" name="user_email" required />
+                  </div>
+                </div>
+                <div class="row mb-3 px-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="homepage_url">주소</label>
+                    <div class="input-group input-group-sm">
+                      <input type="hidden" class="form-control form-control-sm" id="user_zip_code" name="user_zip_code" required />
+                      <input type="text" class="form-control form-control-sm" id="user_addr" name="user_addr" readonly="readonly" required />
+                      <button type="button" class="btn btn-primary" onclick="execDaumPostcode('user')">주소검색</button>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="user_addr_detail">상세</label>
+                    <input type="text" class="form-control form-control-sm" id="user_addr_detail" name="user_addr_detail" required />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" id="btn_submit" type="submit">저장</button>
+            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">닫기</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</html>

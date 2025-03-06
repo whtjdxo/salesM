@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}">
+  <head>
+    <title>메인 페이지</title>
+    <!-- inline CSS 영역-->
+    <style th:inline="css" type="text/css"></style>
+    <!-- inline JS 영역-->
+    <script th:inline="javascript" type="text/javascript"></script>
+  </head>
+  <div class="content" layout:fragment="Content">
+    <div class="card mb-3">
+      <div class="card-body position-relative">
+        <div class="row">
+          <div class="col-lg-8">
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                  <a href="#">Home</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                  <a class="dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Data</a>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a class="dropdown-item" href="#">Action</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#">Another action</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#">Something else here</a>
+                    </li>
+                  </ul>
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+  </div>
+</html>

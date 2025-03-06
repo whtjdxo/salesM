@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.web.manage.base.mapper.ChainMapper">
+    <select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select>    
+
+    <select id="getCeoIdDupChk" parameterType="java.util.HashMap" resultType="int">
+    SELECT  COUNT(1)
+        FROM  tb_user
+        WHERE  user_id = #{user_id}
+    </select>    
+
+    <select id="createChainNo" resultType="java.lang.String">
+	    /* ChainMapper.createChainNo */
+		SELECT GET_JOB_SEQ('TB_CHAIN', 'CHAIN_NO')
+	</select>
+    
+    <select id="getChainList" parameterType="java.util.HashMap" resultType="com.web.manage.base.domain.ChainVO">
+        SELECT  CHAIN_CD       AS chain_cd,
+                CHAIN_NAME     AS chain_name,
+                BIZ_NO         AS biz_no,
+                CHAIN_TYPE     AS chain_type,
+                GET_CODE_NM('CHAIN_TYPE', CHAIN_TYPE) AS chain_type_nm,
+                BANK_CD        AS bank_cd,
+                GET_CODE_NM('BANK_CD', BANK_CD) AS bank_cd_nm,
+                ACCOUNT_NO     AS account_no,
+                ACCOUNT_PWD    AS account_pwd,
+                WEB_ID         AS web_id,
+                WEB_PWD        AS web_pwd,
+                API_URL        AS api_url,
+                MEMO           AS memo,
+                USE_YN         AS use_yn,
+                IFNULL(UPT_USER_ID, ENT_USER_ID) AS upt_user_id,
+                DATE_FORMAT(IFNULL(UPT_DTTM, ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
+        FROM    tb_chain
+        WHERE   1 = 1
+        <if test="sch_chain_name != ''">
+            AND CHAIN_NAME LIKE CONCAT('%', #{sch_chain_name}, '%')
+        </if>
+        <choose>
+            <when test="sidx != ''">
+                ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                ORDER BY ent_dttm DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="chainCreate" parameterType="com.web.manage.base.domain.ChainVO">
+        INSERT INTO tb_chain (
+            CHAIN_CD, CHAIN_NAME, BIZ_NO, CHAIN_TYPE,
+            BANK_CD, ACCOUNT_NO, ACCOUNT_PWD,
+            WEB_ID, WEB_PWD, API_URL, MEMO,
+            USE_YN, ENT_USER_ID, ENT_DTTM
+        ) VALUES (
+            #{chain_cd}, #{chain_name}, #{biz_no}, #{chain_type},
+            #{bank_cd}, #{account_no}, #{account_pwd},
+            #{web_id}, #{web_pwd}, #{api_url}, #{memo},
+            'Y', #{ent_user_id}, NOW()
+        )
+    </insert>
+
+    <update id="chainUpdate" parameterType="com.web.manage.base.domain.ChainVO">
+        UPDATE tb_chain
+           SET CHAIN_NAME     = #{chain_name},
+               BIZ_NO         = #{biz_no},
+               CHAIN_TYPE     = #{chain_type},
+               BANK_CD        = #{bank_cd},
+               ACCOUNT_NO     = #{account_no},
+               ACCOUNT_PWD    = #{account_pwd},
+               WEB_ID         = #{web_id},
+               WEB_PWD        = #{web_pwd},
+               API_URL        = #{api_url},
+               MEMO           = #{memo},
+               USE_YN         = #{use_yn},
+               UPT_USER_ID    = #{upt_user_id},
+               UPT_DTTM       = NOW()
+         WHERE CHAIN_CD       = #{chain_cd}
+    </update>
+
+</mapper>

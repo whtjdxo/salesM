@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko" dir="ltr" data-navigation-type="default" data-navbar-horizontal-shape="slim" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+  <head th:replace="~{fragments/config :: config}">
+    <title layout:title-pattern="$LAYOUT_TITLE : $CONTENT_TITLE">공통 타이틀</title>
+  </head>
+  <body>
+    <main class="main" id="top">
+      <!--Header 영역을 참조합니다.-->
+      <header th:replace="~{fragments/header :: header}"></header>
+      <!--Navigation 영역을 참조합니다.-->
+      <nav th:replace="~{fragments/top_nav :: top_nav}"></nav>
+
+      <!--Content 내용 영역을 참조합니다-->
+      <th:block layout:fragment="Content"></th:block>
+    </main>
+    <!-- ===============================================-->
+    <!--    JavaScripts-->
+    <!-- ===============================================-->
+    <script src="/vendors/popper/popper.min.js"></script>
+    <script src="/vendors/bootstrap/bootstrap.min.js"></script>
+    <script src="/vendors/anchorjs/anchor.min.js"></script>
+    <script src="/vendors/is/is.min.js"></script>
+    <script src="/vendors/fontawesome/all.min.js"></script>
+    <script src="/vendors/lodash/lodash.min.js"></script>
+    <script src="/vendors/feather-icons/feather.min.js"></script>
+    <script src="/vendors/dayjs/dayjs.min.js"></script>
+    <script src="/vendors/leaflet/leaflet.js"></script>
+    <script src="/vendors/leaflet.markercluster/leaflet.markercluster.js"></script>
+    <script src="/vendors/leaflet.tilelayer.colorfilter/leaflet-tilelayer-colorfilter.min.js"></script>
+    <script src="/js/phoenix.js"></script>
+    <script src="/vendors/echarts/echarts.min.js"></script>
+    <script src="/js/ecommerce-dashboard.js"></script>
+  </body>
+</html>

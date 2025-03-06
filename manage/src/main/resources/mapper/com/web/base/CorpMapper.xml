@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.web.manage.base.mapper.CorpMapper">
+
+	<select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select>
+	<select id="getCorpList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT  CORP_CD 		AS corp_cd
+				, CORP_NAME 	AS corp_name
+				, BIZ_NO 		AS biz_no
+				, CORP_TYPE 	AS corp_type
+				, GET_CODE_NM('CORP_TYPE', CORP_TYPE) AS corp_type_nm
+				, BANK_CD 		AS bank_cd
+				, GET_CODE_NM('BANK_CD', BANK_CD) AS bank_cd_nm
+				, ACCOUNT_NO 	AS account_no
+				, ACCOUNT_PWD 	AS account_pwd
+				, WEB_ID 		AS web_id
+				, WEB_PWD 		AS web_pwd
+				, API_URL 		AS api_url
+				, MEMO 			AS memo
+				, USE_YN 		AS use_yn
+				, IFNULL(UPT_USER_ID, ENT_USER_ID) AS upt_user_id
+				, DATE_FORMAT(IFNULL(UPT_DTTM, ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
+		FROM  TB_CORP TC
+		WHERE  1 = 1 
+		<if test="schgb_corp_val != ''">
+			<choose>
+				<when test="schgb_corp == 'schgb_corp_cd">
+					AND CORP_CD = #{schgb_corp_val}
+				</when>
+				<when test="schgb_corp == 'schgb_credit_nm'">
+					AND CORP_NAME LIKE CONCAT('%', #{schgb_corp_val}, '%')
+				</when>
+			</choose>
+		</if>
+		<if test="sch_corp_type != ''">			
+			AND CORP_TYPE = #{sch_corp_type}
+		</if>
+		<choose>
+			<when test="sidx != ''">
+				ORDER BY ${sidx} ${sord}
+			</when>
+			<otherwise>
+				ORDER BY TC.CORP_CD DESC
+			</otherwise>
+		</choose>
+	</select> 
+
+	<select id="createCorpCd" resultType="java.lang.String">
+	/* CreditMapper.createCreditSeq */
+		SELECT GET_JOB_SEQ('TB_CORP', 'CORP_CD')
+	</select>
+
+	<insert id="corpCreate" parameterType="com.web.manage.base.domain.CorpVO">
+		INSERT INTO TB_CORP (  
+			CORP_CD			, CORP_NAME		, BIZ_NO		, CORP_TYPE	
+			, BANK_CD		, ACCOUNT_NO	, ACCOUNT_PWD	
+			, WEB_ID		, WEB_PWD		, API_URL		, MEMO	
+			, USE_YN		, ENT_USER_ID	, ENT_DTTM
+		) VALUES (  
+			#{corp_cd}		, #{corp_name}, #{biz_no} 		, #{corp_type}
+			, #{bank_cd}	, #{account_no}	, #{account_pwd}
+			, #{web_id}		, #{web_pwd}	, #{api_url}	, #{memo}
+			, 'Y'			, #{ent_user_id}, NOW() 
+		)
+	</insert>
+	<update id="corpUpdate" parameterType="com.web.manage.base.domain.CorpVO">
+		UPDATE 	TB_CORP
+		   SET 	CCORP_NAME		= #{corp_name}
+		   		, BIZ_NO		= #{biz_no}		
+				, CORP_TYPE		= #{corp_type}
+				, BANK_CD		= #{bank_cd}
+				, ACCOUNT_NO	= #{account_no}
+				, ACCOUNT_PWD	= #{account_pwd}	
+				, WEB_ID		= #{web_id}
+				, WEB_PWD		= #{web_pwd}
+				, API_URL		= #{api_url}
+				, MEMO			= #{memo}
+				, USE_YN		= #{use_yn}
+				, UPT_USER_ID	= #{upt_user_id}
+				, UPT_DTTM		= NOW()
+		 WHERE 	CORP_CD			= #{corp_cd} 
+	</update>	
+	  
+</mapper>

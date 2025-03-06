@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.web.manage.system.mapper.CodeMapper">
+
+	<select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select>
+	<select id="getGroupCodeRetrieve" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT code_grp_cd                       AS "code_grp_cd"
+			 , code_grp_nm                       AS "code_grp_nm"
+			 , TRIM(use_yn)                      AS "use_yn"
+			 , CASE use_yn WHEN 'Y' THEN '사용'
+						   WHEN 'N' THEN '미사용'
+			   ELSE NULL END                     AS "use_yn_nm"
+		FROM tb_code
+		WHERE code = 'CODE'
+		<if test="srch_gr_tp != ''">
+			<if test="srch_gr_tp == 'srch_gr_code'">
+				AND code_grp_cd LIKE CONCAT('%',#{srch_gr_val},'%')
+			</if>
+			<if test="srch_gr_tp == 'srch_gr_nm'">
+				AND code_grp_nm LIKE  CONCAT('%',#{srch_gr_val},'%')
+			</if>
+		</if>
+		<if test="srch_gr_useyn_tp != ''">
+			AND use_yn = #{srch_gr_useyn_tp}
+		</if>
+		<choose>
+			<when test="sidx != ''">
+				ORDER BY ${sidx} ${sord}
+			</when>
+			<otherwise>
+				ORDER BY ent_dttm DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="getLowerCodeRetrieve" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT SQL_CALC_FOUND_ROWS
+			   code                                      AS "code"
+			 , code_grp_cd                               AS "code_grp_cd"
+			 , code_grp_nm                               AS "code_grp_nm"
+			 , code_nm                                   AS "code_nm"
+			 , ord_no                                    AS "ord_no"
+			 , TRIM(view_yn)                             AS "view_yn"
+			 , CASE view_yn WHEN 'Y' THEN '노출'
+							WHEN 'N' THEN '비노출'
+			   ELSE NULL END                             AS "view_yn_nm"
+			 , TRIM(use_yn)                              AS "use_yn"
+			 , CASE use_yn WHEN 'Y' THEN '사용'
+						   WHEN 'N' THEN '미사용'
+			   ELSE NULL END                             AS "use_yn_nm"
+			 , DATE_FORMAT(ent_dttm, '%Y-%m-%m %H:%i:%s')AS "ent_dttm"
+			 , DATE_FORMAT(upt_dttm, '%Y-%m-%m %H:%i:%s')AS "upt_dttm"
+			 , upt_user_id                               AS "upt_user_id"
+			 , rmks                                      AS "rmks"
+			 , chk_cd1									 AS "chk_cd1"
+			 , chk_cd2									 AS "chk_cd2"
+		  FROM tb_code
+		 WHERE 1 =1
+		 <choose >
+		 	<when test="srch_clas_code != ''">
+				AND code_grp_cd = #{srch_clas_code}
+			</when>
+		    <otherwise>
+				AND code_grp_cd = 'X'
+			</otherwise>
+		  </choose>
+		   AND code != 'CODE'
+		 <if test="srch_low_tp != ''">
+			<if test="srch_low_tp == 'srch_low_code'">
+				AND code LIKE  CONCAT('%',#{srch_low_val},'%')
+			</if>
+			<if test="srch_low_tp == 'srch_low_nm'">
+				AND code_nm LIKE  CONCAT('%',#{srch_low_val},'%')
+			</if>
+		</if>
+		<if test="srch_low_useyn_tp != '' and srch_low_useyn_tp != null">
+			AND use_yn = #{srch_low_useyn_tp}
+		</if>
+	</select>
+
+	<insert id="groupCodeCreate" parameterType="com.web.manage.system.domain.GroupCodeVO">
+		INSERT
+		  INTO tb_code (  code_grp_cd
+						, code
+						, code_nm
+						, code_grp_nm
+						, ord_no
+						, view_yn
+						, use_yn
+						, ent_dttm
+						, upt_user_id	)
+		VALUES (  #{clas_code}
+				, 'CODE'
+				, 'CODE_NM'
+				, #{clas_nm}
+				, '0'
+				, 'N'
+				, #{clas_use_yn}
+				, NOW()
+				, #{user_id})
+	</insert>
+	<update id="groupCodeUpdate" parameterType="com.web.manage.system.domain.GroupCodeVO">
+		UPDATE tb_code
+		   SET code_grp_nm  = #{clas_nm}
+			 , use_yn		= #{clas_use_yn}
+			 , upt_dttm 	= NOW()
+			 , upt_user_id  = #{user_id}
+		WHERE  code_grp_cd 	= #{clas_code}
+	</update>
+	<delete id="groupCodeDelete" parameterType="com.web.manage.system.domain.GroupCodeVO">
+		DELETE FROM tb_code
+		 WHERE code_grp_cd 	= #{clas_code}
+	</delete>
+	<insert id="lowCodeCreate" parameterType="com.web.manage.system.domain.LowCodeVO">
+		INSERT
+		  INTO tb_code (  code_grp_cd
+						, code
+						, code_grp_nm
+						, code_nm
+						, ord_no
+						, view_yn
+						, use_yn
+						, rmks
+						, chk_cd1
+						, chk_cd2
+						, ent_dttm
+						, upt_user_id)
+		VALUES (  #{low_gr_code}
+				, #{low_code}
+				, #{low_gr_nm}
+				, #{low_code_nm}
+				, #{low_sq}
+				, #{low_view_yn}
+				, #{low_use_yn}
+				, #{low_rmks}
+				, #{chk_cd1}
+				, #{chk_cd2}
+				, NOW()
+				, #{user_id})
+	</insert>
+	<update id="lowCodeUpdate" parameterType="com.web.manage.system.domain.LowCodeVO">
+		UPDATE tb_code
+		   SET code_nm  = #{low_code_nm}
+			 , ord_no 	= #{low_sq}
+			 , view_yn 	= #{low_view_yn}
+			 , use_yn 	= #{low_use_yn}
+			 , rmks 	= #{low_rmks}
+			 , chk_cd1  = #{chk_cd1}
+			 , chk_cd2  = #{chk_cd2}
+			 , upt_dttm  = NOW()
+			 , upt_user_id  = #{user_id}
+		 WHERE code_grp_cd 	= #{low_gr_code}
+		   AND code = #{low_code}
+	</update>
+	<delete id="lowCodeDelete" parameterType="com.web.manage.system.domain.LowCodeVO">
+		DELETE FROM tb_code
+		 WHERE code_grp_cd 	= #{low_gr_code}
+		   AND code = #{low_code}
+	</delete>
+	<select id="getLowCodeCount" parameterType="com.web.manage.system.domain.GroupCodeVO" resultType="Int">
+		SELECT COUNT(1) AS cnt
+		  FROM tb_code
+		 WHERE code != 'CODE'
+		   AND code_grp_cd = #{clas_code}
+	</select>
+
+</mapper>

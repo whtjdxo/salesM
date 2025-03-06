@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.web.manage.user.mapper.UserMngMapper">
+    <select id="getQueryTotalCnt" resultType="int">
+        SELECT FOUND_ROWS()
+    </select>
+    <select id="userMngListRetrieve" parameterType="hashMap" resultType="hashMap">
+        SELECT SQL_CALC_FOUND_ROWS 
+                TU.USER_ID          AS user_id
+                , TU.USER_NM        AS user_nm
+                , TU.CORP_CD        AS corp_cd
+                , TC.CORP_NAME        AS corp_name
+                , TC.CORP_TYPE	 	AS corp_type
+                , GET_CODE_NM('CORP_TYPE', TC.CORP_TYPE ) AS corp_type_nm                
+                , TU.CORP_GB        AS corp_gb
+                , GET_CODE_NM('CORP_GB', TU.CORP_GB ) AS corp_gb_nm                
+                , TU.user_pwd       AS user_pwd
+                , TU.user_gb        AS user_gb
+                , TU.auth_grp_cd    AS auth_grp_cd       
+                , GET_CODE_NM('AUTH_GRP_CD', TU.auth_grp_cd ) AS auth_grp_nm
+                , IFNULL(TU.hp_no, '-') AS hp_no
+                , TU.tel_no         AS tel_no
+                , IFNULL(TU.email, '-') AS email
+                , TU.zip_code
+                , TU.addr
+                , TU.addr_detail
+                , TU.use_yn
+                , DATE_FORMAT(IFNULL(TU.upt_dttm, TU.ent_dttm), '%Y-%m-%m %H:%i:%s') 	AS upt_dttm
+                , IFNULL(TU.upt_user_id, TU.ent_user_id)								AS upt_user_id
+          FROM  TB_USER TU
+          LEFT  JOIN TB_CORP TC ON TC.CORP_CD = TU.CORP_CD
+         WHERE  1 = 1
+           AND  TU.CORP_GB = 'OP'
+        <if test="schgb_user_val != ''">
+			<choose>
+				<when test="schgb_user == 'schgb_user_id'">
+					AND TU.USER_ID = #{schgb_user_val}
+				</when>
+				<when test="schgb_user == 'schgb_user_nm'">
+					AND TU.USER_NAME LIKE CONCAT('%', #{schgb_user_val}, '%')
+				</when>
+			</choose>
+		</if>
+		<if test="sch_corp_type != ''">			
+			AND TU.CORP_TYPE = #{sch_corp_type}
+		</if>
+		 
+        <choose>
+			<when test="sidx != ''">
+				ORDER BY ${sidx} ${sord}
+			</when>
+			<otherwise>
+				ORDER BY TU.ENT_DTTM DESC
+			</otherwise>
+		</choose>
+    </select>
+    <select id="getCorpList" resultType="hashMap">
+        SELECT  corp_cd     as code
+                , corp_name as codeNm
+          FROM  TB_CORP
+         WHERE  1= 1
+         <if test="corp_type != ''">
+            AND   CORP_TYPE = #{corp_type}
+        </if>          
+          AND   USE_YN  = 'Y'
+    </select>
+
+    <select id="getUserIdDupChk" parameterType="java.util.HashMap" resultType="int">
+	SELECT  COUNT(1)
+          FROM  tb_user
+         WHERE  user_id = #{user_id}
+	</select>    
+
+    <insert id="userCreate" parameterType="hashMap">
+        INSERT INTO TB_USER
+        (
+              user_id
+            , corp_cd
+            , corp_GB
+            , user_nm
+            , user_pwd
+            , user_gb
+            , auth_grp_cd
+            , hp_no
+            , email
+            , use_yn
+            , ent_dttm
+            , ent_user_id 
+        )
+        VALUES
+        (
+              #{user_id}
+            , #{corp_cd}
+            , #{corp_gb}
+            , #{user_nm}
+            , #{user_pwd}
+            , '01'
+            , #{auth_grp_cd}
+            , #{hp_no}
+            , #{email}
+            , #{use_yn}
+            , NOW()
+            , #{ent_user_id} 
+        )
+    </insert>
+    <update id="userUpdate" parameterType="hashMap">
+        UPDATE tb_user
+           SET
+              corp_cd = #{corp_cd}
+            , corp_gb = #{corp_gb}  
+            , user_nm = #{user_nm}
+            , user_pwd = #{user_pwd}
+            , auth_grp_cd   = #{auth_grp_cd}
+            , hp_no         = #{hp_no}
+            , email         = #{email}
+            , use_yn        = #{use_yn}
+            , upt_dttm      = NOW()
+            , upt_user_id   = #{ent_user_id}
+        WHERE user_id = #{user_id}
+    </update>
+</mapper>

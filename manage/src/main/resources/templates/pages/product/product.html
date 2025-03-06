@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>학원 관리</title>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script>
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />
+  </head>
+  <script th:inline="none">
+    $(document).ready(function () {
+      var tbl_goods = $('#tbl_goods').DataTable({
+        processing: true,
+        serverSide: true,
+        select: true,
+        responsive: true,
+        ajax: {
+          url: '/product/product/productAddMng/list',
+          contentType: 'application/json',
+          dataType: 'JSON',
+          type: 'POST',
+          data: function (d) {
+            return JSON.stringify(d);
+          },
+        },
+        columns: [
+          { data: 'goods_nm' },
+          { data: 'category_nm' },
+          { data: 'sub_category_nm' },
+          {
+            data: 'goods_amt',
+            render: $.fn.dataTable.render.number(',', '.', 0, ''),
+          },
+          { data: 'ent_dttm' },
+        ],
+        order: [[4, 'desc']],
+        paging: true,
+        lengthChange: false,
+        searching: false,
+        ordering: true,
+        autoWidth: false,
+        responsive: true,
+        scrollCollapse: true,
+        pageLength: 20,
+        scrollY: '550px',
+        info: false,
+        language: {
+          emptyTable: '데이터가 없습니다.',
+          search: '검색:',
+          zeroRecords: '일치하는 데이터가 없습니다.',
+          loadingRecords: '로딩중...',
+          processing: '처리중...',
+        },
+      });
+      tbl_goods.on('click', 'tr', function () {
+        var data = tbl_goods.row(this).data();
+        window.open('/product/product/productMng/detail/' + data.goods_cd, '_blank', 'toolbar=no,scrollbars=yes,resizable=yes,width=1000,height=600');
+      });
+    });
+  </script>
+  <div class="content">
+    <div class="card mb-3" style="height: 85px">
+      <div class="bg-holder d-none d-lg-block bg-card"></div>
+      <div class="card-body position-relative">
+        <div class="row">
+          <div class="col-lg-8">
+            <h4>학원 관리</h4>
+            <nav style="--falcon-breadcrumb-divider: '»'" aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/main">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">상품관리</li>
+                <li class="breadcrumb-item active" aria-current="page">상품</li>
+                <li class="breadcrumb-item active nav-item dropdown dropdown-hover" aria-current="page">
+                  <a class="nav-link dropdown-toggle link-primary d-block" href="#" aria-haspopup="true" data-bs-toggle="dropdown" aria-expanded="false">상품관리</a>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item link-600 fw-medium" link-body-emphasis href="#">상품관리</a></li>
+                  </ul>
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-header">
+            <div class="row flex-between-end">
+              <div class="col-auto align-self-center">
+                <h5 class="mb-0">상품 목록</h5>
+              </div>
+              <div class="col-auto">
+                <button class="btn btn-primary" id="center_add_modal" onclick="location.href='/product/product/productAddMng/view'">신규</button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body px-0 py-0">
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0" id="tbl_goods">
+                <thead class="bg-200">
+                  <tr>
+                    <th class="text-900">상품명</th>
+                    <th class="text-900">카테고리</th>
+                    <th class="text-900">서브카테고리</th>
+                    <th class="text-900">가격</th>
+                    <th class="text-900">등록일</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</html>

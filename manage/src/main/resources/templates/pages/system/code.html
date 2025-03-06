@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />
+  </head>
+  <script th:inline="none">
+    $(function () {
+      var code_grp_cd = '';
+      var code_grp_nm = '';
+
+      var tbl_gr_code = $('#tbl_gr_code').DataTable({
+        processing: true,
+        serverSide: true,
+        select: true,
+        ajax: {
+          url: '/manage/system/code/groupCodeRetrieve',
+          contentType: 'application/json',
+          dataType: 'JSON',
+          type: 'POST',
+          data: function (postData) {
+            formData = $('#frm_srch_gr').serializeObject();
+            Object.assign(postData, formData);
+            return JSON.stringify(postData);
+          },
+        },
+        columns: [{ data: 'code_grp_cd' }, { data: 'code_grp_nm' }, { data: 'use_yn_nm' }],
+        order: [[0, 'desc']],
+        paging: false,
+        lengthChange: false,
+        searching: false,
+        ordering: true,
+        autoWidth: false,
+        scrollY: '380px',
+        info: false,
+        language: {
+          emptyTable: '데이터가 없습니다.',
+          search: '검색:',
+          zeroRecords: '일치하는 데이터가 없습니다.',
+          loadingRecords: '로딩중...',
+          processing: '처리중...',
+        },
+      });
+      $('#tbl_gr_code tbody').on('click', 'tr', function () {
+        var row = tbl_gr_code.row(this).data();
+        $('#frm_low_code').clearForm();
+        $('#clas_code').val(row.code_grp_cd);
+        $('#low_gr_code').val(row.code_grp_cd);
+        $('#clas_nm').val(row.code_grp_nm);
+        $('#low_gr_nm').val(row.code_grp_nm);
+        $('#clas_use_yn').val(row.use_yn);
+        $('#clas_code').attr('readonly', true);
+        code_grp_cd = row.code_grp_cd;
+        code_grp_nm = row.code_grp_nm;
+        $('#btn_gr_create').hide();
+        $('#btn_gr_update').show();
+
+        $('#srch_clas_code').val(row.code_grp_cd);
+        tbl_low_code.ajax.reload();
+      });
+      var tbl_low_code = $('#tbl_low_code').DataTable({
+        processing: true,
+        serverSide: true,
+        select: true,
+        ajax: {
+          url: '/manage/system/code/lowerCodeRetrieve',
+          contentType: 'application/json',
+          dataType: 'JSON',
+          type: 'POST',
+          data: function (postData) {
+            formData = $('#frm_srch_low').serializeObject();
+            Object.assign(postData, formData);
+            return JSON.stringify(postData);
+          },
+        },
+        columns: [{ data: 'code' }, { data: 'code_grp_nm' }, { data: 'code_nm' }, { data: 'ord_no' }, { data: 'use_yn_nm' }, { data: 'view_yn_nm' }, { data: 'upt_user_id' }, { data: 'ent_dttm' }],
+        columnDefs: [
+          {
+            defaultContent: '-',
+            targets: '_all',
+          },
+        ],
+        order: [[0, 'desc']],
+        paging: false,
+        lengthChange: false,
+        searching: false,
+        ordering: true,
+        autoWidth: false,
+        scrollY: '310px',
+        info: false,
+        language: {
+          emptyTable: '데이터가 없습니다.',
+          search: '검색:',
+          zeroRecords: '일치하는 데이터가 없습니다.',
+          loadingRecords: '로딩중...',
+          processing: '처리중...',
+        },
+      });
+      $('#tbl_low_code tbody').on('click', 'tr', function () {
+        var row = tbl_low_code.row(this).data();
+        $('#frm_low_code').clearForm();
+        $('#low_code').attr('readonly', true);
+        $('#low_gr_code').val(row.code_grp_cd);
+        $('#low_gr_nm').val(row.code_grp_nm);
+        $('#low_code').val(row.code);
+        $('#low_code_nm').val(row.code_nm);
+        $('#low_view_yn').val(row.view_yn);
+        $('#low_use_yn').val(row.use_yn);
+        $('#low_sq').val(row.ord_no);
+        $('#chk_cd1').val(row.chk_cd1);
+        $('#chk_cd2').val(row.chk_cd2);
+        $('#low_rmks').val(row.rmks);
+
+        $('#btn_low_create').hide();
+        $('#btn_low_update').show();
+      });
+      $('#btn_gr_clear').click(function () {
+        $('#frm_gr_code').clearForm();
+
+        $('#clas_code').attr('readonly', false);
+        $('#clas_tp').val('create');
+        $('#btn_gr_create').show();
+        $('#btn_gr_update').hide();
+      });
+
+      $('#btn_gr_create').click(function () {
+        $('#gr_code_tp').val('create');
+        var form = $('#frm_gr_code');
+        var checked = true;
+        $.each(form, function (i, val) {
+          if (!val.checkValidity()) {
+            checked = false;
+          }
+        });
+        if (checked) {
+          ConfirmdialogToAjax('create', '/manage/system/code/groupCodeCreate', $('#frm_gr_code').serialize(), fn_return_clasCreate);
+        }
+      });
+
+      $('#btn_gr_update').click(function () {
+        $('#gr_code_tp').val('update');
+        var form = $('#frm_gr_code');
+        var checked = true;
+        $.each(form, function (i, val) {
+          if (!val.checkValidity()) {
+            checked = false;
+          }
+        });
+        if (checked) {
+          ConfirmdialogToAjax('update', '/manage/system/code/groupCodeUpdate', $('#frm_gr_code').serialize(), fn_return_clasUpdate);
+        }
+      });
+
+      $('#btn_gr_delete').click(function () {
+        if ($('#clas_code').val().length == 0) {
+          swal('경고', '삭제할 그룹코드를 선택해주십시오.', 'error');
+          return;
+        }
+        ConfirmdialogToAjax('delete', '/manage/system/code/groupCodeDelete', $('#frm_gr_code').serialize(), fn_return_clasDelete);
+      });
+
+      $('#btn_low_clear').click(function () {
+        $('#frm_low_code').clearForm();
+
+        $('#low_code').attr('readonly', false);
+        $('#low_gr_code').val(code_grp_cd);
+        $('#low_gr_nm').val(code_grp_nm);
+        $('#btn_low_create').show();
+        $('#btn_low_update').hide();
+      });
+
+      $('#btn_low_create').click(function () {
+        $('#low_code_tp').val('create');
+        var form = $('#frm_low_code');
+        var checked = true;
+        $.each(form, function (i, val) {
+          if (!val.checkValidity()) {
+            checked = false;
+          }
+        });
+        if (checked) {
+          ConfirmdialogToAjax('create', '/manage/system/code/lowCodeCreate', $('#frm_low_code').serialize(), fn_return_lowCodeCreate);
+        }
+      });
+
+      $('#btn_low_update').click(function () {
+        $('#low_code_tp').val('update');
+        var form = $('#frm_low_code');
+        var checked = true;
+        $.each(form, function (i, val) {
+          if (!val.checkValidity()) {
+            checked = false;
+          }
+        });
+        if (checked) {
+          ConfirmdialogToAjax('update', '/manage/system/code/lowCodeUpdate', $('#frm_low_code').serialize(), fn_return_lowCodeUpdate);
+        }
+      });
+
+      $('#btn_low_delete').click(function () {
+        if ($('#low_gr_code').val().length == 0) {
+          swal('경고', '삭제할 하위코드를 선택해주십시오.', 'error');
+          return;
+        }
+        ConfirmdialogToAjax('delete', '/manage/system/code/lowCodeDelete', $('#frm_low_code').serialize(), fn_return_lowCodeDelete);
+      });
+
+      $('#btn_srch_gr').click(function () {
+        tbl_gr_code.ajax.reload();
+      });
+
+      $('#srch_gr_val')
+        .keyup(function (e) {
+          if (e.keyCode == 13) {
+            tbl_gr_code.ajax.reload();
+          } else {
+            e.keyCode == 0;
+            return;
+          }
+        })
+        .click(function (e) {
+          $(this).val('');
+        });
+
+      $('#btn_srch_low').click(function () {
+        tbl_low_code.ajax.reload();
+      });
+
+      $('#srch_low_val')
+        .keypress(function (e) {
+          if (e.keyCode == 13) {
+            bl_low_code.ajax.reload();
+          } else {
+            e.keyCode == 0;
+            return;
+          }
+        })
+        .click(function (e) {
+          $(this).val('');
+        });
+
+      function fn_return_clasCreate(data) {
+        var resultCode = data.resultCode;
+        var resultMsg = data.resultMsg;
+        tbl_gr_code.ajax.reload();
+        $('#frm_gr_code').clearForm();
+        if (resultCode == 'S000') {
+          swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+        }
+      }
+      function fn_return_clasUpdate(data) {
+        var resultCode = data.resultCode;
+        var resultMsg = data.resultMsg;
+        tbl_gr_code.ajax.reload();
+        tbl_low_code.ajax.reload();
+        $('#frm_gr_code').clearForm();
+        if (resultCode == 'S000') {
+          swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+        }
+      }
+
+      function fn_return_clasDelete(data) {
+        var resultCode = data.resultCode;
+        var resultMsg = data.resultMsg;
+        tbl_gr_code.ajax.reload();
+        $('#frm_gr_code').clearForm();
+        if (resultCode == 'S000') {
+          swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+        }
+      }
+
+      function fn_return_lowCodeCreate(data) {
+        var resultCode = data.resultCode;
+        var resultMsg = data.resultMsg;
+        tbl_low_code.ajax.reload();
+        $('#frm_low_code').clearForm();
+        $('#low_gr_code').val(code_grp_cd);
+        $('#low_gr_nm').val(code_grp_nm);
+
+        if (resultCode == 'S000') {
+          swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+        }
+      }
+
+      function fn_return_lowCodeUpdate(data) {
+        var resultCode = data.resultCode;
+        var resultMsg = data.resultMsg;
+        tbl_low_code.ajax.reload();
+        $('#frm_low_code').clearForm();
+        if (resultCode == 'S000') {
+          swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+        }
+      }
+
+      function fn_return_lowCodeDelete(data) {
+        var resultCode = data.resultCode;
+        var resultMsg = data.resultMsg;
+        tbl_low_code.ajax.reload();
+        $('#frm_low_code').clearForm();
+        if (resultCode == 'S000') {
+          swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+        }
+      }
+    });
+  </script>
+  <div class="content">
+    <div class="card mb-3" style="height: 65px">
+      <div class="bg-holder d-none d-lg-block bg-card"></div>
+      <div class="card-body position-relative">
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="d-flex" style="height: 3rem">
+              <div class="align-bottom" style="width: 10rem">
+                <h4>코드 관리</h4>
+              </div>
+              <div class="">
+                <nav style="--falcon-breadcrumb-divider: '»'" aria-label="breadcrumb">
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/main">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">운영관리</li>
+                    <li class="breadcrumb-item active" aria-current="page">시스템</li>
+                    <li class="breadcrumb-item active nav-item dropdown dropdown-hover" aria-current="page">
+                      <a class="nav-link dropdown-toggle link-primary d-block" href="#" aria-haspopup="true" data-bs-toggle="dropdown" aria-expanded="false">코드관리</a>
+                      <ul class="dropdown-menu">
+                        <li><a class="dropdown-item link-600 fw-medium" href="#">메뉴관리</a></li>
+                        <li><a class="dropdown-item link-600 fw-medium" href="#">권한관리</a></li>
+                        <li><a class="dropdown-item link-600 fw-medium" href="#">게시판관리</a></li>
+                        <li><a class="dropdown-item link-600 fw-medium link-body-emphasis" href="#">코드관리</a></li>
+                      </ul>
+                    </li>
+                  </ol>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-header">
+            <div class="row flex-between-end">
+              <div class="col-auto align-self-center">
+                <h5 class="mb-0">그룹코드</h5>
+              </div>
+            </div>
+          </div>
+          <div class="card-body px-0">
+            <form id="frm_srch_gr" name="frm_srch_gr" onsubmit="return false;" novalidate="">
+              <div class="input-group input-group-sm px-3">
+                <select class="form-select form-control-sm" id="srch_gr_tp" name="srch_gr_tp" style="width: 75px">
+                  <option value="">선택</option>
+                  <option value="srch_gr_code">분류코드</option>
+                  <option value="srch_gr_nm">분류명</option>
+                </select>
+                <input type="text" class="form-control form-control-sm" id="srch_gr_val" name="srch_gr_val" style="width: 43%" />
+                <select class="form-select form-control-sm" id="srch_gr_useyn_tp" name="srch_gr_useyn_tp" style="width: 75px">
+                  <option value="">사용여부</option>
+                  <option value="Y">사용</option>
+                  <option value="N">미사용</option>
+                </select>
+                <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_srch_gr" name="btn_srch_gr">조회</button></span>
+              </div>
+            </form>
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0" id="tbl_gr_code">
+                <thead class="bg-200">
+                  <tr>
+                    <th class="text-900">그룹코드</th>
+                    <th class="text-900">그룹명</th>
+                    <th class="text-900">사용여부</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <hr />
+            <form class="needs-validation" id="frm_gr_code" novalidate="" onsubmit="return false;" method="post">
+              <input type="hidden" id="gr_code_tp" name="gr_code_tp" />
+              <div class="row mb-3 px-3">
+                <label class="col-sm-2 col-form-label col-form-label-sm" for="clas_code">분류코드</label>
+                <div class="col-md-10">
+                  <input type="text" class="form-control form-control-sm" id="clas_code" name="clas_code" required />
+                </div>
+              </div>
+              <div class="row mb-3 px-3">
+                <label class="col-sm-2 col-form-label col-form-label-sm" for="clas_nm">분류명</label>
+                <div class="col-md-10">
+                  <input type="text" class="form-control form-control-sm" id="clas_nm" name="clas_nm" required />
+                </div>
+              </div>
+              <div class="row mb-3 px-3">
+                <label class="col-sm-2 col-form-label col-form-label-sm" for="clas_use_yn">사용여부</label>
+                <div class="col-md-10">
+                  <select class="form-select form-select-sm" id="clas_use_yn" name="clas_use_yn" required>
+                    <option value="Y">사용</option>
+                    <option value="N">미사용</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row text-right px-3">
+                <div class="col-sm-12 text-end">
+                  <button class="btn btn-primary btn-sm" id="btn_gr_clear"><i class="fa fa-check"></i> <strong>신규</strong></button>
+                  <button class="btn btn-info btn-sm" id="btn_gr_create"><i class="fa fa-paste"></i> <strong>저장</strong></button>
+                  <button class="btn btn-info btn-sm" id="btn_gr_update" style="display: none"><i class="fa fa-paste"></i> <strong>저장</strong></button>
+                  <button class="btn btn-danger btn-sm" id="btn_gr_delete"><i class="fa fa-trash"></i> <strong>삭제</strong></button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <div class="row flex-between-end">
+              <div class="col-auto align-self-center">
+                <h5 class="mb-0">코드상세</h5>
+              </div>
+            </div>
+          </div>
+          <div class="card-body px-0">
+            <form id="frm_srch_low" name="frm_srch_low" onsubmit="return false;">
+              <input type="hidden" id="low_code_tp" name="low_code_tp" />
+              <input type="hidden" id="srch_clas_code" name="srch_clas_code" />
+              <div class="input-group input-group-sm px-3">
+                <select class="form-select form-control-sm" id="srch_low_tp" name="srch_low_tp" style="width: 110px">
+                  <option value="">선택</option>
+                  <option value="srch_gr_code">분류코드</option>
+                  <option value="srch_gr_nm">분류명</option>
+                </select>
+                <input type="text" class="form-control form-control-sm" id="srch_low_val" name="srch_low_val" style="width: 70%" />
+                <select class="form-select form-control-sm" id="srch_low_useyn_tp" name="srch_low_useyn_tp" style="width: 105px">
+                  <option value="">사용여부</option>
+                  <option value="Y">사용</option>
+                  <option value="N">미사용</option>
+                </select>
+                <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_srch_low" name="btn_srch_low">조회</button></span>
+              </div>
+            </form>
+            <hr />
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0" id="tbl_low_code">
+                <thead class="bg-200">
+                  <tr>
+                    <th class="text-900">코드</th>
+                    <th class="text-900">분류명</th>
+                    <th class="text-900">코드명</th>
+                    <th class="text-900">순번</th>
+                    <th class="text-900">사용여부</th>
+                    <th class="text-900">노출여부</th>
+                    <th class="text-900">수정자</th>
+                    <th class="text-900">등록일시</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <form class="needs-validation" id="frm_low_code" name="frm_low_code" onsubmit="return false;" method="post" novalidate="">
+              <div class="row mb-3 px-3">
+                <label class="col-md-2 col-form-label col-form-label-sm">분류코드</label>
+                <div class="col-md-4">
+                  <input type="text" class="form-control form-control-sm" id="low_gr_code" name="low_gr_code" readonly="readonly" required />
+                </div>
+                <label class="col-md-2 col-form-label col-form-label-sm">분류명</label>
+                <div class="col-md-4">
+                  <input type="text" class="form-control form-control-sm" id="low_gr_nm" name="low_gr_nm" readonly="readonly" required />
+                </div>
+              </div>
+              <div class="row mb-3 px-3">
+                <label class="col-md-2 col-form-label col-form-label-sm">코드</label>
+                <div class="col-md-4">
+                  <input type="text" class="form-control form-control-sm" id="low_code" name="low_code" required />
+                </div>
+                <label class="col-md-2 col-form-label col-form-label-sm">노출여부</label>
+                <div class="col-md-4">
+                  <select class="form-control form-control-sm" id="low_view_yn" name="low_view_yn" required>
+                    <option value="Y">노출</option>
+                    <option value="N">비노출</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mb-3 px-3">
+                <label class="col-md-2 col-form-label col-form-label-sm">코드명</label>
+                <div class="col-md-4">
+                  <input type="text" class="form-control form-control-sm" id="low_code_nm" name="low_code_nm" required />
+                </div>
+                <label class="col-md-2 col-form-label col-form-label-sm">사용여부 / 순번</label>
+                <div class="col-md-2">
+                  <select class="form-control form-control-sm" id="low_use_yn" name="low_use_yn" required>
+                    <option value="Y">사용</option>
+                    <option value="N">미사용</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <input type="text" class="form-control form-control-sm" id="low_sq" name="low_sq" required />
+                </div>
+              </div>
+              <div class="row mb-3 px-3">
+                <label class="col-md-2 col-form-label col-form-label-sm">관리코드 1 / 2</label>
+                <div class="col-md-2">
+                  <input type="text" class="form-control form-control-sm" id="chk_cd1" name="chk_cd1" />
+                </div>
+                <div class="col-md-2">
+                  <input type="text" class="form-control form-control-sm" id="chk_cd2" name="chk_cd2" />
+                </div>
+                <label class="col-md-2 col-form-label col-form-label-sm">비고</label>
+                <div class="col-md-4">
+                  <input type="text" class="form-control form-control-sm" id="low_rmks" name="low_rmks" />
+                </div>
+              </div>
+              <div class="row mb-3 px-3">
+                <div class="col-md-12 text-end">
+                  <button class="btn btn-primary btn-sm" id="btn_low_clear" type="button"><i class="fa fa-check"></i> <strong>신규</strong></button>
+                  <button class="btn btn-info btn-sm" id="btn_low_create" type="submit"><i class="fa fa-paste"></i> <strong>저장</strong></button>
+                  <button class="btn btn-info btn-sm" id="btn_low_update" style="display: none" type="submit"><i class="fa fa-paste"></i> <strong>저장</strong></button>
+                  <button class="btn btn-danger btn-sm" id="btn_low_delete" type="button"><i class="fa fa-trash"></i> <strong>삭제</strong></button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</html>

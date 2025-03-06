@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>상품 등록</title>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script>
+  </head>
+  <style></style>
+  <script th:inline="none">
+    $(function () {
+      var codeData;
+      callAjax('/common/totalCodelist', "code_grp_cd=('CATEGORY', 'SUB_CATEGORY')", fn_code_setting);
+
+      function fn_code_setting(data) {
+        codeSetting('CATEGORY', data.data, '#category', '1', '', '');
+        codeData = data.data;
+      }
+      $('#category').change(function () {
+        var subCategory = codeData.filter(function (item) {
+          return item.group_code == 'SUB_CATEGORY' && item.chk_cd1 == $('#category').val();
+        });
+        codeSetting('SUB_CATEGORY', subCategory, '#sub_category', '1', '', '');
+      });
+      document.querySelectorAll('.add-input').forEach((input) => {
+        input.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            if (this.value.trim() != '') {
+              this.closest('.focus-actions-trigger').querySelector('button').click();
+            }
+          }
+        });
+      });
+      document.querySelectorAll('.focus-actions button').forEach((button) => {
+        button.addEventListener('click', function () {
+          var input = this.closest('.focus-actions-trigger').querySelector('input');
+          var newRequirement = input.value.trim();
+          if (newRequirement) {
+            var newItem = document.createElement('li');
+            newItem.innerHTML = `
+                              <div class="d-flex hover-actions-trigger align-items-center py-3 border-top border-300">
+                                <span class="fas fa-grip-lines fs-11 text-secondary me-3"></span>
+                                <p class="mb-0 fs-10 me-6">${newRequirement}</p>
+                                <div class="hover-actions end-0 top-50 translate-middle-y">
+                                  <button class="btn btn-tertiary icon-item rounded-3 fs-11 icon-item-sm"><span class="fas fa-times"></span></button>
+                                </div>
+                              </div>`;
+            document.getElementById(input.dataset.target).appendChild(newItem);
+            input.value = '';
+          }
+        });
+        $('#add-chapter').click(function () {
+          $('#chapter_form')[0].reset();
+          $('#chapter-modal').modal('show');
+        });
+      });
+      document.querySelectorAll('.hover-actions button').forEach((button) => {
+        button.addEventListener('click', function () {
+          this.closest('li').remove();
+        });
+      });
+
+      document.querySelector('#btn_create_goods').addEventListener('click', function () {
+        var formData = new FormData(document.getElementById('goods_info_form'));
+        var goodsInfo = {};
+        formData.forEach(function (value, key) {
+          goodsInfo[key] = value;
+        });
+        formData.append('goodsInfo', JSON.stringify(goodsInfo));
+        var chapterList = [];
+        document.querySelectorAll('#chapter-table tbody tr').forEach((tr) => {
+          var chapter = {
+            title: tr.querySelector('td:first-child h5').textContent,
+            description: tr.querySelector('td:first-child p').textContent,
+            duration: tr.querySelector('td:nth-child(2) p:first-child').textContent,
+            resources: tr.querySelector('td:nth-child(2) p:last-child').textContent,
+          };
+          chapterList.push(chapter);
+        });
+        formData.append('chapterList', JSON.stringify(chapterList));
+        var requirements = [];
+        document.querySelectorAll('#requirements_list li').forEach((li) => {
+          requirements.push(li.querySelector('p').textContent);
+        });
+        formData.append('requirements', JSON.stringify(requirements));
+        var goals = [];
+        document.querySelectorAll('#goals_list li').forEach((li) => {
+          goals.push(li.querySelector('p').textContent);
+        });
+        formData.append('goals', JSON.stringify(goals));
+        formData.append('video_url', document.getElementById('video_url').value);
+        var object = {};
+        formData.forEach(function (value, key) {
+          object[key] = value;
+        });
+        var json = JSON.stringify(object);
+        Swal.fire({
+          title: '저장 하시겠습니까?',
+          showCancelButton: true,
+          icon: 'question',
+          confirmButtonColor: '#DD6B55',
+          confirmButtonText: '예',
+          cancelButtonText: '아니요',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            $.ajax({
+              url: '/product/product/productAddMng/create',
+              type: 'POST',
+              dataType: 'json',
+              contentType: 'application/json; charset=utf-8',
+              data: json,
+              success: function (data) {
+                if (data.resultCode == 'S000') {
+                  var dropzone = Dropzone.forElement('#dz_image');
+                  dropzone.options.url = '/product/product/productAddMng/uploadImage';
+                  dropzone.on('sending', function (file, xhr, formData) {
+                    formData.append('goods_cd', data.returnVal);
+                  });
+                  dropzone.processQueue();
+                  Swal.fire('저장되었습니다.', '', 'success').then((result) => {
+                    location.href = '/product/product/productMng/view';
+                  });
+                } else {
+                  Swal.fire('저장에 실패하였습니다.', '', 'error');
+                }
+              },
+            });
+          }
+        });
+      });
+
+      const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          if (mutation.addedNodes.length) {
+            mutation.addedNodes.forEach(function (node) {
+              if (node.nodeType === 1 && node.matches('li')) {
+                node.querySelector('.hover-actions button').addEventListener('click', function () {
+                  this.closest('li').remove();
+                });
+              }
+            });
+          }
+        });
+      });
+
+      observer.observe(document.getElementById('requirements_list'), { childList: true });
+      observer.observe(document.getElementById('goals_list'), { childList: true });
+    });
+  </script>
+  <div class="content">
+    <div class="row g-lg-3">
+      <div class="col-lg-8">
+        <div class="card mb-3">
+          <div class="card-header">
+            <div class="row flex-between-center g-0">
+              <div class="col-auto"><h5 class="mb-0">상품 정보</h5></div>
+              <div class="col-auto">
+                <button class="btn btn-primary btn-md px-xxl-5 px-4 fw-medium" type="submit" id="btn_create_goods">저장</button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form class="row gx-2" name="goods_info_form" id="goods_info_form" action="#!" method="post">
+              <div class="col-12 mb-3">
+                <label class="form-label" for="goods_nm">상품 명<span class="text-danger">*</span></label>
+                <input class="form-control" id="goods_nm" type="text" name="goods_nm" placeholder="상품 명" required="required" />
+              </div>
+              <div class="col-sm-6 mb-3">
+                <label class="form-label" for="category">카테고리<span class="text-danger">*</span></label>
+                <select class="form-select" id="category" name="category"></select>
+              </div>
+              <div class="col-sm-6 mb-3">
+                <label class="form-label" for="sub_category">서브 카테고리<span class="text-danger">*</span></label>
+                <select class="form-select" id="sub_category" name="sub_category">
+                  <option value="">Select category...</option>
+                </select>
+              </div>
+              <div class="col-12 mb-3">
+                <label class="form-label" for="goods_amt">판매가격<span class="text-danger">*</span></label>
+                <input class="form-control" id="goods_amt" name="goods_amt" type="text" placeholder="판매가격" required="required" />
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="course-description">상세 설명<span class="text-danger">*</span></label>
+                <div class="create-course-description-textarea">
+                  <textarea class="tinymce d-none" data-tinymce="data-tinymce" name="course-description" id="course-description" required="required"></textarea>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="card mb-3">
+          <div class="card-header">
+            <h5 class="mb-0">챕터 & 세부내용</h5>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive scrollbar">
+              <table class="table table-borderless mb-0 fs-10 overflow-hidden" id="chapter-table">
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card-footer py-2 text-center">
+            <a class="btn btn-link btn-sm px-0 fw-medium" href="#!" id="add-chapter"> <span class="fas fa-plus me-1 fs-11"></span>Add New Chaptar</a>
+          </div>
+        </div>
+        <div class="card mb-3">
+          <div class="card-header">
+            <h5 class="mb-0">Requirements</h5>
+          </div>
+          <div class="card-body pt-0">
+            <ul class="list-unstyled mb-0" id="requirements_list"></ul>
+            <div class="position-relative focus-actions-trigger">
+              <input class="form-control add-input" type="text" placeholder="Add another requirement..." data-target="requirements_list" />
+              <div class="position-absolute end-0 top-50 translate-middle focus-actions">
+                <button class="btn btn-link btn-sm p-0 text-700 me-2"><span class="fas fa-arrow-right"></span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card mb-3 mb-lg-0">
+          <div class="card-header">
+            <h5 class="mb-0">Course Goals</h5>
+          </div>
+          <div class="card-body">
+            <ul class="list-unstyled mb-0" id="goals_list"></ul>
+            <div class="position-relative mb-4 focus-actions-trigger">
+              <input class="form-control add-input" id="course-goal" type="text" placeholder="Add another goal..." data-target="goals_list" />
+              <div class="position-absolute end-0 top-50 translate-middle focus-actions">
+                <button class="btn btn-link btn-sm p-0 text-700 me-2"><span class="fas fa-arrow-right"></span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="sticky-sidebar top-navbar-height d-flex flex-column">
+          <div class="card mb-3">
+            <div class="card-header">
+              <h5 class="mb-0">
+                Upload Cover Photo <span data-bs-toggle="tooltip" data-bs-placement="top" title="Add cover photo"><span class="fas fa-info-circle text-primary fs-9 ms-2"></span></span>
+              </h5>
+            </div>
+            <div class="card-body">
+              <form class="dropzone dropzone-single p-0" id="dz_image" data-dropzone="data-dropzone" data-options='{"maxFiles":1,"acceptedFiles":"image/*"}'>
+                <div class="fallback">
+                  <input type="hidden" name="goods_cd" id="goods_cd" />
+                  <input type="file" name="file" id="img_file" />
+                </div>
+                <div class="dz-preview dz-preview-single">
+                  <div class="dz-preview-cover dz-complete">
+                    <img class="dz-preview-img" src="/img/generic/image-file-2.png" alt="" data-dz-thumbnail="" /><a class="dz-remove text-danger" href="#!" data-dz-remove="data-dz-remove"><span class="fas fa-times"></span></a>
+                    <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress=""></span></div>
+                    <div class="dz-errormessage m-1"><span data-dz-errormessage="data-dz-errormessage"></span></div>
+                  </div>
+                  <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress=""></span></div>
+                </div>
+                <div class="dz-message fs-10" data-dz-message="data-dz-message">
+                  <img class="me-2" src="/img/icons/cloud-upload.svg" width="20" alt="" /><span class="d-none d-lg-inline">Drag your image here<br />or, </span><span class="btn btn-link p-0 fs-10">Browse</span>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="card mb-3">
+            <div class="card-header">
+              <h5 class="mb-0">
+                Upload Preview Video<span data-bs-toggle="tooltip" data-bs-placement="top" title="Upload preview video"><span class="fas fa-info-circle text-primary fs-9 ms-2"></span></span>
+              </h5>
+            </div>
+            <div class="card-body">
+              <label class="form-label mt-3" for="video_url">동영상 경로</label>
+              <div class="position-relative">
+                <input class="form-control" id="video_url" type="url" placeholder="youtu.be/xXxxXxXXxxX" />
+                <div class="position-absolute top-50 end-0 translate-middle-y lh-1 me-2"><span class="fas fa-link text-400 me-1"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card rounded-0 bottom-bar d-lg-none" data-bottom-bar='{"target":"course-publish-btn","breakPoint":"lg"}'>
+      <div class="card-body py-2 px-0">
+        <div class="container">
+          <div class="row flex-between-center g-0">
+            <div class="col-auto"><a class="btn btn-link btn-sm text-secondary fw-medium px-0" href="#!">Save as Draft</a></div>
+            <div class="col-auto">
+              <button class="btn btn-primary btn-md px-5 fw-medium" type="submit">Publish</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal -->
+  <div class="modal fade" id="chapter-modal" tabindex="-1" aria-labelledby="chapter-modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">챕터 추가</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="chapter_form">
+            <div class="mb-3">
+              <label for="chapter-title" class="form-label">제목</label>
+              <input type="text" class="form-control" id="chapter-title" placeholder="Enter chapter title" />
+            </div>
+            <div class="mb-3">
+              <label for="chapter-description" class="form-label">설명</label>
+              <textarea class="form-control" id="chapter-description" rows="3" placeholder="Enter chapter description"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="chapter-duration" class="form-label">세부내용1</label>
+              <input type="text" class="form-control" id="chapter-duration" placeholder="Enter chapter duration" />
+            </div>
+            <div class="mb-3">
+              <label for="chapter-resources" class="form-label">세부내용2</label>
+              <input type="text" class="form-control" id="chapter-resources" placeholder="Enter chapter resources" />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="create_chapter">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script th:inline="none">
+    document.querySelector('#create_chapter').addEventListener('click', function () {
+      var title = document.getElementById('chapter-title').value;
+      var description = document.getElementById('chapter-description').value;
+      var duration = document.getElementById('chapter-duration').value;
+      var resources = document.getElementById('chapter-resources').value;
+
+      if (title && description && duration && resources) {
+        var newRow = document.createElement('tr');
+        newRow.setAttribute('data-chapterIndex', document.getElementById('chapter-table').querySelectorAll('tr').length + 1);
+        var targetIndex = newRow.getAttribute('data-chapterIndex');
+        newRow.classList.add('btn-reveal-trigger', '');
+        newRow.innerHTML = `
+        <td class="align-middle white-space-nowrap" >
+          <div class="d-flex gap-3 align-items-center position-relative">
+            <div>
+              <h5 class="fs-9 text-primary">${title}</h5>
+              <p class="fs-10 text-900 mb-0">${description}</p>
+            </div>
+          </div>
+        </td>
+        <td class="align-middle white-space-nowrap fs-10 text-700">
+          <p class="mb-1">${resources}</p>
+          <p class="mb-0">${duration}</p>
+        </td>
+        <td class="align-middle white-space-nowrap text-end">
+          <div class="dropdown font-sans-serif position-static d-inline-block btn-reveal-trigger">
+            <button class="btn btn-link text-600 btn-sm dropdown-toggle btn-reveal dropdown-caret-none float-end" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span class="fas fa-ellipsis-h fs-10"></span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end border py-2">
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item text-danger chapter_delete" data-targetIndex="${targetIndex}">Delete</a>
+            </div>
+          </div>
+        </td>
+      `;
+        document.getElementById('chapter-table').querySelector('tbody').appendChild(newRow);
+        $('#chapter-modal').modal('hide');
+      }
+
+      document.querySelectorAll('.chapter_delete').forEach((button) => {
+        button.addEventListener('click', function () {
+          var targetIndex = this.getAttribute('data-targetIndex');
+          var row = document.querySelector(`tr[data-chapterIndex="${targetIndex}"]`);
+          if (row) {
+            row.remove();
+          }
+        });
+      });
+    });
+  </script>
+</html>

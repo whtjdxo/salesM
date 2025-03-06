@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.6.1/font/bootstrap-icons.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/vendors/jqgrid/ui.jqgrid-bootstrap5.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/vendors/jqgrid/jquery-ui.css" />
+    <script type="text/ecmascript" src="/vendors/jqgrid/grid.locale-kr.js"></script>
+    <script type="text/ecmascript" src="/vendors/jqgrid/jquery.jqGrid.js"></script>
+  </head>
+  <style></style>
+
+  <script th:inline="none">
+    $(function () {
+      $.jgrid.defaults.styleUI = 'Bootstrap5';
+      $.jgrid.defaults.iconSet = 'Bootstrap5';
+      $('#tbl_menu_admintree').jqGrid({
+        url: '/manage/system/menu/getMenuTreeRetrieve',
+        datatype: 'json',
+        mtype: 'POST',
+        height: 600,
+        rowNum: 10000,
+        autowidth: true,
+        width: 'auto',
+        shrinkToFit: true,
+        treeGrid: true,
+        treeGridModel: 'nested',
+        treedatatype: 'json',
+        gridview: true,
+        sortorder: 'desc',
+        ExpandColumn: 'menu_nm',
+        expanded: true,
+        viewrecords: true,
+        scrollrows: true,
+        colNames: ['메뉴명', '메뉴ID', '메뉴유형코드', '메뉴유형', 'URL', '정렬순서', 'USE_YN', '사용여부', '등록자', '등록일시', 'menu_pid', 'VIEW_YN', 'iconCls', 'level', 'SITE_GB_CD', 'expanded', 'view_icon'],
+        colModel: [
+          { name: 'menu_nm', index: 'menu_nm', width: 150, sortable: false },
+          { name: 'menu_cd', index: 'menu_cd', width: 80, sortable: false },
+          { name: 'menu_tp', index: 'menu_tp', width: 50, align: 'center', sortable: false, hidden: true },
+          { name: 'menu_tp_nm', index: 'menu_tp_nm', width: 100, align: 'center', sortable: false },
+          { name: 'menu_url', index: 'menu_url', width: 200, align: 'left', sortable: false },
+          { name: 'menu_ord', index: 'menu_ord', width: 50, align: 'center', sortable: false },
+          { name: 'use_yn', index: 'use_yn', width: 40, align: 'center', sortable: false, hidden: true },
+          { name: 'use_yn_nm', index: 'use_yn_nm', width: 60, sortable: false, align: 'center' },
+          { name: 'upt_user_id', index: 'upt_user_id', align: 'center', width: 80, sortable: false },
+          { name: 'upt_dttm', index: 'upt_dttm', width: 120, sortable: false },
+          { name: 'menu_prnt_cd', index: 'menu_prnt_cd', width: 150, sortable: false, hidden: true },
+          { name: 'view_yn', index: 'view_yn', width: 150, sortable: false, hidden: true },
+          { name: 'iconcls', index: 'iconcls', width: 150, sortable: false, hidden: true },
+          { name: 'level', index: 'level', width: 150, sortable: false, hidden: true },
+          { name: 'site_gb_cd', index: 'site_gb_cd', width: 150, sortable: false, hidden: true },
+          { name: 'expanded', index: 'expanded', width: 150, sortable: false, hidden: true },
+          { name: 'view_icon', index: 'view_icon', width: 150, sortable: false, hidden: true },
+        ],
+        treeReader: {
+          left_field: 'lft',
+          right_field: 'rgt',
+          level_field: 'level',
+          expanded_field: 'expanded',
+          leaf_field: 'isLeaf',
+          icon_field: 'iconCls',
+        },
+
+        onSelectRow: function (index, row) {
+          var rowKey = $('#tbl_menu_admintree').jqGrid('getGridParam', 'selrow');
+          if (rowKey) {
+            var data = $('#tbl_menu_admintree').jqGrid('getRowData', rowKey);
+            $('#frm_menu_info')[0].reset();
+
+            if (data.menu_tp == 'R') {
+              $('#menu').val(data.menu_cd).attr('selected', 'selected');
+            } else {
+              $('#menu').val(data.menu_prnt_cd).attr('selected', 'selected');
+            }
+            $('#menu_nm').val(data.menu_nm);
+            $('#menu_cd').val(data.menu_cd);
+            $('#old_menu_cd').val(data.menu_cd);
+            $('#menu_tp_nm').val(data.menu_tp_nm);
+            $('#menu_tp').val(data.menu_tp).attr('selected', 'selected');
+            $('#menu_url').val(data.menu_url);
+            $('#menu_ord').val(data.menu_ord);
+            $('#site_gb_cd').val(data.site_gb_cd);
+            $('#menu_use_yn').val(data.use_yn);
+            $('#user_id').val(data.user_id);
+            $('#upt_dttm').val(data.upt_dttm);
+            $('#menu_prnt_cd').val(data.menu_prnt_cd);
+            $('#view_yn').val(data.view_yn);
+
+            $('#btn_menu_create').hide();
+            $('#btn_menu_update').show();
+          }
+        },
+        loadComplete: function (data) {
+          $('#tbl_menu_admintree').jqGrid('setGridParam', { datatype: 'local' }).trigger('reloadGrid');
+        },
+      });
+      callAjax('/common/totalCodelist', "code_grp_cd=('MENU_TP')", fn_code_setting);
+
+      function fn_code_setting(data) {
+        codeSetting('MENU_TP', data.data, '#menu_tp', '1', '', '');
+      }
+      callCombo('/manage/system/menu/upMenuRetrieve', 'site_gb_cd=SG0001', '#menu', '1', '');
+
+      $('#btn_menu_reset').click(function () {
+        $('#frm_menu_info')[0].reset();
+        var upMenu;
+        var menuTp;
+
+        menuTp = $('#tbl_menu_admintree').jqGrid('getRowData', $('#tbl_menu_admintree').getGridParam('selrow')).menu_tp; //A, D, P, ROOT
+        upMenu = $('#tbl_menu_admintree').jqGrid('getRowData', $('#tbl_menu_admintree').getGridParam('selrow')).menu_cd;
+
+        $('#site_gb_cd').val($('#tbl_menu_admintree').jqGrid('getRowData', $('#tbl_menu_admintree').getGridParam('selrow')).site_gb_cd);
+        if (menuTp == 'A') {
+          if (upMenu.length > 3) {
+            $('#menu').val(upMenu.substr(0, upMenu.length - 2));
+            $('#menu_prnt_cd').val(upMenu.substr(0, upMenu.length - 2));
+          } else {
+            $('#menu').val(upMenu);
+            $('#menu_prnt_cd').val(upMenu);
+          }
+        } else {
+          $('#menu').val(upMenu);
+          $('#menu_prnt_cd').val(upMenu);
+        }
+
+        $('#btn_menu_create').show();
+        $('#btn_menu_update').hide();
+      });
+
+      /*
+    설명	: 저장버튼 click event
+    작성일	: 2025-01-04
+    작성자	: 김솔람
+    수정일		수정자		수정내용
+    */
+      $('#btn_menu_create').click(function () {
+        $('#menu_state').val('create');
+        ConfirmdialogToAjax('create', '/manage/system/menu/menuCreate', $('#frm_menu_info').serialize(), fn_return_menuCreate);
+      });
+
+      /*
+    설명	: 수정버튼 click event
+    작성일	: 2025-01-04
+    작성자	: 김솔람
+    수정일		수정자		수정내용
+    */
+      $('#btn_menu_update').click(function () {
+        $('#menu_state').val('update');
+        ConfirmdialogToAjax('update', '/manage/system/menu/menuUpdate', $('#frm_menu_info').serialize(), fn_return_menuUpdate);
+      });
+
+      /*
+    설명	: 삭제버튼 click event
+    작성일	: 2025-01-04
+    작성자	: 김솔람
+    수정일		수정자		수정내용
+    */
+      $('#btn_menu_delete').click(function () {
+        if ($('#menu').val().length == 0) {
+          swal('경고', '삭제할 메뉴명을 선택해주십시오.', 'error');
+          return;
+        }
+        ConfirmdialogToAjax('delete', '/manage/system/menu/menuDelete', $('#frm_menu_info').serialize(), fn_return_menuDelete);
+      });
+
+      $('#btn_icon').click(function () {
+        $('#iconMngModal').modal('show');
+      });
+
+      $('.demo-icon-font').click(function () {
+        $('#view_icon').val($(this).text().trim());
+        $('#btn_icon').find('i').removeAttr('class');
+        $('#btn_icon')
+          .find('i')
+          .attr('class', 'fa fa-fw ' + $(this).text().replace(/^\s*/, ''));
+        $('#iconMngModal').modal('hide');
+      });
+
+      /*
+    	함수명	: fn_return_menuCreate
+    	설명	:  저장 처리 후 callback 함수
+    	작성일	: 2025-01-04
+    	작성자	: 김솔람
+    	수정일		수정자		수정내용
+    */
+      function fn_return_menuCreate(data) {
+        var resultCode = data.resultCode;
+        var resultMsg = data.resultMsg;
+        $('#modal_gr_code').modal('hide');
+        $('#tbl_menu_admintree').jqGrid('setGridParam', { datatype: 'json' }).trigger('reloadGrid');
+        $('#tbl_menu_cnsltree').jqGrid('setGridParam', { datatype: 'json' }).trigger('reloadGrid');
+        $('#tbl_menu_ebtree').jqGrid('setGridParam', { datatype: 'json' }).trigger('reloadGrid');
+        reloadCallCombo();
+
+        $('#frm_menu_info')[0].reset();
+        if (resultCode == 'S000') {
+          swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+        }
+      }
+
+      /*
+    	함수명	: fn_return_menuUpdate
+    	설명	:  수정 처리 후 callback 함수
+    	작성일	: 2025-01-04
+    	작성자	: 김솔람
+    	수정일		수정자		수정내용
+    */
+      function fn_return_menuUpdate(data) {
+        var resultCode = data.resultCode;
+        var resultMsg = data.resultMsg;
+        $('#modal_gr_code').modal('hide');
+        $('#tbl_menu_admintree').jqGrid('setGridParam', { datatype: 'json' }).trigger('reloadGrid');
+        $('#tbl_menu_cnsltree').jqGrid('setGridParam', { datatype: 'json' }).trigger('reloadGrid');
+        $('#tbl_menu_ebtree').jqGrid('setGridParam', { datatype: 'json' }).trigger('reloadGrid');
+        $('#frm_menu_info')[0].reset();
+        if (resultCode == 'S000') {
+          swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+        }
+      }
+
+      /*
+    함수명	: fn_return_menuDelete
+    설명	: 수정 처리 후 callback 함수
+    작성일	: 2025-01-04
+    작성자	: 김솔람
+    수정일		수정자		수정내용
+    */
+      function fn_return_menuDelete(data) {
+        var resultCode = data.resultCode;
+        var resultMsg = data.resultMsg;
+        $('#modal_low_code').modal('hide');
+        $('#tbl_menu_admintree').jqGrid('setGridParam', { datatype: 'json' }).trigger('reloadGrid');
+        $('#tbl_menu_cnsltree').jqGrid('setGridParam', { datatype: 'json' }).trigger('reloadGrid');
+        $('#tbl_menu_ebtree').jqGrid('setGridParam', { datatype: 'json' }).trigger('reloadGrid');
+        reloadCallCombo();
+
+        $('#frm_menu_info')[0].reset();
+        if (resultCode == 'S000') {
+          swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+        }
+      }
+
+      function reloadCallCombo() {
+        callCombo('/manage/system/menu/upMenuRetrieve', 'SITE_GB_CD=SG0001', '#menu', '1', '');
+      }
+
+      function callCombo(target, data, combo, type, val) {
+        jQuery.ajax({
+          type: 'POST',
+          url: target,
+          data: data,
+          dataType: 'json',
+          success: function (data) {
+            var cnt = data.length;
+            if (cnt > 0) {
+              if (type == '1') {
+                $(combo).children().remove();
+                $(combo).append('<option value="">선 택</option>');
+              } else if (type == '2') {
+                $(combo).children().remove();
+                $(combo).append('<option value="">전 체</option>');
+              }
+              for (var i = 0; i < cnt; i++) {
+                if (val == data[i].code) {
+                  var appendText = "<option value='" + data[i].menu_cd + '\' selected="selected">' + data[i].menu + '</option>';
+                } else {
+                  var appendText = "<option value='" + data[i].menu_cd + "'>" + data[i].menu + '</option>';
+                }
+                $(combo).append(appendText);
+              }
+            } else {
+              $(combo).children().remove();
+              $(combo).append('<option value="">데이터가 없습니다</option>');
+            }
+          },
+          error: function (e) {
+            swal('실패', '작업수행에 실패하였습니다.', 'error');
+          },
+        });
+      }
+    });
+  </script>
+  <div class="content">
+    <div class="card mb-3" style="height: 65px">
+      <div class="bg-holder d-none d-lg-block bg-card"></div>
+      <div class="card-body position-relative">
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="d-flex" style="height: 3rem">
+              <div class="align-bottom" style="width: 10rem">
+                <h4>코드 관리</h4>
+              </div>
+              <div class="">
+                <nav style="--falcon-breadcrumb-divider: '»'" aria-label="breadcrumb">
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/main">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">운영관리</li>
+                    <li class="breadcrumb-item active" aria-current="page">시스템</li>
+                    <li class="breadcrumb-item active nav-item dropdown dropdown-hover" aria-current="page">
+                      <a class="nav-link dropdown-toggle link-primary d-block" href="#" aria-haspopup="true" data-bs-toggle="dropdown" aria-expanded="false">메뉴관리</a>
+                      <ul class="dropdown-menu">
+                        <li><a class="dropdown-item link-600 fw-medium link-body-emphasis" href="#">메뉴관리</a></li>
+                        <li><a class="dropdown-item link-600 fw-medium" href="#">권한관리</a></li>
+                        <li><a class="dropdown-item link-600 fw-medium" href="#">게시판관리</a></li>
+                        <li><a class="dropdown-item link-600 fw-medium" href="#">코드관리</a></li>
+                      </ul>
+                    </li>
+                  </ol>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <div class="row flex-between-end">
+              <div class="col-auto align-self-center">
+                <h5 class="mb-0">메뉴목록</h5>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive scrollbar">
+              <table class="table table-sm table-striped table-bordered table-hover" id="tbl_menu_admintree"></table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-header">
+            <div class="row flex-between-end">
+              <div class="col-auto align-self-center">
+                <h5 class="mb-0">메뉴</h5>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <form class="needs-validation" id="frm_menu_info" name="frm_menu_info" onsubmit="return false;" novalidate="">
+              <input type="hidden" name="menu_state" id="menu_state" />
+              <input type="hidden" name="menu_prnt_cd" id="menu_prnt_cd" />
+              <input type="hidden" name="site_gb_cd" id="site_gb_cd" />
+              <input type="hidden" name="upt_user_id" id="upt_user_id" th:value="${session.S_USER.userId}" />
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label col-form-label-sm" for="menu">상위메뉴</label>
+                <div class="col-sm-10">
+                  <select class="form-select form-select-sm" name="menu" id="menu" disabled="disabled" required></select>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label col-form-label-sm" for="menu_cd">메뉴ID</label>
+                <div class="col-lg-10">
+                  <input type="text" class="form-control form-control-sm" name="menu_cd" id="menu_cd" required />
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label col-form-label-sm" for="menu_nm">메뉴명</label>
+                <div class="col-lg-10">
+                  <input type="text" class="form-control form-control-sm" name="menu_nm" id="menu_nm" required />
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label col-form-label-sm" for="menu_tp">메뉴유형</label>
+                <div class="col-lg-10">
+                  <select class="form-select form-select-sm" name="menu_tp" id="menu_tp" required></select>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label col-form-label-sm" for="menu_url">URL</label>
+                <div class="col-lg-10">
+                  <input type="text" class="form-control form-control-sm" name="menu_url" id="menu_url" required />
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label col-form-label-sm" for="menu_ord">정렬순서</label>
+                <div class="col-lg-10">
+                  <input type="text" class="form-control form-control-sm" name="menu_ord" id="menu_ord" required />
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label col-form-label-sm" for="menu_use_yn">사용여부</label>
+                <div class="col-lg-10">
+                  <select class="form-select form-select-sm" id="menu_use_yn" name="menu_use_yn" required>
+                    <option value="Y">사용</option>
+                    <option value="N">미사용</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label col-form-label-sm" for="view_yn">노출여부</label>
+                <div class="col-lg-10">
+                  <select class="form-select form-select-sm" id="view_yn" name="view_yn" required>
+                    <option value="Y">사용</option>
+                    <option value="N">미사용</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label col-form-label-sm" for="user_id">수정자 ID</label>
+                <div class="col-lg-10">
+                  <input type="text" class="form-control form-control-sm" name="user_id" id="user_id" readonly="readonly" />
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label col-form-label-sm" for="upt_dttm">수정일시</label>
+                <div class="col-lg-10">
+                  <input type="text" class="form-control form-control-sm" id="upt_dttm" readonly="readonly" />
+                </div>
+              </div>
+              <p class="text-end pb-0 mb-0 pd-0">
+                <button class="btn btn-info" id="btn_menu_reset"><i class="fa fa-check"></i>신규</button>
+                <button class="btn btn-primary" type="submit" id="btn_menu_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                <button class="btn btn-primary" type="submit" id="btn_menu_create"><i class="fa fa-paste"></i>저장</button>
+                <button class="btn btn-danger" type="button" id="btn_menu_delete"><i class="fa fa-trash"></i>삭제</button>
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</html>

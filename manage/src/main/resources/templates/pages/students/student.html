@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>학생 관리</title>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script>
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  </head>
+  <script th:inline="none">
+    function execDaumPostcode(target) {
+      new daum.Postcode({
+        oncomplete: function (data) {
+          var roadAddr = data.roadAddress;
+          if (target == 'center') {
+            document.getElementById('addr').value = roadAddr;
+            document.getElementById('zip_code').value = data.zonecode;
+          } else if (target == 'user') {
+            document.getElementById('user_addr').value = roadAddr;
+            document.getElementById('user_zip_code').value = data.zonecode;
+          }
+        },
+      }).open();
+    }
+    $(document).ready(function () {
+      callAjax('/common/totalCodelist', "code_grp_cd=('SCH_LVL')", fn_code_setting);
+      callAjaxCombo('/center/user/userMng/getAcaList', '', '#aca_id', '1', '');
+      function fn_code_setting(data) {
+        codeSetting('SCH_LVL', data.data, '#sch_lvl', '1', '', '');
+      }
+      var tbl_students = $('#tbl_students').DataTable({
+        processing: true,
+        serverSide: true,
+        select: true,
+        responsive: true,
+        ajax: {
+          url: '/student/students/studentMng/list',
+          contentType: 'application/json',
+          dataType: 'JSON',
+          type: 'POST',
+          data: function (d) {
+            return JSON.stringify(d);
+          },
+        },
+        columns: [{ data: 'aca_nm' }, { data: 'std_nm' }, { data: 'std_id' }, { data: 'parent_hp_no' }, { data: 'sch_nm' }, { data: 'sch_lvl_nm' }, { data: 'ent_dttm' }],
+        order: [[6, 'desc']],
+        paging: true,
+        lengthChange: false,
+        searching: false,
+        ordering: true,
+        autoWidth: false,
+        responsive: true,
+        scrollCollapse: true,
+        pageLength: 20,
+        scrollY: '550px',
+        info: false,
+        language: {
+          emptyTable: '데이터가 없습니다.',
+          search: '검색:',
+          zeroRecords: '일치하는 데이터가 없습니다.',
+          loadingRecords: '로딩중...',
+          processing: '처리중...',
+        },
+      });
+      $('#tbl_students').on('click', 'tr', function () {
+        var data = tbl_students.row(this).data();
+        $('#aca_id').val(data.aca_id).prop('selected', true);
+        $('#std_id').val(data.std_id);
+        $('#std_id').attr('readonly', true);
+        $('#std_nm').val(data.std_nm);
+        $('#parent_hp_no').val(data.parent_hp_no);
+        $('#sch_nm').val(data.sch_nm);
+        $('#sch_lvl').val(data.sch_lvl).prop('selected', true);
+        $('input:radio[name=use_yn]:input[value=' + data.use_yn + ']').attr('checked', true);
+        $('#crud').val('update');
+        $('#student-add-modal').modal('show');
+      });
+      $('#student_add_modal').click(function () {
+        $('#aca_id').val('').prop('selected', true);
+        $('#std_id').val('');
+        $('#std_id').attr('readonly', false);
+        $('#std_pwd').val('');
+        $('#std_pwd_cnfm').val('');
+        $('#std_nm').val('');
+        $('#parent_hp_no').val('');
+        $('#sch_nm').val('');
+        $('#sch_lvl').val('').prop('selected', true);
+        $("input:radio[name=use_yn]:input[value='Y']").attr('checked', true);
+        $('#crud').val('create');
+        $('#student-add-modal').modal('show');
+      });
+      $('#btn_submit').click(function () {
+        var form = $('#student_add_form');
+        var formData = form.serializeObject();
+        var std_pwd = formData.std_pwd;
+        var std_pwd_cnfm = formData.std_pwd_cnfm;
+        if (std_pwd != std_pwd_cnfm) {
+          swal('비밀번호 확인', '비밀번호가 일치하지 않습니다.', 'error');
+          return;
+        }
+        var checked = true;
+        $.each(form, function (i, val) {
+          if (!val.checkValidity()) {
+            checked = false;
+          }
+        });
+        if (checked) {
+          var crud = $('#crud').val();
+          $('#agree_terms').val('Y');
+          $('#agree_privacy').val('Y');
+          if (crud == 'create') {
+            ConfirmdialogToAjax('create', '/student/students/studentMng/create', formData, fn_return_submit);
+          } else if (crud == 'update') {
+            ConfirmdialogToAjax('update', '/student/students/studentMng/update', formData, fn_return_submit);
+          }
+        }
+      });
+      function fn_return_submit(data) {
+        var resultCode = data.resultCode;
+        var resultMsg = data.resultMsg;
+        if (resultCode == 'S000') {
+          swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+          $('#student-add-modal').modal('hide');
+          tbl_students.ajax.reload();
+        }
+      }
+    });
+  </script>
+  <div class="content">
+    <div class="card mb-3" style="height: 85px">
+      <div class="bg-holder d-none d-lg-block bg-card"></div>
+      <div class="card-body position-relative">
+        <div class="row">
+          <div class="col-lg-8">
+            <h4>학생 관리</h4>
+            <nav style="--falcon-breadcrumb-divider: '»'" aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/main">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">학생 관리</li>
+                <li class="breadcrumb-item active" aria-current="page">학생</li>
+                <li class="breadcrumb-item active nav-item dropdown dropdown-hover" aria-current="page">
+                  <a class="nav-link dropdown-toggle link-primary d-block" href="#" aria-haspopup="true" data-bs-toggle="dropdown" aria-expanded="false">학생관리</a>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item link-600 fw-medium" link-body-emphasis href="#">학생관리</a></li>
+                  </ul>
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-header">
+            <div class="row flex-between-end">
+              <div class="col-auto align-self-center">
+                <h5 class="mb-0">학생 목록</h5>
+              </div>
+              <div class="col-auto">
+                <button class="btn btn-primary" id="student_add_modal" data-bs-toggle="modal" data-bs-target="#student-add-modal">신규</button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body px-0 py-0">
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0" id="tbl_students">
+                <thead class="bg-200">
+                  <tr>
+                    <th class="text-900">학원명</th>
+                    <th class="text-900">이름</th>
+                    <th class="text-900">아이디(휴대폰)</th>
+                    <th class="text-900">학부모연락처</th>
+                    <th class="text-900">학교</th>
+                    <th class="text-900">학년</th>
+                    <th class="text-900">등록일</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="student-add-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form class="needs-validation" novalidate="" id="student_add_form" name="student_add_form" onsubmit="return false;">
+          <input type="hidden" name="crud" id="crud" />
+          <input type="hidden" name="agree_terms" id="agree_terms" value="Y" />
+          <input type="hidden" name="agree_privacy" id="agree_privacy" value="Y" />
+          <div class="modal-header">
+            <h5 class="modal-title">학생 등록</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row mb-3 px-3">
+              <div class="col-md-6">
+                <label class="form-label" for="aca_id">학원</label>
+                <select type="text" class="form-select form-select-sm" id="aca_id" name="aca_id" required>
+                  <option value="">선택</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="std_id">아이디(휴대폰번호)</label>
+                <input class="form-control form-control-sm" id="std_id" name="std_id" required />
+              </div>
+            </div>
+            <div class="row mb-3 px-3">
+              <div class="col-md-6">
+                <label class="form-label" for="std_pwd">비밀번호</label>
+                <input type="password" class="form-control form-control-sm" id="std_pwd" name="std_pwd" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="std_pwd_cnfm">비밀번호 확인</label>
+                <input type="password" class="form-control form-control-sm" id="std_pwd_cnfm" name="std_pwd_cnfm" required />
+              </div>
+            </div>
+            <div class="row mb-3 px-3">
+              <div class="col-md-6">
+                <label class="form-label" for="std_nm">이름</label>
+                <input class="form-control form-control-sm" id="std_nm" name="std_nm" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="parent_hp_no">학부모연락처</label>
+                <input type="text" class="form-control form-control-sm" id="parent_hp_no" name="parent_hp_no" required />
+              </div>
+            </div>
+            <div class="row mb-3 px-3">
+              <div class="col-md-6">
+                <label class="form-label" for="sch_nm">학교</label>
+                <input type="text" class="form-control form-control-sm" id="sch_nm" name="sch_nm" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="sch_lvl">학년</label>
+                <select type="text" class="form-select form-select-sm" id="sch_lvl" name="sch_lvl" required>
+                  <option value="">선택</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-3 px-3">
+              <div class="col-md-6">
+                <div class="col-md-6">
+                  <label class="form-label" for="use_yn">사용여부</label>
+                  <div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" id="use_yn_Y" type="radio" name="use_yn" value="Y" required />
+                      <label class="form-check-label" for="use_yn_Y">예</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" id="use_yn_N" type="radio" name="use_yn" value="N" required />
+                      <label class="form-check-label" for="use_yn_N">아니요</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" id="btn_submit" type="submit">저장</button>
+            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">닫기</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</html>

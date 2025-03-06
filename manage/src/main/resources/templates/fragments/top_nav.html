@@ -1,0 +1,93 @@
+<nav class="navbar navbar-top fixed-top navbar-expand-lg" id="navbarTop" th:fragment="top_nav">
+  <div class="navbar-logo">
+    <button class="btn navbar-toggler navbar-toggler-humburger-icon hover-bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTopCollapse" aria-controls="navbarTopCollapse" aria-expanded="false" aria-label="Toggle Navigation">
+      <span class="navbar-toggle-icon"><span class="toggle-line"></span></span>
+    </button>
+    <a class="navbar-brand me-1 me-sm-3" href="/main">
+      <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center">
+          <img src="/img/icons/logo.png" alt="phoenix" width="27" />
+          <h5 class="logo-text ms-2 d-none d-sm-block">phoenix</h5>
+        </div>
+      </div>
+    </a>
+  </div> 
+  <div class="collapse navbar-collapse navbar-top-collapse order-1 order-lg-0 justify-content-center" id="navbarTopCollapse">
+    <ul class="navbar-nav navbar-nav-top" data-dropdown-on-hover="data-dropdown-on-hover">
+      <!-- 1차 메뉴 -->
+      <th:block th:each="menu : ${session.S_USER.menu}">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle lh-1" href="#!" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
+            [[${menu.menuNm}]]
+          </a>  
+          <!-- 2차 메뉴 -->
+          <ul class="dropdown-menu navbar-dropdown-caret">
+            <th:block th:each="subMenu : ${session.S_USER.menu2nd}">
+              <th:block th:if="${#strings.trim(subMenu.menuPrntCd) == #strings.trim(menu.menuCd)}">
+                <li class="dropdown">
+                  <a class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                    <div class="dropdown-item-wrapper">
+                      <span class="uil fs-8 uil-angle-right lh-1 dropdown-indicator-icon"></span>
+                      <span>[[${subMenu.menuNm}]]</span>
+                    </div>
+                  </a>  
+                  <!-- 3차 메뉴 -->
+                  <ul class="dropdown-menu">
+                    <th:block th:each="subMenu3 : ${session.S_USER.menu3rd}">
+                      <th:block th:if="${#strings.trim(subMenu3.menuPrntCd) == #strings.trim(subMenu.menuCd)}">
+                        <li class="nav-item">
+                          <a class="nav-link" th:href="${subMenu3.menuUrl}">
+                            <div class="d-flex align-items-center">
+                              <span class="nav-link-text" th:text="${subMenu3.menuNm}"></span>
+                            </div>
+                          </a>
+                        </li>
+                      </th:block>
+                    </th:block>
+                  </ul>  
+                </li>
+              </th:block>
+            </th:block>
+          </ul>  
+        </li>
+      </th:block>
+    </ul>
+  </div>
+  
+  <ul class="navbar-nav navbar-nav-icons flex-row">
+    <li class="nav-item">
+      <div class="theme-control-toggle fa-ion-wait pe-2 theme-control-toggle-slim">
+        <input class="form-check-input ms-0 theme-control-toggle-input" id="themeControlToggle" type="checkbox" data-theme-control="phoenixTheme" value="dark" />
+        <label class="mb-0 theme-control-toggle-label theme-control-toggle-light" for="themeControlToggle" data-bs-toggle="tooltip" data-bs-placement="left" title="Switch theme">
+          <span class="d-none d-sm-flex flex-center" style="height: 16px; width: 16px"><span class="me-1 icon" data-feather="moon"></span></span><span class="fs-9 fw-bold">Dark</span>
+        </label>
+        <label class="mb-0 theme-control-toggle-label theme-control-toggle-dark" for="themeControlToggle" data-bs-toggle="tooltip" data-bs-placement="left" title="Switch theme">
+          <span class="d-none d-sm-flex flex-center" style="height: 16px; width: 16px"><span class="me-1 icon" data-feather="sun"></span></span><span class="fs-9 fw-bold">Light</span>
+        </label>
+      </div>
+    </li>
+    <li class="nav-item dropdown">
+      <a class="nav-link lh-1 pe-0 white-space-nowrap" id="navbarDropdownUser" href="#!" role="button" data-bs-toggle="dropdown" aria-haspopup="true" data-bs-auto-close="outside" aria-expanded="false">
+        [[${session.S_USER.userNm}]]
+        <span class="d-inline-block" style="height: 10.2px; width: 10.2px"><span class="fa-solid fa-chevron-down fs-10"></span> </span>
+      </a>
+      <div class="dropdown-menu dropdown-menu-end navbar-dropdown-caret py-0 dropdown-profile shadow border" aria-labelledby="navbarDropdownUser">
+        <div class="card position-relative border-0">
+          <div class="overflow-auto scrollbar">
+            <ul class="nav d-flex flex-column mb-2 pb-1">
+              <li class="nav-item">
+                <a class="nav-link px-3 d-block" href="#!"> <span class="me-2 text-body align-bottom" data-feather="user"></span><span>Profile</span></a>
+              </li>
+            </ul>
+          </div>
+          <div class="card-footer p-0 border-top border-translucent">
+            <div class="px-3">
+              <a class="btn btn-phoenix-secondary d-flex flex-center w-100" href="#!"> <span class="me-2" data-feather="log-out"> </span>Sign out</a>
+            </div>
+            <div class="my-2 text-center fw-bold fs-10 text-body-quaternary"><a class="text-body-quaternary me-1" href="#!">Privacy policy</a>&bull;<a class="text-body-quaternary mx-1" href="#!">Terms</a>&bull;<a class="text-body-quaternary ms-1" href="#!">Cookies</a></div>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
+</nav>

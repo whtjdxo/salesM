@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.web.manage.system.mapper.PermissionMapper">
+	
+<select id="siteListMenu1" resultType="hashMap" parameterType="hashMap">
+		SELECT A.menu_cd AS "id"
+			 , CASE WHEN A.menu_prnt_cd = 'ROOT' THEN '#' ELSE A.menu_prnt_cd END AS "parent"
+			 , A.menu_nm AS "text"
+			 , A.menu_tp AS "menuTp"
+			 <if test="auth_grp_cd != ''">
+			 , CASE WHEN B.menu_cd IS NULL THEN ''  
+					WHEN A.menu_tp IN ('R','D') THEN '' 
+					ELSE CASE WHEN (SELECT COUNT(1) FROM tb_menu WHERE menu_cd LIKE CONCAT(A.menu_cd,'%') AND menu_cd != A.menu_cd AND site_gb_cd = 'SG0001') > 0 THEN  '' ELSE 'selected' END
+				 END AS "state"
+			 </if>
+			 <if test="auth_grp_cd == ''">
+			 , '' AS "state"
+			 </if>
+		 FROM tb_menu A
+		 LEFT OUTER JOIN tb_auth_grp_menu B
+			ON B.menu_cd = A.menu_cd
+			AND B.site_gb_cd = A.site_gb_cd
+			<if test="auth_grp_cd != ''">
+			AND B.auth_grp_cd = #{auth_grp_cd}
+			</if>
+		 WHERE A.site_gb_cd = 'SG0001'
+		ORDER BY A.menu_cd ASC, A.menu_prnt_cd ASC, A.menu_ord ASC
+	</select>
+	
+	<delete id="permissionDelete"  parameterType="com.web.manage.system.domain.PermissionVO">
+		DELETE 
+		FROM tb_auth_grp_menu 
+		WHERE site_gb_cd = #{site_gb_cd}
+			AND auth_grp_cd = #{auth_grp_cd}
+	</delete>
+
+	<insert id="permissionInsert" parameterType="com.web.manage.system.domain.PermissionVO">
+		INSERT INTO tb_auth_grp_menu
+		(auth_grp_cd, menu_cd, site_gb_cd, ent_dttm, upt_user_id) 
+		VALUES(#{auth_grp_cd}, #{menu_cd}, #{site_gb_cd}, NOW(), #{menu_cd})
+	</insert>
+	
+</mapper>

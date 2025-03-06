@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>사용자 관리</title>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script>
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script> 
+  
+    <script th:inline="none">      
+      function execDaumPostcode(target) {
+        new daum.Postcode({
+          oncomplete: function (data) {
+            var roadAddr = data.roadAddress; 
+              document.getElementById('addr').value = roadAddr;
+              document.getElementById('zip_code').value = data.zonecode; 
+          },
+        }).open();
+      } 
+      $(document).ready(function () {
+        callAjax('/common/totalCodelist', "code_grp_cd=('AUTH_GRP_CD')", fn_code_setting);
+        function fn_code_setting(data) {
+          codeSetting('AUTH_GRP_CD', data.data, '#auth_grp_cd', '1', '', '');
+        }
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('CORP_TYPE')", fn_corptype_setting);
+        function fn_corptype_setting(data) {
+          codeSetting('CORP_TYPE', data.data, '#corp_type', '1', '', '');
+          codeSetting('CORP_TYPE', data.data, '#sch_corp_type', '1', '', '');
+        } 
+
+        var tbl_user = $('#tbl_user').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          responsive: true,
+          ajax: {
+            url: '/base/user/userMng/list',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',
+            data: function (d) {
+              return JSON.stringify(d);
+            },
+          },
+          columns: [
+                    { data: 'corp_type_nm' }
+                  , { data: 'corp_name' }
+                  , { data: 'user_nm' }
+                  , { data: 'user_id' }
+                  , { data: 'hp_no' }
+                  , { data: 'email' }
+                  , { data: 'auth_grp_nm' }
+                  , { data: 'use_yn' }
+                ],
+          columnDefs: [           
+              { targets: 0, width: '150px', className: 'text-center' },
+              { targets: 1, width: '300px', className: 'text-left' },
+              { targets: 2, width: '200px', className: 'text-center' },
+              { targets: 3, width: '200px', className: 'text-center' },
+              { targets: 4, width: '200px', className: 'text-center' },
+              { targets: 5, width: '300px', className: 'text-center' },
+              { targets: 6, width: '250px', className: 'text-center' },
+              { targets: 7, width: '150px', className: 'text-right' },
+            ],
+          order: [1, 'desc'],
+          paging: true,
+          lengthChange: true,
+          searching: false,
+          ordering: true,
+          autoWidth: false,
+          responsive: true,
+          scrollCollapse: true,
+          pageLength: 20,
+          scrollY: '550px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
+        });
+
+        $('#tbl_user').on('click', 'tr', function () {
+          var data = tbl_user.row(this).data();
+          // corp_type 값 변경 및 AJAX 완료 후 corp_cd 설정
+          $('#corp_type').val(data.corp_type).prop('selected', true).trigger('change');           
+          callAjaxCombo('/base/user/userMng/getCorpList', "corp_type=" + data.corp_type, '#corp_cd', '1', '')
+          .then(() => {
+            $('#corp_cd').val(data.corp_cd).prop('selected', true);
+          });
+          $('#auth_grp_cd').val(data.auth_grp_cd).prop('selected', true);
+          $('#user_nm').val(data.user_nm);
+          $('#user_id').val(data.user_id);
+          $('#hp_no').val(data.hp_no);
+          $('#email').val(data.email);
+          $('#zip_cd').val(data.user_id);
+          $('#addr').val(data.hp_no);
+          $('#addr_detail').val(data.email);
+          if (data.use_yn == 'Y') {
+            $('#use_yn_Y').prop('checked', true);
+          } else {
+            $('#use_yn_N').prop('checked', true);
+          }
+          $('#btn_update').show();
+          $('#btn_create').hide();
+          $('#crud').val('update'); 
+        }); 
+
+        $('#btn_search').click(function () {
+          tbl_user.ajax.reload();
+        });
+
+        // corp_cd 업데이트 함수 (AJAX 완료 후 처리)
+        function updateCorpCd(corpCd) {          
+          $('#corp_type').off('ajaxComplete').on('ajaxComplete', function (event, xhr, settings) {            
+            if (settings.url === '/base/user/userMng/getCorpList') {
+              $('#corp_cd').val(corpCd).prop('selected', true);
+            }
+          });
+        }
+
+        $('#corp_type').change(function () {
+            var corp_type = $('#corp_type').val(); 
+            if (corp_type != '') {
+              callAjaxCombo('/base/user/userMng/getCorpList', "corp_type="+corp_type, '#corp_cd', '1', '');
+            }
+          });
+
+        $('#btn_clear').click(function () {
+          $('#frm_user_info').clearForm();
+          $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
+          $('#btn_update').hide();
+          $('#btn_create').show(); 
+          $('#crud').val('create'); 
+        }); 
+
+
+        $('#btn_create').click(function () {
+          $('#crud').val('create');
+          var form = $('#frm_user_info');
+          var checked = true;
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          });
+          if (checked) {
+            ConfirmdialogToAjax('create', '/base/user/userMng/create', $('#frm_user_info').serialize(), fn_return_result);
+          } 
+        });
+
+        $('#btn_update').click(function () {
+          $('#crud').val('update');
+          var form = $('#frm_user_info');
+          var checked = true;
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          });
+          if (checked) {
+            ConfirmdialogToAjax('update', '/base/user/userMng/update', $('#frm_user_info').serialize(), fn_return_result);
+          }
+        });    
+
+        function fn_return_result(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg;
+          if (resultCode == 'S000') {
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+            $('#frm_user_info')[0].reset();    
+            tbl_agency.ajax.reload();        
+            $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
+            $('#btn_update').hide();
+            $('#btn_create').show();  
+          } else {
+            swal('실패', resultMsg, 'error');
+          }
+        }
+
+        $('#btn_dupchk').click(function () {
+            var user_id = $('#user_id').val();
+            if (user_id == '') {
+              swal('실패', '사용자자 ID를 입력하세요.', 'error');
+              return;
+            } else {
+              callAjax('/base/user/userMng/getUserIdDupChk', 'user_id=' + user_id, fn_userid_dupchk);
+            }
+          });
+
+        function fn_userid_dupchk(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg;
+          if (resultCode == 'S000') {
+            swal('성공', '사용가능한 ID입니다.', 'success');
+          } else {
+            swal('실패', resultMsg, 'error');
+          }
+        } 
+ 
+      });
+    </script>
+  </head>
+  <div class="content">    
+    <div class="row g-3 mb-2">
+      <div class="col-lg-9">
+        <div class="card">
+          <div class="card-header">
+            <div class="row flex-between-end">
+              <div class="col-auto align-self-center">
+                <h5 class="mb-0">사용자 목록</h5>
+              </div>
+              <div class="col-lg-8">
+                <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate="">
+                  <div class="input-group input-group-sm px-3">
+                    <select class="form-select form-control-sm" id="schgb_corp" name="schgb_corp" style="width: 75px">
+                      <option value="">선택</option>
+                      <option value="schgb_user_id">사용자 ID</option>
+                      <option value="schgb_user_nm">사용자 명</option>
+                    </select>
+                    <input type="text" class="form-control form-control-sm" id="schgb_user_val" name="schgb_user_val" style="width: 43%" />
+                    <select class="form-select form-control-sm" id="sch_corp_type" name="sch_corp_type" style="width: 75px">
+                      <option value="">회사 유형</option>                
+                    </select>
+                    <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span>
+                  </div>
+                </form>
+              </div>              
+            </div>
+          </div>
+          <div class="card-body pt-1 px-0 py-0" style="padding-top: 0px">
+            <div class="table-responsive scrollbar">
+              <table class="table table-sm fs-9 mb-0 selectable-table" id="tbl_user">
+                <thead>
+                  <tr>
+                    <th class="text-center">구분</th>
+                    <th class="text-center">조직명</th>
+                    <th class="text-center">사용자 명</th>
+                    <th class="text-center">아이디</th>
+                    <th class="text-center">연락처</th>
+                    <th class="text-center">이메일</th>
+                    <th class="text-center">사용자 권한</th>
+                    <th class="text-center">사용</th> 
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    <div class="col-lg-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="row flex-between-end">
+          <div class="col-auto align-self-center">
+            <h5 class="mb-0">사용자 상세</h5>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="min-vh-50">
+          <form class="needs-validation" id="frm_user_info" name="frm_user_info" onsubmit="return false;" method="post" novalidate=""> 
+            <div class="row mb-2">
+              <label class="col-sm-3 col-form-label col-form-label-sm" for="corp_type">회사유형</label>
+              <div class="col-sm-9">
+                <select class="form-select form-select-sm" id="corp_type" placeholder="" name="corp_type" required>
+                  <option value="">선택</option>
+                </select>
+              </div>
+            </div> 
+            <div class="row mb-2">
+              <label class="col-sm-3 col-form-label col-form-label-sm" for="corp_cd">소속회사</label>
+              <div class="col-sm-9">
+                <select class="form-select form-select-sm" id="corp_cd" placeholder="" name="corp_cd" required>
+                  <option value="">선택</option>
+                </select>
+              </div>
+            </div>
+            <div class="row mb-2">
+              <label class="col-sm-3 col-form-label col-form-label-sm" for="user_id">사용자 ID</label>                     
+              <div class="col-sm-9">
+                <div class="input-group input-group-sm">
+                  <input type="text" class="form-control form-control-sm" id="user_id" name="user_id" maxlength="15" required />
+                  <button type="button" class="btn btn-primary" id="btn_dupchk">중복</button>
+                </div>
+              </div> 
+            </div>
+            <div class="row mb-2">
+              <label class="col-sm-3 col-form-label col-form-label-sm" for="user_pwd">PASSWORD</label>                  
+              <div class="col-sm-9">
+                <input class="form-control form-control-sm" id="user_pwd" type="text" name="user_pwd" maxlength="20" required /> 
+              </div>                  
+            </div>    
+            <div class="row mb-2">
+              <label class="col-sm-3 col-form-label col-form-label-sm" for="user_name">사용자 명</label>                  
+              <div class="col-sm-9">
+                <input class="form-control form-control-sm" id="user_name" type="text" name="user_name" maxlength="20" required /> 
+              </div>                  
+            </div>  
+            
+            <div class="row mb-2">
+              <label class="col-sm-3 col-form-label col-form-label-sm" for="hp_no">연락처</label>                  
+              <div class="col-sm-9">
+                <input class="form-control form-control-sm" id="hp_no" type="text" name="hp_no" placeholder="010-000-0000" maxlength="13"  required /> 
+              </div>                  
+            </div>
+            <div class="row mb-2">
+              <label class="col-sm-3 col-form-label col-form-label-sm" for="email">eMail</label>                  
+              <div class="col-sm-9">
+                <input class="form-control form-control-sm" id="email" type="email" name="email" maxlength="50" placeholder="example@email.com"/> 
+              </div>                  
+            </div>
+            <div class="row mb-2"> 
+              <label class="col-sm-3 col-form-label col-form-label-sm" for="addr">주소</label>                     
+              <div class="col-sm-9">
+                <div class="input-group input-group-sm">
+                  <input type="hidden" class="form-control form-control-sm" id="zip_code" name="zip_code"  />
+                  <input type="text" class="form-control form-control-sm" id="addr" name="addr" readonly="readonly"  />
+                  <button type="button" class="btn btn-primary" onclick="execDaumPostcode()">주소검색</button>
+                </div>
+                <input type="text" class="form-control form-control-sm mt-2" id="addr_detail" name="addr_detail" placeholder="상세 주소"  />
+              </div>
+            </div>  
+            <div class="row mb-2">
+              <label class="col-sm-3 col-form-label col-form-label-sm" for="auth_grp_cd">접근 권한</label>
+              <div class="col-sm-9">
+                <select class="form-select form-select-sm" id="auth_grp_cd" placeholder="" name="auth_grp_cd" required>
+                  <option value="">선택</option>
+                </select>
+              </div>
+            </div> 
+            <div class="row mb-2">
+              <label class="col-sm-3 col-form-label col-form-label-sm" for="use_yn">사용여부</label>
+              <div class="col-sm-9">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" id="use_yn_y" type="radio" name="use_yn" value="Y" required />
+                  <label class="form-check-label" for="use_yn_y">예</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" id="use_yn_n" type="radio" name="use_yn" value="N" required />
+                  <label class="form-check-label" for="use_yn_n">아니요</label>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-2"> 
+              <label class="col-sm-3 col-form-label col-form-label-sm" for="addr">수정자 / 일</label>                     
+              <div class="col-sm-9">
+                <div class="input-group input-group-sm">
+                  <input type="text" class="form-control form-control-sm" id="upt_user_id" name="upt_user_id" readonly="readonly" />
+                  <input type="text" class="form-control form-control-sm" id="upt_dttm" name="upt_dttm" readonly="readonly" /> 
+                </div>                    
+              </div>
+            </div>  
+            <p class="text-end pb-0 mb-0 pd-0">
+              <button class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
+              <button class="btn btn-primary text-end" id="btn_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+              <button class="btn btn-primary text-end" id="btn_create"><i class="fa fa-paste"></i>저장</button>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+</html>

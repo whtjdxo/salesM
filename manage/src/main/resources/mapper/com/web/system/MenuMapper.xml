@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.web.manage.system.mapper.MenuMapper">
+	<select id="getMenuTreeRetrieve" resultType="hashMap">
+		SELECT ROW_NUMBER() OVER( ORDER BY menu_cd ASC, menu_prnt_cd ASC, menu_ord ASC) AS "key"
+		      , menu_cd                                      AS "menu_cd"
+			  , menu_nm                                      AS "menu_nm"
+			  , site_gb_cd                                   AS "site_gb_cd"
+			  , menu_prnt_cd                                 AS "menu_prnt_cd"
+			  , menu_tp                                      AS "menu_tp"
+			  , CASE menu_tp WHEN 'R' THEN '루트'
+							 WHEN 'P' THEN '화면'
+							 WHEN 'D' THEN '디렉토리'
+							 WHEN 'A' THEN '기능'
+							 ELSE NULL END                   AS "menu_tp_nm"
+			  , menu_url                                     AS "menu_url"
+			  , menu_ord                            AS "menu_ord"
+			  , TRIM(use_yn)                                 AS "use_yn"
+			  , CASE use_yn WHEN 'Y' THEN '사용'
+							WHEN 'N' THEN '미사용'
+							ELSE NULL END                    AS "use_yn_nm"
+			  , upt_user_id                                  AS "upt_user_id"
+			  , TRIM(view_yn)                                AS "view_yn"
+			  , DATE_FORMAT(upt_dttm, '%Y-%m-%m %H:%i:%s') AS "upt_dttm"
+			  , view_icon AS "view_icon"
+		 FROM tb_menu WHERE site_gb_cd='SG0001'
+		 AND menu_tp != 'R'
+		ORDER BY menu_cd ASC, menu_prnt_cd ASC, menu_ord ASC
+	</select>
+	<select id="codelist"		parameterType="hashMap"	resultType="hashMap">
+		SELECT menu_cd AS "menu_cd", menu_nm AS "menu"
+		FROM tb_menu
+		WHERE site_gb_cd=#{site_gb_cd}
+		AND use_yn = 'Y'
+		ORDER BY menu_cd
+	</select>
+
+	<insert id="menuCreate"  parameterType="com.web.manage.system.domain.MenuVO">
+		 INSERT INTO tb_menu (
+			  menu_cd
+			, site_gb_cd
+			, menu_nm
+			, menu_prnt_cd
+			, menu_tp
+			, menu_url
+			, menu_ord
+			, upt_dttm
+			, ent_dttm
+			, use_yn
+			, view_yn
+			, upt_user_id
+			<if test="menu_tp.equals('D')">
+			, view_icon
+			</if>
+
+			) VALUES (
+			  #{menu_cd}
+			, #{site_gb_cd}
+			, #{menu_nm}
+			, #{menu_prnt_cd}
+			, #{menu_tp}
+			, #{menu_url}
+			, #{menu_ord}
+			, NOW()
+			, NOW()
+			, #{menu_use_yn}
+			, 'Y'
+			, #{upt_user_id}
+			<if test="menu_tp.equals('D')">
+			, #{view_icon}
+			</if>
+			)
+	</insert>
+
+	<update id="menuUpdate"	parameterType="com.web.manage.system.domain.MenuVO">
+		UPDATE tb_menu
+		SET menu_nm = #{menu_nm}
+		<if test="old_menu_cd != menu_cd">
+		  , menu_cd = #{menu_cd}
+		</if>
+		  , menu_tp = #{menu_tp}
+		  , menu_url = #{menu_url}
+		  , menu_ord = #{menu_ord}
+		  , upt_dttm = NOW()
+		  , use_yn = #{menu_use_yn}
+		  , view_yn = #{view_yn}
+		  , upt_user_id = #{upt_user_id}
+		  , view_icon = #{view_icon}
+		WHERE menu_cd = #{menu_cd} and site_gb_cd = #{site_gb_cd}
+	</update>
+
+	<delete id="menuDelete" parameterType="com.web.manage.system.domain.MenuVO">
+		DELETE
+		FROM tb_menu
+		WHERE
+			site_gb_cd=#{site_gb_cd}
+		AND
+			menu_cd=#{menu_cd}
+	</delete>
+
+	<select id="getMenuCount" parameterType="com.web.manage.system.domain.MenuVO"  resultType="Int">
+		 SELECT COUNT(1) AS cnt
+			FROM tb_menu
+			WHERE site_gb_cd=#{site_gb_cd}
+			AND menu_cd LIKE CONCAT(#{menu_cd}, '%%')
+	</select>
+</mapper>
