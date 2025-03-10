@@ -7,7 +7,7 @@ import lombok.Data;
 public class CorpVO {
     private String corp_cd;
     @NotNull(message="여신사 명을 입력해주십시오.")
-    private String corp_name;
+    private String corp_nm;
     @NotNull(message="사업자번호를 입력해주십시오.")
     private String biz_no;
     @NotNull(message="여신사 유형을 선택해주십시오.")

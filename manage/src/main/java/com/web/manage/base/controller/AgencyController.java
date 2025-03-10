@@ -49,8 +49,6 @@ public class AgencyController {
         try {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam);
-
-            hashmapParam.put("sch_agency_name", StringUtil.nullCheck((String) pageing.getSearch().get("sch_agency_name"), ""));
             int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
             hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
             hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));

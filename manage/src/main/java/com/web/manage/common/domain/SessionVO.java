@@ -22,7 +22,7 @@ public class SessionVO implements Serializable{
 	private String authGrpCd;
 	private String corpCd;
 	private String corpNm;
-	private String corpGb;
+	private String corpType;
 	private String homeUrl;
 	
 

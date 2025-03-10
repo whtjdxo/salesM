@@ -7,7 +7,7 @@
 	</select>
 	<select id="getCorpList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
 		SELECT  CORP_CD 		AS corp_cd
-				, CORP_NAME 	AS corp_name
+				, CORP_NM 		AS corp_nm
 				, BIZ_NO 		AS biz_no
 				, CORP_TYPE 	AS corp_type
 				, GET_CODE_NM('CORP_TYPE', CORP_TYPE) AS corp_type_nm
@@ -30,7 +30,7 @@
 					AND CORP_CD = #{schgb_corp_val}
 				</when>
 				<when test="schgb_corp == 'schgb_credit_nm'">
-					AND CORP_NAME LIKE CONCAT('%', #{schgb_corp_val}, '%')
+					AND CORP_NM LIKE CONCAT('%', #{schgb_corp_val}, '%')
 				</when>
 			</choose>
 		</if>
@@ -54,12 +54,12 @@
 
 	<insert id="corpCreate" parameterType="com.web.manage.base.domain.CorpVO">
 		INSERT INTO TB_CORP (  
-			CORP_CD			, CORP_NAME		, BIZ_NO		, CORP_TYPE	
+			CORP_CD			, CORP_NM		, BIZ_NO		, CORP_TYPE	
 			, BANK_CD		, ACCOUNT_NO	, ACCOUNT_PWD	
 			, WEB_ID		, WEB_PWD		, API_URL		, MEMO	
 			, USE_YN		, ENT_USER_ID	, ENT_DTTM
 		) VALUES (  
-			#{corp_cd}		, #{corp_name}, #{biz_no} 		, #{corp_type}
+			#{corp_cd}		, #{corp_nm}, #{biz_no} 		, #{corp_type}
 			, #{bank_cd}	, #{account_no}	, #{account_pwd}
 			, #{web_id}		, #{web_pwd}	, #{api_url}	, #{memo}
 			, 'Y'			, #{ent_user_id}, NOW() 
@@ -67,7 +67,7 @@
 	</insert>
 	<update id="corpUpdate" parameterType="com.web.manage.base.domain.CorpVO">
 		UPDATE 	TB_CORP
-		   SET 	CCORP_NAME		= #{corp_name}
+		   SET 	CORP_NM			= #{corp_nm}
 		   		, BIZ_NO		= #{biz_no}		
 				, CORP_TYPE		= #{corp_type}
 				, BANK_CD		= #{bank_cd}

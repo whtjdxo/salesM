@@ -13,7 +13,7 @@
 	</select>    
 
 	<select id="getAgencyList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-                SELECT  agency_no, agency_name, biz_no, law_no, uptae, upjong, email
+                SELECT  agency_no, agency_nm, biz_no, law_no, uptae, upjong, email
                         , cont_date, corp_zip_no, corp_addr, corp_addr_dtl
                         , ceo_id, ceo_regno, ceo_name, ceo_zip_no, ceo_addr, ceo_addr_dtl, corp_tel_no, ceo_tel_no
                         , assure_amt, insure_amt, ass_sdate, ass_edate, remark
@@ -26,10 +26,10 @@
                         , DATE_FORMAT(IFNULL(upt_dttm, ent_dttm), '%Y-%m-%d %H:%i:%s')          as upt_dttm
                 FROM  TB_AGENCY ta
                 WHERE  1 = 1 
-                <if test="sch_agency_name != ''">
-                <if test="sch_agency_name == 'sch_agency_name'">
-                        AND agency_name LIKE CONCAT('%',#{sch_agency_name},'%')
-                </if>
+                <if test="sch_agency_nm != ''">
+                        <if test="sch_agency_nm == 'sch_agency_nm'">
+                                AND agency_nm LIKE CONCAT('%',#{agency_nm},'%')
+                        </if>
                 </if> 
                 <choose>
                         <when test="sidx != ''">
@@ -48,7 +48,7 @@
 
 	<insert id="agencyCreate" parameterType="com.web.manage.base.domain.AgencyVO">
         INSERT INTO tb_agency (
-                  agency_no             , agency_name           , biz_no                , law_no           , uptae             , upjong        , email
+                  agency_no             , agency_nm           , biz_no                , law_no           , uptae             , upjong        , email
                 , cont_date             , corp_zip_no           , corp_addr             , corp_addr_dtl     , ceo_id            , ceo_regno
                 , ceo_name              , ceo_zip_no            , ceo_addr              , ceo_addr_dtl      , corp_tel_no       , ceo_tel_no
                 , bank_cd               , account_no            , depositor             , remark            , svc_stat          , use_yn
@@ -57,7 +57,7 @@
                 , yubo_limit        , yubo_rate         , tot_yubo_amt -->
                 , ent_user_id           , ent_dttm
         ) VALUES (
-                #{agency_no}            , #{agency_name}        , #{biz_no}             , #{law_no}        , #{uptae}          , #{upjong}     , #{email}
+                #{agency_no}            , #{agency_nm}          , #{biz_no}             , #{law_no}             , #{uptae}          , #{upjong}     , #{email}
                 , #{cont_date}          , #{corp_zip_no}        , #{corp_addr}          , #{corp_addr_dtl}  , #{ceo_id}         , #{ceo_regno}
                 , #{ceo_name}           , #{ceo_zip_no}         , #{ceo_addr}           , #{ceo_addr_dtl}   , #{corp_tel_no}    , #{ceo_tel_no}
                 , #{bank_cd}            , #{account_no}         , #{depositor}          , #{remark}         , #{svc_stat}       , #{use_yn}  
@@ -69,10 +69,10 @@
 	</insert>
 	<update id="agencyUpdate" parameterType="com.web.manage.base.domain.AgencyVO">
         UPDATE  tb_agency
-           SET  agency_name = #{agency_name},
-                biz_no = #{biz_no},
-                law_no = #{law_no},
-                uptae = #{uptae},
+           SET  agency_nm       = #{agency_nm},
+                biz_no          = #{biz_no},
+                law_no          = #{law_no},
+                uptae           = #{uptae},
                 upjong = #{upjong},
                 email = #{email},
                 cont_date = #{cont_date},

@@ -46,26 +46,19 @@ public class UserMngController {
         try {
             PageingVO pageing = new PageingVO();
 			pageing.setPageingVO(hashmapParam);
-
-			
-			hashmapParam.put("schgb_corp", StringUtil.nullCheck((String) pageing.getSearch().get("schgb_corp"), ""));
-            hashmapParam.put("schgb_user_val", StringUtil.nullCheck((String) pageing.getSearch().get("schgb_user_val"), "") );
-			hashmapParam.put("sch_corp_type", StringUtil.nullCheck((String) pageing.getSearch().get("sch_corp_type"), "")); 
 			int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
 			hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-			hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
-			
+			hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));			
 			hashmapParam.put("start", pageing.getStart());
 			hashmapParam.put("end", pageing.getLength());
 
-            System.out.println(hashmapParam);
+            // System.out.println(hashmapParam);
 
             list = userMngService.userMngListRetrieve(hashmapParam);
             int records =  userMngService.getQueryTotalCnt();
 
 			 pageing.setRecords(records);
 			 pageing.setTotal((int) Math.ceil((double)records / (double)pageing.getLength()));
-
 
 			 hashmapResult.put("draw", pageing.getDraw());
 			 hashmapResult.put("recordsTotal", pageing.getRecords());

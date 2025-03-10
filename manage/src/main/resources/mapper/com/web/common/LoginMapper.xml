@@ -14,7 +14,7 @@
         SELECT  TU.user_id      AS  userId
                 , TU.CORP_CD    AS  corpCd
                 , VC.CORP_NM    AS  corpNm
-                , TU.CORP_GB    AS  corpGb
+                , TU.CORP_TYPE  AS  corpType
                 , TU.user_nm    AS  userNm
                 , TU.user_pwd   AS  userPwd
                 , TU.user_gb    AS  userGb

@@ -55,7 +55,7 @@ public class CorpController {
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
-            System.out.println("hashmapParam : " + hashmapParam);
+            // System.out.println("hashmapParam : " + hashmapParam);
 
             list = corpService.getCorpList(hashmapParam);
             int records = corpService.getQueryTotalCnt();

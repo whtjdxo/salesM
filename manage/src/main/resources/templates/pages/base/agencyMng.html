@@ -25,7 +25,8 @@
           },
         }).open();
       }
-      $(document).ready(function () {        
+      $(document).ready(function () {   
+        $('#frm_agency_info').onLoadFunction();     
         callAjax('/common/totalCodelist', "code_grp_cd=('BANK_CD')", fn_bank_setting);      
         function fn_bank_setting(data) {
           codeSetting('BANK_CD', data.data, '#bank_cd', '1', '', '');
@@ -48,7 +49,7 @@
           },
             columns: [
                 { data: 'agency_no' }
-                , { data: 'agency_name' }
+                , { data: 'agency_nm' }
                 , { data: 'biz_no' }
                 , { data: 'corp_tel_no' }
                 , { data: 'ceo_name' }
@@ -93,7 +94,7 @@
           if (data) {
             $('#frm_agency_info')[0].reset();
             $('#agency_no').val(data.agency_no);            
-            $('#agency_name').val(data.agency_name);
+            $('#agency_nm').val(data.agency_nm);
             $('#biz_no').val(data.biz_no);
             $('#upjong').val(data.upjong);            
             $('#uptae').val(data.uptae);
@@ -125,6 +126,8 @@
             $('#yubo_rate').val(data.yubo_rate);
             $('#tot_yubo_amt').val(data.tot_yubo_amt);
             $("input:radio[name='use_yn'][value='" + data.use_yn + "']").prop('checked', true); 
+            $('#upt_user_id').val(data.upt_user_id);
+            $('#upt_dttm').val(data.upt_dttm);   
 
             $('#btn_update').show();
             $('#btn_create').hide();
@@ -215,27 +218,30 @@
               <div class="col-auto align-self-center">
                 <h5 class="mb-0">대리점 목록</h5>
               </div>
+              <div class="col-lg-8">
+                <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate="">
+                  <div class="input-group input-group-sm px-3">
+                    <select class="form-select form-control-sm" id="sch_tp_agency" name="sch_tp_agency" style="width: 75px">
+                      <option value="">선택</option>
+                      <option value="sch_tp_agency_cd">대리점 코드</option>
+                      <option value="sch_tp_agency_nm">대리점 명</option>
+                    </select>
+                    <input type="text" class="form-control form-control-sm" id="srch_gr_val" name="srch_gr_val" style="width: 43%" />
+                    <select class="form-select form-control-sm" id="srch_gr_useyn_tp" name="srch_gr_useyn_tp" style="width: 75px">
+                      <option value="">사용여부</option>
+                      <option value="Y">사용</option>
+                      <option value="N">미사용</option>
+                    </select>
+                    <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
-          <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate="">
-            <div class="input-group input-group-sm px-3">
-              <select class="form-select form-control-sm" id="sch_tp_agency" name="sch_tp_agency" style="width: 75px">
-                <option value="">선택</option>
-                <option value="sch_tp_agency_cd">대리점 코드</option>
-                <option value="sch_tp_agency_nm">대리점 명</option>
-              </select>
-              <input type="text" class="form-control form-control-sm" id="srch_gr_val" name="srch_gr_val" style="width: 43%" />
-              <select class="form-select form-control-sm" id="srch_gr_useyn_tp" name="srch_gr_useyn_tp" style="width: 75px">
-                <option value="">사용여부</option>
-                <option value="Y">사용</option>
-                <option value="N">미사용</option>
-              </select>
-              <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span>
-            </div>
-          </form>
+          
           <div class="card-body pt-0 px-0" style="padding-top: 0px">
             <div class="table-responsive scrollbar">
-              <table class="table table-striped table-sm fs-9 mb-0" id="tbl_agency">
+              <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_agency">
                 <thead>
                   <tr>
                     <th class="text-center">대리점 코드</th>
@@ -279,7 +285,7 @@
                         <input class="form-control form-control-sm" id="agency_no" type="text" name="agency_no" readonly="readonly"/>
                       </div>
                       <div class="col-sm-6">
-                        <input class="form-control form-control-sm" id="agency_name" type="text" name="agency_name" required />
+                        <input class="form-control form-control-sm" id="agency_nm" type="text" name="agency_nm" required />
                       </div>
                     </div>                
                     <div class="row mb-2">
@@ -313,27 +319,33 @@
                       <label class="col-sm-3 col-form-label col-form-label-sm" for="ceo_id">대표자 ID</label>                     
                       <div class="col-sm-9">
                         <div class="input-group input-group-sm">
-                          <input type="text" class="form-control form-control-sm" id="ceo_id" name="ceo_id" required />
+                          <input type="text" class="form-control form-control-sm" id="ceo_id" name="ceo_id" required maxlength="20" />
                           <button type="button" class="btn btn-primary" id="btn_dupchk">중복</button>
                         </div>
                       </div> 
                     </div>
                     <div class="row mb-2">
+                      <label class="col-sm-3 col-form-label col-form-label-sm" for="user_pwd">PASSWORD</label>                  
+                      <div class="col-sm-9">
+                        <input class="form-control form-control-sm" id="user_pwd" type="password" name="user_pwd" maxlength="20" required /> 
+                      </div>                  
+                    </div>   
+                    <div class="row mb-2">
                       <label class="col-sm-3 col-form-label col-form-label-sm" for="ceo_name">대표자 명</label>                  
                       <div class="col-sm-9">
-                        <input class="form-control form-control-sm" id="ceo_name" type="text" name="ceo_name" required /> 
+                        <input class="form-control form-control-sm" id="ceo_name" type="text" name="ceo_name" required maxlength="20"/> 
                       </div>                  
                     </div>      
                     <div class="row mb-2">
                       <label class="col-sm-3 col-form-label col-form-label-sm" for="ceo_tel_no">연락처</label>                  
                       <div class="col-sm-9">
-                        <input class="form-control form-control-sm" id="ceo_tel_no" type="text" name="ceo_tel_no" placeholder="010-000-0000"required /> 
+                        <input class="form-control form-control-sm" id="ceo_tel_no" type="text" name="ceo_tel_no" placeholder="010-000-0000" istyle="phone" required /> 
                       </div>                  
                     </div>
                     <div class="row mb-2">
                       <label class="col-sm-3 col-form-label col-form-label-sm" for="email">eMail</label>                  
                       <div class="col-sm-9">
-                        <input class="form-control form-control-sm" id="email" type="email" name="email" placeholder="example@email.com"/> 
+                        <input class="form-control form-control-sm" id="email" type="email" name="email" placeholder="example@email.com" istyle="email"/> 
                       </div>                  
                     </div> 
                     <div class="row mb-2"> 
@@ -366,6 +378,15 @@
                         </div>
                       </div>
                     </div>
+                    <div class="row mb-2"> 
+                      <label class="col-sm-3 col-form-label col-form-label-sm" for="addr">수정자 / 일</label>                     
+                      <div class="col-sm-9">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control form-control-sm" id="upt_user_id" name="upt_user_id" readonly="readonly" />
+                          <input type="text" class="form-control form-control-sm" id="upt_dttm" name="upt_dttm" readonly="readonly" /> 
+                        </div>                    
+                      </div>
+                    </div>   
                     <div class="card-footer">  
                       <p class="text-end pb-1 mb-1 pd-1">
                         <button class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
@@ -383,19 +404,19 @@
                     <div class="row mb-2">
                       <label class="col-sm-3 col-form-label col-form-label-sm" for="svc_fee_rate">서비스 수수료</label>
                       <div class="col-sm-9">
-                        <input class="form-control form-control-sm" id="svc_fee_rate" type="text" name="svc_fee_rate" placeholder="00.00" />
+                        <input class="form-control form-control-sm" id="svc_fee_rate" type="text" name="svc_fee_rate" placeholder="00.00" istyle="float" />
                       </div>
                     </div>
                     <div class="row mb-2">
                       <label class="col-sm-3 col-form-label col-form-label-sm" for="crd_fee_rate">여신 수수료</label>
                       <div class="col-sm-9">
-                        <input class="form-control form-control-sm" id="crd_fee_rate" type="text" name="crd_fee_rate" placeholder="00.00"  />
+                        <input class="form-control form-control-sm" id="crd_fee_rate" type="text" name="crd_fee_rate" placeholder="00.00" istyle="float"  />
                       </div>
                     </div>
                     <div class="row mb-2">
                       <label class="col-sm-3 col-form-label col-form-label-sm" for="loan_fee_rate">대출 수수료</label>
                       <div class="col-sm-9">
-                        <input class="form-control form-control-sm" id="loan_fee_rate" type="text" name="loan_fee_rate" placeholder="00.00" />
+                        <input class="form-control form-control-sm" id="loan_fee_rate" type="text" name="loan_fee_rate" placeholder="00.00" istyle="float" />
                       </div>
                     </div>  
                     <div class="row mb-2">
@@ -409,7 +430,7 @@
                     <div class="row mb-2">
                       <label class="col-sm-3 col-form-label col-form-label-sm" for="account_no">계좌 번호</label>
                       <div class="col-sm-9">
-                        <input class="form-control form-control-sm" id="account_no" type="text" name="account_no"  />
+                        <input class="form-control form-control-sm" id="account_no" type="text" name="account_no" istyle="number"  />
                       </div>
                     </div>  
                     <div class="row mb-2">

@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class AgencyVO {
     private String agency_no;
-    private String agency_name;
+    private String agency_nm;
     private String biz_no;
     private String law_no;
     private String uptae;

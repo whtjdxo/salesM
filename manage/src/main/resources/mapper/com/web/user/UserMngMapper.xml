@@ -9,7 +9,7 @@
                 TU.USER_ID          AS user_id
                 , TU.USER_NM        AS user_nm
                 , TU.CORP_CD        AS corp_cd
-                , TC.CORP_NAME      AS corp_name
+                , TC.CORP_NM        AS corp_nm
                 , TU.CORP_TYPE	 	AS corp_type
                 , GET_CODE_NM('CORP_TYPE', TU.CORP_TYPE ) AS corp_type_nm                
                 , TU.user_pwd       AS user_pwd
@@ -36,7 +36,7 @@
 					AND TU.USER_ID = #{schgb_user_val}
 				</when>
 				<when test="schgb_user == 'schgb_user_nm'">
-					AND TU.USER_NAME LIKE CONCAT('%', #{schgb_user_val}, '%')
+					AND TU.USER_NM LIKE CONCAT('%', #{schgb_user_val}, '%')
 				</when>
 			</choose>
 		</if>
@@ -54,8 +54,8 @@
 		</choose>
     </select>
     <select id="getCorpList" resultType="hashMap">
-        SELECT  corp_cd     as code
-                , corp_name as codeNm
+        SELECT  CORP_CD     as code
+                , CORP_NM   as codeNm
           FROM  TB_CORP
          WHERE  1= 1
          <if test="corp_type != ''">
