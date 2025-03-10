@@ -29,6 +29,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&amp;display=swap" rel="stylesheet" />
   <link href="/vendors/simplebar/simplebar.min.css" rel="stylesheet" />
+  <link href="/vendors/flatpickr/flatpickr.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css" />
   <link href="/css/theme-rtl.min.css" type="text/css" rel="stylesheet" id="style-rtl" />
   <link href="/css/theme.min.css" type="text/css" rel="stylesheet" id="style-default" />
@@ -48,6 +49,20 @@
       linkRTL.setAttribute('disabled', true);
       userLinkRTL.setAttribute('disabled', true);
     }
+    function fn_logOut() {
+      Swal.fire({
+        title: '로그아웃',
+        text: '로그아웃 하시겠습니까?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '로그아웃',
+        cancelButtonText: '취소',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          location.href = '/logout';
+        }
+      });
+    }
   </script>
   <link href="/vendors/leaflet/leaflet.css" rel="stylesheet" />
   <link href="/vendors/leaflet.markercluster/MarkerCluster.css" rel="stylesheet" />
@@ -56,4 +71,6 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="/js/commonUtil.js"></script>
   <script src="/js/ajaxCommon.js"></script>
+  <script src="/vendors/flatpickr/flatpickr.min.js"></script>
+  <script src="/vendors/flatpickr/ko.js"></script>
 </head>

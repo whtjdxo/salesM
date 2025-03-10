@@ -9,11 +9,9 @@
                 TU.USER_ID          AS user_id
                 , TU.USER_NM        AS user_nm
                 , TU.CORP_CD        AS corp_cd
-                , TC.CORP_NAME        AS corp_name
-                , TC.CORP_TYPE	 	AS corp_type
-                , GET_CODE_NM('CORP_TYPE', TC.CORP_TYPE ) AS corp_type_nm                
-                , TU.CORP_GB        AS corp_gb
-                , GET_CODE_NM('CORP_GB', TU.CORP_GB ) AS corp_gb_nm                
+                , TC.CORP_NAME      AS corp_name
+                , TU.CORP_TYPE	 	AS corp_type
+                , GET_CODE_NM('CORP_TYPE', TU.CORP_TYPE ) AS corp_type_nm                
                 , TU.user_pwd       AS user_pwd
                 , TU.user_gb        AS user_gb
                 , TU.auth_grp_cd    AS auth_grp_cd       
@@ -28,9 +26,10 @@
                 , DATE_FORMAT(IFNULL(TU.upt_dttm, TU.ent_dttm), '%Y-%m-%m %H:%i:%s') 	AS upt_dttm
                 , IFNULL(TU.upt_user_id, TU.ent_user_id)								AS upt_user_id
           FROM  TB_USER TU
-          LEFT  JOIN TB_CORP TC ON TC.CORP_CD = TU.CORP_CD
+                JOIN TB_CORP TC ON TC.CORP_CD = TU.CORP_CD 
+                        AND TC.USE_YN = 'Y'
          WHERE  1 = 1
-           AND  TU.CORP_GB = 'OP'
+           AND  TU.USE_YN = 'Y'
         <if test="schgb_user_val != ''">
 			<choose>
 				<when test="schgb_user == 'schgb_user_id'">
@@ -74,45 +73,32 @@
     <insert id="userCreate" parameterType="hashMap">
         INSERT INTO TB_USER
         (
-              user_id
-            , corp_cd
-            , corp_GB
-            , user_nm
-            , user_pwd
-            , user_gb
-            , auth_grp_cd
-            , hp_no
-            , email
-            , use_yn
-            , ent_dttm
-            , ent_user_id 
+              user_id           , corp_cd           , corp_type             , user_nm           , user_pwd
+            , user_gb           , auth_grp_cd       , hp_no                 , email             
+            , zip_code          , addr              , addr_detail           , use_yn            
+            , ent_dttm          , ent_user_id 
         )
         VALUES
         (
-              #{user_id}
-            , #{corp_cd}
-            , #{corp_gb}
-            , #{user_nm}
-            , #{user_pwd}
-            , '01'
-            , #{auth_grp_cd}
-            , #{hp_no}
-            , #{email}
-            , #{use_yn}
-            , NOW()
-            , #{ent_user_id} 
+            #{user_id}          , #{corp_cd}            , #{corp_type}      , #{user_nm}       , SHA2(#{user_pwd}, 256)            
+            , '01'              , #{auth_grp_cd}        , #{hp_no}          , #{email}            
+            , #{zip_code}       , #{addr}               , #{addr_detail}    , #{use_yn}
+            , NOW()             , #{ent_user_id} 
         )
     </insert>
     <update id="userUpdate" parameterType="hashMap">
         UPDATE tb_user
            SET
-              corp_cd = #{corp_cd}
-            , corp_gb = #{corp_gb}  
-            , user_nm = #{user_nm}
-            , user_pwd = #{user_pwd}
+              corp_cd       = #{corp_cd}
+            , corp_type     = #{corp_type}
+            , user_nm       = #{user_nm}
+            , user_pwd      = SHA2(#{user_pwd}, 256)
             , auth_grp_cd   = #{auth_grp_cd}
             , hp_no         = #{hp_no}
             , email         = #{email}
+            , zip_code      = #{zip_code}
+            , addr          = #{addr}
+            , addr_detail   = #{addr_detail}
             , use_yn        = #{use_yn}
             , upt_dttm      = NOW()
             , upt_user_id   = #{ent_user_id}

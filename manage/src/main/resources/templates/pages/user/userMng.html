@@ -20,14 +20,17 @@
               document.getElementById('zip_code').value = data.zonecode; 
           },
         }).open();
-      } 
+      }       
       $(document).ready(function () {
+
+        $('#frm_user_info').onLoadFunction();
+
         callAjax('/common/totalCodelist', "code_grp_cd=('AUTH_GRP_CD')", fn_code_setting);
         function fn_code_setting(data) {
           codeSetting('AUTH_GRP_CD', data.data, '#auth_grp_cd', '1', '', '');
         }
 
-        callAjax('/common/totalCodelist', "code_grp_cd=('CORP_TYPE')", fn_corptype_setting);
+        callAjax('/common/totalCodelist', "code_grp_cd=('CORP_TYPE')  AND chk_cd1 = 'OP'", fn_corptype_setting);
         function fn_corptype_setting(data) {
           codeSetting('CORP_TYPE', data.data, '#corp_type', '1', '', '');
           codeSetting('CORP_TYPE', data.data, '#sch_corp_type', '1', '', '');
@@ -37,14 +40,15 @@
           processing: true,
           serverSide: true,
           select: true,
-          responsive: true,
           ajax: {
             url: '/base/user/userMng/list',
             contentType: 'application/json',
             dataType: 'JSON',
             type: 'POST',
-            data: function (d) {
-              return JSON.stringify(d);
+            data: function (postData) {       
+              formData = $('#frm_sch').serializeObject();               
+              Object.assign(postData, formData);       
+              return JSON.stringify(postData);
             },
           },
           columns: [
@@ -95,7 +99,7 @@
           .then(() => {
             $('#corp_cd').val(data.corp_cd).prop('selected', true);
           });
-          $('#auth_grp_cd').val(data.auth_grp_cd).prop('selected', true);
+          
           $('#user_nm').val(data.user_nm);
           $('#user_id').val(data.user_id);
           $('#hp_no').val(data.hp_no);
@@ -103,17 +107,19 @@
           $('#zip_cd').val(data.user_id);
           $('#addr').val(data.hp_no);
           $('#addr_detail').val(data.email);
-          if (data.use_yn == 'Y') {
-            $('#use_yn_Y').prop('checked', true);
-          } else {
-            $('#use_yn_N').prop('checked', true);
-          }
+          $('#auth_grp_cd').val(data.auth_grp_cd).prop('selected', true);
+          $("input:radio[name='use_yn'][value='" + data.use_yn + "']").prop('checked', true);  
+          $('#upt_user_id').val(data.upt_user_id);
+          $('#upt_dttm').val(data.upt_dttm); 
+
           $('#btn_update').show();
           $('#btn_create').hide();
           $('#crud').val('update'); 
         }); 
-
+         
         $('#btn_search').click(function () {
+          var formData = $('#frm_sch').serializeObject();
+          console.log(formData);
           tbl_user.ajax.reload();
         });
 
@@ -217,18 +223,18 @@
               <div class="col-auto align-self-center">
                 <h5 class="mb-0">사용자 목록</h5>
               </div>
-              <div class="col-lg-7">
+              <div class="col-lg-8">
                 <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate="">
                   <div class="input-group input-group-sm px-3">
-                    <select class="form-select form-control-sm" id="schgb_corp" name="schgb_corp" style="width: 75px">
+                    <select class="form-select form-control-sm" id="sch_corp_type" name="sch_corp_type" style="width: 100px">
+                      <option value="">회사 유형</option>                
+                    </select>
+                    <select class="form-select form-control-sm" id="schgb_corp" name="schgb_corp" style="width: 100px">
                       <option value="">선택</option>
                       <option value="schgb_user_id">사용자 ID</option>
                       <option value="schgb_user_nm">사용자 명</option>
                     </select>
-                    <input type="text" class="form-control form-control-sm" id="schgb_user_val" name="schgb_user_val" style="width: 43%" />
-                    <select class="form-select form-control-sm" id="sch_corp_type" name="sch_corp_type" style="width: 75px">
-                      <option value="">회사 유형</option>                
-                    </select>
+                    <input type="text" class="form-control form-control-sm" id="schgb_user_val" name="schgb_user_val" style="width: 30%" />
                     <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span>
                   </div>
                 </form>
@@ -296,26 +302,26 @@
             <div class="row mb-2">
               <label class="col-sm-3 col-form-label col-form-label-sm" for="user_pwd">PASSWORD</label>                  
               <div class="col-sm-9">
-                <input class="form-control form-control-sm" id="user_pwd" type="text" name="user_pwd" maxlength="20" required /> 
+                <input class="form-control form-control-sm" id="user_pwd" type="password" name="user_pwd" maxlength="20" required /> 
               </div>                  
             </div>    
             <div class="row mb-2">
-              <label class="col-sm-3 col-form-label col-form-label-sm" for="user_name">사용자 명</label>                  
+              <label class="col-sm-3 col-form-label col-form-label-sm" for="user_nm">사용자 명</label>                  
               <div class="col-sm-9">
-                <input class="form-control form-control-sm" id="user_name" type="text" name="user_name" maxlength="20" required /> 
+                <input class="form-control form-control-sm" id="user_nm" type="text" name="user_nm" maxlength="20" required /> 
               </div>                  
             </div>  
             
             <div class="row mb-2">
               <label class="col-sm-3 col-form-label col-form-label-sm" for="hp_no">연락처</label>                  
               <div class="col-sm-9">
-                <input class="form-control form-control-sm" id="hp_no" type="text" name="hp_no" placeholder="010-000-0000" maxlength="13"  required /> 
+                <input class="form-control form-control-sm" id="hp_no" type="text" name="hp_no" placeholder="010-000-0000" maxlength="13" istyle="phone" required /> 
               </div>                  
             </div>
             <div class="row mb-2">
               <label class="col-sm-3 col-form-label col-form-label-sm" for="email">eMail</label>                  
               <div class="col-sm-9">
-                <input class="form-control form-control-sm" id="email" type="email" name="email" maxlength="50" placeholder="example@email.com"/> 
+                <input class="form-control form-control-sm" id="email" type="email" name="email" maxlength="50" istyle="email" placeholder="example@email.com"/> 
               </div>                  
             </div>
             <div class="row mb-2"> 

@@ -1,2 +1,7 @@
 /* prettier-ignore */
 /*# sourceMappingURL=user.min.css.map */
+.content {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding: calc(var(--phoenix-navbar-top-height) + 1rem) 1.5rem 6.375rem 1.5rem;
+  }
