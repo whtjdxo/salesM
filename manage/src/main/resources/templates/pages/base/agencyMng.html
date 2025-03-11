@@ -146,8 +146,9 @@
 
             $('#btn_update').show();
             $('#btn_create').hide();
-
             $('#btn_dupchk').hide();
+            $('#ceo_pwd').removeAttr("required");
+            // $('#ceo_pwd').attr("required", "required");
             
             $('#crud').val('update'); 
           }  
@@ -156,6 +157,8 @@
         $('#btn_clear').click(function () {
           $('#frm_agency_info').clearForm();
           $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
+          // $('#ceo_pwd').removeAttr("required");
+          $('#ceo_pwd').attr("required", "required");
           $('#btn_update').hide();
           $('#btn_create').show();
           $('#btn_dupchk').show();
@@ -231,6 +234,8 @@
             $('#frm_agency_info')[0].reset();    
             tbl_agency.ajax.reload();        
             $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
+            // $('#ceo_pwd').removeAttr("required");
+            $('#ceo_pwd').attr("required", "required");
             $('#btn_update').hide();
             $('#btn_create').show(); 
             

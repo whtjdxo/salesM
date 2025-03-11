@@ -17,23 +17,87 @@
 	</select>
     
     <select id="getChainList" parameterType="java.util.HashMap" resultType="com.web.manage.base.domain.ChainVO">
-        SELECT  CHAIN_CD       AS chain_cd,
-                CHAIN_NAME     AS chain_name,
-                BIZ_NO         AS biz_no,
-                CHAIN_TYPE     AS chain_type,
-                GET_CODE_NM('CHAIN_TYPE', CHAIN_TYPE) AS chain_type_nm,
-                BANK_CD        AS bank_cd,
-                GET_CODE_NM('BANK_CD', BANK_CD) AS bank_cd_nm,
-                ACCOUNT_NO     AS account_no,
-                ACCOUNT_PWD    AS account_pwd,
-                WEB_ID         AS web_id,
-                WEB_PWD        AS web_pwd,
-                API_URL        AS api_url,
-                MEMO           AS memo,
-                USE_YN         AS use_yn,
-                IFNULL(UPT_USER_ID, ENT_USER_ID) AS upt_user_id,
-                DATE_FORMAT(IFNULL(UPT_DTTM, ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
-        FROM    tb_chain
+        SELECT 	TC.CHAIN_NO         AS  chain_no
+                , TC.CHAIN_NM       AS  chain_nm
+                , TC.CORP_CD        AS  corp_cd
+                , CO.CORP_NM        AS  corp_nm
+                , TC.AGENCY_NO      AS  agency_no
+                , AG.AGENCY_NM      AS  agency_nm
+                , TC.BIZ_NO         AS  biz_no
+                , TC.LAW_NO         AS  law_no
+                , TC.UPTAE          AS  uptae
+                , TC.UPJONG         AS  upjong
+                , TC.CHAIN_TEL_NO   AS  chain_tel_no
+                , TC.CHAIN_ZIP_NO   AS  chain_zip_no
+                , TC.CHAIN_ADDR     AS  chain_addr
+                , TC.CHAIN_ADDR_DTL AS  chain_addr_dtl
+                , TC.CEO_ID         AS  ceo_id
+                , TC.CEO_REGNO      AS  ceo_regno
+                , TC.EMAIL          AS  email
+                , TC.ACC_TYPE       AS  acc_type
+                , TC.ABANK          AS  abank
+                , TC.ABANK_ACCOUNT  AS  abank_account
+                , TC.ABANK_ACCOUNT_NO AS abank_account_no
+                , TC.ABANK_SPEED_YN AS  abank_speed_yn
+                , TC.ABANK_PWD      AS  abank_pwd
+                , TC.ABANK_DEPOSITOR AS abank_depositor
+                , TC.ABANK_CHECK_YN AS  abank_check_yn
+                , TC.ABANK_CHECK_ID AS  abank_check_id
+                , TC.ABANK_CHECK_DT AS  abank_check_dt
+                , TC.ABANK_LINK_STAT AS abank_link_stat
+                , TC.ABANK_LINK_AGREE_DT AS abank_link_agree_dt
+                , TC.ABANK_LINK_PAYER_NO AS abank_link_payer_no
+                , TC.ABANK_LAST_REMIT_DTTM AS abank_last_remit_dttm
+                , TC.ABANK_SEARCH_ID AS abank_search_id
+                , TC.ABANK_SEARCH_PWD AS abank_search_pwd
+                , TC.BBANK          AS  bbank
+                , TC.BBANK_ACCOUNT  AS  bbank_account
+                , TC.BBANK_DEPOSITOR AS bbank_depositor
+                , TC.BBANK_CHECK_YN AS  bbank_check_yn
+                , TC.BBANK_CHECK_ID AS  bbank_check_id
+                , TC.BBANK_CHECK_DT AS  bbank_check_dt
+                , TC.AUTO_REMIT_YN  AS  auto_remit_yn
+                , TC.SVC_STAT       AS  svc_stat
+                , TC.SVC_START_DT   AS  svc_start_dt
+                , TC.SVC_END_DT     AS  svc_end_dt
+                , TC.CRD_RATE       AS  crd_rate
+                , TC.CRD_DELAY_RATE AS  crd_delay_rate
+                , TC.SVC_RATE       AS  svc_rate
+                , TC.ETC_RATE       AS  etc_rate
+                , TC.TOT_LIMIT_AMT  AS  tot_limit_amt
+                , TC.UNIT_LIMIT_AMT AS  unit_limit_amt
+                , TC.DAY_USE_RATE   AS  day_use_rate
+                , TC.DAY_USE_AMT    AS  day_use_amt
+                , TC.TOT_USE_AMT    AS  tot_use_amt
+                , TC.COLLECT_TYPE   AS  collect_type
+                , TC.COLLECT_TRANS  AS  collect_trans
+                , TC.REMIT_TYPE     AS  remit_type
+                , TC.REMIT_CYCLE    AS  remit_cycle
+                , TC.REMIT_STAT     AS  remit_stat
+                , TC.REMIT_STAT_CD  AS  remit_stat_cd
+                , TC.REMIT_STAT_DATE AS remit_stat_date
+                , TC.REMIT_OVER_STAT AS remit_over_stat
+                , TC.REMIT_AUTO_STAT AS remit_auto_stat
+                , TC.REMIT_TRANS_FEE AS remit_trans_fee
+                , TC.REMIT_START_DT AS remit_start_dt
+                , TC.REMIT_END_DT   AS remit_end_dt
+                , TC.REMARK         AS  remark
+                , TC.BK_DIV         AS  bk_div
+                , TC.CARDSALES_ID   AS  cardsales_id
+                , TC.CARDSALES_PWD  AS  cardsales_pwd
+                , TC.WORK_CHECK_FLAG AS work_check_flag
+                , TC.WORK_CHECK_MM  AS  work_check_mm
+                , TC.WORK_START_TM  AS  work_start_tm
+                , TC.WORK_END_TM    AS  work_end_tm
+                , TC.WORK_HOLIDAY_FLAG AS work_holiday_flag
+                , TC.LAST_CHECK_DTTM AS last_check_dttm
+                , TC.USE_YN         AS  use_yn
+                , IFNULL(TC.UPT_USER_ID, TC.ENT_USER_ID) AS upt_user_id
+                , DATE_FORMAT(IFNULL(TC.UPT_DTTM, TC.ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
+        FROM TB_CHAIN TC
+        JOIN  TB_CORP  CO ON CO.CORP_CD = TC.CORP_CD
+        JOIN  TB_AGENCY AG ON AG.AGENCY_NO  = TC.AGENCY_NO
+
         WHERE   1 = 1
         <if test="sch_chain_name != ''">
             AND CHAIN_NAME LIKE CONCAT('%', #{sch_chain_name}, '%')

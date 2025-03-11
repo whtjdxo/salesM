@@ -117,6 +117,7 @@
 
           $('#btn_update').show();
           $('#btn_create').hide();
+          $('#user_pwd').removeAttr("required");          
           $('#crud').val('update'); 
         }); 
          
@@ -142,6 +143,8 @@
 
         $('#btn_clear').click(function () {
           $('#frm_user_info').clearForm();
+          // $('#user_pwd').removeAttr("required");
+          $('#user_pwd').attr("required", "required");
           $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
           $('#btn_update').hide();
           $('#btn_create').show(); 
@@ -180,15 +183,16 @@
         function fn_return_result(data) {
           var resultCode = data.resultCode;
           var resultMsg = data.resultMsg;
+          
           if (resultCode == 'S000') {
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
             $('#frm_user_info')[0].reset();    
-            tbl_agency.ajax.reload();        
+            tbl_user.ajax.reload();        
             $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
             $('#btn_update').hide();
             $('#btn_create').show();  
           } else {
-            swal('실패', resultMsg, 'error');
+            swal('실패', resultCode + " >> "  + resultMsg, 'error');
           }
         }
 
@@ -331,7 +335,7 @@
             <div class="input-group input-group-sm mb-2">
               <label class="col-sm-3 col-form-label col-form-label-sm" for="email">eMail</label>                  
               <div class="col-sm-9">
-                <input class="form-control form-control-sm" id="email" type="email" name="email" maxlength="50" istyle="email" placeholder="example@email.com"/> 
+                <input class="form-control form-control-sm" id="email" type="email" name="email" maxlength="50" istyle="email" placeholder="example@email.com" /> 
               </div>                  
             </div>
             <div class="input-group input-group-sm mb-2"> 
