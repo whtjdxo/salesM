@@ -80,8 +80,6 @@ public class CorpController {
     public @ResponseBody ReturnDataVO corpCreate(@ModelAttribute("CorpVo") @Valid CorpVO corpVO, BindingResult bindingResult, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO();
         try {
-            // System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<corpCreate>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-            // System.out.println("corpVO : " + corpVO);
             String corp_cd = corpService.createCorpCd();
 			corpVO.setCorp_cd(corp_cd);
 

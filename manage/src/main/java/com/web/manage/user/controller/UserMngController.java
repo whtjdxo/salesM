@@ -6,16 +6,21 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 
 import com.google.gson.Gson;
 import com.web.common.util.StringUtil;
+import com.web.manage.user.domain.UserVO;
 import com.web.manage.user.service.UserMngService;
+import com.web.manage.base.domain.AgencyVO;
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -103,12 +108,13 @@ public class UserMngController {
     }
     
 	@RequestMapping("/create")
-	public @ResponseBody ReturnDataVO create(@RequestParam HashMap<String, Object> hashmapParam, HttpSession session) {
+	public @ResponseBody ReturnDataVO create(@ModelAttribute("UserVO") @Valid UserVO userVO, BindingResult bindingResult, HttpSession session) {
 		ReturnDataVO result = new ReturnDataVO();
         try {
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
-            hashmapParam.put("ent_user_id", member.getUserId());
-            if(userMngService.userCreate(hashmapParam)){
+            userVO.setEnt_user_id(member.getUserId());
+            
+            if(userMngService.userCreate(userVO)){
 				result.setResultCode("S000");
 				result.setResultMsg("사용자등록이 완료되었습니다.");
             } else {
@@ -123,12 +129,13 @@ public class UserMngController {
         return result;
 	}
 	@RequestMapping("/update")
-	public @ResponseBody ReturnDataVO update(@RequestParam HashMap<String, Object> hashmapParam, HttpSession session) {
+	public @ResponseBody ReturnDataVO update(@ModelAttribute("UserVO") @Valid UserVO userVO, BindingResult bindingResult, HttpSession session) {
 		ReturnDataVO result = new ReturnDataVO();
         try {
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
-            hashmapParam.put("ent_user_id", member.getUserId());
-            if(userMngService.userUpdate(hashmapParam)){
+            userVO.setUpt_user_id(member.getUserId());
+            
+            if(userMngService.userUpdate(userVO)){
 				result.setResultCode("S000");
 				result.setResultMsg("사용자등록이 완료되었습니다.");
             } else {

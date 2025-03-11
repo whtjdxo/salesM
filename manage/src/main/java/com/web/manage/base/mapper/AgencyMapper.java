@@ -14,12 +14,13 @@ public interface AgencyMapper {
 
     int getQueryTotalCnt();
 
-    String createAgencyNo();
+    String getNewAgencyNo();
     
     int getCeoIdDupChk(String ceo_id);
 
-    boolean agencyCreate(AgencyVO agencyVO);
+    boolean InsertAgency(AgencyVO agencyVO);
 
-    boolean agencyUpdate(AgencyVO agencyVO);
+    boolean UpdateAgency(AgencyVO agencyVO);
+    boolean UpdateAgencyCont(AgencyVO agencyVO);
 }
 

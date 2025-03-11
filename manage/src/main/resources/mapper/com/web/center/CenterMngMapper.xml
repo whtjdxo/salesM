@@ -19,7 +19,7 @@
             , email
             , zip_cd
             , addr
-            , addr_detail
+            , addr_dtl
             , homepage_url
             , logo_img
             , favicon_img
@@ -51,9 +51,9 @@
             , hp_no
             , tel_no
             , email
-            , zip_code
+            , zip_no
             , addr
-            , addr_detail
+            , addr_dtl
             , use_yn
             , ent_dttm
             , ent_user_id
@@ -73,7 +73,7 @@
                 , email
                 , zip_cd
                 , addr
-                , addr_detail
+                , addr_dtl
                 , homepage_url
                 , logo_img
                 , favicon_img
@@ -96,7 +96,7 @@
                     , #{email}
                     , #{zip_cd}
                     , #{addr}
-                    , #{addr_detail}
+                    , #{addr_dtl}
                     , #{homepage_url}
                     , #{logo_img}
                     , #{favicon_img}
@@ -116,7 +116,7 @@
             , email = #{email}
             , zip_cd = #{zip_cd}
             , addr = #{addr}
-            , addr_detail = #{addr_detail}
+            , addr_dtl = #{addr_dtl}
             , homepage_url = #{homepage_url}
             <if test="logo_img != ''">, logo_img = #{logo_img}</if>
             <if test="favicon_img != ''">, favicon_img = #{favicon_img}</if>
@@ -136,7 +136,7 @@
                     , hp_no
                     , email
                     , addr
-                    , addr_detail
+                    , addr_dtl
                     , use_yn
                     , ent_dttm
                     , ent_user_id
@@ -152,7 +152,7 @@
                         , #{user_hp_no}
                         , #{user_email}
                         , #{user_addr}
-                        , #{user_addr_detail}
+                        , #{user_addr_dtl}
                         , 'Y'
                         , NOW()
                         , #{ent_user_id}
@@ -167,7 +167,7 @@
             , hp_no = #{user_hp_no}
             , email = #{user_email}
             , addr = #{user_addr}
-            , addr_detail = #{user_addr_detail}
+            , addr_dtl = #{user_addr_dtl}
             , upt_dttm = NOW()
             , upt_user_id = #{ent_user_id}
         where user_id = #{boss_id}

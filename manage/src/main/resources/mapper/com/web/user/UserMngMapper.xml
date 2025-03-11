@@ -19,9 +19,9 @@
                 , IFNULL(TU.hp_no, '-') AS hp_no
                 , TU.tel_no         AS tel_no
                 , IFNULL(TU.email, '-') AS email
-                , TU.zip_code
+                , TU.zip_no
                 , TU.addr
-                , TU.addr_detail
+                , TU.addr_dtl
                 , TU.use_yn
                 , DATE_FORMAT(IFNULL(TU.upt_dttm, TU.ent_dttm), '%Y-%m-%m %H:%i:%s') 	AS upt_dttm
                 , IFNULL(TU.upt_user_id, TU.ent_user_id)								AS upt_user_id
@@ -70,38 +70,57 @@
          WHERE  user_id = #{user_id}
 	</select>    
 
-    <insert id="userCreate" parameterType="hashMap">
+    <insert id="userCreate" parameterType="com.web.manage.user.domain.UserVO">
         INSERT INTO TB_USER
         (
-              user_id           , corp_cd           , corp_type             , user_nm           , user_pwd
-            , user_gb           , auth_grp_cd       , hp_no                 , email             
-            , zip_code          , addr              , addr_detail           , use_yn            
+              user_id           , corp_cd           , corp_type         , user_nm           , user_pwd
+            , user_gb           , auth_grp_cd       , hp_no             , email             
+            , zip_no            , addr              , addr_dtl          , use_yn            
             , ent_dttm          , ent_user_id 
         )
         VALUES
         (
-            #{user_id}          , #{corp_cd}            , #{corp_type}      , #{user_nm}       , SHA2(#{user_pwd}, 256)            
-            , '01'              , #{auth_grp_cd}        , #{hp_no}          , #{email}            
-            , #{zip_code}       , #{addr}               , #{addr_detail}    , #{use_yn}
+            #{user_id}          , #{corp_cd}        , #{corp_type}      , #{user_nm}       , SHA2(#{user_pwd}, 256)            
+            , '01'              , #{auth_grp_cd}    , #{hp_no}          , #{email}            
+            , #{zip_no}         , #{addr}           , #{addr_dtl}       , #{use_yn}
             , NOW()             , #{ent_user_id} 
         )
     </insert>
-    <update id="userUpdate" parameterType="hashMap">
+    <update id="userUpdate" parameterType="com.web.manage.user.domain.UserVO">
         UPDATE tb_user
            SET
-              corp_cd       = #{corp_cd}
-            , corp_type     = #{corp_type}
-            , user_nm       = #{user_nm}
-            , user_pwd      = SHA2(#{user_pwd}, 256)
-            , auth_grp_cd   = #{auth_grp_cd}
-            , hp_no         = #{hp_no}
-            , email         = #{email}
-            , zip_code      = #{zip_code}
-            , addr          = #{addr}
-            , addr_detail   = #{addr_detail}
-            , use_yn        = #{use_yn}
-            , upt_dttm      = NOW()
-            , upt_user_id   = #{ent_user_id}
+              upt_dttm      = NOW()
+            , upt_user_id   = #{upt_user_id} 
+        <if test="corp_cd != null and corp_cd != ''">       
+            , corp_cd = #{corp_cd}            
+        </if>
+        <if test="corp_type != null and corp_type != ''">       
+            , corp_type = #{corp_type}          
+        </if>
+        <if test="user_pwd != null and user_pwd != ''">      
+            , user_pwd = SHA2(#{user_pwd}, 256)
+        </if>
+        <if test="user_nm != null and user_nm != ''">       
+            , user_nm = #{user_nm}            
+        </if>
+        <if test="auth_grp_cd != null and auth_grp_cd != ''">   
+            , auth_grp_cd = #{auth_grp_cd}        
+        </if>
+        <if test="email != null and email != ''">         
+            , email = #{email}              
+        </if>
+        <if test="zip_no != null and zip_no != ''">        
+            , zip_no = #{zip_no}             
+        </if>
+        <if test="addr != null and addr != ''">          
+            , addr = #{addr}               
+        </if>
+        <if test="addr_dtl != null and addr_dtl != ''">      
+            , addr_dtl = #{addr_dtl}           
+        </if>
+        <if test="use_yn != null and use_yn != ''">        
+            , use_yn = #{use_yn}             
+        </if>
         WHERE user_id = #{user_id}
     </update>
 </mapper>

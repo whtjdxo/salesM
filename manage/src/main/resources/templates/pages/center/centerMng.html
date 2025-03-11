@@ -17,10 +17,10 @@
             var roadAddr = data.roadAddress;
             if (target == 'center') {
               document.getElementById('addr').value = roadAddr;
-              document.getElementById('zip_code').value = data.zonecode;
+              document.getElementById('zip_no').value = data.zonecode;
             } else if (target == 'user') {
               document.getElementById('user_addr').value = roadAddr;
-              document.getElementById('user_zip_code').value = data.zonecode;
+              document.getElementById('user_zip_no').value = data.zonecode;
             }
           },
         }).open();
@@ -70,7 +70,7 @@
             $('#tel_no').val(data.tel_no);
             $('#email').val(data.email);
             $('#addr').val(data.addr);
-            $('#addr_detail').val(data.addr_detail);
+            $('#addr_dtl').val(data.addr_dtl);
             $('#homepage_url').val(data.homepage_url);
             $('#use_yn_' + data.use_yn).prop('checked', true);
             callAjax('/center/center/centerMng/getBossInfo', { boss_id: data.boss_id }, function (result) {
@@ -82,7 +82,7 @@
               $('#user_hp_no').val(user.hp_no);
               $('#user_email').val(user.email);
               $('#user_addr').val(user.addr);
-              $('#user_addr_detail').val(user.addr_detail);
+              $('#user_addr_dtl').val(user.addr_dtl);
               $('#boss_id').attr('readonly', true);
             });
             $('#crud').val('update');
@@ -257,14 +257,14 @@
                   <div class="col-md-6">
                     <label class="form-label" for="addr">주소</label>
                     <div class="input-group input-group-sm">
-                      <input type="hidden" class="form-control form-control-sm" id="zip_code" name="zip_code" required />
+                      <input type="hidden" class="form-control form-control-sm" id="zip_no" name="zip_no" required />
                       <input type="text" class="form-control form-control-sm" id="addr" name="addr" readonly="readonly" required />
                       <button type="button" class="btn btn-primary" onclick="execDaumPostcode('center')">주소검색</button>
                     </div>
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label" for="addr_detail">상세주소</label>
-                    <input type="text" class="form-control form-control-sm" id="addr_detail" name="addr_detail" required />
+                    <label class="form-label" for="addr_dtl">상세주소</label>
+                    <input type="text" class="form-control form-control-sm" id="addr_dtl" name="addr_dtl" required />
                   </div>
                 </div>
                 <div class="row mb-3 px-3">
@@ -273,7 +273,7 @@
                     <input type="file" class="form-control form-control-sm" id="logo_img" name="logo_img" readonly="readonly" required />
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label" for="addr_detail">파비콘파일</label>
+                    <label class="form-label" for="addr_dtl">파비콘파일</label>
                     <input type="file" class="form-control form-control-sm" id="favicon_img" name="favicon_img" required />
                   </div>
                 </div>
@@ -332,14 +332,14 @@
                   <div class="col-md-6">
                     <label class="form-label" for="homepage_url">주소</label>
                     <div class="input-group input-group-sm">
-                      <input type="hidden" class="form-control form-control-sm" id="user_zip_code" name="user_zip_code" required />
+                      <input type="hidden" class="form-control form-control-sm" id="user_zip_no" name="user_zip_no" required />
                       <input type="text" class="form-control form-control-sm" id="user_addr" name="user_addr" readonly="readonly" required />
                       <button type="button" class="btn btn-primary" onclick="execDaumPostcode('user')">주소검색</button>
                     </div>
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label" for="user_addr_detail">상세</label>
-                    <input type="text" class="form-control form-control-sm" id="user_addr_detail" name="user_addr_detail" required />
+                    <label class="form-label" for="user_addr_dtl">상세</label>
+                    <input type="text" class="form-control form-control-sm" id="user_addr_dtl" name="user_addr_dtl" required />
                   </div>
                 </div>
               </div>

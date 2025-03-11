@@ -18,10 +18,10 @@
           var roadAddr = data.roadAddress;
           if (target == 'center') {
             document.getElementById('addr').value = roadAddr;
-            document.getElementById('zip_code').value = data.zonecode;
+            document.getElementById('zip_no').value = data.zonecode;
           } else if (target == 'user') {
             document.getElementById('user_addr').value = roadAddr;
-            document.getElementById('user_zip_code').value = data.zonecode;
+            document.getElementById('user_zip_no').value = data.zonecode;
           }
         },
       }).open();

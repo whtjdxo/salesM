@@ -11,13 +11,14 @@ public class AgencyVO {
     private String uptae;
     private String upjong;
     private String email;
-    private String cont_date;
+    private String cont_dt;
     private String corp_zip_no;
     private String corp_addr;
     private String corp_addr_dtl;
     private String ceo_id;
+    private String ceo_pwd;
     private String ceo_regno;
-    private String ceo_name;
+    private String ceo_nm;
     private String ceo_zip_no;
     private String ceo_addr;
     private String ceo_addr_dtl;

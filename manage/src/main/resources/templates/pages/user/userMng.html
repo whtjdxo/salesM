@@ -109,7 +109,7 @@
           $('#email').val(data.email);
           $('#zip_cd').val(data.user_id);
           $('#addr').val(data.hp_no);
-          $('#addr_detail').val(data.email);
+          $('#addr_dtl').val(data.email);
           $('#auth_grp_cd').val(data.auth_grp_cd).prop('selected', true);
           $("input:radio[name='use_yn'][value='" + data.use_yn + "']").prop('checked', true);  
           $('#upt_user_id').val(data.upt_user_id);
@@ -218,7 +218,7 @@
           oncomplete: function (data) {
             var roadAddr = data.roadAddress; 
               document.getElementById('addr').value = roadAddr;
-              document.getElementById('zip_code').value = data.zonecode; 
+              document.getElementById('zip_no').value = data.zonecode; 
           },
         }).open();
       }
@@ -338,11 +338,11 @@
               <label class="col-sm-3 col-form-label col-form-label-sm" for="addr">주소</label>                     
               <div class="col-sm-9">
                 <div class="input-group input-group-sm">
-                  <input type="hidden" class="form-control form-control-sm" id="zip_code" name="zip_code"  />
+                  <input type="hidden" class="form-control form-control-sm" id="zip_no" name="zip_no"  />
                   <input type="text" class="form-control form-control-sm" id="addr" name="addr" readonly="readonly"  />
                   <button type="button" class="btn btn-primary" onclick="execDaumPostcode()">주소검색</button>
                 </div>
-                <input type="text" class="form-control form-control-sm mt-2" id="addr_detail" name="addr_detail" placeholder="상세 주소"  />
+                <input type="text" class="form-control form-control-sm mt-2" id="addr_dtl" name="addr_dtl" placeholder="상세 주소"  />
               </div>
             </div>  
             <div class="input-group input-group-sm mb-2">

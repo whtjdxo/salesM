@@ -13,24 +13,53 @@
 	</select>    
 
 	<select id="getAgencyList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-                SELECT  agency_no, agency_nm, biz_no, law_no, uptae, upjong, email
-                        , cont_date, corp_zip_no, corp_addr, corp_addr_dtl
-                        , ceo_id, ceo_regno, ceo_name, ceo_zip_no, ceo_addr, ceo_addr_dtl, corp_tel_no, ceo_tel_no
-                        , assure_amt, insure_amt, ass_sdate, ass_edate, remark
-                        , svc_stat, svc_fee_rate, crd_fee_rate, loan_fee_rate
-                        , bank_cd
-                        , account_no, depositor, yubo_limit, yubo_rate, tot_yubo_amt
-                        , use_yn
+                SELECT  TA.agency_no
+		        , TA.agency_nm
+                        , TA.biz_no
+                        , TA.law_no
+                        , TA.uptae
+                        , TA.upjong
+                        , TA.email                        
+                        , TA.corp_zip_no
+                        , TA.corp_addr
+                        , TA.corp_addr_dtl
+                        , TA.corp_tel_no
+                        , TA.ceo_id
+                        , TU.USER_NM		AS ceo_nm
+                        , TU.ZIP_NO		AS ceo_zip_no
+                        , TU.ADDR		AS ceo_addr
+                        , TU.ADDR_DTL		AS ceo_addr_dtl                        
+                        , TU.HP_NO		AS ceo_tel_no
+                        , TA.assure_amt
+                        , TA.insure_amt
+                        , TA.ass_sdate
+                        , TA.ass_edate
+                        , TA.remark
+                        , IFNULL(TA.cont_dt, '')	AS cont_dt
+                        , IFNULL(TA.svc_stat, '')	AS svc_stat 
+                        , TA.svc_fee_rate, TA.crd_fee_rate, TA.loan_fee_rate
+                        , TA.bank_cd
+                        , TA.account_no, TA.depositor, TA.yubo_limit, TA.yubo_rate, TA.tot_yubo_amt
+                        , TA.use_yn
                         , IFNULL((SELECT COUNT(1) FROM TB_CHAIN WHERE AGENCY_NO = TA.AGENCY_NO AND USE_YN = 'Y' AND SVC_STAT IN ('R', 'O')), 0) AS chain_cnt
-                        , IFNULL(upt_user_id, ent_user_id)                                      as upt_user_id
-                        , DATE_FORMAT(IFNULL(upt_dttm, ent_dttm), '%Y-%m-%d %H:%i:%s')          as upt_dttm
-                FROM  TB_AGENCY ta
+                        , IFNULL(TA.upt_user_id, TA.ent_user_id)                                      as upt_user_id
+                        , DATE_FORMAT(IFNULL(TA.upt_dttm, TA.ent_dttm), '%Y-%m-%d %H:%i:%s')          as upt_dttm
+                  FROM  TB_AGENCY TA	
+                        JOIN TB_USER TU ON TU.USER_ID = TA.CEO_ID
                 WHERE  1 = 1 
-                <if test="sch_agency_nm != ''">
-                        <if test="sch_agency_nm == 'sch_agency_nm'">
-                                AND agency_nm LIKE CONCAT('%',#{agency_nm},'%')
-                        </if>
-                </if> 
+                <if test="schgb_agency_val != ''">
+			<choose>
+				<when test="schgb_agency == 'schgb_agency_no'">
+					AND TA.AGENCY_NO = #{schgb_agency_val}
+				</when>
+				<when test="schgb_agency == 'schgb_agency_nm'">
+					AND TA.AGENCY_NM LIKE CONCAT('%', #{schgb_agency_val}, '%')
+				</when>
+			</choose>
+		</if>
+                <if test="sch_use_yn != null and sch_use_yn != ''">			
+			AND TA.USE_YN = #{sch_use_yn}
+		</if>
                 <choose>
                         <when test="sidx != ''">
                                 ORDER BY ${sidx} ${sord}
@@ -41,70 +70,79 @@
                 </choose>
 	</select> 
 
-	<select id="createAgencyNo" resultType="java.lang.String">
-	/* AgencyMapper.createAgencyNo */
+	<select id="getNewAgencyNo" resultType="java.lang.String">
+	/* AgencyMapper.getNewAgencyNo */
 		SELECT GET_JOB_SEQ('TB_AGENCY', 'AGENCY_NO')
 	</select>
 
-	<insert id="agencyCreate" parameterType="com.web.manage.base.domain.AgencyVO">
+	<insert id="InsertAgency" parameterType="com.web.manage.base.domain.AgencyVO">
         INSERT INTO tb_agency (
-                  agency_no             , agency_nm           , biz_no                , law_no           , uptae             , upjong        , email
-                , cont_date             , corp_zip_no           , corp_addr             , corp_addr_dtl     , ceo_id            , ceo_regno
-                , ceo_name              , ceo_zip_no            , ceo_addr              , ceo_addr_dtl      , corp_tel_no       , ceo_tel_no
-                , bank_cd               , account_no            , depositor             , remark            , svc_stat          , use_yn
-                <!-- , assure_amt            , insure_amt        , ass_sdate         , ass_edate         
-                , svc_fee_rate          , crd_fee_rate      , loan_fee_rate     
-                , yubo_limit        , yubo_rate         , tot_yubo_amt -->
+                  agency_no             , agency_nm             , biz_no                , law_no            
+                , uptae                 , upjong                , email
+                , corp_zip_no           , corp_addr             , corp_addr_dtl         , corp_tel_no                       
+                , ceo_id                , remark                , use_yn                
                 , ent_user_id           , ent_dttm
         ) VALUES (
-                #{agency_no}            , #{agency_nm}          , #{biz_no}             , #{law_no}             , #{uptae}          , #{upjong}     , #{email}
-                , #{cont_date}          , #{corp_zip_no}        , #{corp_addr}          , #{corp_addr_dtl}  , #{ceo_id}         , #{ceo_regno}
-                , #{ceo_name}           , #{ceo_zip_no}         , #{ceo_addr}           , #{ceo_addr_dtl}   , #{corp_tel_no}    , #{ceo_tel_no}
-                , #{bank_cd}            , #{account_no}         , #{depositor}          , #{remark}         , #{svc_stat}       , #{use_yn}  
-                <!-- , #{assure_amt} , #{insure_amt}     , #{ass_sdate}      , #{ass_edate}      
-                , #{svc_fee_rate}, #{crd_fee_rate}  , #{loan_fee_rate}  
-                , #{yubo_limit}     , #{yubo_rate}      , #{tot_yubo_amt}    -->
+                #{agency_no}            , #{agency_nm}          , #{biz_no}             , #{law_no}         
+                , #{uptae}              , #{upjong}             , #{email}
+                , #{corp_zip_no}        , #{corp_addr}          , #{corp_addr_dtl}      , #{corp_tel_no}
+                , #{ceo_id}             , #{remark}             , #{use_yn}  
                 , #{ent_user_id}        , NOW()
         )   
 	</insert>
-	<update id="agencyUpdate" parameterType="com.web.manage.base.domain.AgencyVO">
+	<update id="UpdateAgency" parameterType="com.web.manage.base.domain.AgencyVO">
         UPDATE  tb_agency
            SET  agency_nm       = #{agency_nm},
                 biz_no          = #{biz_no},
                 law_no          = #{law_no},
                 uptae           = #{uptae},
-                upjong = #{upjong},
-                email = #{email},
-                cont_date = #{cont_date},
-                corp_zip_no = #{corp_zip_no},
-                corp_addr = #{corp_addr},
-                corp_addr_dtl = #{corp_addr_dtl},
-                ceo_id = #{ceo_id},
-                ceo_regno = #{ceo_regno},
-                ceo_name = #{ceo_name},
-                ceo_zip_no = #{ceo_zip_no},
-                ceo_addr = #{ceo_addr},
-                ceo_addr_dtl = #{ceo_addr_dtl},
-                corp_tel_no = #{corp_tel_no},
-                ceo_tel_no = #{ceo_tel_no},
-                assure_amt = #{assure_amt},
-                insure_amt = #{insure_amt},
-                ass_sdate = #{ass_sdate},
-                ass_edate = #{ass_edate},
-                remark = #{remark},
-                svc_stat = #{svc_stat},
-                svc_fee_rate = #{svc_fee_rate},
-                crd_fee_rate = #{crd_fee_rate},
-                loan_fee_rate = #{loan_fee_rate},
-                bank_cd = #{bank_cd},
-                account_no = #{account_no},
-                depositor = #{depositor},
-                yubo_limit = #{yubo_limit},
-                yubo_rate = #{yubo_rate},
-                tot_yubo_amt = #{tot_yubo_amt},
-                use_yn      = #{use_yn},
-                upt_user_id = #{upt_user_id},
-                upt_dttm = NOW()
+                upjong          = #{upjong},
+                email           = #{email},                
+                corp_zip_no     = #{corp_zip_no},
+                corp_addr       = #{corp_addr},
+                corp_addr_dtl   = #{corp_addr_dtl}, 
+                corp_tel_no     = #{corp_tel_no},
+                assure_amt      = #{assure_amt},
+                insure_amt      = #{insure_amt},
+                ass_sdate       = #{ass_sdate},
+                ass_edate       = #{ass_edate},
+                remark          = #{remark},
+                cont_dt         = #{cont_dt},
+                svc_stat        = #{svc_stat},
+                svc_fee_rate    = #{svc_fee_rate},
+                crd_fee_rate    = #{crd_fee_rate},
+                loan_fee_rate   = #{loan_fee_rate},
+                bank_cd         = #{bank_cd},
+                account_no      = #{account_no},
+                depositor       = #{depositor},
+                yubo_limit      = #{yubo_limit},
+                yubo_rate       = #{yubo_rate},
+                tot_yubo_amt    = #{tot_yubo_amt},
+                use_yn          = #{use_yn},
+                upt_user_id     = #{upt_user_id},
+                upt_dttm        = NOW()
+         WHERE  agency_no = #{agency_no}
+        </update> 
+
+        <update id="UpdateAgencyCont" parameterType="com.web.manage.base.domain.AgencyVO">
+        UPDATE  tb_agency
+           SET  cont_dt       = #{cont_dt},
+                assure_amt      = #{assure_amt},
+                insure_amt      = #{insure_amt},
+                ass_sdate       = #{ass_sdate},
+                ass_edate       = #{ass_edate},
+                svc_stat        = #{svc_stat},
+                svc_fee_rate    = #{svc_fee_rate},
+                crd_fee_rate    = #{crd_fee_rate},
+                loan_fee_rate   = #{loan_fee_rate},
+                bank_cd         = #{bank_cd},
+                account_no      = #{account_no},
+                depositor       = #{depositor},
+                yubo_limit      = #{yubo_limit},
+                yubo_rate       = #{yubo_rate},
+                tot_yubo_amt    = #{tot_yubo_amt},
+                upt_user_id     = #{upt_user_id},
+                upt_dttm        = NOW()
          WHERE  agency_no = #{agency_no}
         </update> 
 </mapper>

@@ -5,8 +5,13 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
+import com.web.manage.user.domain.UserVO;
 import com.web.manage.user.mapper.UserMngMapper;
+
+import jakarta.validation.Valid;
 
 @Service
 public class UserMngService {
@@ -32,12 +37,12 @@ public class UserMngService {
     }
 
 
-    public boolean userCreate(HashMap<String, Object> hashmapParam) {
-        return userMngMapper.userCreate(hashmapParam);
+    public boolean userCreate(@ModelAttribute("UserVO") @Valid UserVO userVO) {
+        return userMngMapper.userCreate(userVO);
     }
 
 
-    public boolean userUpdate(HashMap<String, Object> hashmapParam) {
-        return userMngMapper.userUpdate(hashmapParam);
+    public boolean userUpdate(@ModelAttribute("UserVO") @Valid UserVO userVO) {
+        return userMngMapper.userUpdate(userVO);
     }
 }

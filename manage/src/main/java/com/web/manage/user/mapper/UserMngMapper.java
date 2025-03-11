@@ -4,6 +4,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+import com.web.manage.user.domain.UserVO;
+
+import jakarta.validation.Valid;
 
 @Mapper
 public interface UserMngMapper {
@@ -16,8 +21,8 @@ public interface UserMngMapper {
     
     int getUserIdDupChk(String user_id);
     
-    boolean userCreate(HashMap<String, Object> hashmapParam);
+    boolean userCreate(@ModelAttribute("UserVO") @Valid UserVO userVO);
 
-    boolean userUpdate(HashMap<String, Object> hashmapParam);
+    boolean userUpdate(@ModelAttribute("UserVO") @Valid UserVO userVO);
 }
 
