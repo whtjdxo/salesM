@@ -46,6 +46,29 @@
           codeSetting('AGENCY_NO', data.data, '#sch_agency_no', '1', '', '');
           codeSetting('AGENCY_NO', data.data, '#agency_no', '1', '', '');
         }
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('SVC_STAT')", fn_svc_stat_setting);      
+        function fn_svc_stat_setting(data) {
+          codeSetting('SVC_STAT', data.data, '#sch_svc_stat', '1', '', '');
+          codeSetting('SVC_STAT', data.data, '#svc_stat', '1', '', '');
+        }
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('REMIT_STAT')", fn_remit_stat_setting);      
+        function fn_remit_stat_setting(data) {
+          codeSetting('REMIT_STAT', data.data, '#remit_stat', '1', '', '');
+        }
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('ACCOUNT_TP')", fn_account_tp_setting);      
+        function fn_account_tp_setting(data) {
+          codeSetting('ACCOUNT_TP', data.data, '#abank_account_tp', '1', '', '');
+        }
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('ABANK_LINK_STAT')", fn_abank_link_setting);      
+        function fn_abank_link_setting(data) {
+          codeSetting('ABANK_LINK_STAT', data.data, '#abank_link_stat', '1', '', '');
+        }
+
+        abank_link_stat
         
         var tbl_chain = $('#tbl_chain').DataTable({
           processing: true,
@@ -591,7 +614,7 @@
                       </div>
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="etc_rate">기타타 수수료</label>  
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="etc_rate">기타 수수료</label>  
                           <div class="col-sm-8">
                             <input class="form-control form-control-sm" id="etc_rate" type="text" name="etc_rate" placeholder="00.00" istyle="float"  />
                           </div>
@@ -676,7 +699,6 @@
                         </div>
                       </div>
                     </div>
-
                     <div class="row mb-1">
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
@@ -686,28 +708,66 @@
                           </div>
                         </div>
                       </div>
-                      <div class="col-sm-3">
+                      <div class="col-sm-2">
                         <div class="input-group input-group-sm mb-1">
                           <div class="col-sm">
-                            <input class="form-control form-control-sm" id="abank_pwd" type="text" name="abank_pwd" maxlength="4"/>      
+                            <input class="form-control form-control-sm" id="abank_pwd" type="text" name="abank_pwd" maxlength="4"/>                             
                           </div>
                         </div> 
                       </div>
-                      <div class="col-sm-3">
+                      <div class="col-sm-4">
                         <div class="col-sm form-check">
-                          <input class="form-check-input" id="abank_speed_yn" type="checkbox" name="abank_speed_yn" value="Y" />
-                          <label class="form-check-label" for="abank_speed_yn">스피드 계좌</label>
+                          <select class="form-select form-select-sm" id="abank_account_tp" placeholder="" name="abank_account_tp" />
+                            <option value="">선택</option>
+                          </select>
                         </div>
                       </div>                      
                     </div>
-                      
- 
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="depositor">비밀번호</label>
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="depositor" type="text" name="depositor"  />                    
-                      </div>                                   
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_search_id">조회 ID</label>  
+                          <div class="col-sm-8">
+                            <select class="form-select form-select-sm" id="abank_search_id" placeholder="" name="abank_search_id" />
+                              <option value="">선택</option>
+                            </select>                        
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_search_pwd">조회PWD</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="abank_search_pwd" type="text" name="abank_search_pwd"  />      
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_link_agree_dt">출금동의일</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control datetimepicker flatpickr-input" id="abank_link_agree_dt" name = "abank_link_agree_dt" type="text" placeholder="yyyy-mm-dd" data-options="{&quot;disableMobile&quot;:true,&quot;dateFormat&quot;:&quot;Y-m-d&quot;}" readonly="readonly">                      
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6" id="abank_link_info" name="abank_link_info">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_link_stat">진행상태</label>                            
+                          <div class="col-sm-8">
+                            <select class="form-select form-select-sm" id="abank_link_stat" placeholder="" name="abank_link_stat" />
+                            <option value="">선택</option>
+                          </select>
+                            <!-- <input class="form-control form-control-sm" id="abank_link_stat" type="hidden" name="abank_link_stat"  />   
+                            <div class="input-group input-group-sm">
+                              <input class="form-control form-control-sm" id="abank_link_stat_nm" type="text" name="abank_link_stat_nm"  readonly/>   
+                              <button type="button" class="btn btn-primary" id="btn_link_stat">변경</button>   
+                            </div>   -->
+                          </div>
+                        </div>
+                      </div>
+                    </div> 
                     <div class="card-footer">  
                       <p class="text-end pb-1 mb-1 pd-1">
                         <button class="btn btn-primary text-end" id="btn_cont_update"><i class="fa fa-paste"></i>저장</button>

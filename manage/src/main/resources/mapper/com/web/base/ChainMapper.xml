@@ -34,30 +34,31 @@
                 , TC.CEO_ID         AS  ceo_id
                 , TC.CEO_REGNO      AS  ceo_regno
                 , TC.EMAIL          AS  email
-                , TC.ACC_TYPE       AS  acc_type
-                , TC.ABANK          AS  abank
-                , TC.ABANK_ACCOUNT  AS  abank_account
-                , TC.ABANK_ACCOUNT_NO AS abank_account_no
-                , TC.ABANK_SPEED_YN AS  abank_speed_yn
-                , TC.ABANK_PWD      AS  abank_pwd
-                , TC.ABANK_DEPOSITOR AS abank_depositor
-                , TC.ABANK_CHECK_YN AS  abank_check_yn
-                , TC.ABANK_CHECK_ID AS  abank_check_id
-                , TC.ABANK_CHECK_DT AS  abank_check_dt
-                , TC.ABANK_LINK_STAT AS abank_link_stat
+                , TC.ABANK_ACCOUNT_TP       AS  abank_account_tp
+                , TC.ABANK_CD           AS  abank_cd
+                , TC.ABANK_ACCOUNT      AS  abank_account
+                , TC.ABANK_ACCOUNT_NO   AS abank_account_no
+                , TC.ABANK_SPEED_YN     AS  abank_speed_yn
+                , TC.ABANK_PWD          AS  abank_pwd
+                , TC.ABANK_DEPOSITOR    AS abank_depositor
+                , TC.ABANK_CHECK_YN     AS  abank_check_yn
+                , TC.ABANK_CHECK_ID     AS  abank_check_id
+                , TC.ABANK_CHECK_DT     AS  abank_check_dt
+                , TC.ABANK_LINK_STAT    AS abank_link_stat
                 , TC.ABANK_LINK_AGREE_DT AS abank_link_agree_dt
                 , TC.ABANK_LINK_PAYER_NO AS abank_link_payer_no
                 , TC.ABANK_LAST_REMIT_DTTM AS abank_last_remit_dttm
-                , TC.ABANK_SEARCH_ID AS abank_search_id
-                , TC.ABANK_SEARCH_PWD AS abank_search_pwd
-                , TC.BBANK          AS  bbank
-                , TC.BBANK_ACCOUNT  AS  bbank_account
-                , TC.BBANK_DEPOSITOR AS bbank_depositor
-                , TC.BBANK_CHECK_YN AS  bbank_check_yn
-                , TC.BBANK_CHECK_ID AS  bbank_check_id
-                , TC.BBANK_CHECK_DT AS  bbank_check_dt
-                , TC.AUTO_REMIT_YN  AS  auto_remit_yn
-                , TC.SVC_STAT       AS  svc_stat
+                , TC.ABANK_SEARCH_ID    AS abank_search_id
+                , TC.ABANK_SEARCH_PWD   AS abank_search_pwd
+                , TC.BBANK_CD           AS  bbank_cd
+                , TC.BBANK_ACCOUNT      AS  bbank_account
+                , TC.BBANK_DEPOSITOR    AS bbank_depositor
+                , TC.BBANK_CHECK_YN     AS  bbank_check_yn
+                , TC.BBANK_CHECK_ID     AS  bbank_check_id
+                , TC.BBANK_CHECK_DT     AS  bbank_check_dt
+                , TC.AUTO_REMIT_YN      AS  auto_remit_yn
+                , TC.SVC_STAT           AS  svc_stat
+                , GET_CODE_NM('SVC_STAT', TC.SVC_STAT)       AS svc_stat_nm
                 , TC.SVC_START_DT   AS  svc_start_dt
                 , TC.SVC_END_DT     AS  svc_end_dt
                 , TC.CRD_RATE       AS  crd_rate
@@ -74,6 +75,7 @@
                 , TC.REMIT_TYPE     AS  remit_type
                 , TC.REMIT_CYCLE    AS  remit_cycle
                 , TC.REMIT_STAT     AS  remit_stat
+                , GET_CODE_NM('REMIT_STAT', TC.REMIT_STAT)       AS remit_stat_nm
                 , TC.REMIT_STAT_CD  AS  remit_stat_cd
                 , TC.REMIT_STAT_DATE AS remit_stat_date
                 , TC.REMIT_OVER_STAT AS remit_over_stat

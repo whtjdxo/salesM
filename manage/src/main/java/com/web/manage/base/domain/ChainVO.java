@@ -25,8 +25,8 @@ public class ChainVO {
     private String ceo_addr;
     private String ceo_addr_dtl;
     private String email;
-    private String acc_type;
-    private String abank;
+    private String abank_account_tp;
+    private String abank_cd;
     private String abank_account;
     private String abank_account_no;
     private String abank_speed_yn;
@@ -41,7 +41,7 @@ public class ChainVO {
     private String abank_last_remit_dttm;
     private String abank_search_id;
     private String abank_search_pwd;
-    private String bbank;
+    private String bbank_cd;
     private String bbank_account;
     private String bbank_depositor;
     private String bbank_check_yn;
