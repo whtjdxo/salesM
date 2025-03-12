@@ -40,4 +40,37 @@ public class CommonController {
 		}
 		return result;
 	}
+
+	@RequestMapping(value="/getCreditCorpList")
+	public @ResponseBody ReturnDataVO getCreditCorpList(@RequestParam HashMap<String, String> hashmapParam){
+		List<HashMap<String, Object>> list = new ArrayList<HashMap<String,Object>>();
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+			list = commonService.getCreditCorpList(hashmapParam);
+			
+			result.setResultCode("S000");
+			result.setData(list);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	@RequestMapping(value="/getAgencyList")
+	public @ResponseBody ReturnDataVO getAgencyList(@RequestParam HashMap<String, String> hashmapParam){
+		List<HashMap<String, Object>> list = new ArrayList<HashMap<String,Object>>();
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+			list = commonService.getAgencyList(hashmapParam);
+			result.setResultCode("S000");
+			result.setData(list);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
 }

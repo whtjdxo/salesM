@@ -18,4 +18,12 @@ public class CommonService {
         return commonMapper.getTotalCodelist(hashmapParam);
     }
 
+    public List<HashMap<String, Object>> getCreditCorpList(HashMap<String, String> hashmapParam) {
+        return commonMapper.getCreditCorpList(hashmapParam);
+    }
+
+    public List<HashMap<String, Object>> getAgencyList(HashMap<String, String> hashmapParam) {
+        return commonMapper.getAgencyList(hashmapParam);
+    }
+
 }

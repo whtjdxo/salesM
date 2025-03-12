@@ -83,6 +83,8 @@ public class ChainVO {
     private String work_holiday_flag;
     private String last_check_dttm;
     private String use_yn;
+    private String ent_user_id;
+    private String ent_dttm;
     private String upt_user_id;
     private String upt_dttm;
 }

@@ -14,4 +14,30 @@
            AND CODE !='CODE'
       ORDER BY CODE_GRP_CD, ORD_NO
 	</select>
+  <select id="getCreditCorpList" resultType="hashMap">
+        SELECT  CORP_CD       as code
+                , CORP_NM     as codeNm
+                , 'CORP_CD'   AS "group_code"
+          FROM  TB_CORP
+         WHERE  1= 1
+           AND  CORP_TYPE = 'LN'
+           AND  USE_YN  = 'Y'
+         ORDER  BY 2
+  </select>
+
+  <select id="getAgencyList" resultType="hashMap">
+        SELECT  AGENCY_NO       as code
+                , AGENCY_NM     as codeNm
+                , 'AGENCY_NO'   AS "group_code"
+          FROM  TB_AGENCY
+         WHERE  1= 1
+           AND  USE_YN  = 'Y'
+         ORDER  BY 2
+  </select>
+
+  <select id="getUserIdDupChk" parameterType="java.util.HashMap" resultType="int">
+    SELECT  COUNT(1)
+            FROM  tb_user
+          WHERE  user_id = #{user_id}
+	</select>    
 </mapper>

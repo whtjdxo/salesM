@@ -32,8 +32,20 @@
         $('#frm_chain_info').onLoadFunction();     
         callAjax('/common/totalCodelist', "code_grp_cd=('BANK_CD')", fn_bank_setting);      
         function fn_bank_setting(data) {
-          codeSetting('BANK_CD', data.data, '#bank_cd', '1', '', '');
-        }  
+          codeSetting('BANK_CD', data.data, '#abank_cd', '1', '', '');
+        }
+        
+        callAjax('/common/getCreditCorpList', "", fn_credit_list_setting);      
+        function fn_credit_list_setting(data) { 
+          codeSetting('CORP_CD', data.data, '#sch_corp_cd', '1', '', '');          
+          codeSetting('CORP_CD', data.data, '#corp_cd', '1', '', '');
+        }
+
+        callAjax('/common/getAgencyList', "", fn_agency_list_setting);
+        function fn_agency_list_setting(data) {
+          codeSetting('AGENCY_NO', data.data, '#sch_agency_no', '1', '', '');
+          codeSetting('AGENCY_NO', data.data, '#agency_no', '1', '', '');
+        }
         
         var tbl_chain = $('#tbl_chain').DataTable({
           processing: true,
@@ -259,7 +271,7 @@
               <div class="col-lg-8">
                 <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate="">
                   <div class="input-group input-group-sm px-3">
-                    <select class="form-select form-control-sm" id="sch_corp_no" name="sch_corp_no" style="width: 75px">
+                    <select class="form-select form-control-sm" id="sch_corp_cd" name="sch_corp_cd" style="width: 75px">
                       <option value="">여신사</option>
                     </select>
                     <select class="form-select form-control-sm" id="sch_agency_no" name="sch_agency_no" style="width: 75px">
@@ -326,124 +338,179 @@
                   <li class="nav-item"><a class="nav-link" id="cont-tab" data-bs-toggle="tab" href="#tab_chain_card" role="tab" aria-controls="tab-profile" aria-selected="false">카드 매입</a></li>
                 </ul>          
                 <div class="tab-content border border-top-2 p-3" id="myTabContent">
-                  <div class="tab-pane fade show active" id="tab_chain_info" role="tabpanel" aria-labelledby="tab_chain_info">
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="chain_no">가맹점 명</label>                  
-                      <div class="col-sm-4">
-                        <input class="form-control form-control-sm" id="chain_no" type="text" name="chain_no" readonly="readonly"/>
+                  <div class="tab-pane fade show active" id="tab_chain_info" role="tabpanel" aria-labelledby="tab_chain_info">                    
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="chain_no">가맹점번호</label>                      
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="chain_no" type="text" name="chain_no" readonly="readonly"/>
+                          </div>     
+                        </div>
                       </div>
                       <div class="col-sm-6">
-                        <input class="form-control form-control-sm" id="chain_nm" type="text" name="chain_nm"  maxlength="20" required />
-                      </div>
-                    </div>                
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="biz_no">사업자/법인</label>                      
-                      <div class="col-sm-5">
-                        <input class="form-control form-control-sm" id="biz_no" type="text" name="biz_no" maxlength="20" required />                    
-                      </div>
-                      <div class="col-sm-5">
-                        <input class="form-control form-control-sm" id="law_no" type="text" name="law_no" maxlength="20" />
-                      </div>                  
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="upjung">업종 / 업태</label>
-                      <div class="col-sm-5">
-                        <input class="form-control form-control-sm" id="upjong" type="text" name="upjong" maxlength="30" />                    
-                      </div>
-                      <div class="col-sm-5">
-                        <input class="form-control form-control-sm" id="uptae" type="text" name="uptae" maxlength="30" />
-                      </div>                  
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="chain_tel_no">연락처</label>                  
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="chain_tel_no" type="text" name="chain_tel_no" placeholder="010-000-0000" istyle="phone" required /> 
-                      </div>                  
-                    </div>
-                    <div class="input-group input-group-sm mb-2"> 
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="addr">가맹점 주소</label>                     
-                      <div class="col-sm-10">
-                        <div class="input-group input-group-sm">
-                          <input type="hidden" class="form-control form-control-sm" id="chain_zip_no" name="chain_zip_no" required />
-                          <input type="text" class="form-control form-control-sm" id="chain_addr" name="chain_addr" readonly="readonly" required />
-                          <button type="button" class="btn btn-primary" onclick="execDaumPostcode('corp')">주소검색</button>
-                        </div>                    
-                        <!-- 상세 주소 입력 -->
-                        <input type="text" class="form-control form-control-sm mt-2" id="chain_addr_dtl" name="chain_addr_dtl" placeholder="상세 주소" required />
-                      </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_id">대표자 ID</label>                     
-                      <div class="col-sm-10">
-                        <div class="input-group input-group-sm">
-                          <input type="text" class="form-control form-control-sm" id="ceo_id" name="ceo_id" required maxlength="20" />
-                          <button type="button" class="btn btn-primary" id="btn_dupchk">중복</button>
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="chain_no">가맹점 명</label>                      
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="chain_nm" type="text" name="chain_nm"  maxlength="20" required />    
+                          </div>
                         </div>
+                      </div>
+                    </div>
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="biz_no">사업자 번호</label>                      
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="biz_no" type="text" name="biz_no" maxlength="20" required />                    
+                          </div>     
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="law_no">법인 번호</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="law_no" type="text" name="law_no" maxlength="20" />
+                          </div>   
+                        </div>
+                      </div>
+                    </div>  
+
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="upjong">업종</label>                      
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="upjong" type="text" name="upjong" maxlength="30" />               
+                          </div>     
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="uptae">업태</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="uptae" type="text" name="uptae" maxlength="30" />
+                          </div>   
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="row mb-1">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="chain_tel_no">연락처</label>                      
+                        <div class="col-sm-6">
+                          <input class="form-control form-control-sm" id="chain_tel_no" type="text" name="chain_tel_no" placeholder="010-000-0000" istyle="phone" required /> 
+                        </div>     
                       </div> 
                     </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_pwd">PASSWORD</label>                  
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="ceo_pwd" type="password" name="ceo_pwd" maxlength="20" required /> 
-                      </div>                  
+                    <div class="row mb-1"> 
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="uptae">eMail</label>  
+                        <div class="col-sm-6">
+                          <input class="form-control form-control-sm" id="email" type="email" name="email" placeholder="example@email.com" istyle="email"/> 
+                        </div>   
+                      </div> 
+                    </div>
+                    <div class="row mb-1"> 
+                      <div class="input-group input-group-sm mb-2"> 
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="addr">가맹점 주소</label>                     
+                        <div class="col-sm-10">
+                          <div class="input-group input-group-sm">
+                            <input type="hidden" class="form-control form-control-sm" id="chain_zip_no" name="chain_zip_no" required />
+                            <input type="text" class="form-control form-control-sm" id="chain_addr" name="chain_addr" readonly="readonly" required />
+                            <button type="button" class="btn btn-primary" onclick="execDaumPostcode('corp')">주소검색</button>
+                          </div>                    
+                          <!-- 상세 주소 입력 -->
+                          <input type="text" class="form-control form-control-sm mt-2" id="chain_addr_dtl" name="chain_addr_dtl" placeholder="상세 주소" required />
+                        </div>
+                      </div>
+                    </div>                 
+                    <div class="row mb-3 mt-1 mb-1 fw-bold fs-8 border-bottom pb-1"></div>
+                    <div class="row mb-1">                    
+                      <div class="input-group input-group-sm mb-2">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_nm">대표자 명</label>                  
+                        <div class="col-sm-10">
+                          <input class="form-control form-control-sm" id="ceo_nm" type="text" name="ceo_nm" required maxlength="20"/> 
+                        </div>                  
+                      </div>
+                    </div>
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="ceo_id">대표자 ID</label>                     
+                          <div class="col-sm-8">
+                            <div class="input-group input-group-sm">
+                              <input type="text" class="form-control form-control-sm" id="ceo_id" name="ceo_id" required maxlength="20" />
+                              <button type="button" class="btn btn-primary" id="btn_dupchk">중복</button>
+                            </div>
+                          </div> 
+                        </div>
+                      </div>  
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="ceo_pwd">PASSWORD</label>                  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="ceo_pwd" type="password" name="ceo_pwd" maxlength="20" required /> 
+                          </div>
+                        </div> 
+                      </div>
+                    </div>
+                    <div class="row mb-1">                           
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_tel_no">연락처</label>                  
+                        <div class="col-sm-10">
+                          <input class="form-control form-control-sm" id="ceo_tel_no" type="text" name="ceo_tel_no" placeholder="010-000-0000" istyle="phone" required /> 
+                        </div>                  
+                      </div>
+                    </div>
+                    <div class="row mb-1"> 
+                      <div class="input-group input-group-sm mb-2"> 
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_addr">대표자 주소</label>                     
+                        <div class="col-sm-10">
+                          <div class="input-group input-group-sm">
+                            <input type="hidden" class="form-control form-control-sm" id="ceo_zip_no" name="ceo_zip_no" required />
+                            <input type="text" class="form-control form-control-sm" id="ceo_addr" name="ceo_addr" readonly="readonly" required />
+                            <button type="button" class="btn btn-primary" onclick="execDaumPostcode('ceo')">주소검색</button>
+                          </div>                    
+                          <!-- 상세 주소 입력 -->
+                          <input type="text" class="form-control form-control-sm mt-2" id="ceo_addr_dtl" name="ceo_addr_dtl" placeholder="상세 주소" required />
+                        </div>
+                      </div>
                     </div>   
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_nm">대표자 명</label>                  
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="ceo_nm" type="text" name="ceo_nm" required maxlength="20"/> 
-                      </div>                  
-                    </div>      
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_tel_no">연락처</label>                  
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="ceo_tel_no" type="text" name="ceo_tel_no" placeholder="010-000-0000" istyle="phone" required /> 
-                      </div>                  
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="email">eMail</label>                  
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="email" type="email" name="email" placeholder="example@email.com" istyle="email"/> 
-                      </div>                  
-                    </div> 
-                    <div class="input-group input-group-sm mb-2"> 
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_addr">대표자 주소</label>                     
-                      <div class="col-sm-10">
-                        <div class="input-group input-group-sm">
-                          <input type="hidden" class="form-control form-control-sm" id="ceo_zip_no" name="cep_zip_no"  />
-                          <input type="text" class="form-control form-control-sm" id="ceo_addr" name="ceo_addr" readonly="readonly"  />
-                          <button type="button" class="btn btn-primary" onclick="execDaumPostcode('ceo')">주소검색</button>
-                        </div>
-                        <input type="text" class="form-control form-control-sm mt-2" id="ceo_addr_dtl" name="ceo_addr_dtl" placeholder="상세 주소"  />
-                      </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="remark">Memo</label>
-                      <div class="col-sm-10">
-                        <textarea class="form-control"  id="remark" rows="2" name="remark"></textarea> 
-                      </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="use_yn">사용여부</label>
-                      <div class="col-sm-10">
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" id="use_yn_y" type="radio" name="use_yn" value="Y" required />
-                          <label class="form-check-label" for="use_yn_y">예</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" id="use_yn_n" type="radio" name="use_yn" value="N" required />
-                          <label class="form-check-label" for="use_yn_n">아니요</label>
+                    <div class="row mb-1">
+                      <div class="input-group input-group-sm mb-2">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="remark">Memo</label>
+                        <div class="col-sm-10">
+                          <textarea class="form-control"  id="remark" rows="2" name="remark"></textarea> 
                         </div>
                       </div>
                     </div>
-                    <div class="input-group input-group-sm mb-2"> 
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="addr">수정자 / 일</label>                     
-                      <div class="col-sm-10">
-                        <div class="input-group input-group-sm">
-                          <input type="text" class="form-control form-control-sm" id="upt_user_id" name="upt_user_id" readonly="readonly" />
-                          <input type="text" class="form-control form-control-sm" id="upt_dttm" name="upt_dttm" readonly="readonly" /> 
-                        </div>                    
+                    <div class="row mb-1"> 
+                      <div class="input-group input-group-sm mb-2">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="use_yn">사용여부</label>
+                        <div class="col-sm-10">
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" id="use_yn_y" type="radio" name="use_yn" value="Y" required />
+                            <label class="form-check-label" for="use_yn_y">예</label>
+                          </div>
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" id="use_yn_n" type="radio" name="use_yn" value="N" required />
+                            <label class="form-check-label" for="use_yn_n">아니요</label>
+                          </div>
+                        </div>
                       </div>
-                    </div>   
+                    </div>
+                    <div class="row mb-1"> 
+                      <div class="input-group input-group-sm mb-2"> 
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="addr">수정자 / 일</label>                     
+                        <div class="col-sm-10">
+                          <div class="input-group input-group-sm">
+                            <input type="text" class="form-control form-control-sm" id="upt_user_id" name="upt_user_id" readonly="readonly" />
+                            <input type="text" class="form-control form-control-sm" id="upt_dttm" name="upt_dttm" readonly="readonly" /> 
+                          </div>                    
+                        </div>
+                      </div>   
+                    </div>
                     <div class="card-footer">  
                       <p class="text-end pb-1 mb-1 pd-1">
                         <button class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
@@ -456,9 +523,9 @@
                     <div class="row mb-1">
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-0">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="corp_no">여신사</label>  
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="corp_cd">여신사</label>  
                           <div class="col-sm-8">
-                            <select class="form-select form-control-sm" id="corp_no" name="corp_no">
+                            <select class="form-select form-control-sm" id="corp_cd" name="corp_cd">
                               <option value="">여신사</option>
                             </select>  
                           </div>         
@@ -585,25 +652,58 @@
                           </div>
                         </div>
                       </div>
-                    </div>  
+                    </div> 
 
-                    <div class="card-line"></div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="bank_cd">입금 은행</label>
-                      <div class="col-sm-10">
-                        <select class="form-select form-select-sm" id="bank_cd" placeholder="" name="bank_cd" />
-                          <option value="">선택</option>
-                        </select>                        
+                    <div class="mt-2 mb-2 fw-bold fs-8 border-bottom pb-1 text-primary"></div>
+                    
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_cd">입금 은행</label>  
+                          <div class="col-sm-8">
+                            <select class="form-select form-select-sm" id="abank_cd" placeholder="" name="abank_cd" />
+                              <option value="">선택</option>
+                            </select>                        
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="day_use_amt">예금주</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="adepositor" type="text" name="depositor"  />      
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="account_no">계좌 번호</label>
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="account_no" type="text" name="account_no" istyle="number"  />
+
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="account_no">계좌/비밀번호</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="abank_account_no" type="text" name="abank_account_no" istyle="number" maxlength="12" />
+                          </div>
+                        </div>
                       </div>
-                    </div>  
+                      <div class="col-sm-3">
+                        <div class="input-group input-group-sm mb-1">
+                          <div class="col-sm">
+                            <input class="form-control form-control-sm" id="abank_pwd" type="text" name="abank_pwd" maxlength="4"/>      
+                          </div>
+                        </div> 
+                      </div>
+                      <div class="col-sm-3">
+                        <div class="col-sm form-check">
+                          <input class="form-check-input" id="abank_speed_yn" type="checkbox" name="abank_speed_yn" value="Y" />
+                          <label class="form-check-label" for="abank_speed_yn">스피드 계좌</label>
+                        </div>
+                      </div>                      
+                    </div>
+                      
+ 
                     <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="depositor">예금주</label>
+                      <label class="col-sm-2 col-form-label col-form-label-sm" for="depositor">비밀번호</label>
                       <div class="col-sm-10">
                         <input class="form-control form-control-sm" id="depositor" type="text" name="depositor"  />                    
                       </div>                                   

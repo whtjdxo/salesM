@@ -99,9 +99,25 @@
         JOIN  TB_AGENCY AG ON AG.AGENCY_NO  = TC.AGENCY_NO
 
         WHERE   1 = 1
-        <if test="sch_chain_name != ''">
-            AND CHAIN_NAME LIKE CONCAT('%', #{sch_chain_name}, '%')
-        </if>
+        <if test="sch_corp_no != null and sch_corp_no != ''">			
+			AND TC.CORP_NO = #{sch_corp_no}
+		</if>
+        <if test="sch_agency_no != null and sch_agency_no != ''">			
+			AND TC.AGENCY_NO = #{sch_agency_no}
+		</if>
+        <if test="schgb_chain_val != ''">
+			<choose>
+				<when test="schgb_chain == 'schgb_chain_no'">
+					AND TC.CHAIN_NO = #{schgb_chain_val}
+				</when>
+				<when test="schgb_chain == 'schgb_chain_nm'">
+					AND TC.CHAIN_NM LIKE CONCAT('%', #{schgb_chain_val}, '%')
+				</when>
+			</choose>
+		</if>
+        <if test="sch_use_yn != null and sch_use_yn != ''">			
+			AND TC.USE_YN = #{sch_use_yn}
+		</if>
         <choose>
             <when test="sidx != ''">
                 ORDER BY ${sidx} ${sord}
