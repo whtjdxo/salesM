@@ -55,4 +55,21 @@ public class ChainService {
         }
         return true;        
     }
+
+    public boolean updateChainCont(ChainVO chainVO) {
+        return chainMapper.updateChainCont(chainVO); 
+    }
+
+    public boolean updateChainVan(ChainVO chainVO) {
+        return chainMapper.updateChainVan(chainVO); 
+    }
+
+
+    public boolean updateChainCard(ChainVO chainVO) {
+        return chainMapper.updateChainCard(chainVO); 
+    }
+
+    public boolean updateChainFile(ChainVO chainVO) {
+        return chainMapper.updateChainFile(chainVO); 
+    }
 }

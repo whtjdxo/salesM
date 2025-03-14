@@ -99,8 +99,7 @@
                 , { data: 'biz_no' }                
                 , { data: 'ceo_nm' }
                 , { data: 'ceo_tel_no' }
-                , { data: 'tot_limit_amt' }                
-
+                , { data: 'tot_limit_amt' }
                 , { data: 'tot_use_amt' }
                 , { data: 'corp_nm' }
                 , { data: 'agency_nm' }
@@ -109,7 +108,7 @@
               ],
             columnDefs: [           
             { targets: 0, width: '100px', className: 'text-center' },
-            { targets: 1, width: '150px', className: 'text-left' },
+            { targets: 1, width: '', className: 'text-left' },
             { targets: 2, width: '100px', className: 'text-center' },
             { targets: 3, width: '100px', className: 'text-center' },
             { targets: 4, width: '120PX', className: 'text-right' },
@@ -117,7 +116,7 @@
             { targets: 6, width: '120px', className: 'text-center' },
             { targets: 7, width: '120px', className: 'text-center' },
             { targets: 8, width: '80px', className: 'text-center' },
-            { targets: 8, width: '80px', className: 'text-center' },
+            { targets: 9, width: '80px', className: 'text-center' },
           ],  
           order: [[1, 'desc']],
           paging: true,
@@ -157,6 +156,7 @@
             $('#frm_van_info')[0].reset();
             $('#frm_card_info')[0].reset();
             $('#frm_file_info')[0].reset();
+            
             $('#corp_cd').val(data.corp_cd);              
             $('#agency_no').val(data.agency_no);    
             $('#chain_no').val(data.chain_no);            
@@ -184,22 +184,50 @@
             $('#ceo_addr_dtl').val(data.ceo_addr_dtl);            
             $('#ceo_tel_no').val(data.ceo_tel_no);            
             $('#email').val(data.email);
-
-            $('#assure_amt').val(data.assure_amt);
-            $('#insure_amt').val(data.insure_amt);
-            $('#ass_sdate').val(data.ass_sdate);
-            $('#ass_edate').val(data.ass_edate);
             $('#remark').val(data.remark);
+            
             $('#svc_stat').val(data.svc_stat);
-            $('#svc_fee_rate').val(data.svc_fee_rate);
-            $('#crd_fee_rate').val(data.crd_fee_rate);
-            $('#loan_fee_rate').val(data.loan_fee_rate);
-            $('#bank_cd').val(data.bank_cd);
-            $('#account_no').val(data.account_no);
-            $('#depositor').val(data.depositor);
-            $('#yubo_limit').val(data.yubo_limit);
-            $('#yubo_rate').val(data.yubo_rate);
-            $('#tot_yubo_amt').val(data.tot_yubo_amt);
+            $('#svc_start_dt').val(data.svc_start_dt);
+            $('#svc_end_dt').val(data.svc_end_dt);
+
+
+            $('#crd_rate').val(data.crd_rate);
+            $('#crd_delay_rate').val(data.crd_delay_rate);
+            $('#svc_rate').val(data.svc_rate);
+            $('#etc_rate').val(data.etc_rate);
+            $('#day_use_rate').val(data.day_use_rate);
+            $('#day_use_amt').val(data.day_use_amt); 
+            $('#tot_limit_amt').val(data.tot_limit_amt);
+            $('#unit_limit_amt').val(data.unit_limit_amt);
+            $('#day_use_rate').val(data.day_use_rate);
+            
+            $('#abank_cd').val(data.abank_cd);
+            $('#abank_account_no').val(data.abank_account_no);
+            $('#abank_depositor').val(data.abank_depositor);
+            $('#remit_trans_fee').val(data.remit_trans_fee);
+            $('#abank_pwd').val(data.abank_pwd);
+            $('#abank_account_tp').val(data.abank_account_tp);
+            $('#abank_link_stat').val(data.abank_link_stat);
+            $('#abank_link_agree_dt').val(data.abank_link_agree_dt);
+            $('#abank_search_id').val(data.abank_search_id);
+            $('#abank_search_pwd').val(data.abank_search_pwd);
+
+            $('#bbank_cd').val(data.bbank_cd);
+            $('#bbank_account_no').val(data.bbank_account_no);
+            $('#bbank_depositor').val(data.bbank_depositor);
+            $('#remit_trans_fee').val(data.remit_trans_fee);
+            
+            $('#remit_stat').val(data.remit_stat);
+            $('#remit_start_dt').val(data.remit_start_dt);  
+            $('#remit_stat_cd').val(data.remit_stat_cd);
+            $('#remit_over_stat').val(data.remit_over_stat);
+
+            $('#risk_stat').val(data.risk_stat);
+            $('#risk_reason_cd').val(data.risk_reason_cd);
+            
+            
+            $('#cardsales_id').val(data.cardsales_id);
+            $('#cardsales_pwd').val(data.cardsales_pwd);
             $("input:radio[name='use_yn'][value='" + data.use_yn + "']").prop('checked', true); 
             $('#upt_user_id').val(data.upt_user_id);
             $('#upt_dttm').val(data.upt_dttm);   
@@ -220,26 +248,29 @@
               $('#knbank_info').hide();
               $('#abank_link_agree_dt').removeAttr("required");
               $('#abank_link_stat').removeAttr("required");
-            }
-            
+            }            
             $('#crud').val('update'); 
           }  
         });      
 
         $('#btn_clear').click(function () {
-          $('#frm_chain_info').clearForm();
-          $('#frm_cont_info')[0].clearForm();
-          $('#frm_van_info')[0].clearForm();
-          $('#frm_card_info')[0].clearForm();
-          $('#frm_file_info')[0].clearForm();
+          fn_chain_form_clear();
+        }); 
+
+        function fn_chain_form_clear(){
+          $('#frm_chain_info')[0].reset();
+          $('#frm_cont_info')[0].reset();
+          $('#frm_van_info')[0].reset();
+          $('#frm_card_info')[0].reset();
+          $('#frm_file_info')[0].reset();
 
           $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
           $('#btn_update').hide();
           $('#btn_create').show();
           $('#btn_dupchk').show(); 
           $('#ceo_pwd').attr("required", "required");
-          $('#ceo_id').removeAttr("readonly");  
-        }); 
+          $('#ceo_id').removeAttr("readonly");
+        }
 
         $('#btn_dupchk').click(function () {
           var ceo_id = $('#ceo_id').val();
@@ -299,16 +330,22 @@
 
         $('#btn_cont_update').click(function () {
           $('#crud').val('update');
-          var chain_no = $('#chain_no').val();
-          var form = $('#frm_chain_info');
-          var checked = true;
+          var chain_no = $('#cont_chain_no').val();          
+          var checked = true; 
           if(chain_no == '') {
-            swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
+            swal('확인', "가맹점을 먼저 선택해주세요.", 'error');
             checked = false;
             return;
           }
+          var form = $('#frm_cont_info');
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          });
+
           if (checked) {
-            ConfirmdialogToAjax('update', '/base/organ/chainMng/UpdateAgencyCont', $('#frm_chain_info').serialize(), fn_return_result);
+            ConfirmdialogToAjax('update', '/base/organ/chainMng/updateChainCont', $('#frm_cont_info').serialize(), fn_return_result);
           }
         }); 
 
@@ -316,14 +353,9 @@
           var resultCode = data.resultCode;
           var resultMsg = data.resultMsg;
           if (resultCode == 'S000') {
+            fn_chain_form_clear();
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
-            $('#frm_chain_info')[0].reset();    
-            tbl_chain.ajax.reload();        
-            $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
-            $('#btn_update').hide();
-            $('#btn_create').show();  
-            $('#ceo_pwd').attr("required", "required");
-            // $('#tbl_chain').setGridParam({ url: '/base/organ/chainMng/list', page: 1, datatype: 'json' }).trigger('reloadGrid');            
+            tbl_chain.ajax.reload();                 
           } else {
             swal('실패', resultMsg, 'error');
           }
@@ -697,7 +729,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="tot_limit_amt">약정 한도액</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="tot_limit_amt" type="text" name="tot_limit_amt" placeholder="100,000,000" istyle="amount" maxlength="10" required />
+                            <input class="form-control form-control-sm" id="tot_limit_amt" type="text" name="tot_limit_amt" placeholder="100,000,000" istyle="amount" maxlength="13" required />
                           </div>         
                         </div>
                       </div>
@@ -705,7 +737,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="unit_limit_amt">건 한도액</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="unit_limit_amt" type="text" name="unit_limit_amt" placeholder="100,000,000" istyle="amount" maxlength="10" required />
+                            <input class="form-control form-control-sm" id="unit_limit_amt" type="text" name="unit_limit_amt" placeholder="100,000,000" istyle="amount" maxlength="13" required />
                           </div>
                         </div>
                       </div>
@@ -723,7 +755,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="day_use_amt">일일 한도액</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="day_use_amt" type="text" name="day_use_amt" placeholder="100,000,000" istyle="amount" maxlength="10" required />
+                            <input class="form-control form-control-sm" id="day_use_amt" type="text" name="day_use_amt" placeholder="100,000,000" istyle="amount" maxlength="13" required />
                           </div>
                         </div>
                       </div>
@@ -746,7 +778,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_depositor">예금주</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="abank_depositor" type="text" name="abank_depositor" required />      
+                            <input class="form-control form-control-sm" id="abank_depositor" type="text" name="abank_depositor" required maxlength="20"/>      
                           </div>
                         </div>
                       </div>
@@ -763,7 +795,7 @@
                       <div class="col-sm-2">
                         <div class="input-group input-group-sm mb-1">
                           <div class="col-sm">
-                            <input class="form-control form-control-sm" id="abank_pwd" type="text" name="abank_pwd" maxlength="4"/ placeholder="pwd" required>                             
+                            <input class="form-control form-control-sm" id="abank_pwd" type="text" name="abank_pwd" maxlength="4" placeholder="pwd" required>                             
                           </div>
                         </div> 
                       </div>
@@ -780,7 +812,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_search_id">조회 ID</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="abank_search_id" type="text" name="abank_search_id"  />      
+                            <input class="form-control form-control-sm" id="abank_search_id" type="text" name="abank_search_id"  maxlength="20" />      
                           </div>         
                         </div>
                       </div>
@@ -788,7 +820,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_search_pwd">조회PWD</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="abank_search_pwd" type="text" name="abank_search_pwd"  />      
+                            <input class="form-control form-control-sm" id="abank_search_pwd" type="text" name="abank_search_pwd" maxlength="20" />      
                           </div>
                         </div>
                       </div>
@@ -832,7 +864,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="bbank_account_no">계좌번호</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="bbank_account_no" type="text" name="bbank_account_no" istyle="number" maxlength="12" />
+                            <input class="form-control form-control-sm" id="bbank_account_no" type="text" name="bbank_account_no" istyle="number" maxlength="15" />
                           </div>
                         </div>
                       </div>                      
@@ -842,7 +874,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="bbank_depositor">예금주</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="bbank_depositor" type="text" name="bbank_depositor"  />      
+                            <input class="form-control form-control-sm" id="bbank_depositor" type="text" name="bbank_depositor" maxlength="20" />      
                           </div>
                         </div>
                       </div>
@@ -850,7 +882,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="remit_trans_fee">이체수수료</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="remit_trans_fee" type="text" name="remit_trans_fee"  />      
+                            <input class="form-control form-control-sm" id="remit_trans_fee" type="text" name="remit_trans_fee" istyle="amount" maxlength="5"/>      
                           </div>
                         </div>
                       </div>             
@@ -901,8 +933,8 @@
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="risk_stat">RM 상태</label>  
                           <select class="form-select form-select-sm" id="risk_stat" placeholder="" name="risk_stat" >
                             <option value="">선택</option>
-                            <option value="N">정상</option>
-                            <option value="D">위험</option>
+                            <option value="Y">정상</option>
+                            <option value="N">위험</option>
                           </select>
                         </div>
                       </div>      
@@ -923,9 +955,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="cardsales_id">여신협 ID</label>  
                           <div class="col-sm-8">
-                            <select class="form-select form-select-sm" id="cardsales_id" placeholder="" name="cardsales_id" maxlength="20" >
-                              <option value="">선택</option>
-                            </select>                        
+                            <input class="form-control form-control-sm" id="cardsales_id" type="text" name="cardsales_id" maxlength="20" />                            
                           </div>         
                         </div>
                       </div>

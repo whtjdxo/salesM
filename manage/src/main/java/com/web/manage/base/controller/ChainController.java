@@ -108,15 +108,15 @@ public class ChainController {
             if (chainService.insertChain(chainVo, userVO)) {
                 System.out.println("chainCreate success");
                 result.setResultCode("S000");
-                result.setResultMsg("Credit creation successful.");
+                result.setResultMsg("Chain creation successful.");
             } else {
                 System.out.println("chainCreate fail");
                 result.setResultCode("F000");
-                result.setResultMsg("Credit creation failed.");
+                result.setResultMsg("Chain creation failed.");
             }
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("Credit creation failed.");
+            result.setResultMsg("Chain creation failed.");
             e.printStackTrace();
         }
         return result;
@@ -145,15 +145,49 @@ public class ChainController {
             if (chainService.updateChain(chainVo, userVO)) {
                 System.out.println("chainUpdate  success");
                 result.setResultCode("S000");
-                result.setResultMsg("Credit update successful.");
+                result.setResultMsg("Chain update successful.");
             } else {
                 System.out.println("chainUpdate  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Chain update failed.");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Chain update failed.");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
+    @RequestMapping(value = "/updateChainCont", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO updateChainCont(@ModelAttribute("ChainVO") @Valid ChainVO chainVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO();        
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            
+    	    chainVo.setUpt_user_id(member.getUserId()); 
+            chainVo.setTot_limit_amt(chainVo.getTot_limit_amt() == null ? "0" : chainVo.getTot_limit_amt().replaceAll(",", ""));               
+            chainVo.setUnit_limit_amt(chainVo.getUnit_limit_amt() == null ? "0" : chainVo.getUnit_limit_amt().replaceAll(",", ""));
+            chainVo.setDay_use_rate(chainVo.getDay_use_rate() == null ? "0" : chainVo.getDay_use_rate().replaceAll(",", ""));
+            chainVo.setDay_use_amt(chainVo.getDay_use_amt() == null ? "0" : chainVo.getDay_use_amt().replaceAll(",", ""));
+            chainVo.setTot_use_amt(chainVo.getTot_use_amt() == null ? "0" : chainVo.getTot_use_amt().replaceAll(",", ""));
+            chainVo.setRemit_trans_fee(chainVo.getRemit_trans_fee() == null ? "0" : chainVo.getRemit_trans_fee().replaceAll(",", ""));
+
+            System.out.println(chainVo);   
+
+            if (chainService.updateChainCont(chainVo)) {
+                System.out.println("chain Contract Update  success");
+                result.setResultCode("S000");
+                result.setResultMsg("Chain update successful.");
+            } else {
+                System.out.println("Chain Contract Update  Fail");
                 result.setResultCode("F000");
                 result.setResultMsg("Credit update failed.");
             }
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("Credit update failed.");
+            result.setResultMsg("Chain Contract update failed.");
             e.printStackTrace();
         }
         return result;

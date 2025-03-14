@@ -5,6 +5,10 @@ import lombok.Data;
 @Data
 public class ChainVO {
     private String chain_no;
+    private String cont_chain_no;
+    private String van_chain_no;
+    private String card_chain_no;
+    private String file_chain_no;
     private String chain_nm;
     private String corp_cd;
     private String corp_nm;
@@ -46,13 +50,14 @@ public class ChainVO {
     private String abank_search_id;
     private String abank_search_pwd;
     private String bbank_cd;
-    private String bbank_account;
+    private String bbank_account_no;
     private String bbank_depositor;
     private String bbank_check_yn;
     private String bbank_check_id;
     private String bbank_check_dt;
     private String auto_remit_yn;
     private String svc_stat;
+    private String cont_dt;
     private String svc_start_dt;
     private String svc_end_dt;
     private String crd_rate;
@@ -77,6 +82,8 @@ public class ChainVO {
     private String remit_trans_fee;
     private String remit_start_dt;
     private String remit_end_dt;
+    private String risk_stat;
+    private String risk_reason_cd;
     private String remark;
     private String bk_div;
     private String cardsales_id;

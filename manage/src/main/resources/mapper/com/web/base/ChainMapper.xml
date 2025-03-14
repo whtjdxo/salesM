@@ -58,7 +58,7 @@
                 , IFNULL(TC.ABANK_SEARCH_ID, '')    AS abank_search_id
                 , IFNULL(TC.ABANK_SEARCH_PWD, '')   AS abank_search_pwd
                 , IFNULL(TC.BBANK_CD, '')           AS  bbank_cd
-                , IFNULL(TC.BBANK_ACCOUNT, '')      AS  bbank_account
+                , IFNULL(TC.BBANK_ACCOUNT_NO, '')   AS  bbank_account_no
                 , IFNULL(TC.BBANK_DEPOSITOR, '')    AS  bbank_depositor
                 , IFNULL(TC.BBANK_CHECK_YN, '')     AS  bbank_check_yn
                 , IFNULL(TC.BBANK_CHECK_ID, '')     AS  bbank_check_id
@@ -66,6 +66,7 @@
                 , IFNULL(TC.AUTO_REMIT_YN, '')      AS  auto_remit_yn
                 , IFNULL(TC.SVC_STAT, '')           AS  svc_stat
                 , GET_CODE_NM('SVC_STAT', TC.SVC_STAT)       AS svc_stat_nm
+                , IFNULL(TC.CONT_DT, '')            AS  cont_dt
                 , IFNULL(TC.SVC_START_DT, '')       AS  svc_start_dt
                 , IFNULL(TC.SVC_END_DT, '')         AS  svc_end_dt
                 , IFNULL(TC.CRD_RATE, 0)           AS  crd_rate
@@ -90,6 +91,8 @@
                 , IFNULL(TC.REMIT_TRANS_FEE, '')    AS remit_trans_fee
                 , IFNULL(TC.REMIT_START_DT, '')     AS remit_start_dt
                 , IFNULL(TC.REMIT_END_DT, '')       AS remit_end_dt
+                , IFNULL(TC.RISK_STAT, '')          AS risk_stat
+                , IFNULL(RISK_REASON_CD, '')        AS risk_reason_cd
                 , IFNULL(TC.REMARK, '')             AS remark
                 , IFNULL(TC.BK_DIV, '')             AS bk_div
                 , IFNULL(TC.CARDSALES_ID, '')       AS cardsales_id
@@ -158,88 +161,89 @@
 
     <update id="updateChain" parameterType="com.web.manage.base.domain.ChainVO">
         UPDATE tb_chain
-           SET CHAIN_NM          = #{chain_nm},
-               CORP_CD           = #{corp_cd},
-               AGENCY_NO         = #{agency_no},
-               BIZ_NO            = #{biz_no},
-               LAW_NO            = #{law_no},
-               UPTAE             = #{uptae},
-               UPJONG            = #{upjong},
-               CHAIN_TEL_NO      = #{chain_tel_no},
-               CHAIN_ZIP_NO      = #{chain_zip_no},
-               CHAIN_ADDR        = #{chain_addr},
-               CHAIN_ADDR_DTL    = #{chain_addr_dtl},
-               <!-- CEO_ID            = #{ceo_id}, -->
-               CEO_BIRTH_DT      = #{ceo_birth_dt},
-               <!-- CEO_REG_SEX       = #{ceo_reg_sex},
-               CEO_REG_NO        = #{ceo_reg_no}, -->
-               EMAIL             = #{email},
-               REMARK            = #{remark},
-               UPT_USER_ID       = #{upt_user_id},
-               UPT_DTTM          = NOW()
+           SET CHAIN_NM          = #{chain_nm}
+               , CORP_CD           = #{corp_cd}
+               , AGENCY_NO         = #{agency_no}
+               , BIZ_NO            = #{biz_no}
+               , LAW_NO            = #{law_no}
+               , UPTAE             = #{uptae}
+               , UPJONG            = #{upjong}
+               , CHAIN_TEL_NO      = #{chain_tel_no}
+               , CHAIN_ZIP_NO      = #{chain_zip_no}
+               , CHAIN_ADDR        = #{chain_addr}
+               , CHAIN_ADDR_DTL    = #{chain_addr_dtl}
+               <!-- , CEO_ID            = #{ceo_id} -->
+               , CEO_BIRTH_DT      = #{ceo_birth_dt}
+               <!-- , CEO_REG_SEX       = #{ceo_reg_sex}
+               , CEO_REG_NO        = #{ceo_reg_no} -->
+               , EMAIL             = #{email}
+               , REMARK            = #{remark}
+               , UPT_USER_ID       = #{upt_user_id}
+               , UPT_DTTM          = NOW()
          WHERE CHAIN_NO         = #{chain_no}
     </update>
 
     <update id="updateChainCont" parameterType="com.web.manage.base.domain.ChainVO">
         UPDATE  TB_CHAIN
-           SET  ABANK_ACCOUNT_TP    = #{abank_account_tp},
-                ABANK_CD            = #{abank_cd},                
-                ABANK_ACCOUNT_NO    = #{abank_account_no},
-                ABANK_SPEED_YN      = 'Y',
-                ABANK_PWD           = #{abank_pwd},
-                ABANK_DEPOSITOR     = #{abank_depositor},
-                ABANK_CHECK_YN      = #{abank_check_yn},
-                ABANK_CHECK_ID      = #{abank_check_id},
-                ABANK_CHECK_DT      = #{abank_check_dt},
-                ABANK_LINK_STAT     = #{abank_link_stat},
-                ABANK_LINK_AGREE_DT = #{abank_link_agree_dt},
-                ABANK_LINK_PAYER_NO = #{abank_link_payer_no},
-                ABANK_LAST_REMIT_DTTM = #{abank_last_remit_dttm},
-                ABANK_SEARCH_ID     = #{abank_search_id},
-                ABANK_SEARCH_PWD    = #{abank_search_pwd},
-                BBANK_CD            = #{bbank_cd},
-                BBANK_ACCOUNT       = #{bbank_account},
-                BBANK_DEPOSITOR     = #{bbank_depositor},
-                BBANK_CHECK_YN      = #{bbank_check_yn},
-                BBANK_CHECK_ID      = #{bbank_check_id},
-                BBANK_CHECK_DT      = #{bbank_check_dt},
-                AUTO_REMIT_YN       = #{auto_remit_yn},
-                SVC_STAT            = #{svc_stat},
-                SVC_START_DT        = #{svc_start_dt},
-                SVC_END_DT          = #{svc_end_dt},
-                CRD_RATE            = #{crd_rate},
-                CRD_DELAY_RATE      = #{crd_delay_rate},
-                SVC_RATE            = #{svc_rate},
-                ETC_RATE            = #{etc_rate},
-                TOT_LIMIT_AMT       = #{tot_limit_amt},
-                UNIT_LIMIT_AMT      = #{unit_limit_amt},
-                DAY_USE_RATE        = #{day_use_rate},
-                DAY_USE_AMT         = #{day_use_amt},
-                TOT_USE_AMT         = #{tot_use_amt},
-                REMIT_TYPE          = #{remit_type},
-                REMIT_CYCLE         = #{remit_cycle},
-                REMIT_STAT          = #{remit_stat},
-                REMIT_STAT_CD       = #{remit_stat_cd},
-                REMIT_STAT_DATE     = #{remit_stat_date},
-                REMIT_OVER_STAT     = #{remit_over_stat},
-                REMIT_OVER_STAT_CD  = #{remit_over_stat_cd},
-                REMIT_AUTO_STAT     = #{remit_auto_stat},
-                REMIT_TRANS_FEE     = #{remit_trans_fee},
-                REMIT_START_DT      = #{remit_start_dt},
-                REMIT_END_DT        = #{remit_end_dt},
-                RISK_STAT           = #{risk_stat},
-                RISK_REASON         = #{risk_reason},
-                REMARK              = #{remark},
-                CARDSALES_ID        = #{cardsales_id},
-                CARDSALES_PWD       = #{cardsales_pwd},
-                WORK_CHECK_FLAG     = #{work_check_flag},
-                WORK_CHECK_MM       = #{work_check_mm},
-                WORK_START_TM       = #{work_start_tm},
-                WORK_END_TM         = #{work_end_tm},
-                WORK_HOLIDAY_FLAG   = #{work_holiday_flag},
-                LAST_CHECK_DTTM     = #{last_check_dttm},
-                VIEW_YN             = #{view_yn},
-                USE_YN              = #{use_yn}
-         WHERE  CHAIN_NO = #{chain_no}                
+           SET  ABANK_ACCOUNT_TP    = #{abank_account_tp}
+                , ABANK_CD            = #{abank_cd}                
+                , ABANK_ACCOUNT_NO    = #{abank_account_no}
+                , ABANK_SPEED_YN      = 'Y' 
+                , ABANK_PWD           = #{abank_pwd}
+                , ABANK_DEPOSITOR     = #{abank_depositor}
+                , ABANK_CHECK_YN      = #{abank_check_yn}
+                , ABANK_CHECK_ID      = #{abank_check_id}
+                , ABANK_CHECK_DT      = #{abank_check_dt}
+                , ABANK_LINK_STAT     = #{abank_link_stat}
+                , ABANK_LINK_AGREE_DT = #{abank_link_agree_dt}
+                , ABANK_LINK_PAYER_NO = #{abank_link_payer_no}
+                <!-- , ABANK_LAST_REMIT_DTTM = #{abank_last_remit_dttm} -->
+                , ABANK_SEARCH_ID     = #{abank_search_id}
+                , ABANK_SEARCH_PWD    = #{abank_search_pwd}
+                , BBANK_CD            = #{bbank_cd}
+                , BBANK_ACCOUNT_NO    = #{bbank_account_no}
+                , BBANK_DEPOSITOR     = #{bbank_depositor}
+                <!-- , BBANK_CHECK_YN      = #{bbank_check_yn}
+                , BBANK_CHECK_ID      = #{bbank_check_id}
+                , BBANK_CHECK_DT      = #{bbank_check_dt}
+                , AUTO_REMIT_YN       = #{auto_remit_yn} -->
+                , CONT_DT             = #{cont_dt}
+                , SVC_STAT            = #{svc_stat}
+                , SVC_START_DT        = #{svc_start_dt}
+                , SVC_END_DT          = #{svc_end_dt}
+                , CRD_RATE            = #{crd_rate}
+                , CRD_DELAY_RATE      = #{crd_delay_rate}
+                , SVC_RATE            = #{svc_rate}
+                , ETC_RATE            = #{etc_rate}
+                , TOT_LIMIT_AMT       = #{tot_limit_amt}
+                , UNIT_LIMIT_AMT      = #{unit_limit_amt}
+                , DAY_USE_RATE        = #{day_use_rate}
+                , DAY_USE_AMT         = #{day_use_amt}
+                , TOT_USE_AMT         = #{tot_use_amt}
+                <!-- , REMIT_TYPE          = #{remit_type}
+                , REMIT_CYCLE         = #{remit_cycle} -->
+                , REMIT_STAT          = #{remit_stat}
+                , REMIT_STAT_CD       = #{remit_stat_cd}
+                <!-- , REMIT_STAT_DATE     = #{remit_stat_date} -->
+                , REMIT_OVER_STAT     = #{remit_over_stat}
+                , REMIT_OVER_STAT_CD  = #{remit_over_stat_cd}
+                <!-- , REMIT_AUTO_STAT     = #{remit_auto_stat} -->
+                , REMIT_TRANS_FEE     = #{remit_trans_fee}
+                , REMIT_START_DT      = #{remit_start_dt}
+                , REMIT_END_DT        = #{remit_end_dt}
+                , RISK_STAT           = #{risk_stat}
+                , RISK_REASON_CD      = #{risk_reason_cd}                
+                , CARDSALES_ID        = #{cardsales_id}
+                , CARDSALES_PWD       = #{cardsales_pwd}
+                <!-- , WORK_CHECK_FLAG     = #{work_check_flag}
+                , WORK_CHECK_MM       = #{work_check_mm}
+                , WORK_START_TM       = #{work_start_tm}
+                , WORK_END_TM         = #{work_end_tm}
+                , WORK_HOLIDAY_FLAG   = #{work_holiday_flag}
+                , LAST_CHECK_DTTM     = #{last_check_dttm} --> 
+                , USE_YN              = #{use_yn}
+                , UPT_DTTM            = NOW()
+                , UPT_USER_ID           = #{upt_user_id}
+         WHERE  CHAIN_NO = #{cont_chain_no}                
     </update>
 </mapper>
