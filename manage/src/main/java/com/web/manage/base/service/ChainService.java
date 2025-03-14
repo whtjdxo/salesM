@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.web.manage.base.mapper.ChainMapper;
+import com.web.manage.user.domain.UserVO;
+import com.web.manage.user.mapper.UserMngMapper;
+import com.web.manage.user.service.UserMngService;
 import com.web.manage.base.domain.ChainVO;
 
 @Service
@@ -14,6 +17,8 @@ public class ChainService {
 
     @Autowired
     private ChainMapper chainMapper;
+    @Autowired 
+    private UserMngService  userMngService;
 
     public List<HashMap<String, Object>> getChainList(HashMap<String, Object> hashmapParam) {
         return chainMapper.getChainList(hashmapParam);
@@ -23,19 +28,31 @@ public class ChainService {
         return chainMapper.getQueryTotalCnt();
     }
 
-    public String createChainNo() {
-        return chainMapper.createChainNo();
+    public String getNewChainNo() {
+        return chainMapper.getNewChainNo();
     }
 
     public int getCeoIdDupChk(String ceo_id) {
         return chainMapper.getCeoIdDupChk(ceo_id);
     }
 
-    public boolean chainCreate(ChainVO chainVO) {
-        return chainMapper.chainCreate(chainVO);
+    public boolean insertChain(ChainVO chainVO, UserVO userVO) {
+        if (!chainMapper.insertChain(chainVO)) {
+            throw new RuntimeException("Agency Create failed");
+        }
+        if (!userMngService.userCreate(userVO)) {
+            throw new RuntimeException("User(CEO) Create failed");
+        }
+        return true;        
     }
 
-    public boolean chainUpdate(ChainVO chainVO) {
-        return chainMapper.chainUpdate(chainVO);
+    public boolean updateChain(ChainVO chainVO, UserVO userVO) {
+        if (!chainMapper.updateChain(chainVO)) {
+            throw new RuntimeException("Agency Update failed"); 
+        }
+        if (!userMngService.userUpdate(userVO)) {
+            throw new RuntimeException("User(CEO) Update failed"); 
+        }
+        return true;        
     }
 }

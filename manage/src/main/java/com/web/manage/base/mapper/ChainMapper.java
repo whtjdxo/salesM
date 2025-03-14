@@ -14,11 +14,15 @@ public interface ChainMapper {
 
     int getQueryTotalCnt();
 
-    String createChainNo();
+    String getNewChainNo();
     
     int getCeoIdDupChk(String ceo_id);
 
-    boolean chainCreate(ChainVO chainVO);
+    boolean insertChain(ChainVO chainVO);
 
-    boolean chainUpdate(ChainVO chainVO);
+    boolean updateChain(ChainVO chainVO);
+    boolean updateChainCont(ChainVO chainVO);
+    boolean updateChainVan(ChainVO chainVO);
+    boolean updateChainCard(ChainVO chainVO);
+    boolean updateChainFile(ChainVO chainVO);
 }

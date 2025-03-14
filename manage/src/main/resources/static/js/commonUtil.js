@@ -357,15 +357,19 @@ jQuery(function ($) {
         .find("input[istyle='float']")
         .keypress(function (e) {
           if (!(e.which >= 48 && e.which <= 57) && e.which != 46) {
-            e.preventDefault();
+        e.preventDefault();
           }
         })
         .blur(function () {
           var fVal = $(this).val();
           if (!isValidFloat(fVal)) {
-            alert('유효하지않은 형식입니다.\nEX) 000.00');
+            if (!$(this).data('alerted')) {
+              alert('유효하지않은 형식입니다.\nEX) 000.00');
+              $(this).data('alerted', true);
+            }
             $(this).focus();
-            eventObject.stopPropagation();
+          } else {
+            $(this).data('alerted', false);
           }
         })
         .css({

@@ -118,6 +118,12 @@
         <if test="addr_dtl != null and addr_dtl != ''">      
             , addr_dtl = #{addr_dtl}           
         </if>
+        <if test="hp_no != null and hp_no != ''">        
+            , hp_no = #{hp_no}             
+        </if>
+        <if test="tel_no != null and tel_no != ''">        
+            , tel_no = #{tel_no}             
+        </if>
         <if test="use_yn != null and use_yn != ''">        
             , use_yn = #{use_yn}             
         </if>

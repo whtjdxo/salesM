@@ -30,9 +30,11 @@
       }
       $(document).ready(function () {           
         $('#frm_chain_info').onLoadFunction();     
+        $('#frm_cont_info').onLoadFunction();     
         callAjax('/common/totalCodelist', "code_grp_cd=('BANK_CD')", fn_bank_setting);      
         function fn_bank_setting(data) {
           codeSetting('BANK_CD', data.data, '#abank_cd', '1', '', '');
+          codeSetting('BANK_CD', data.data, '#bbank_cd', '1', '', '');
         }
         
         callAjax('/common/getCreditCorpList', "", fn_credit_list_setting);      
@@ -53,9 +55,14 @@
           codeSetting('SVC_STAT', data.data, '#svc_stat', '1', '', '');
         }
 
-        callAjax('/common/totalCodelist', "code_grp_cd=('REMIT_STAT')", fn_remit_stat_setting);      
-        function fn_remit_stat_setting(data) {
-          codeSetting('REMIT_STAT', data.data, '#remit_stat', '1', '', '');
+        callAjax('/common/totalCodelist', "code_grp_cd=('REMIT_OVER_STAT_CD')", fn_remit_over_stat_cd_setting);      
+        function fn_remit_over_stat_cd_setting(data) {
+          codeSetting('REMIT_OVER_STAT_CD', data.data, '#remit_over_stat_cd', '1', '', '');
+        }
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('RISK_REASON_CD')", fn_risk_reason_cd_setting);      
+        function fn_risk_reason_cd_setting(data) {
+          codeSetting('RISK_REASON_CD', data.data, '#risk_reason_cd', '1', '', '');
         }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('ACCOUNT_TP')", fn_account_tp_setting);      
@@ -93,6 +100,7 @@
                 , { data: 'ceo_nm' }
                 , { data: 'ceo_tel_no' }
                 , { data: 'tot_limit_amt' }                
+
                 , { data: 'tot_use_amt' }
                 , { data: 'corp_nm' }
                 , { data: 'agency_nm' }
@@ -100,15 +108,16 @@
                 , { data: 'remit_stat_nm' }                
               ],
             columnDefs: [           
-            { targets: 0, width: '150px', className: 'text-center' },
-            { targets: 1, width: '300px', className: 'text-left' },
-            { targets: 2, width: '200px', className: 'text-center' },
-            { targets: 3, width: '200px', className: 'text-center' },
-            { targets: 4, width: '200px', className: 'text-center' },
-            { targets: 5, width: '200px', className: 'text-center' },
-            { targets: 6, width: '150px', className: 'text-center' },
-            { targets: 7, width: '150px', className: 'text-right' },
-            { targets: 8, width: '100px', className: 'text-center' },
+            { targets: 0, width: '100px', className: 'text-center' },
+            { targets: 1, width: '150px', className: 'text-left' },
+            { targets: 2, width: '100px', className: 'text-center' },
+            { targets: 3, width: '100px', className: 'text-center' },
+            { targets: 4, width: '120PX', className: 'text-right' },
+            { targets: 5, width: '120PX', className: 'text-right' },
+            { targets: 6, width: '120px', className: 'text-center' },
+            { targets: 7, width: '120px', className: 'text-center' },
+            { targets: 8, width: '80px', className: 'text-center' },
+            { targets: 8, width: '80px', className: 'text-center' },
           ],  
           order: [[1, 'desc']],
           paging: true,
@@ -144,7 +153,18 @@
           var data = tbl_chain.row(this).data();
           if (data) {
             $('#frm_chain_info')[0].reset();
+            $('#frm_cont_info')[0].reset();
+            $('#frm_van_info')[0].reset();
+            $('#frm_card_info')[0].reset();
+            $('#frm_file_info')[0].reset();
+            $('#corp_cd').val(data.corp_cd);              
+            $('#agency_no').val(data.agency_no);    
             $('#chain_no').val(data.chain_no);            
+            $('#cont_chain_no').val(data.chain_no);            
+            $('#van_chain_no').val(data.chain_no);            
+            $('#card_chain_no').val(data.chain_no);            
+            $('#file_chain_no').val(data.chain_no);
+                       
             $('#chain_nm').val(data.chain_nm);
             $('#biz_no').val(data.biz_no);
             $('#upjong').val(data.upjong);            
@@ -154,14 +174,17 @@
             $('#chain_addr').val(data.chain_addr);
             $('#chain_addr_dtl').val(data.chain_addr_dtl);
             $('#chain_tel_no').val(data.chain_tel_no);
+            
             $('#ceo_id').val(data.ceo_id);
-            // $('#ceo_regno').val(data.ceo_regno);
+            $('#ceo_birth_dt').val(data.ceo_birth_dt);
+            $('#ceo_regno').val(data.ceo_regno);
             $('#ceo_nm').val(data.ceo_nm);
             $('#ceo_zip_no').val(data.ceo_zip_no);
             $('#ceo_addr').val(data.ceo_addr);
             $('#ceo_addr_dtl').val(data.ceo_addr_dtl);            
-            $('#ceo_tel_no').val(data.ceo_tel_no);
+            $('#ceo_tel_no').val(data.ceo_tel_no);            
             $('#email').val(data.email);
+
             $('#assure_amt').val(data.assure_amt);
             $('#insure_amt').val(data.insure_amt);
             $('#ass_sdate').val(data.ass_sdate);
@@ -186,27 +209,46 @@
             $('#btn_dupchk').hide();
 
             $('#ceo_pwd').removeAttr("required");
+            $('#ceo_id').attr("readonly", "readonly");            
             // $('#ceo_pwd').attr("required", "required");            
+
+            if(data.abank_cd=="039"){
+              $('#knbank_info').show();
+              $('#abank_link_agree_dt').attr("required", "required");            
+              $('#abank_link_stat').attr("required", "required");            
+            }else{
+              $('#knbank_info').hide();
+              $('#abank_link_agree_dt').removeAttr("required");
+              $('#abank_link_stat').removeAttr("required");
+            }
+            
             $('#crud').val('update'); 
           }  
         });      
 
         $('#btn_clear').click(function () {
           $('#frm_chain_info').clearForm();
+          $('#frm_cont_info')[0].clearForm();
+          $('#frm_van_info')[0].clearForm();
+          $('#frm_card_info')[0].clearForm();
+          $('#frm_file_info')[0].clearForm();
+
           $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
           $('#btn_update').hide();
           $('#btn_create').show();
           $('#btn_dupchk').show(); 
           $('#ceo_pwd').attr("required", "required");
+          $('#ceo_id').removeAttr("readonly");  
         }); 
 
         $('#btn_dupchk').click(function () {
           var ceo_id = $('#ceo_id').val();
+          alert (ceo_id);
           if (ceo_id == '') {
             swal('실패', '대표자 ID를 입력하세요.', 'error');
             return;
           } else {
-            callAjax('/base/organ/chainMng/ceoIdDupChk', 'ceo_id=' + ceo_id, fn_ceo_dupchk);
+            callAjax('/base/user/userMng/getUserIdDupChk', 'user_id=' + ceo_id, fn_ceo_dupchk);
           }
         });
         function fn_ceo_dupchk(data) {
@@ -229,7 +271,7 @@
             }
           });
           if (checked) {
-            ConfirmdialogToAjax('create', '/base/organ/chainMng/InsertAgency', $('#frm_chain_info').serialize(), fn_return_result);
+            ConfirmdialogToAjax('create', '/base/organ/chainMng/insertChain', $('#frm_chain_info').serialize(), fn_return_result);
           } 
         });
 
@@ -237,13 +279,21 @@
           $('#crud').val('update');
           var form = $('#frm_chain_info');
           var checked = true;
+          var chain_no = $('#chain_no').val();
+          if(chain_no == '') {
+            swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          }
+
           $.each(form, function (i, val) {
             if (!val.checkValidity()) {
               checked = false;
             }
           });
+          
           if (checked) {
-            ConfirmdialogToAjax('update', '/base/organ/chainMng/UpdateAgency', $('#frm_chain_info').serialize(), fn_return_result);
+            ConfirmdialogToAjax('update', '/base/organ/chainMng/updateChain', $('#frm_chain_info').serialize(), fn_return_result);
           }
         });    
 
@@ -353,27 +403,53 @@
           </div> -->
           <div class="card-body">
             <div class="min-vh-50">
-              <form class="needs-validation" id="frm_chain_info" name="frm_chain_info" onsubmit="return false;" method="post" novalidate=""> 
-                <ul class="nav nav-tabs" id="myTab" role="tablist">
-                  <li class="nav-item"><a class="nav-link active" id="info-tab" data-bs-toggle="tab" href="#tab_chain_info" role="tab" aria-controls="tab-home" aria-selected="true">일반정보</a></li>
-                  <li class="nav-item"><a class="nav-link" id="cont-tab" data-bs-toggle="tab" href="#tab_chain_cont" role="tab" aria-controls="tab-profile" aria-selected="false">계약정보</a></li>
-                  <li class="nav-item"><a class="nav-link" id="cont-tab" data-bs-toggle="tab" href="#tab_chain_van" role="tab" aria-controls="tab-profile" aria-selected="false">VAN</a></li>
-                  <li class="nav-item"><a class="nav-link" id="cont-tab" data-bs-toggle="tab" href="#tab_chain_card" role="tab" aria-controls="tab-profile" aria-selected="false">카드 매입</a></li>
-                </ul>          
-                <div class="tab-content border border-top-2 p-3" id="myTabContent">
-                  <div class="tab-pane fade show active" id="tab_chain_info" role="tabpanel" aria-labelledby="tab_chain_info">                    
+              <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="chain_info_tab" data-bs-toggle="tab" href="#tab_chain_info" role="tab" aria-controls="tab_chain_info" aria-selected="true">일반 정보</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" id="cont_info_tab" data-bs-toggle="tab" href="#tab_cont_info" role="tab" aria-controls="tab_cont_info" aria-selected="false">계약 정보</a></li>
+                <li class="nav-item"><a class="nav-link" id="van_info_tab" data-bs-toggle="tab" href="#tab_van_info" role="tab" aria-controls="tab_van_info" aria-selected="false">VAN 정보</a></li>
+                <li class="nav-item"><a class="nav-link" id="card_info_tab" data-bs-toggle="tab" href="#tab_card_info" role="tab" aria-controls="tab_card_info" aria-selected="false">매입 정보</a></li>
+                <li class="nav-item"><a class="nav-link" id="file_info_tab" data-bs-toggle="tab" href="#tab_file_info" role="tab" aria-controls="tab_file_info" aria-selected="false">파일 관리</a></li>
+              </ul>
+              <div class="tab-content border border-top-2 p-3" id="myTabContent">                
+                <!-- 일반정보 TAB ----------------------------------------------------------------------------------------------------------------- -->    
+                <div class="tab-pane fade show active" id="tab_chain_info" role="tabpanel" aria-labelledby="chain_info_tab">
+                  <form class="needs-validation" id="frm_chain_info" name="frm_chain_info" onsubmit="return false;" method="post" novalidate=""> 
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-0">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="corp_cd">여신사</label>  
+                          <div class="col-sm-8">
+                            <select class="form-select form-control-sm" id="corp_cd" name="corp_cd" required>
+                              <option value="">여신사</option>
+                            </select>  
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="agency_no">대리점</label>  
+                          <div class="col-sm-8">
+                            <select class="form-select form-control-sm" id="agency_no" name="agency_no" required>
+                              <option value="">대리점</option>
+                            </select>    
+                          </div>
+                        </div>
+                      </div>
+                    </div>    
                     <div class="row mb-1">
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="chain_no">가맹점번호</label>                      
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="chain_no" type="text" name="chain_no" readonly="readonly"/>
+                            <input class="form-control form-control-sm" id="chain_no" type="text" name="chain_no" readonly="readonly" />
                           </div>     
                         </div>
                       </div>
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="chain_no">가맹점 명</label>                      
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="chain_nm">가맹점 명</label>                      
                           <div class="col-sm-8">
                             <input class="form-control form-control-sm" id="chain_nm" type="text" name="chain_nm"  maxlength="20" required />    
                           </div>
@@ -385,7 +461,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="biz_no">사업자 번호</label>                      
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="biz_no" type="text" name="biz_no" maxlength="20" required />                    
+                            <input class="form-control form-control-sm" id="biz_no" type="text" name="biz_no" maxlength="15" required />                    
                           </div>     
                         </div>
                       </div>
@@ -393,12 +469,11 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="law_no">법인 번호</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="law_no" type="text" name="law_no" maxlength="20" />
+                            <input class="form-control form-control-sm" id="law_no" type="text" name="law_no" maxlength="15" />
                           </div>   
                         </div>
                       </div>
-                    </div>  
-
+                    </div> 
                     <div class="row mb-1">
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
@@ -421,7 +496,7 @@
                     <div class="row mb-1">
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-2 col-form-label col-form-label-sm" for="chain_tel_no">연락처</label>                      
-                        <div class="col-sm-6">
+                        <div class="col-sm-10">
                           <input class="form-control form-control-sm" id="chain_tel_no" type="text" name="chain_tel_no" placeholder="010-000-0000" istyle="phone" required /> 
                         </div>     
                       </div> 
@@ -429,7 +504,7 @@
                     <div class="row mb-1"> 
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-2 col-form-label col-form-label-sm" for="uptae">eMail</label>  
-                        <div class="col-sm-6">
+                        <div class="col-sm-10">
                           <input class="form-control form-control-sm" id="email" type="email" name="email" placeholder="example@email.com" istyle="email"/> 
                         </div>   
                       </div> 
@@ -447,16 +522,8 @@
                           <input type="text" class="form-control form-control-sm mt-2" id="chain_addr_dtl" name="chain_addr_dtl" placeholder="상세 주소" required />
                         </div>
                       </div>
-                    </div>                 
-                    <div class="row mb-3 mt-1 mb-1 fw-bold fs-8 border-bottom pb-1"></div>
-                    <div class="row mb-1">                    
-                      <div class="input-group input-group-sm mb-2">
-                        <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_nm">대표자 명</label>                  
-                        <div class="col-sm-10">
-                          <input class="form-control form-control-sm" id="ceo_nm" type="text" name="ceo_nm" required maxlength="20"/> 
-                        </div>                  
-                      </div>
-                    </div>
+                    </div>  
+                    <div class="row mb-3 mt-1 mb-1 fw-bold fs-8 border-bottom pb-1"></div> 
                     <div class="row mb-1">
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
@@ -477,7 +544,26 @@
                           </div>
                         </div> 
                       </div>
+                    </div> 
+                    <div class="row mb-1">  
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="ceo_nm">대표자 명</label>                  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="ceo_nm" type="text" name="ceo_nm" maxlength="20" required /> 
+                          </div>     
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="ceo_birth_dt">생년월일</label>
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="ceo_birth_dt" type="text" name="ceo_birth_dt" istyle="date" maxlength="10" required />
+                          </div>   
+                        </div>
+                      </div> 
                     </div>
+                    
                     <div class="row mb-1">                           
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_tel_no">연락처</label>                  
@@ -494,8 +580,7 @@
                             <input type="hidden" class="form-control form-control-sm" id="ceo_zip_no" name="ceo_zip_no" required />
                             <input type="text" class="form-control form-control-sm" id="ceo_addr" name="ceo_addr" readonly="readonly" required />
                             <button type="button" class="btn btn-primary" onclick="execDaumPostcode('ceo')">주소검색</button>
-                          </div>                    
-                          <!-- 상세 주소 입력 -->
+                          </div> 
                           <input type="text" class="form-control form-control-sm mt-2" id="ceo_addr_dtl" name="ceo_addr_dtl" placeholder="상세 주소" required />
                         </div>
                       </div>
@@ -507,6 +592,351 @@
                           <textarea class="form-control"  id="remark" rows="2" name="remark"></textarea> 
                         </div>
                       </div>
+                    </div>
+                    <div class="row mb-1"> 
+                      <div class="input-group input-group-sm mb-2"> 
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="addr">수정자 / 일</label>                     
+                        <div class="col-sm-10">
+                          <div class="input-group input-group-sm">
+                            <input type="text" class="form-control form-control-sm" id="upt_user_id" name="upt_user_id" readonly="readonly" disabled />
+                            <input type="text" class="form-control form-control-sm" id="upt_dttm" name="upt_dttm" readonly="readonly" disabled /> 
+                          </div>                    
+                        </div>
+                      </div>   
+                    </div>
+                    <div class="card-footer">  
+                      <p class="text-end pb-1 mb-1 pd-1">
+                        <button class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
+                        <button class="btn btn-primary text-end" id="btn_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                        <button class="btn btn-primary text-end" id="btn_create"><i class="fa fa-paste"></i>저장</button>
+                      </p>
+                    </div>
+                  </form>  
+                </div>     
+                <!-- 계약정보 TAB ----------------------------------------------------------------------------------------------------------------- -->               
+                <div class="tab-pane fade" id="tab_cont_info" role="tabpanel" aria-labelledby="cont_info_tab">
+                  <form class="needs-validation" id="frm_cont_info" name="frm_cont_info" onsubmit="return false;" method="post" novalidate="">
+                    <input id="cont_chain_no" type="hidden" name="cont_chain_no" />
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="cont_dt">계약일</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="cont_dt" name = "cont_dt" type="text" istyle="date" required>
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_stat">계약</label>  
+                          <div class="col-sm-8">
+                            <select class="form-select form-control-sm" id="svc_stat" name="svc_stat"  required>
+                              <option value="">계약상태</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>                    
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_start_dt">시작일</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="svc_start_dt" name = "svc_start_dt" type="text" istyle="date" required />
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_end_dt">종료일</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="svc_end_dt" name = "svc_end_dt" type="text" placeholder="yyyy-mm-dd" istyle="date" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_rate">정산 수수료</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="svc_rate" type="text" name="svc_rate" placeholder="00.00" istyle="float" required maxlength="4" />
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="etc_rate">기타 수수료</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="etc_rate" type="text" name="etc_rate" placeholder="00.00" istyle="float" maxlength="4" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_rate">여신 수수료</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="crd_rate" type="text" name="crd_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_delay_rate">연체 수수료</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="crd_delay_rate" type="text" name="crd_delay_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="tot_limit_amt">약정 한도액</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="tot_limit_amt" type="text" name="tot_limit_amt" placeholder="100,000,000" istyle="amount" maxlength="10" required />
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="unit_limit_amt">건 한도액</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="unit_limit_amt" type="text" name="unit_limit_amt" placeholder="100,000,000" istyle="amount" maxlength="10" required />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="day_use_rate">일 한도율</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="day_use_rate" type="text" name="day_use_rate" placeholder="00.0" istyle="float" maxlength="3" required />
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="day_use_amt">일일 한도액</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="day_use_amt" type="text" name="day_use_amt" placeholder="100,000,000" istyle="amount" maxlength="10" required />
+                          </div>
+                        </div>
+                      </div>
+                    </div> 
+                    <!-- 입금계좌 ----------------------------------------------------------------------------------------------------------------- -->
+                    <div class="mt-2 mb-2 fw-bold fs-8 border-bottom pb-1 text-primary"></div>
+                    
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_cd">입금 은행</label>  
+                          <div class="col-sm-8">
+                            <select class="form-select form-select-sm" id="abank_cd" placeholder="" name="abank_cd" required>
+                              <option value="">선택</option>
+                            </select>                        
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_depositor">예금주</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="abank_depositor" type="text" name="abank_depositor" required />      
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_account_no">계좌 정보</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="abank_account_no" type="text" name="abank_account_no" istyle="number" maxlength="12" required />
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-sm-2">
+                        <div class="input-group input-group-sm mb-1">
+                          <div class="col-sm">
+                            <input class="form-control form-control-sm" id="abank_pwd" type="text" name="abank_pwd" maxlength="4"/ placeholder="pwd" required>                             
+                          </div>
+                        </div> 
+                      </div>
+                      <div class="col-sm-4">
+                        <div class="col-sm form-check">
+                          <select class="form-select form-select-sm" id="abank_account_tp" placeholder="" name="abank_account_tp" >
+                            <option value="">선택</option>
+                          </select>
+                        </div>
+                      </div>                      
+                    </div>
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_search_id">조회 ID</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="abank_search_id" type="text" name="abank_search_id"  />      
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_search_pwd">조회PWD</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="abank_search_pwd" type="text" name="abank_search_pwd"  />      
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mb-1" id="knbank_info" name="knbank_info">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_link_agree_dt">경남 동의일</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="abank_link_agree_dt" name = "abank_link_agree_dt" type="text" istyle="date" readonly="readonly">                      
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_link_stat">연동상태</label>                            
+                          <div class="col-sm">
+                            <select class="form-select form-select-sm" id="abank_link_stat" placeholder="" name="abank_link_stat" >
+                              <option value="">선택</option>
+                            </select>  
+                          </div>                            
+                          <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_bank_link_stat_change" name="btn_bank_link_stat_change">변경</button></span> 
+                        </div>  
+                      </div>
+                    </div>  
+                    
+                    <!-- 출금계좌 ----------------------------------------------------------------------------------------------------------------- -->
+                    <div class="mt-2 mb-2 fw-bold fs-8 border-bottom pb-1 text-primary"></div>                    
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="bbank_cd">출금 은행</label>  
+                          <div class="col-sm-8">
+                            <select class="form-select form-select-sm" id="bbank_cd" name="bbank_cd" required>
+                              <option value="">선택</option>
+                            </select>                        
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="bbank_account_no">계좌번호</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="bbank_account_no" type="text" name="bbank_account_no" istyle="number" maxlength="12" />
+                          </div>
+                        </div>
+                      </div>                      
+                    </div>
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="bbank_depositor">예금주</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="bbank_depositor" type="text" name="bbank_depositor"  />      
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="remit_trans_fee">이체수수료</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="remit_trans_fee" type="text" name="remit_trans_fee"  />      
+                          </div>
+                        </div>
+                      </div>             
+                    </div>
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="remit_stat">출금 상태</label>  
+                          <select class="form-select form-select-sm" id="remit_stat" placeholder="" name="remit_stat" >
+                            <option value="">선택</option>
+                            <option value="Y">출금</option>
+                            <option value="N">정지</option>
+                          </select>
+                        </div>
+                      </div>  
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="remit_start_dt">출금게시일</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="remit_start_dt" name = "remit_start_dt" type="text" placeholder="yyyy-mm-dd" istyle="date" readonly="readonly">                      
+                          </div>         
+                        </div>
+                      </div>                      
+                    </div>     
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="remit_over_stat">과입 출금</label>  
+                          <select class="form-select form-select-sm" id="remit_over_stat" placeholder="" name="remit_over_stat" >
+                            <option value="">선택</option>
+                            <option value="Y">출금</option>
+                            <option value="N">정지</option>
+                          </select>
+                        </div>
+                      </div>      
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="remit_over_stat_cd">정지사유</label>  
+                          <select class="form-select form-select-sm" id="remit_over_stat_cd" placeholder="" name="remit_over_stat_cd" disabled>
+                            <option value="">선택</option>
+                          </select>
+                        </div>
+                      </div>                                            
+                    </div> 
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="risk_stat">RM 상태</label>  
+                          <select class="form-select form-select-sm" id="risk_stat" placeholder="" name="risk_stat" >
+                            <option value="">선택</option>
+                            <option value="N">정상</option>
+                            <option value="D">위험</option>
+                          </select>
+                        </div>
+                      </div>      
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="risk_reason_cd">리스크 사유</label>  
+                          <select class="form-select form-select-sm" id="risk_reason_cd" placeholder="" name="risk_reason_cd" disabled>
+                            <option value="">선택</option>
+                          </select>
+                        </div>
+                      </div>                                            
+                    </div> 
+                    <!-- 기타 속성 ----------------------------------------------------------------------------------------------------------------- -->
+                    <div class="mt-2 mb-2 fw-bold fs-8 border-bottom pb-1 text-primary"></div>
+                    
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="cardsales_id">여신협 ID</label>  
+                          <div class="col-sm-8">
+                            <select class="form-select form-select-sm" id="cardsales_id" placeholder="" name="cardsales_id" maxlength="20" >
+                              <option value="">선택</option>
+                            </select>                        
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="cardsales_pwd">여신협PWD</label>  
+                          <div class="col-sm-8">
+                            <input class="form-control form-control-sm" id="cardsales_pwd" type="text" name="cardsales_pwd" maxlength="20" />
+                          </div>
+                        </div>
+                      </div>                      
                     </div>
                     <div class="row mb-1"> 
                       <div class="input-group input-group-sm mb-2">
@@ -523,259 +953,60 @@
                         </div>
                       </div>
                     </div>
-                    <div class="row mb-1"> 
-                      <div class="input-group input-group-sm mb-2"> 
-                        <label class="col-sm-2 col-form-label col-form-label-sm" for="addr">수정자 / 일</label>                     
-                        <div class="col-sm-10">
-                          <div class="input-group input-group-sm">
-                            <input type="text" class="form-control form-control-sm" id="upt_user_id" name="upt_user_id" readonly="readonly" />
-                            <input type="text" class="form-control form-control-sm" id="upt_dttm" name="upt_dttm" readonly="readonly" /> 
-                          </div>                    
-                        </div>
-                      </div>   
-                    </div>
-                    <div class="card-footer">  
-                      <p class="text-end pb-1 mb-1 pd-1">
-                        <button class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
-                        <button class="btn btn-primary text-end" id="btn_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
-                        <button class="btn btn-primary text-end" id="btn_create"><i class="fa fa-paste"></i>저장</button>
-                      </p>
-                    </div>
-                  </div>                 
-                  <div class="tab-pane fade" id="tab_chain_cont" role="tabpanel" aria-labelledby="tab_chain_cont">
-                    <div class="row mb-1">
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-0">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="corp_cd">여신사</label>  
-                          <div class="col-sm-8">
-                            <select class="form-select form-control-sm" id="corp_cd" name="corp_cd">
-                              <option value="">여신사</option>
-                            </select>  
-                          </div>         
-                        </div>
-                      </div>
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="agency_no">대리점</label>  
-                          <div class="col-sm-8">
-                            <select class="form-select form-control-sm" id="agency_no" name="agency_no">
-                              <option value="">대리점</option>
-                            </select>    
-                          </div>
-                        </div>
-                      </div>
-                    </div>                  
-                    <div class="row mb-1">
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="cont_dt">계약일</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control datetimepicker flatpickr-input" id="cont_dt" name = "cont_dt" type="text" placeholder="yyyy-mm-dd" data-options="{&quot;disableMobile&quot;:true,&quot;dateFormat&quot;:&quot;Y-m-d&quot;}" readonly="readonly">
-                          </div>         
-                        </div>
-                      </div>
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_stat">계약</label>  
-                          <div class="col-sm-8">
-                            <select class="form-select form-control-sm" id="svc_stat" name="svc_stat">
-                              <option value="">계약상태</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </div>                    
-                    <div class="row mb-1">
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_start_dt">시작일</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control datetimepicker flatpickr-input" id="svc_start_dt" name = "svc_start_dt" type="text" placeholder="yyyy-mm-dd" data-options="{&quot;disableMobile&quot;:true,&quot;dateFormat&quot;:&quot;Y-m-d&quot;}" readonly="readonly">
-                          </div>         
-                        </div>
-                      </div>
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_end_dt">종료일</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control datetimepicker flatpickr-input" id="svc_end_dt" name = "svc_end_dt" type="text" placeholder="yyyy-mm-dd" data-options="{&quot;disableMobile&quot;:true,&quot;dateFormat&quot;:&quot;Y-m-d&quot;}" readonly="readonly">
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row mb-1">
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_rate">정산 수수료</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="svc_rate" type="text" name="svc_rate" placeholder="00.00" istyle="float" />
-                          </div>         
-                        </div>
-                      </div>
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="etc_rate">기타 수수료</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="etc_rate" type="text" name="etc_rate" placeholder="00.00" istyle="float"  />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row mb-1">
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_rate">여신 수수료</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="crd_rate" type="text" name="crd_rate" placeholder="00.00" istyle="float" />
-                          </div>         
-                        </div>
-                      </div>
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_delay_rate">연체 수수료</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="crd_delay_rate" type="text" name="crd_delay_rate" placeholder="00.00" istyle="float"  />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="row mb-1">
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="tot_limit_amt">약정 한도액</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="tot_limit_amt" type="text" name="tot_limit_amt" placeholder="100,000,000" istyle="amount" />
-                          </div>         
-                        </div>
-                      </div>
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="unit_limit_amt">건 한도액</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="unit_limit_amt" type="text" name="unit_limit_amt" placeholder="100,000,000" istyle="amount"  />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row mb-1">
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="day_use_rate">일 한도율</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="day_use_rate" type="text" name="day_use_rate" placeholder="00.0" istyle="float" />
-                          </div>         
-                        </div>
-                      </div>
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="day_use_amt">일일 한도액</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="day_use_amt" type="text" name="day_use_amt" placeholder="100,000,000" istyle="amount"  />
-                          </div>
-                        </div>
-                      </div>
-                    </div> 
-
-                    <div class="mt-2 mb-2 fw-bold fs-8 border-bottom pb-1 text-primary"></div>
-                    
-                    <div class="row mb-1">
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_cd">입금 은행</label>  
-                          <div class="col-sm-8">
-                            <select class="form-select form-select-sm" id="abank_cd" placeholder="" name="abank_cd" />
-                              <option value="">선택</option>
-                            </select>                        
-                          </div>         
-                        </div>
-                      </div>
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="day_use_amt">예금주</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="adepositor" type="text" name="depositor"  />      
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row mb-1">
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="account_no">계좌/비밀번호</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="abank_account_no" type="text" name="abank_account_no" istyle="number" maxlength="12" />
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-sm-2">
-                        <div class="input-group input-group-sm mb-1">
-                          <div class="col-sm">
-                            <input class="form-control form-control-sm" id="abank_pwd" type="text" name="abank_pwd" maxlength="4"/>                             
-                          </div>
-                        </div> 
-                      </div>
-                      <div class="col-sm-4">
-                        <div class="col-sm form-check">
-                          <select class="form-select form-select-sm" id="abank_account_tp" placeholder="" name="abank_account_tp" />
-                            <option value="">선택</option>
-                          </select>
-                        </div>
-                      </div>                      
-                    </div>
-                    <div class="row mb-1">
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_search_id">조회 ID</label>  
-                          <div class="col-sm-8">
-                            <select class="form-select form-select-sm" id="abank_search_id" placeholder="" name="abank_search_id" />
-                              <option value="">선택</option>
-                            </select>                        
-                          </div>         
-                        </div>
-                      </div>
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_search_pwd">조회PWD</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="abank_search_pwd" type="text" name="abank_search_pwd"  />      
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row mb-1">
-                      <div class="col-sm-6">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_link_agree_dt">출금동의일</label>  
-                          <div class="col-sm-8">
-                            <input class="form-control datetimepicker flatpickr-input" id="abank_link_agree_dt" name = "abank_link_agree_dt" type="text" placeholder="yyyy-mm-dd" data-options="{&quot;disableMobile&quot;:true,&quot;dateFormat&quot;:&quot;Y-m-d&quot;}" readonly="readonly">                      
-                          </div>         
-                        </div>
-                      </div>
-                      <div class="col-sm-6" id="abank_link_info" name="abank_link_info">
-                        <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="abank_link_stat">진행상태</label>                            
-                          <div class="col-sm-8">
-                            <select class="form-select form-select-sm" id="abank_link_stat" placeholder="" name="abank_link_stat" />
-                            <option value="">선택</option>
-                          </select>
-                            <!-- <input class="form-control form-control-sm" id="abank_link_stat" type="hidden" name="abank_link_stat"  />   
-                            <div class="input-group input-group-sm">
-                              <input class="form-control form-control-sm" id="abank_link_stat_nm" type="text" name="abank_link_stat_nm"  readonly/>   
-                              <button type="button" class="btn btn-primary" id="btn_link_stat">변경</button>   
-                            </div>   -->
-                          </div>
-                        </div>
-                      </div>
-                    </div> 
                     <div class="card-footer">  
                       <p class="text-end pb-1 mb-1 pd-1">
                         <button class="btn btn-primary text-end" id="btn_cont_update"><i class="fa fa-paste"></i>저장</button>
                       </p>
-                    </div>     
-                  </div>
+                    </div>                       
+                  </form>  
                 </div>
-              </form>
+                <!-- VAN 정보보 TAB ----------------------------------------------------------------------------------------------------------------- -->               
+                
+                <div class="tab-pane fade" id="tab_van_info" role="tabpanel" aria-labelledby="van_info_tab"> 
+                  <form class="needs-validation" id="frm_van_info" name="frm_van_info" onsubmit="return false;" method="post" novalidate=""> 
+                    <input id="van_chain_no" type="hidden" name="van_chain_no" />
+                    <div>VAN INFO</div>
+                    <div class="card-footer">  
+                      <p class="text-end pb-1 mb-1 pd-1">
+                        <button class="btn btn-info text-end" id="btn_van_clear"><i class="fa fa-check"></i>신규</button>
+                        <button class="btn btn-primary text-end" id="btn_van_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                        <button class="btn btn-primary text-end" id="btn_van_create"><i class="fa fa-paste"></i>저장</button>
+                      </p>
+                    </div>
+                  </form>                  
+                </div>
+
+                <!-- CARD 정보 TAB ----------------------------------------------------------------------------------------------------------------- -->               
+                
+                <div class="tab-pane fade" id="tab_card_info" role="tabpanel" aria-labelledby="card_info_tab"> 
+                  <form class="needs-validation" id="frm_card_info" name="frm_card_info" onsubmit="return false;" method="post" novalidate=""> 
+                    <input id="card_chain_no" type="hidden" name="card_chain_no" />
+                    <div>CARD INFO</div>
+                    <div class="card-footer">  
+                      <p class="text-end pb-1 mb-1 pd-1">
+                        <button class="btn btn-info text-end" id="btn_card_clear"><i class="fa fa-check"></i>신규</button>
+                        <button class="btn btn-primary text-end" id="btn_card_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                        <button class="btn btn-primary text-end" id="btn_card_create"><i class="fa fa-paste"></i>저장</button>
+                      </p>
+                    </div>
+                  </form> 
+                </div>      
+
+                <!-- File 정보 TAB ----------------------------------------------------------------------------------------------------------------- -->               
+                <div class="tab-pane fade" id="tab_file_info" role="tabpanel" aria-labelledby="file_info_tab"> 
+                  <form class="needs-validation" id="frm_file_info" name="frm_file_info" onsubmit="return false;" method="post" novalidate="">                   
+                    <input id="file_chain_no" type="hidden" name="file_chain_no" />
+                    <div>FILE INFO</div>
+                    <div class="card-footer">  
+                      <p class="text-end pb-1 mb-1 pd-1">
+                        <button class="btn btn-info text-end" id="btn_file_clear"><i class="fa fa-check"></i>신규</button>
+                        <button class="btn btn-primary text-end" id="btn_file_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                        <button class="btn btn-primary text-end" id="btn_file_create"><i class="fa fa-paste"></i>저장</button>
+                      </p>
+                    </div>
+                  </form> 
+                </div>
+              </div>
             </div>
           </div>
         </div>

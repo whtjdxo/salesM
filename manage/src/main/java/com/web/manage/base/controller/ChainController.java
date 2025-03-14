@@ -17,6 +17,7 @@ import com.web.manage.base.service.ChainService;
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
+import com.web.manage.user.domain.UserVO;
 import com.google.gson.Gson;
 import com.web.manage.base.domain.ChainVO;
 import jakarta.servlet.http.HttpSession;
@@ -77,17 +78,34 @@ public class ChainController {
         return chainService.getCeoIdDupChk(ceo_id);
     }
     
-    @RequestMapping(value = "/chainCreate", method = RequestMethod.POST)    
-    public @ResponseBody ReturnDataVO chainCreate(@ModelAttribute("ChainVO") @Valid ChainVO chainVo, BindingResult bindingResult, HttpSession session) {
+    @RequestMapping(value = "/insertChain", method = RequestMethod.POST)    
+    public @ResponseBody ReturnDataVO insertChain(@ModelAttribute("ChainVO") @Valid ChainVO chainVo, BindingResult bindingResult, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO();
+        UserVO userVO = new UserVO();
         try {
-            String chain_no = chainService.createChainNo();
+            String chain_no = chainService.getNewChainNo();
 			chainVo.setChain_no(chain_no);
 
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
     	    chainVo.setEnt_user_id(member.getUserId());
 
-            if (chainService.chainCreate(chainVo)) {
+            userVO.setCorp_cd(chain_no);
+            userVO.setCorp_type("CH");
+            userVO.setUser_id(chainVo.getCeo_id());
+            userVO.setUser_nm(chainVo.getCeo_nm());
+            userVO.setUser_pwd(chainVo.getCeo_pwd());
+            userVO.setUser_gb("20");
+            userVO.setAuth_grp_cd("AG2001");        // 대리점 대표 권한
+            userVO.setHp_no(chainVo.getCeo_tel_no());
+            userVO.setTel_no(chainVo.getCeo_tel_no());
+            userVO.setEmail(chainVo.getEmail());
+            userVO.setZip_no(chainVo.getCeo_zip_no());
+            userVO.setAddr(chainVo.getCeo_addr());
+            userVO.setAddr_dtl(chainVo.getCeo_addr_dtl());
+            userVO.setUse_yn(chainVo.getUse_yn());
+            userVO.setEnt_user_id(member.getUserId());
+
+            if (chainService.insertChain(chainVo, userVO)) {
                 System.out.println("chainCreate success");
                 result.setResultCode("S000");
                 result.setResultMsg("Credit creation successful.");
@@ -104,13 +122,27 @@ public class ChainController {
         return result;
     }
 
-    @RequestMapping(value = "/chainUpdate", method = RequestMethod.POST)
-    public @ResponseBody ReturnDataVO chainUpdate(@ModelAttribute("ChainVO") @Valid ChainVO chainVo, BindingResult bindingResult, HttpSession session) {
+    @RequestMapping(value = "/updateChain", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO updateChain(@ModelAttribute("ChainVO") @Valid ChainVO chainVo, BindingResult bindingResult, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO();
+        UserVO  userVO = new UserVO();
         try {
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
     	    chainVo.setUpt_user_id(member.getUserId());
-            if (chainService.chainUpdate(chainVo)) {
+ 
+            userVO.setUser_id(chainVo.getCeo_id());
+            userVO.setUser_nm(chainVo.getCeo_nm());
+            userVO.setUser_pwd(chainVo.getCeo_pwd());
+            userVO.setHp_no(chainVo.getCeo_tel_no());
+            userVO.setTel_no(chainVo.getCeo_tel_no());
+            userVO.setEmail(chainVo.getEmail());
+            userVO.setZip_no(chainVo.getCeo_zip_no());
+            userVO.setAddr(chainVo.getCeo_addr());
+            userVO.setAddr_dtl(chainVo.getCeo_addr_dtl());
+            userVO.setUse_yn(chainVo.getUse_yn());
+            userVO.setUpt_user_id(member.getUserId());
+
+            if (chainService.updateChain(chainVo, userVO)) {
                 System.out.println("chainUpdate  success");
                 result.setResultCode("S000");
                 result.setResultMsg("Credit update successful.");

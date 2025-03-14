@@ -170,7 +170,7 @@
             swal('실패', '대표자 ID를 입력하세요.', 'error');
             return;
           } else {
-            callAjax('/base/organ/agencyMng/ceoIdDupChk', 'ceo_id=' + ceo_id, fn_ceo_dupchk);
+            callAjax('/base/user/userMng/getUserIdDupChk', 'user_id=' + ceo_id, fn_ceo_dupchk);
           }
         });
         function fn_ceo_dupchk(data) {

@@ -119,7 +119,7 @@ public class AgencyController {
             userVO.setAuth_grp_cd("AG1001");        // 대리점 대표 권한
             userVO.setHp_no(agencyVO.getCeo_tel_no());
             userVO.setTel_no(agencyVO.getCeo_tel_no());
-            userVO.setEmail(agencyVO.getEmail()));
+            userVO.setEmail(agencyVO.getEmail());
             userVO.setZip_no(agencyVO.getCeo_zip_no());
             userVO.setAddr(agencyVO.getCeo_addr());
             userVO.setAddr_dtl(agencyVO.getCeo_addr_dtl());

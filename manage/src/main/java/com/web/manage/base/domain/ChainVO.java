@@ -19,7 +19,11 @@ public class ChainVO {
     private String chain_addr;
     private String chain_addr_dtl;
     private String ceo_id;
-    private String ceo_regno;
+    private String ceo_nm;
+    private String ceo_pwd;
+    private String ceo_birth_dt;
+    private String ceo_reg_sex;
+    private String ceo_reg_no;
     private String ceo_tel_no;
     private String ceo_zip_no;
     private String ceo_addr;
@@ -68,6 +72,7 @@ public class ChainVO {
     private String remit_stat_cd;
     private String remit_stat_date;
     private String remit_over_stat;
+    private String remit_over_stat_cd;
     private String remit_auto_stat;
     private String remit_trans_fee;
     private String remit_start_dt;

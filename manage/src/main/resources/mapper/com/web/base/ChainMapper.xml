@@ -9,96 +9,104 @@
     SELECT  COUNT(1)
         FROM  tb_user
         WHERE  user_id = #{user_id}
-    </select>    
+    </select>
 
-    <select id="createChainNo" resultType="java.lang.String">
-	    /* ChainMapper.createChainNo */
+    <select id="getNewChainNo" resultType="java.lang.String">
+	    /* ChainMapper.getNewChainNo */
 		SELECT GET_JOB_SEQ('TB_CHAIN', 'CHAIN_NO')
 	</select>
     
-    <select id="getChainList" parameterType="java.util.HashMap" resultType="com.web.manage.base.domain.ChainVO">
+    <select id="getChainList" parameterType="java.util.HashMap" resultType="hashMap">
         SELECT 	TC.CHAIN_NO         AS  chain_no
                 , TC.CHAIN_NM       AS  chain_nm
-                , TC.CORP_CD        AS  corp_cd
-                , CO.CORP_NM        AS  corp_nm
-                , TC.AGENCY_NO      AS  agency_no
-                , AG.AGENCY_NM      AS  agency_nm
-                , TC.BIZ_NO         AS  biz_no
-                , TC.LAW_NO         AS  law_no
-                , TC.UPTAE          AS  uptae
-                , TC.UPJONG         AS  upjong
-                , TC.CHAIN_TEL_NO   AS  chain_tel_no
-                , TC.CHAIN_ZIP_NO   AS  chain_zip_no
-                , TC.CHAIN_ADDR     AS  chain_addr
-                , TC.CHAIN_ADDR_DTL AS  chain_addr_dtl
-                , TC.CEO_ID         AS  ceo_id
-                , TC.CEO_REGNO      AS  ceo_regno
-                , TC.EMAIL          AS  email
-                , TC.ABANK_ACCOUNT_TP       AS  abank_account_tp
-                , TC.ABANK_CD           AS  abank_cd
-                , TC.ABANK_ACCOUNT      AS  abank_account
-                , TC.ABANK_ACCOUNT_NO   AS abank_account_no
-                , TC.ABANK_SPEED_YN     AS  abank_speed_yn
-                , TC.ABANK_PWD          AS  abank_pwd
-                , TC.ABANK_DEPOSITOR    AS abank_depositor
-                , TC.ABANK_CHECK_YN     AS  abank_check_yn
-                , TC.ABANK_CHECK_ID     AS  abank_check_id
-                , TC.ABANK_CHECK_DT     AS  abank_check_dt
-                , TC.ABANK_LINK_STAT    AS abank_link_stat
-                , TC.ABANK_LINK_AGREE_DT AS abank_link_agree_dt
-                , TC.ABANK_LINK_PAYER_NO AS abank_link_payer_no
-                , TC.ABANK_LAST_REMIT_DTTM AS abank_last_remit_dttm
-                , TC.ABANK_SEARCH_ID    AS abank_search_id
-                , TC.ABANK_SEARCH_PWD   AS abank_search_pwd
-                , TC.BBANK_CD           AS  bbank_cd
-                , TC.BBANK_ACCOUNT      AS  bbank_account
-                , TC.BBANK_DEPOSITOR    AS bbank_depositor
-                , TC.BBANK_CHECK_YN     AS  bbank_check_yn
-                , TC.BBANK_CHECK_ID     AS  bbank_check_id
-                , TC.BBANK_CHECK_DT     AS  bbank_check_dt
-                , TC.AUTO_REMIT_YN      AS  auto_remit_yn
-                , TC.SVC_STAT           AS  svc_stat
+                , IFNULL(TC.CORP_CD, '')        AS  corp_cd
+                , IFNULL(CO.CORP_NM, '')        AS  corp_nm
+                , IFNULL(TC.AGENCY_NO, '')      AS  agency_no
+                , IFNULL(AG.AGENCY_NM, '')      AS  agency_nm
+                , IFNULL(TC.BIZ_NO, '')         AS  biz_no
+                , IFNULL(TC.LAW_NO, '')         AS  law_no
+                , IFNULL(TC.UPTAE, '')          AS  uptae
+                , IFNULL(TC.UPJONG, '')         AS  upjong
+                , IFNULL(TC.CHAIN_TEL_NO, '')   AS  chain_tel_no
+                , IFNULL(TC.CHAIN_ZIP_NO, '')   AS  chain_zip_no
+                , IFNULL(TC.CHAIN_ADDR, '')     AS  chain_addr
+                , IFNULL(TC.CHAIN_ADDR_DTL, '') AS  chain_addr_dtl
+                , IFNULL(TC.CEO_ID, '')         AS  ceo_id
+                , IFNULL(TU.USER_NM, '')        AS  ceo_nm
+                , IFNULL(TC.CEO_BIRTH_DT, '')   AS  ceo_birth_dt
+                , IFNULL(TC.CEO_REG_SEX, '')    AS  ceo_reg_sex
+                , IFNULL(TC.CEO_REG_NO, '')     AS  ceo_reg_no
+                , IFNULL(TU.TEL_NO, '')         AS  ceo_tel_no
+                , IFNULL(TU.ZIP_NO, '')         AS  ceo_zip_no
+                , IFNULL(TU.ADDR, '')           AS  ceo_addr
+                , IFNULL(TU.ADDR_DTL, '')       AS  ceo_addr_dtl
+                , IFNULL(TC.EMAIL, '')          AS  email
+                , IFNULL(TC.ABANK_ACCOUNT_TP, '')   AS  abank_account_tp
+                , IFNULL(TC.ABANK_CD, '')           AS  abank_cd
+                , IFNULL(TC.ABANK_ACCOUNT, '')      AS  abank_account
+                , IFNULL(TC.ABANK_ACCOUNT_NO, '')   AS  abank_account_no
+                , IFNULL(TC.ABANK_SPEED_YN, '')     AS  abank_speed_yn
+                , IFNULL(TC.ABANK_PWD, '')          AS  abank_pwd
+                , IFNULL(TC.ABANK_DEPOSITOR, '')    AS  abank_depositor
+                , IFNULL(TC.ABANK_CHECK_YN, '')     AS  abank_check_yn
+                , IFNULL(TC.ABANK_CHECK_ID, '')     AS  abank_check_id
+                , IFNULL(TC.ABANK_CHECK_DT, '')     AS  abank_check_dt
+                , IFNULL(TC.ABANK_LINK_STAT, '')    AS  abank_link_stat
+                , IFNULL(TC.ABANK_LINK_AGREE_DT, '') AS abank_link_agree_dt
+                , IFNULL(TC.ABANK_LINK_PAYER_NO, '') AS abank_link_payer_no
+                , IFNULL(TC.ABANK_LAST_REMIT_DTTM, '') AS abank_last_remit_dttm
+                , IFNULL(TC.ABANK_SEARCH_ID, '')    AS abank_search_id
+                , IFNULL(TC.ABANK_SEARCH_PWD, '')   AS abank_search_pwd
+                , IFNULL(TC.BBANK_CD, '')           AS  bbank_cd
+                , IFNULL(TC.BBANK_ACCOUNT, '')      AS  bbank_account
+                , IFNULL(TC.BBANK_DEPOSITOR, '')    AS  bbank_depositor
+                , IFNULL(TC.BBANK_CHECK_YN, '')     AS  bbank_check_yn
+                , IFNULL(TC.BBANK_CHECK_ID, '')     AS  bbank_check_id
+                , IFNULL(TC.BBANK_CHECK_DT, '')     AS  bbank_check_dt
+                , IFNULL(TC.AUTO_REMIT_YN, '')      AS  auto_remit_yn
+                , IFNULL(TC.SVC_STAT, '')           AS  svc_stat
                 , GET_CODE_NM('SVC_STAT', TC.SVC_STAT)       AS svc_stat_nm
-                , TC.SVC_START_DT   AS  svc_start_dt
-                , TC.SVC_END_DT     AS  svc_end_dt
-                , TC.CRD_RATE       AS  crd_rate
-                , TC.CRD_DELAY_RATE AS  crd_delay_rate
-                , TC.SVC_RATE       AS  svc_rate
-                , TC.ETC_RATE       AS  etc_rate
-                , TC.TOT_LIMIT_AMT  AS  tot_limit_amt
-                , TC.UNIT_LIMIT_AMT AS  unit_limit_amt
-                , TC.DAY_USE_RATE   AS  day_use_rate
-                , TC.DAY_USE_AMT    AS  day_use_amt
-                , TC.TOT_USE_AMT    AS  tot_use_amt
-                , TC.COLLECT_TYPE   AS  collect_type
-                , TC.COLLECT_TRANS  AS  collect_trans
-                , TC.REMIT_TYPE     AS  remit_type
-                , TC.REMIT_CYCLE    AS  remit_cycle
-                , TC.REMIT_STAT     AS  remit_stat
+                , IFNULL(TC.SVC_START_DT, '')       AS  svc_start_dt
+                , IFNULL(TC.SVC_END_DT, '')         AS  svc_end_dt
+                , IFNULL(TC.CRD_RATE, 0)           AS  crd_rate
+                , IFNULL(TC.CRD_DELAY_RATE, 0)     AS  crd_delay_rate
+                , IFNULL(TC.SVC_RATE, 0)           AS  svc_rate
+                , IFNULL(TC.ETC_RATE, 0)           AS  etc_rate
+                , IFNULL(TC.TOT_LIMIT_AMT, 0)      AS  tot_limit_amt
+                , IFNULL(TC.UNIT_LIMIT_AMT, 0)     AS  unit_limit_amt
+                , IFNULL(TC.DAY_USE_RATE, 0)       AS  day_use_rate
+                , IFNULL(TC.DAY_USE_AMT, 0)        AS  day_use_amt
+                , IFNULL(TC.TOT_USE_AMT, 0)        AS  tot_use_amt
+                , IFNULL(TC.COLLECT_TYPE, '')       AS  collect_type
+                , IFNULL(TC.COLLECT_TRANS, '')      AS  collect_trans
+                , IFNULL(TC.REMIT_TYPE, '')         AS  remit_type
+                , IFNULL(TC.REMIT_CYCLE, '')        AS  remit_cycle
+                , IFNULL(TC.REMIT_STAT, '')        AS  remit_stat
                 , GET_CODE_NM('REMIT_STAT', TC.REMIT_STAT)       AS remit_stat_nm
-                , TC.REMIT_STAT_CD  AS  remit_stat_cd
-                , TC.REMIT_STAT_DATE AS remit_stat_date
-                , TC.REMIT_OVER_STAT AS remit_over_stat
-                , TC.REMIT_AUTO_STAT AS remit_auto_stat
-                , TC.REMIT_TRANS_FEE AS remit_trans_fee
-                , TC.REMIT_START_DT AS remit_start_dt
-                , TC.REMIT_END_DT   AS remit_end_dt
-                , TC.REMARK         AS  remark
-                , TC.BK_DIV         AS  bk_div
-                , TC.CARDSALES_ID   AS  cardsales_id
-                , TC.CARDSALES_PWD  AS  cardsales_pwd
-                , TC.WORK_CHECK_FLAG AS work_check_flag
-                , TC.WORK_CHECK_MM  AS  work_check_mm
-                , TC.WORK_START_TM  AS  work_start_tm
-                , TC.WORK_END_TM    AS  work_end_tm
-                , TC.WORK_HOLIDAY_FLAG AS work_holiday_flag
-                , TC.LAST_CHECK_DTTM AS last_check_dttm
-                , TC.USE_YN         AS  use_yn
+                , IFNULL(TC.REMIT_STAT_CD, '')      AS  remit_stat_cd
+                , IFNULL(TC.REMIT_STAT_DATE, '')    AS remit_stat_date
+                , IFNULL(TC.REMIT_OVER_STAT, '')    AS remit_over_stat
+                , IFNULL(TC.REMIT_AUTO_STAT, '')    AS remit_auto_stat
+                , IFNULL(TC.REMIT_TRANS_FEE, '')    AS remit_trans_fee
+                , IFNULL(TC.REMIT_START_DT, '')     AS remit_start_dt
+                , IFNULL(TC.REMIT_END_DT, '')       AS remit_end_dt
+                , IFNULL(TC.REMARK, '')             AS remark
+                , IFNULL(TC.BK_DIV, '')             AS bk_div
+                , IFNULL(TC.CARDSALES_ID, '')       AS cardsales_id
+                , IFNULL(TC.CARDSALES_PWD, '')      AS cardsales_pwd
+                , TC.WORK_CHECK_FLAG    AS work_check_flag
+                , TC.WORK_CHECK_MM      AS work_check_mm
+                , TC.WORK_START_TM      AS work_start_tm
+                , TC.WORK_END_TM        AS work_end_tm
+                , TC.WORK_HOLIDAY_FLAG  AS work_holiday_flag
+                , TC.LAST_CHECK_DTTM    AS last_check_dttm
+                , IFNULL(TC.USE_YN, 'N')             AS use_yn
                 , IFNULL(TC.UPT_USER_ID, TC.ENT_USER_ID) AS upt_user_id
                 , DATE_FORMAT(IFNULL(TC.UPT_DTTM, TC.ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
-        FROM TB_CHAIN TC
-        JOIN  TB_CORP  CO ON CO.CORP_CD = TC.CORP_CD
-        JOIN  TB_AGENCY AG ON AG.AGENCY_NO  = TC.AGENCY_NO
+          FROM  TB_CHAIN TC
+          JOIN  TB_CORP  CO     ON CO.CORP_CD = TC.CORP_CD
+          JOIN  TB_AGENCY AG    ON AG.AGENCY_NO  = TC.AGENCY_NO
+          JOIN  TB_USER  TU     ON TU.USER_ID = TC.CEO_ID
 
         WHERE   1 = 1
         <if test="sch_corp_no != null and sch_corp_no != ''">			
@@ -130,36 +138,108 @@
         </choose>
     </select>
 
-    <insert id="chainCreate" parameterType="com.web.manage.base.domain.ChainVO">
+    <insert id="insertChain" parameterType="com.web.manage.base.domain.ChainVO">
         INSERT INTO tb_chain (
-            CHAIN_CD, CHAIN_NAME, BIZ_NO, CHAIN_TYPE,
-            BANK_CD, ACCOUNT_NO, ACCOUNT_PWD,
-            WEB_ID, WEB_PWD, API_URL, MEMO,
-            USE_YN, ENT_USER_ID, ENT_DTTM
+            CHAIN_NO        , CHAIN_NM          , CORP_CD           , AGENCY_NO
+            , BIZ_NO        , LAW_NO            , UPTAE             , UPJONG
+            , CHAIN_TEL_NO  , CHAIN_ZIP_NO      , CHAIN_ADDR        , CHAIN_ADDR_DTL
+            , CEO_ID        , CEO_BIRTH_DT      , CEO_REG_NO        , EMAIL
+            , REMARK                    
+            , ENT_DTTM      , ENT_USER_ID
         ) VALUES (
-            #{chain_cd}, #{chain_name}, #{biz_no}, #{chain_type},
-            #{bank_cd}, #{account_no}, #{account_pwd},
-            #{web_id}, #{web_pwd}, #{api_url}, #{memo},
-            'Y', #{ent_user_id}, NOW()
-        )
+            #{chain_no}         , #{chain_nm}       , #{corp_cd}        , #{agency_no}
+            , #{biz_no}         , #{law_no}         , #{uptae}          , #{upjong}
+            , #{chain_tel_no}   , #{chain_zip_no}   , #{chain_addr}     , #{chain_addr_dtl}
+            , #{ceo_id}         , #{ceo_birth_dt}   , #{ceo_reg_no}     , #{email}
+            , #{remark}
+            , NOW()             , #{ent_user_id}
+        ) 
     </insert>
 
-    <update id="chainUpdate" parameterType="com.web.manage.base.domain.ChainVO">
+    <update id="updateChain" parameterType="com.web.manage.base.domain.ChainVO">
         UPDATE tb_chain
-           SET CHAIN_NAME     = #{chain_name},
-               BIZ_NO         = #{biz_no},
-               CHAIN_TYPE     = #{chain_type},
-               BANK_CD        = #{bank_cd},
-               ACCOUNT_NO     = #{account_no},
-               ACCOUNT_PWD    = #{account_pwd},
-               WEB_ID         = #{web_id},
-               WEB_PWD        = #{web_pwd},
-               API_URL        = #{api_url},
-               MEMO           = #{memo},
-               USE_YN         = #{use_yn},
-               UPT_USER_ID    = #{upt_user_id},
-               UPT_DTTM       = NOW()
-         WHERE CHAIN_CD       = #{chain_cd}
+           SET CHAIN_NM          = #{chain_nm},
+               CORP_CD           = #{corp_cd},
+               AGENCY_NO         = #{agency_no},
+               BIZ_NO            = #{biz_no},
+               LAW_NO            = #{law_no},
+               UPTAE             = #{uptae},
+               UPJONG            = #{upjong},
+               CHAIN_TEL_NO      = #{chain_tel_no},
+               CHAIN_ZIP_NO      = #{chain_zip_no},
+               CHAIN_ADDR        = #{chain_addr},
+               CHAIN_ADDR_DTL    = #{chain_addr_dtl},
+               <!-- CEO_ID            = #{ceo_id}, -->
+               CEO_BIRTH_DT      = #{ceo_birth_dt},
+               <!-- CEO_REG_SEX       = #{ceo_reg_sex},
+               CEO_REG_NO        = #{ceo_reg_no}, -->
+               EMAIL             = #{email},
+               REMARK            = #{remark},
+               UPT_USER_ID       = #{upt_user_id},
+               UPT_DTTM          = NOW()
+         WHERE CHAIN_NO         = #{chain_no}
     </update>
 
+    <update id="updateChainCont" parameterType="com.web.manage.base.domain.ChainVO">
+        UPDATE  TB_CHAIN
+           SET  ABANK_ACCOUNT_TP    = #{abank_account_tp},
+                ABANK_CD            = #{abank_cd},                
+                ABANK_ACCOUNT_NO    = #{abank_account_no},
+                ABANK_SPEED_YN      = 'Y',
+                ABANK_PWD           = #{abank_pwd},
+                ABANK_DEPOSITOR     = #{abank_depositor},
+                ABANK_CHECK_YN      = #{abank_check_yn},
+                ABANK_CHECK_ID      = #{abank_check_id},
+                ABANK_CHECK_DT      = #{abank_check_dt},
+                ABANK_LINK_STAT     = #{abank_link_stat},
+                ABANK_LINK_AGREE_DT = #{abank_link_agree_dt},
+                ABANK_LINK_PAYER_NO = #{abank_link_payer_no},
+                ABANK_LAST_REMIT_DTTM = #{abank_last_remit_dttm},
+                ABANK_SEARCH_ID     = #{abank_search_id},
+                ABANK_SEARCH_PWD    = #{abank_search_pwd},
+                BBANK_CD            = #{bbank_cd},
+                BBANK_ACCOUNT       = #{bbank_account},
+                BBANK_DEPOSITOR     = #{bbank_depositor},
+                BBANK_CHECK_YN      = #{bbank_check_yn},
+                BBANK_CHECK_ID      = #{bbank_check_id},
+                BBANK_CHECK_DT      = #{bbank_check_dt},
+                AUTO_REMIT_YN       = #{auto_remit_yn},
+                SVC_STAT            = #{svc_stat},
+                SVC_START_DT        = #{svc_start_dt},
+                SVC_END_DT          = #{svc_end_dt},
+                CRD_RATE            = #{crd_rate},
+                CRD_DELAY_RATE      = #{crd_delay_rate},
+                SVC_RATE            = #{svc_rate},
+                ETC_RATE            = #{etc_rate},
+                TOT_LIMIT_AMT       = #{tot_limit_amt},
+                UNIT_LIMIT_AMT      = #{unit_limit_amt},
+                DAY_USE_RATE        = #{day_use_rate},
+                DAY_USE_AMT         = #{day_use_amt},
+                TOT_USE_AMT         = #{tot_use_amt},
+                REMIT_TYPE          = #{remit_type},
+                REMIT_CYCLE         = #{remit_cycle},
+                REMIT_STAT          = #{remit_stat},
+                REMIT_STAT_CD       = #{remit_stat_cd},
+                REMIT_STAT_DATE     = #{remit_stat_date},
+                REMIT_OVER_STAT     = #{remit_over_stat},
+                REMIT_OVER_STAT_CD  = #{remit_over_stat_cd},
+                REMIT_AUTO_STAT     = #{remit_auto_stat},
+                REMIT_TRANS_FEE     = #{remit_trans_fee},
+                REMIT_START_DT      = #{remit_start_dt},
+                REMIT_END_DT        = #{remit_end_dt},
+                RISK_STAT           = #{risk_stat},
+                RISK_REASON         = #{risk_reason},
+                REMARK              = #{remark},
+                CARDSALES_ID        = #{cardsales_id},
+                CARDSALES_PWD       = #{cardsales_pwd},
+                WORK_CHECK_FLAG     = #{work_check_flag},
+                WORK_CHECK_MM       = #{work_check_mm},
+                WORK_START_TM       = #{work_start_tm},
+                WORK_END_TM         = #{work_end_tm},
+                WORK_HOLIDAY_FLAG   = #{work_holiday_flag},
+                LAST_CHECK_DTTM     = #{last_check_dttm},
+                VIEW_YN             = #{view_yn},
+                USE_YN              = #{use_yn}
+         WHERE  CHAIN_NO = #{chain_no}                
+    </update>
 </mapper>
