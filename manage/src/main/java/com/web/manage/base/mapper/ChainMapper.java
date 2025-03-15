@@ -12,6 +12,13 @@ public interface ChainMapper {
 
     List<HashMap<String, Object>> getChainList(HashMap<String, Object> hashmapParam);
 
+    List<HashMap<String, Object>> getChainVanList(HashMap<String, Object> hashmapParam);
+
+    List<HashMap<String, Object>> getChainCardList(HashMap<String, Object> hashmapParam);
+
+    List<HashMap<String, Object>> getChainFileList(HashMap<String, Object> hashmapParam);
+ 
+
     int getQueryTotalCnt();
 
     String getNewChainNo();

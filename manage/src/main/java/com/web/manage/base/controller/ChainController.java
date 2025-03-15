@@ -73,6 +73,42 @@ public class ChainController {
         return jString;  
     }
 
+    @RequestMapping("vanList")
+    public @ResponseBody String vanList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();        
+        String jString = null;
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            hashmapParam.put("chain_no", hashmapParam.get("van_chain_no"));
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = chainService.getChainVanList(hashmapParam);
+            int records = chainService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    }
+
     @RequestMapping(value = "/ceoIdDupChk", method = RequestMethod.POST)
     public @ResponseBody int ceoIdDupChk(@RequestBody String ceo_id) {
         return chainService.getCeoIdDupChk(ceo_id);

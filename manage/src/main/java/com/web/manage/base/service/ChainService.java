@@ -24,6 +24,18 @@ public class ChainService {
         return chainMapper.getChainList(hashmapParam);
     }
 
+    public List<HashMap<String, Object>> getChainVanList(HashMap<String, Object> hashmapParam) {
+        return chainMapper.getChainVanList(hashmapParam);
+    }
+
+    public List<HashMap<String, Object>> getChainCardList(HashMap<String, Object> hashmapParam) {
+        return chainMapper.getChainCardList(hashmapParam);
+    }
+
+    public List<HashMap<String, Object>> getChainFileList(HashMap<String, Object> hashmapParam) {
+        return chainMapper.getChainCardList(hashmapParam);
+    }
+
     public int getQueryTotalCnt() {
         return chainMapper.getQueryTotalCnt();
     }

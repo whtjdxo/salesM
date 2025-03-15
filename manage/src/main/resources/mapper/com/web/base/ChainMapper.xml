@@ -141,6 +141,32 @@
         </choose>
     </select>
 
+
+    <select id="getChainVanList" parameterType="java.util.HashMap" resultType="hashMap">
+        SELECT CV.CHAIN_NO
+                , CV.VAN_CD
+                , GET_CODE_NM('VAN_CD', CV.VAN_CD)       AS VAN_NM
+                , CV.VAN_ID
+                , CV.VAN_PWD
+                , CV.TERM_ID
+                , CV.USE_YN 
+                , IFNULL(CV.UPT_USER_ID, CV.ENT_USER_ID) AS upt_user_id
+                , DATE_FORMAT(IFNULL(CV.UPT_DTTM, CV.ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
+          FROM	TB_CHAIN_VAN CV 
+        WHERE   1 = 1 
+        <if test="sch_van_cd != null and sch_van_cd != ''">			
+			AND CV.VAN_CD = #{sch_van_cd}
+		</if>
+        <choose>
+            <when test="sidx != ''">
+                ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                ORDER BY ent_dttm DESC
+            </otherwise>
+        </choose>
+    </select>
+
     <insert id="insertChain" parameterType="com.web.manage.base.domain.ChainVO">
         INSERT INTO tb_chain (
             CHAIN_NO        , CHAIN_NM          , CORP_CD           , AGENCY_NO
