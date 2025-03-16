@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.web.manage.base.service.ChainService;
@@ -19,7 +20,10 @@ import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
 import com.web.manage.user.domain.UserVO;
 import com.google.gson.Gson;
+import com.web.manage.base.domain.ChainCardVO;
 import com.web.manage.base.domain.ChainVO;
+import com.web.manage.base.domain.ChainVanVO;
+
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
@@ -71,49 +75,8 @@ public class ChainController {
         }
 
         return jString;  
-    }
+    } 
 
-    @RequestMapping("vanList")
-    public @ResponseBody String vanList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
-        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
-        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
-        Gson gson = new Gson();        
-        String jString = null;
-        try {
-            PageingVO pageing = new PageingVO();
-            pageing.setPageingVO(hashmapParam);
-
-            hashmapParam.put("chain_no", hashmapParam.get("van_chain_no"));
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
-            hashmapParam.put("start", pageing.getStart());
-            hashmapParam.put("end", pageing.getLength());
-
-            list = chainService.getChainVanList(hashmapParam);
-            int records = chainService.getQueryTotalCnt();
-
-            pageing.setRecords(records);
-            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
-
-            hashmapResult.put("draw", pageing.getDraw());
-            hashmapResult.put("recordsTotal", pageing.getRecords());
-            hashmapResult.put("recordsFiltered", pageing.getRecords());
-            hashmapResult.put("data", list);
-
-            jString = gson.toJson(hashmapResult);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return jString;  
-    }
-
-    @RequestMapping(value = "/ceoIdDupChk", method = RequestMethod.POST)
-    public @ResponseBody int ceoIdDupChk(@RequestBody String ceo_id) {
-        return chainService.getCeoIdDupChk(ceo_id);
-    }
-    
     @RequestMapping(value = "/insertChain", method = RequestMethod.POST)    
     public @ResponseBody ReturnDataVO insertChain(@ModelAttribute("ChainVO") @Valid ChainVO chainVo, BindingResult bindingResult, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO();
@@ -148,11 +111,11 @@ public class ChainController {
             } else {
                 System.out.println("chainCreate fail");
                 result.setResultCode("F000");
-                result.setResultMsg("Chain creation failed.");
+                result.setResultMsg("Chain creation Failed");
             }
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("Chain creation failed.");
+            result.setResultMsg("Chain creation Failed");
             e.printStackTrace();
         }
         return result;
@@ -185,11 +148,11 @@ public class ChainController {
             } else {
                 System.out.println("chainUpdate  Fail");
                 result.setResultCode("F000");
-                result.setResultMsg("Chain update failed.");
+                result.setResultMsg("Chain update Failed");
             }
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("Chain update failed.");
+            result.setResultMsg("Chain update Failed");
             e.printStackTrace();
         }
         return result;
@@ -219,13 +182,236 @@ public class ChainController {
             } else {
                 System.out.println("Chain Contract Update  Fail");
                 result.setResultCode("F000");
-                result.setResultMsg("Credit update failed.");
+                result.setResultMsg("Credit update Failed");
             }
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("Chain Contract update failed.");
+            result.setResultMsg("Chain Contract update Failed");
+            e.printStackTrace();
+        }
+        return result;
+    } 
+
+
+    /* -----------------------------------------------------------------------------------------------------------------------------------------
+    * chain_van 관리
+    -----------------------------------------------------------------------------------------------------------------------------------------  */
+    @RequestMapping("vanList")
+    public @ResponseBody String vanList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();        
+        String jString = null;
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+            
+            System.out.println("van_chain_no >> " + hashmapParam.get("van_chain_no"));
+
+            hashmapParam.put("chain_no", hashmapParam.get("van_chain_no"));
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = chainService.getChainVanList(hashmapParam);
+            int records = chainService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    }
+ 
+    @RequestMapping(value = "/getVanIdDupChk", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO getVanIdDupChk(@RequestBody HashMap<String, Object> params) {        
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            if (chainService.getVanIdDupChk(params) == 0) {
+                result.setResultCode("S000");
+                result.setResultMsg("Available VAN ID.");
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg("Duplicate VAN ID.");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("VAN ID Check Error.");
+            e.printStackTrace();
+        }        
+        return result;
+    }
+    
+
+    @RequestMapping(value = "/insertChainVan", method = RequestMethod.POST)    
+    public @ResponseBody ReturnDataVO insertChainVan(@ModelAttribute("ChainVanVO") @Valid ChainVanVO chainVanVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            chainVanVo.setChain_no(chainVanVo.getVan_chain_no());
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+    	    chainVanVo.setEnt_user_id(member.getUserId());
+
+            if (chainService.insertChainVan(chainVanVo)) {
+                System.out.println("Chain Van Create success");
+                result.setResultCode("S000");
+                result.setResultMsg("Chain Van creation successful.");
+            } else {
+                System.out.println("chainCreate fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Chain creation Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Chain creation Failed");
             e.printStackTrace();
         }
         return result;
     }
+
+    @RequestMapping(value = "/updateChainVan", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO updateChainVan(@ModelAttribute("ChainVanVO") @Valid ChainVanVO chainVanVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            chainVanVo.setChain_no(chainVanVo.getVan_chain_no());
+    	    chainVanVo.setUpt_user_id(member.getUserId()); 
+
+            if (chainService.updateChainVan(chainVanVo)) {
+                System.out.println("Chain VanInfo Update  success");
+                result.setResultCode("S000");
+                result.setResultMsg("Chain Van Update successful.");
+            } else {
+                System.out.println("Chain VanInfo Update  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Chain Van Update Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Chain Van Update Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    /* -----------------------------------------------------------------------------------------------------------------------------------------
+    * chain_card 관리
+    -----------------------------------------------------------------------------------------------------------------------------------------  */     
+    @RequestMapping("cardList")
+    public @ResponseBody String cardList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();        
+        String jString = null;
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+            
+            // System.out.println("card_chain_no >> " + hashmapParam.get("card_chain_no"));
+            hashmapParam.put("chain_no", hashmapParam.get("card_chain_no"));
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = chainService.getChainCardList(hashmapParam);
+            int records = chainService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    }
+ 
+    @RequestMapping(value = "/getCardDupChk", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO getCardDupChk(@RequestBody HashMap<String, Object> params) {        
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            if (chainService.getCardDupChk(params) == 0) {
+                result.setResultCode("S000");
+                result.setResultMsg("Available VAN ID.");
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg("Duplicate VAN ID.");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("VAN ID Check Error.");
+            e.printStackTrace();
+        }        
+        return result;
+    }
+    
+
+    @RequestMapping(value = "/insertChainCard", method = RequestMethod.POST)    
+    public @ResponseBody ReturnDataVO insertChainCard(@ModelAttribute("ChainCardVO") @Valid ChainCardVO chainCardVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            chainCardVo.setChain_no(chainCardVo.getCard_chain_no());
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+    	    chainCardVo.setEnt_user_id(member.getUserId());
+
+            if (chainService.insertChainCard(chainCardVo)) {
+                System.out.println("Chain Card Create success");
+                result.setResultCode("S000");
+                result.setResultMsg("Chain Card creation successful.");
+            } else {
+                System.out.println("chainCreate fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Chain Card creation Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Chain Card creation Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/updateChainCard", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO updateChainCard(@ModelAttribute("ChainCardVO") @Valid ChainCardVO chainCardVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            chainCardVo.setChain_no(chainCardVo.getCard_chain_no());
+    	    chainCardVo.setUpt_user_id(member.getUserId()); 
+
+            if (chainService.updateChainCard(chainCardVo)) {
+                System.out.println("Chain CardInfo Update  success");
+                result.setResultCode("S000");
+                result.setResultMsg("Chain Van Update successful.");
+            } else {
+                System.out.println("Chain CardInfo Update  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Chain Card Update Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Chain Card Update Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
+    
 }

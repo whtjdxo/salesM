@@ -6,10 +6,11 @@
 	</select>    
 
     <select id="getCeoIdDupChk" parameterType="java.util.HashMap" resultType="int">
-    SELECT  COUNT(1)
-        FROM  tb_user
-        WHERE  user_id = #{user_id}
+        SELECT  COUNT(1)
+          FROM  tb_user
+         WHERE  user_id = #{user_id}
     </select>
+
 
     <select id="getNewChainNo" resultType="java.lang.String">
 	    /* ChainMapper.getNewChainNo */
@@ -139,33 +140,7 @@
                 ORDER BY ent_dttm DESC
             </otherwise>
         </choose>
-    </select>
-
-
-    <select id="getChainVanList" parameterType="java.util.HashMap" resultType="hashMap">
-        SELECT CV.CHAIN_NO
-                , CV.VAN_CD
-                , GET_CODE_NM('VAN_CD', CV.VAN_CD)       AS VAN_NM
-                , CV.VAN_ID
-                , CV.VAN_PWD
-                , CV.TERM_ID
-                , CV.USE_YN 
-                , IFNULL(CV.UPT_USER_ID, CV.ENT_USER_ID) AS upt_user_id
-                , DATE_FORMAT(IFNULL(CV.UPT_DTTM, CV.ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
-          FROM	TB_CHAIN_VAN CV 
-        WHERE   1 = 1 
-        <if test="sch_van_cd != null and sch_van_cd != ''">			
-			AND CV.VAN_CD = #{sch_van_cd}
-		</if>
-        <choose>
-            <when test="sidx != ''">
-                ORDER BY ${sidx} ${sord}
-            </when>
-            <otherwise>
-                ORDER BY ent_dttm DESC
-            </otherwise>
-        </choose>
-    </select>
+    </select> 
 
     <insert id="insertChain" parameterType="com.web.manage.base.domain.ChainVO">
         INSERT INTO tb_chain (
@@ -271,5 +246,138 @@
                 , UPT_DTTM            = NOW()
                 , UPT_USER_ID           = #{upt_user_id}
          WHERE  CHAIN_NO = #{cont_chain_no}                
+    </update>   
+
+
+    <select id="getChainVanList" parameterType="java.util.HashMap" resultType="hashMap">
+        SELECT CV.VAN_SEQ                               AS van_seq
+                , CV.CHAIN_NO                           AS chain_no    
+                , CV.VAN_CD                             AS van_cd
+                , GET_CODE_NM('VAN_CD', CV.VAN_CD)      AS van_nm
+                , CV.VAN_ID                             AS van_id
+                , CV.VAN_PWD                            AS van_pwd
+                , CV.TERM_ID                            AS term_id
+                , IFNULL(CV.USE_YN, 'N')                AS use_yn
+                , IFNULL(CV.UPT_USER_ID, CV.ENT_USER_ID) AS upt_user_id
+                , DATE_FORMAT(IFNULL(CV.UPT_DTTM, CV.ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
+          FROM	TB_CHAIN_VAN CV 
+        WHERE   CHAIN_NO = #{van_chain_no}
+        <if test="sch_van_cd != null and sch_van_cd != ''">			
+			AND CV.VAN_CD = #{sch_van_cd}
+		</if>
+        <choose>
+            <when test="sidx != ''">
+                ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                ORDER BY ent_dttm DESC
+            </otherwise>
+        </choose>
+    </select>
+    
+    
+    <select id="getVanIdDupChk" parameterType="java.util.HashMap" resultType="int">
+        SELECT  COUNT(1)
+          FROM  TB_CHAIN_VAN
+         WHERE  CHAIN_NO = #{chain_no}
+           AND  VAN_CD  = #{van_cd}
+           AND  VAN_ID  = #{van_id}
+    </select>
+
+    <insert id="insertChainVan" parameterType="com.web.manage.base.domain.ChainVanVO">
+        INSERT INTO TB_CHAIN_VAN (
+            CHAIN_NO        , VAN_CD          , VAN_ID           , VAN_PWD
+            , TERM_ID       , USE_YN    
+            , ENT_DTTM      , ENT_USER_ID
+        ) VALUES (
+            #{van_chain_no} , #{van_cd}       , #{van_id}        , #{van_pwd}
+            , #{term_id}    , #{van_use_yn}
+            , NOW()         , #{ent_user_id}
+        ) 
+    </insert>
+
+    <update id="updateChainVan" parameterType="com.web.manage.base.domain.ChainVanVO">
+        UPDATE TB_CHAIN_VAN
+           SET  TERM_ID         = #{term_id}
+                , VAN_CD        = #{van_cd}  
+                , VAN_ID        = #{van_id}      
+                , VAN_PWD       = #{van_pwd}
+                , USE_YN        = #{van_use_yn}
+                , UPT_USER_ID   = #{upt_user_id}
+                , UPT_DTTM      = NOW()
+         WHERE  VAN_SEQ = #{van_seq}           
+    </update>
+
+
+    
+    
+
+     <select id="getChainCardList" parameterType="java.util.HashMap" resultType="hashMap">
+        SELECT CC.CARD_SEQ							    AS card_seq
+                , CC.CHAIN_NO						    AS chain_no
+                , CC.CARD_ACQ						    AS card_acq
+                , GET_CODE_NM('CARD_ACQ', CC.CARD_ACQ) 	AS card_acq_nm
+                , CC.CARD_REG_NO						AS card_reg_no
+                , IFNULL(CC.CARD_RATE, 0)				AS card_rate
+                , IFNULL(CC.CHECK_RATE, 0)				AS check_rate
+                , IFNULL(CC.ABROAD_RATE, 0)				AS abroad_rate
+                , IFNULL(CC.CARD_IN_CYCLE, 0)			AS card_in_cycle
+                , CC.CARD_MEMO							AS card_memo
+                , CC.DEPO_CHK							AS depo_chk
+                , CC.USE_YN 							AS use_yn
+                , IFNULL(CC.UPT_USER_ID, CC.ENT_USER_ID) AS upt_user_id
+                , DATE_FORMAT(IFNULL(CC.UPT_DTTM, CC.ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
+          FROM	TB_CHAIN_CARD CC 
+         WHERE  CHAIN_NO = #{card_chain_no}
+        <if test="sch_card_acq != null and sch_card_acq != ''">			
+			AND CC.CARD_ACQ = #{sch_card_cd}
+		</if>
+        <choose>
+            <when test="sidx != ''">
+                ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                ORDER BY ent_dttm DESC
+            </otherwise>
+        </choose>
+    </select>
+    
+    
+    <select id="getCardDupChk" parameterType="java.util.HashMap" resultType="int">
+        SELECT  COUNT(1)
+          FROM  TB_CHAIN_CARD
+         WHERE  CHAIN_NO    = #{chain_no}
+           AND  CARD_CD     = #{card_cd}
+           AND  CARD_REG_NO = #{card_reg_no}
+    </select>
+
+    <insert id="insertChainCard" parameterType="com.web.manage.base.domain.ChainCardVO">
+        INSERT INTO TB_CHAIN_CARD (
+            CHAIN_NO        , CARD_ACQ          , CARD_REG_NO           
+            , CARD_RATE     , CHECK_RATE        , ABROAD_RATE       , CARD_IN_CYCLE
+            , DEPO_CHK      , USE_YN            , CARD_MEMO
+            , ENT_DTTM      , ENT_USER_ID
+        ) VALUES (
+            #{card_chain_no} , #{card_acq}       , #{card_reg_no}
+            , #{card_rate}   , #{check_rate}     , #{abroad_rate}    , #{card_in_cycle}
+            , #{depo_chk}    , #{card_use_yn}    , #{card_memo}
+            , NOW()          , #{ent_user_id}
+        ) 
+    </insert>
+
+    <update id="updateChainCard" parameterType="com.web.manage.base.domain.ChainCardVO">
+        UPDATE  TB_CHAIN_CARD
+           SET  CARD_ACQ          = #{card_acq}
+                , CARD_REG_NO     = #{card_reg_no}
+                , CARD_RATE       = #{card_rate}
+                , CHECK_RATE      = #{check_rate}
+                , ABROAD_RATE     = #{abroad_rate}
+                , CARD_IN_CYCLE   = #{card_in_cycle}
+                , DEPO_CHK        = #{depo_chk}
+                , USE_YN          = #{card_use_yn}
+                , CARD_MEMO       = #{card_memo}
+                , UPT_USER_ID     = #{upt_user_id}
+                , UPT_DTTM        = NOW()
+         WHERE  CARD_SEQ = #{card_seq}           
     </update>
 </mapper>

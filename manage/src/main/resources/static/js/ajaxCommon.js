@@ -41,6 +41,42 @@ async function callAjax(target, form, callback) {
   }
 }
 /*
+ * 기본 AJAX - json 호출 함수
+ * @param target : 호출 URL
+ * @param json 값 : 넘기는 값
+ * @param callback : 실행후 호출 함수
+ */
+async function callAjaxJson(target, params, callback) {
+  try {
+    const response = await fetch(target, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(params), // JSON 변환
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.resultCode === "F001") {
+      location.replace("/login");
+    } else if (data.resultCode === "S000") {
+      callback(data);
+    } else {
+      swal("실패", data.resultMsg, "error");
+    }
+  } catch (error) {
+    swal("실패", "작업수행에 실패하였습니다.", "error");
+    console.error("Fetch error: ", error);
+  }
+}
+
+
+/*
  * 코드 아작스 호출 함수
  * @param target : 호출 URL
  * @param form : 넘기는 값(기본 쿼리스트링)

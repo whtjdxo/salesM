@@ -10,7 +10,9 @@ import com.web.manage.base.mapper.ChainMapper;
 import com.web.manage.user.domain.UserVO;
 import com.web.manage.user.mapper.UserMngMapper;
 import com.web.manage.user.service.UserMngService;
+import com.web.manage.base.domain.ChainCardVO;
 import com.web.manage.base.domain.ChainVO;
+import com.web.manage.base.domain.ChainVanVO;
 
 @Service
 public class ChainService {
@@ -43,10 +45,14 @@ public class ChainService {
     public String getNewChainNo() {
         return chainMapper.getNewChainNo();
     }
-
-    public int getCeoIdDupChk(String ceo_id) {
-        return chainMapper.getCeoIdDupChk(ceo_id);
+ 
+    public int getVanIdDupChk(HashMap<String, Object> params) {
+        return chainMapper.getVanIdDupChk(params);
     }
+
+    public int getCardDupChk(HashMap<String, Object> params) {
+        return chainMapper.getCardDupChk(params);
+    } 
 
     public boolean insertChain(ChainVO chainVO, UserVO userVO) {
         if (!chainMapper.insertChain(chainVO)) {
@@ -72,13 +78,18 @@ public class ChainService {
         return chainMapper.updateChainCont(chainVO); 
     }
 
-    public boolean updateChainVan(ChainVO chainVO) {
-        return chainMapper.updateChainVan(chainVO); 
+    public boolean insertChainVan(ChainVanVO chainVanVO ) {
+        return chainMapper.insertChainVan(chainVanVO); 
+    }
+    public boolean updateChainVan(ChainVanVO chainVanVO) {
+        return chainMapper.updateChainVan(chainVanVO); 
     }
 
-
-    public boolean updateChainCard(ChainVO chainVO) {
-        return chainMapper.updateChainCard(chainVO); 
+    public boolean insertChainCard(ChainCardVO chainCardVo ) {
+        return chainMapper.insertChainCard(chainCardVo); 
+    }
+    public boolean updateChainCard(ChainCardVO chainCardVo) {
+        return chainMapper.updateChainCard(chainCardVo); 
     }
 
     public boolean updateChainFile(ChainVO chainVO) {
