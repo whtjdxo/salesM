@@ -31,6 +31,10 @@
       $(document).ready(function () {           
         $('#frm_chain_info').onLoadFunction();     
         $('#frm_cont_info').onLoadFunction();     
+        $('#frm_van_info').onLoadFunction(); 
+        $('#frm_card_info').onLoadFunction(); 
+        $('#frm_file_info').onLoadFunction(); 
+
         callAjax('/common/totalCodelist', "code_grp_cd=('BANK_CD')", fn_bank_setting);      
         function fn_bank_setting(data) {
           codeSetting('BANK_CD', data.data, '#abank_cd', '1', '', '');
@@ -83,6 +87,11 @@
         callAjax('/common/totalCodelist', "code_grp_cd=('CARD_ACQ')", fn_card_acq_setting);      
         function fn_card_acq_setting(data) {
           codeSetting('CARD_ACQ', data.data, '#card_acq', '1', '', '');
+        }
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('FILE_GB')", fn_file_gb_setting);      
+        function fn_file_gb_setting(data) {
+          codeSetting('FILE_GB', data.data, '#file_gb', '1', '', '');
         }
         
         var tbl_chain = $('#tbl_chain').DataTable({
@@ -147,6 +156,7 @@
         });
 
         $('#btn_search').click(function () {
+          fn_chain_form_clear();
           tbl_chain.ajax.reload();
         });
         
@@ -167,7 +177,8 @@
             
             $('#corp_cd').val(data.corp_cd);              
             $('#agency_no').val(data.agency_no);    
-            $('#chain_no').val(data.chain_no);            
+            $('#chain_no').val(data.chain_no);
+            
             $('#cont_chain_no').val(data.chain_no);            
             $('#van_chain_no').val(data.chain_no);            
             $('#card_chain_no').val(data.chain_no);            
@@ -260,6 +271,7 @@
             $('#crud').val('update'); 
             tbl_van.ajax.reload();   
             tbl_card.ajax.reload(); 
+            tbl_file.ajax.reload(); 
           }  
         });      
 
@@ -393,10 +405,10 @@
                   , { data: 'use_yn' }
                 ],
               columnDefs: [
-              { targets: 0, width: '100px', className: 'text-center' },
-              { targets: 1, width: '', className: 'text-end' },
-              { targets: 2, width: '150px', className: 'text-center' },
-              { targets: 3, width: '100px', className: 'text-center' },
+              { targets: 0, width: '90px', className: 'text-center' },
+              { targets: 1, width: '120px', className: 'text-start' },
+              { targets: 2, width: '120px', className: 'text-center' },
+              { targets: 3, width: '80px', className: 'text-center' },
             ],
             order: [[1, 'desc']],
             paging: true,
@@ -558,8 +570,7 @@
         var tbl_card = $('#tbl_card').DataTable({
             processing: true,
             serverSide: true,
-            select: true,
-            responsive: true,
+            select: true,           
             ajax: {
               url: '/base/organ/chainMng/cardList',
               contentType: 'application/json',
@@ -571,31 +582,32 @@
                 return JSON.stringify(postData);
               },
             },
-              columns: [
-                    { data: 'card_acq_nm' }
-                  , { data: 'card_rate' }
-                  , { data: 'check_rate' }
-                  , { data: 'abroad_rate' }
-                  , { data: 'card_in_cycle' }
-                  , { data: 'depo_chk' }
-                  , { data: 'use_yn' }
-                ],
-              columnDefs: [
-              { targets: 0, width: '120px', className: 'text-center' },
-              { targets: 1, width: '80px', className: 'text-right' },
-              { targets: 2, width: '80px', className: 'text-right' },
-              { targets: 3, width: '80px', className: 'text-right' },
-              { targets: 4, width: '80px', className: 'text-right' },
-              { targets: 5, width: '80px', className: 'text-center' }, 
-              { targets: 6, width: '80px', className: 'text-center' },
+            columns: [
+                  { data: 'card_acq_nm' }
+                , { data: 'card_rate' }
+                , { data: 'check_rate' }
+                , { data: 'abroad_rate' }
+                , { data: 'card_in_cycle' }
+                , { data: 'depo_chk' }
+                , { data: 'use_yn' }
+              ],
+            columnDefs: [
+            { targets: 0, width: '120px', className: 'text-center' },
+            { targets: 1, width: '70px', className: 'text-right' },
+            { targets: 2, width: '70px', className: 'text-right' },
+            { targets: 3, width: '70px', className: 'text-right' },
+            { targets: 4, width: '70px', className: 'text-right' },
+            { targets: 5, width: '70px', className: 'text-center' }, 
+            { targets: 6, width: '70px', className: 'text-center' },
             ],
             order: [[1, 'desc']],
             paging: true,
             lengthChange: false,
             searching: false,
             ordering: true,
-            autoWidth: true,
             responsive: true,
+            autoWidth: false,
+            scrollX: true ,
             scrollCollapse: true,
             pageLength: 20,
             scrollY: '450px',
@@ -750,7 +762,280 @@
           } else {
             swal('실패', resultMsg, 'error');
           }
+        } 
+
+        function resetPreviewArea() {
+          $('#tbl_file_preview tbody').html('');
+          $('#preview_area').css('display', 'none');
         }
+
+        var tbl_file = $('#tbl_file').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true,           
+            ajax: {
+              url: '/base/organ/chainMng/fileList',
+              contentType: 'application/json',
+              dataType: 'JSON',
+              type: 'POST',
+              data: function (postData) {
+                formData = $('#frm_file_info').serializeObject();
+                Object.assign(postData, formData);
+                return JSON.stringify(postData);
+              },
+            },
+            columns: [
+                  { data: 'file_gb_nm' }
+                , { data: 'origin_file_nm' }                
+              ],
+            columnDefs: [
+            { targets: 0, width: '120px', className: 'text-center' },
+            { targets: 1, width: '250px', className: 'text-right' },            
+            ],
+            order: [[1, 'desc']],
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            responsive: false,
+            autoWidth: false,
+            scrollX: true ,
+            scrollCollapse: true,
+            pageLength: 20,
+            scrollY: '450px',
+            info: false,
+            language: {
+              emptyTable: '데이터가 없습니다.',
+              search: '검색:',
+              zeroRecords: '일치하는 데이터가 없습니다.',
+              loadingRecords: '로딩중...',
+              processing: '처리중...',
+            },
+          }); 
+
+        $('#tbl_file').on('click', 'tr', function () {
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+          } else {
+            tbl_file.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }
+          var data = tbl_file.row(this).data();
+          if (data) {
+            $('#frm_file_info')[0].reset();             
+            $('#file_seq').val(data.file_seq);
+            $('#file_chain_no').val(data.chain_no);
+            $('#file_gb').val(data.file_gb);            
+            $('#file_nm').val(data.file_nm);            
+            
+            $('#file_down').attr('href', '/static/upload/' + data.file_path).attr('download', data.origin_file_nm).text(data.origin_file_nm);
+            
+            $('#file_upt_user_id').val(data.upt_user_id);
+            $('#file_upt_dttm').val(data.upt_dttm);   
+            
+            // $('#file_down').show();
+            // $('#file_upload').hide();  
+            
+            $('#file_down').css("display", "inline");
+            $('#file_upload').css("display", "none");
+ 
+
+            $('#btn_file_delete').show();
+            $('#btn_file_create').hide();            
+            $('#btn_file_dupchk').hide(); 
+          }  
+        });      
+
+        $('#btn_file_clear').click(function () {     
+          fn_frm_file_info_clear(); 
+        });
+
+        function fn_frm_file_info_clear(){
+          var file_chain_no = $('#file_chain_no').val(); 
+          // resetPreviewArea();
+          $('#frm_file_info')[0].reset();
+          $('#btn_file_delete').hide();
+          $('#btn_file_create').show();            
+          $('#btn_file_dupchk').show();  
+          $('#file_down').hide();
+          $('#file_upload').show();          
+          $('#file_chain_no').val(file_chain_no);
+        }
+
+        $('#btn_file_create').click(function () {     
+          $('#crud').val('create');      
+          var form = $('#frm_file_info');
+          var checked = true;
+          var chain_no = $('#file_chain_no').val();
+          if(chain_no == '') {
+            swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          }
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          });
+          var formData = new FormData($('#frm_file_info')[0]);
+          $.ajax({
+              url: '/base/organ/chainMng/insertChainFile',
+              type: 'POST',
+              data: formData,
+              processData: false,
+              contentType: false,
+              success: function (response) { 
+                console.log("파일 업로드 성공", response);
+                fn_file_return_result(response);   
+              },
+              error: function (xhr, status, error) {
+                swal('실패', resultMsg, 'error');
+                console.error("파일 업로드 실패", error);
+              }
+          }); 
+        }); 
+
+
+        // $('#btn_file_update').click(function () {
+        //   $('#crud').val('update');
+        //   var form = $('#frm_file_info');
+        //   var checked = true;
+        //   var file_seq = $('#file_seq').val();
+        //   if(file_seq == '') {
+        //     swal('실패', "파일 먼저 선택해주세요.", 'error');
+        //     checked = false;
+        //     return;
+        //   }
+        //   var chain_no = $('#file_chain_no').val();
+        //   if(chain_no == '') {
+        //     swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
+        //     checked = false;
+        //     return;
+        //   }
+
+        //   $.each(form, function (i, val) {
+        //     if (!val.checkValidity()) {
+        //       checked = false;
+        //     }
+        //   });
+          
+        //   var formData = new FormData($('#frm_file_info')[0]);
+        //   $.ajax({
+        //       url: '/base/organ/chainMng/updateChainFile',
+        //       type: 'POST',
+        //       data: formData,
+        //       processData: false,
+        //       contentType: false,
+        //       success: function (response) { 
+        //         console.log("파일 업로드 성공", response);
+        //         var resultCode = response.resultCode;
+        //         var resultMsg = response.resultMsg;                 
+        //         if (resultCode == 'S000') {
+        //           fn_frm_file_info_clear();
+        //           swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+        //           tbl_file.ajax.reload();                 
+        //         } else {
+        //           swal('실패', resultMsg, 'error');
+        //         } 
+        //       },
+        //       error: function (xhr, status, error) {
+        //         swal('실패', resultMsg, 'error');
+        //         console.error("파일 업로드 실패", error);
+        //       }
+        //   }); 
+        // });     
+
+        $('#btn_file_delete').click(function () {
+          $('#crud').val('delete');
+          var form = $('#frm_file_info');
+          var checked = true;
+          var file_seq = $('#file_seq').val();
+          if(file_seq == '') {
+            swal('실패', "파일을 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          }
+          var chain_no = $('#file_chain_no').val();
+          if(chain_no == '') {
+            swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          } 
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          }); 
+          if (checked) {
+            ConfirmdialogToAjax('delete', '/base/organ/chainMng/deleteChainFile', $('#frm_file_info').serialize(), fn_file_return_result);
+          }
+        });     
+
+        function fn_file_return_result(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg; 
+          if (resultCode == 'S000') {
+            fn_frm_card_info_clear();
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+            tbl_card.ajax.reload();                 
+          } else {
+            swal('실패', resultMsg, 'error');
+          }
+        } 
+
+        $('#file_upload').change(function (e) {
+          var files = e.target.files;
+          console.log(files.length);
+          if (files.length > 0) {
+            var uploadFile = $(this);
+            var filename = this.files[0].name;
+            var files = !!this.files ? this.files : [];
+            var maxSize = 50 * 1024 * 1024;
+            var fileSize = files[0].size;
+
+            if (!files.length || !window.FileReader) return;
+            var fileExt = filename.slice(filename.indexOf('.') + 1).toLowerCase();
+            if (fileSize > maxSize) {
+              $('#upload_file').val('');
+              swal('경고', '업로드 파일은 50MB까지만 가능합니다.', 'error');
+              return;
+            }
+
+            var reader = new FileReader();
+            reader.readAsDataURL(files[0]);
+            reader.onloadend = function () {
+              if (files.length > 1) {
+                filename = filename + ' 외 ' + (files.length - 1) + '개';
+              }
+              $('#upload_file').val(filename);
+            };
+          }
+        });
+
+        function fn_file_return_result(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg; 
+          if (resultCode == 'S000') {
+            fn_frm_file_info_clear();
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+            tbl_file.ajax.reload();                 
+          } else {
+            swal('실패', resultMsg, 'error');
+          }
+        }
+
+        $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+          let targetTab = $(e.target).attr("href"); // 선택된 탭의 href (예: #tab_file_info)
+          
+          // DataTables를 사용하는 테이블인 경우
+          $(targetTab).find('table').each(function () {
+            if ($.fn.DataTable.isDataTable(this)) {
+              $(this).DataTable().columns.adjust();
+            } else {
+              $(this).css('width', '100%'); // 일반 테이블인 경우
+            }
+          });
+        });
       });
     </script>
   </head>
@@ -1388,10 +1673,10 @@
                     <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_van">
                       <thead class="bg-200">
                         <tr>
-                          <th class="text-center">VAN CD</th>
-                          <th class="text-center">VAN 사 명</th>
-                          <th class="text-center">VAN_ID</th>
-                          <th class="text-center">사용</th>
+                          <th class="text-center" style="width: 90px;">VAN CD</th>
+                          <th class="text-center" style="width: 120px;">VAN 사 명</th>
+                          <th class="text-center" style="width: 120px;">VAN_ID</th>
+                          <th class="text-center" style="width: 80px;">사용</th>
                         </tr>
                       </thead>
                       <tbody class="list"></tbody>
@@ -1477,24 +1762,26 @@
                 </div>
 
                 <!-- CARD 정보 TAB ----------------------------------------------------------------------------------------------------------------- -->                               
-                <div class="tab-pane fade" id="tab_card_info" role="tabpanel" aria-labelledby="card_info_tab"> 
-                  
-                  <div class="table-responsive scrollbar">
-                    <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_card">
-                      <thead>
-                        <tr>
-                            <th class="text-center" style="width: 120px;">매입사</th>
-                            <th class="text-center" style="width: 80px;">신용</th>
-                            <th class="text-center" style="width: 80px;">체크</th>
-                            <th class="text-center" style="width: 80px;">해외</th>
-                            <th class="text-center" style="width: 80px;">주기</th>
-                            <th class="text-center" style="width: 80px;">확인</th>
-                            <th class="text-center" style="width: 80px;">사용</th>
-                        </tr>
-                      </thead>
-                      <tbody class="list"></tbody>
-                    </table>
+                <div class="tab-pane fade" id="tab_card_info" role="tabpanel" aria-labelledby="card_info_tab">                   
+                  <div class="row mb-0">
+                    <div class="table-responsive scrollbar">
+                      <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_card">
+                        <thead>
+                          <tr>
+                                <th class="text-center" style="width: 120px;">매입사</th>
+                                <th class="text-center" style="width: 70px;">신용</th>
+                                <th class="text-center" style="width: 70px;">체크</th>
+                                <th class="text-center" style="width: 70px;">해외</th>
+                                <th class="text-center" style="width: 70px;">주기</th>
+                                <th class="text-center" style="width: 70px;">확인</th>
+                                <th class="text-center" style="width: 70px;">사용</th>
+                          </tr>
+                        </thead>
+                        <tbody class="list"></tbody>
+                      </table>
+                    </div>
                   </div>
+                  
                   <div class="mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">상세정보</div> 
                   <form class="needs-validation" id="frm_card_info" name="frm_card_info" onsubmit="return false;" method="post" novalidate=""> 
                     <input id="card_seq" type="hidden" name="card_seq" />
@@ -1616,13 +1903,54 @@
                 </div>  
                 <!-- File 정보 TAB ----------------------------------------------------------------------------------------------------------------- -->               
                 <div class="tab-pane fade" id="tab_file_info" role="tabpanel" aria-labelledby="file_info_tab"> 
-                  <form class="needs-validation" id="frm_file_info" name="frm_file_info" onsubmit="return false;" method="post" novalidate="">                   
-                    <input id="file_chain_no" type="hidden" name="file_chain_no" />
-                    <div>FILE INFO</div>
+                  
+                    <div class="table-responsive scrollbar">
+                      <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_file">
+                        <thead class="bg-200">
+                          <tr>
+                            <th class="text-center" style="width: 90px;">파일 구분</th>
+                            <th class="text-center" style="width: 150px;">File 명</th>                       
+                          </tr>
+                        </thead>
+                        <tbody class="list"></tbody>
+                      </table>
+                    </div> 
+                    <div class="mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">상세정보</div>
+                    <form class="needs-validation" id="frm_file_info" name="frm_file_info" onsubmit="return false;" method="post" enctype="multipart/form-data"  novalidate="">                   
+                      <input id="file_chain_no" type="hidden" name="file_chain_no" />
+                      <input id="file_seq" type="hidden" name="file_seq" /> 
+                      <div class="row mb-1">
+                        <div class="input-group input-group-sm mb-2">
+                          <label class="col-sm-2 col-form-label col-form-label-sm" for="file_gb">구분</label>
+                          <div class="col-sm-10">
+                            <select class="form-select form-select-sm" id="file_gb" name="file_gb" required>
+                              <option value="">선택</option> 
+                            </select>
+                          </div>
+                        </div>
+                      </div>  
+                      <div class="row mb-1">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="file_upload">파일</label>
+                        <div class="col-sm-10">
+                          <input class="form-control form-control-sm" id="file_upload" type="file" name="file_upload" novalidate multiple="multiple" />
+                          <a id="file_down" style="display:none" target="_blank">Down</a>
+                        </div>
+                      </div>     
+                      <div class="row mb-1"> 
+                        <div class="input-group input-group-sm mb-2"> 
+                          <label class="col-sm-2 col-form-label col-form-label-sm" for="addr">수정자 / 일</label>
+                          <div class="col-sm-10">
+                            <div class="input-group input-group-sm">
+                              <input type="text" class="form-control form-control-sm" id="file_upt_user_id" name="file_upt_user_id" readonly="readonly" disabled />
+                              <input type="text" class="form-control form-control-sm" id="file_upt_dttm" name="file_upt_dttm" readonly="readonly" disabled /> 
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     <div class="card-footer">  
                       <p class="text-end pb-1 mb-1 pd-1">
                         <button class="btn btn-info text-end" id="btn_file_clear"><i class="fa fa-check"></i>신규</button>
-                        <button class="btn btn-primary text-end" id="btn_file_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                        <button class="btn btn-primary text-end" id="btn_file_delete" style="display: none"><i class="fa fa-paste"></i>삭제</button>
                         <button class="btn btn-primary text-end" id="btn_file_create"><i class="fa fa-paste"></i>저장</button>
                       </p>
                     </div>

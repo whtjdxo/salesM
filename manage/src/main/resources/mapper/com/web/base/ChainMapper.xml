@@ -306,11 +306,7 @@
                 , UPT_USER_ID   = #{upt_user_id}
                 , UPT_DTTM      = NOW()
          WHERE  VAN_SEQ = #{van_seq}           
-    </update>
-
-
-    
-    
+    </update> 
 
      <select id="getChainCardList" parameterType="java.util.HashMap" resultType="hashMap">
         SELECT CC.CARD_SEQ							    AS card_seq
@@ -346,7 +342,7 @@
     <select id="getCardDupChk" parameterType="java.util.HashMap" resultType="int">
         SELECT  COUNT(1)
           FROM  TB_CHAIN_CARD
-         WHERE  CHAIN_NO    = #{chain_no}
+         WHERE  CHAIN_NO    = #{card_chain_no}
            AND  CARD_CD     = #{card_cd}
            AND  CARD_REG_NO = #{card_reg_no}
     </select>
@@ -379,5 +375,75 @@
                 , UPT_USER_ID     = #{upt_user_id}
                 , UPT_DTTM        = NOW()
          WHERE  CARD_SEQ = #{card_seq}           
+    </update>
+
+    <select id="getNewFileNo" resultType="java.lang.String">
+	    /* ChainMapper.getNewFileNo */
+		SELECT GET_JOB_SEQ('TB_CHAIN_FILE', 'FILE_SEQ')
+	</select>
+
+    <select id="getChainFileList" parameterType="java.util.HashMap" resultType="hashMap">
+        SELECT  CC.file_seq							        AS file_seq
+                , CC.chain_no						        AS chain_no
+                , CC.file_gb						        AS file_gb
+                , GET_CODE_NM('FILE_GB', CC.file_gb) 	    AS file_gb_nm
+                , CC.file_nm						        AS file_nm
+                , CC.file_path						        AS file_path
+                , CC.ORIGIN_FILE_NM					        AS origin_file_nm
+                , CC.FILE_SIZE                              as file_size
+                , CC.FILE_EXT                               AS file_ext
+                , CC.file_icon_tp					        AS file_icon_tp
+                , IFNULL(CC.upt_user_id, CC.ent_user_id)    AS upt_user_id
+                , DATE_FORMAT(IFNULL(CC.upt_dttm, CC.ent_dttm), '%Y-%m-%d %H:%i:%s') AS upt_dttm
+          FROM	TB_CHAIN_FILE CC 
+         WHERE  CHAIN_NO = #{file_chain_no}
+           AND  CC.USE_YN = 'Y'
+        <if test="sch_file_gb != null and sch_file_gb != ''">			
+			AND CC.FILE_GB = #{sch_file_gb}
+		</if>
+        <choose>
+            <when test="sidx != ''">
+                ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                ORDER BY ent_dttm DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insertChainFile" parameterType="com.web.manage.base.domain.ChainFileVO">
+        INSERT INTO TB_CHAIN_FILE (
+            FILE_SEQ        , CHAIN_NO          , FILE_GB           , FILE_NM      
+            , FILE_PATH     , ORIGIN_FILE_NM   
+            , FILE_SIZE     , FILE_EXT          , FILE_ICON_TP   
+            , ENT_DTTM      , ENT_USER_ID
+        ) VALUES (
+            #{file_seq}     , #{file_chain_no}  , #{file_gb}        , #{file_nm}
+            , #{file_path}  , #{origin_file_nm}  
+            , #{file_size}  , #{file_ext}       , #{file_icon_tp}
+            , NOW()         , #{ent_user_id}
+        )  
+    </insert>
+
+    <update id="updateChainFile" parameterType="com.web.manage.base.domain.ChainFileVO">
+        UPDATE  TB_CHAIN_FILE
+           SET  FILE_GB           = #{file_gb}
+                , FILE_NM           = #{file_nm}
+                , FILE_PATH         = #{file_path}
+                , ORIGIN_FILE_NM    = #{origin_file_nm}
+                , FILE_SIZE         = #{file_size}
+                , FILE_EXT          = #{file_ext}
+                , FILE_ICON_TP      = #{file_icon_tp}
+                , UPT_USER_ID       = #{upt_user_id}
+                , UPT_DTTM          = NOW()
+         WHERE  FILE_SEQ = #{file_seq}           
+    </update>
+
+    <update id="deleteChainFile" parameterType="com.web.manage.base.domain.ChainFileVO">
+        UPDATE  TB_CHAIN_FILE
+           SET  USE_YN = 'N'         
+                , UPT_USER_ID       = #{upt_user_id}
+                , UPT_DTTM          = NOW()
+         WHERE  FILE_SEQ = #{file_seq}           
     </update>
 </mapper>

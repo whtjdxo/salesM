@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.web.manage.base.domain.ChainCardVO;
+import com.web.manage.base.domain.ChainFileVO;
 import com.web.manage.base.domain.ChainVO;
 import com.web.manage.base.domain.ChainVanVO;
 
@@ -28,6 +29,7 @@ public interface ChainMapper {
     int getVanIdDupChk(HashMap<String, Object> params);
 
     int getCardDupChk(HashMap<String, Object> params);
+    int getFileDupChk(HashMap<String, Object> params);
 
     boolean insertChain(ChainVO chainVO);
 
@@ -40,6 +42,8 @@ public interface ChainMapper {
     boolean insertChainCard(ChainCardVO chainCardVo);
     boolean updateChainCard(ChainCardVO chainCardVo);
 
-    boolean insertChainFile(ChainVO chainVO);
-    boolean updateChainFile(ChainVO chainVO);
+    String getNewFileNo();
+    boolean insertChainFile(ChainFileVO chainFileVo);
+    boolean updateChainFile(ChainFileVO chainFileVo);
+    boolean deleteChainFile(ChainFileVO chainFileVo);
 }

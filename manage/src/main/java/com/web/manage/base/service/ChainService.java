@@ -7,10 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.web.manage.base.mapper.ChainMapper;
+import com.web.manage.system.domain.BoardVO;
 import com.web.manage.user.domain.UserVO;
 import com.web.manage.user.mapper.UserMngMapper;
 import com.web.manage.user.service.UserMngService;
 import com.web.manage.base.domain.ChainCardVO;
+import com.web.manage.base.domain.ChainFileVO;
 import com.web.manage.base.domain.ChainVO;
 import com.web.manage.base.domain.ChainVanVO;
 
@@ -35,7 +37,7 @@ public class ChainService {
     }
 
     public List<HashMap<String, Object>> getChainFileList(HashMap<String, Object> hashmapParam) {
-        return chainMapper.getChainCardList(hashmapParam);
+        return chainMapper.getChainFileList(hashmapParam);
     }
 
     public int getQueryTotalCnt() {
@@ -52,6 +54,10 @@ public class ChainService {
 
     public int getCardDupChk(HashMap<String, Object> params) {
         return chainMapper.getCardDupChk(params);
+    } 
+
+    public int getFileDupChk(HashMap<String, Object> params) {
+        return chainMapper.getFileDupChk(params);
     } 
 
     public boolean insertChain(ChainVO chainVO, UserVO userVO) {
@@ -91,8 +97,18 @@ public class ChainService {
     public boolean updateChainCard(ChainCardVO chainCardVo) {
         return chainMapper.updateChainCard(chainCardVo); 
     }
+  
+    public String getNewFileNo() {
+        return chainMapper.getNewFileNo();
+    }
 
-    public boolean updateChainFile(ChainVO chainVO) {
-        return chainMapper.updateChainFile(chainVO); 
+    public boolean insertChainFile(ChainFileVO chainFileVo ) {
+        return chainMapper.insertChainFile(chainFileVo); 
+    }
+    public boolean updateChainFile(ChainFileVO chainFileVo) {
+        return chainMapper.updateChainFile(chainFileVo); 
+    }
+    public boolean deleteChainFile(ChainFileVO chainFileVo) {
+        return chainMapper.deleteChainFile(chainFileVo); 
     }
 }

@@ -1,11 +1,14 @@
 package com.web.manage.base.controller;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,14 +16,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.web.manage.base.service.ChainService;
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
+import com.web.manage.system.domain.BoardVO;
 import com.web.manage.user.domain.UserVO;
 import com.google.gson.Gson;
+import com.web.common.util.DateUtil;
 import com.web.manage.base.domain.ChainCardVO;
+import com.web.manage.base.domain.ChainFileVO;
 import com.web.manage.base.domain.ChainVO;
 import com.web.manage.base.domain.ChainVanVO;
 
@@ -30,14 +38,17 @@ import jakarta.validation.Valid;
 @Controller
 @RequestMapping("/base/organ/chainMng")
 public class ChainController {
-
+ 
     @Autowired
-    private ChainService chainService;
+    private ChainService chainService; 
 
     @RequestMapping("view")
     public String view() {
         return "pages/base/chainMng";
     }
+
+    @Value("${global.fileStorePath}")
+	String origin_fileStorePath;
 
     @RequestMapping("list")
     public @ResponseBody String list(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
@@ -409,6 +420,247 @@ public class ChainController {
         } catch (Exception e) {
             result.setResultCode("F000");
             result.setResultMsg("Chain Card Update Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
+    /* -----------------------------------------------------------------------------------------------------------------------------------------
+    * chain_File 관리
+    -----------------------------------------------------------------------------------------------------------------------------------------  */     
+    @RequestMapping("fileList")
+    public @ResponseBody String fileList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();        
+        String jString = null;
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+             
+            hashmapParam.put("chain_no", hashmapParam.get("card_chain_no"));
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = chainService.getChainFileList(hashmapParam);
+            int records = chainService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    }
+ 
+    @RequestMapping(value = "/getFileDupChk", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO getFileDupChk(@RequestBody HashMap<String, Object> params) {        
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            if (chainService.getFileDupChk(params) == 0) {
+                result.setResultCode("S000");
+                result.setResultMsg("Available VAN ID.");
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg("Duplicate VAN ID.");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("VAN ID Check Error.");
+            e.printStackTrace();
+        }        
+        return result;
+    }
+     
+
+    @RequestMapping(value = "/insertChainFile", method = RequestMethod.POST)    
+    public @ResponseBody ReturnDataVO insertChainFile(@ModelAttribute("ChainFileVO") @Valid ChainFileVO chainFileVo, BindingResult bindingResult, MultipartHttpServletRequest multiRequest, HttpSession session) {    
+        
+        System.out.println("파일 업로드 요청 도착");
+
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            chainFileVo.setChain_no(chainFileVo.getFile_chain_no());
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+    	    chainFileVo.setEnt_user_id(member.getUserId());
+            if(chainFileVo.getFile_upload() != null) {
+				if(chainFileVo.getFile_upload().size() > 0) {					
+					for(MultipartFile file : chainFileVo.getFile_upload()) {						
+					  
+	                    String pathString = origin_fileStorePath + chainFileVo.getFile_chain_no() ;
+	                    String fileSeq = chainService.getNewFileNo(); 
+
+                        System.out.println("pathString : " + pathString);    
+	                   
+                        File saveFolder = new File(pathString);
+	                    if(!saveFolder.exists() || saveFolder.isFile()) {
+	                        saveFolder.mkdirs();
+	                    }
+	                    
+	                    String originName = file.getOriginalFilename();
+	                    String fileSize = String.valueOf(file.getSize());
+
+                        int pos = originName.lastIndexOf(".");
+	                    String fileExt = originName.substring(pos + 1);
+	                    String newName = chainFileVo.getFile_gb() + "_"+ fileSeq + Math.round(Math.random() * 100);
+	                    
+	                    // filePath = File.separator + newName + "." + fileExt;
+                        String savePath = pathString + "\\" + newName + "." + fileExt;
+
+                        System.out.println("newName : " + newName);
+                        System.out.println("filePath : " + savePath);
+
+	                    file.transferTo(new File(savePath));
+
+	                    // String savePath = "/upload/" + chainFileVo.getFile_chain_no()  + "/" + newName + "." + fileExt;	 
+                        System.out.println("savePath : " + savePath); 
+
+	                    // File fileExist = new File(pathString + "/" + newName + "." + fileExt);						
+                        File fileExist = new File(savePath);
+	                    
+	                    // 파일 업로드 확인
+	                    if(fileExist.exists()) {	         
+                            chainFileVo.setFile_seq(fileSeq);              	
+	        			    chainFileVo.setOrigin_file_nm(originName);
+	        			    chainFileVo.setFile_nm(newName);
+	        			    chainFileVo.setFile_path(savePath);	      
+                            chainFileVo.setFile_size(fileSize);  
+                            chainFileVo.setFile_ext(fileExt);	
+
+	        			    if (chainService.insertChainFile(chainFileVo)) {
+                                System.out.println("Chain File Create success");
+                                result.setResultCode("S000");
+                                result.setResultMsg("Chain File creation successful.");
+                            } else {
+                                System.out.println("chain File Create fail");
+                                result.setResultCode("F000");
+                                result.setResultMsg("Chain File Creation Failed");
+                            }
+	                    } else {
+                            System.out.println("File not Exists [fail] ");
+                            result.setResultCode("F000");
+                            result.setResultMsg("Chain File Creation Failed");
+                        }
+					}					
+				}
+			}            
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Chain File creation Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/updateChainFile", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO updateChainFile(@ModelAttribute("ChainFileVO") @Valid ChainFileVO chainFileVo, BindingResult bindingResult, MultipartHttpServletRequest multiRequest, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            chainFileVo.setChain_no(chainFileVo.getFile_chain_no());
+    	    chainFileVo.setUpt_user_id(member.getUserId()); 
+
+            if(chainFileVo.getFile_upload() != null) {
+				if(chainFileVo.getFile_upload().size() > 0) {					
+					for(MultipartFile file : chainFileVo.getFile_upload()) {						
+						String filePath = "";
+                        
+	                    String pathString = origin_fileStorePath + chainFileVo.getFile_chain_no() ;	                    
+
+	                    File saveFolder = new File(pathString);
+	                    if(!saveFolder.exists() || saveFolder.isFile()) {
+	                        saveFolder.mkdirs();
+	                    }
+	                    
+	                    String originName = file.getOriginalFilename();
+	                    String fileSize = String.valueOf(file.getSize());
+
+                        int pos = originName.lastIndexOf(".");
+	                    String fileExt = originName.substring(pos + 1);
+	                    String newName = chainFileVo.getFile_gb() + chainFileVo.getFile_seq() + Math.round(Math.random() * 100);
+	                    
+	                    filePath = File.separator + newName + "." + fileExt;
+                        System.out.println("newName : " + newName);
+                        System.out.println("filePath : " + filePath);
+
+	                    file.transferTo(new File(filePath));
+
+	                    String savePath = "/upload/" + chainFileVo.getFile_chain_no()  + "/" + newName + "." + fileExt;	 
+                        System.out.println("savePath : " + savePath); 
+
+	                    File fileExist = new File(pathString + "/" + newName + "." + fileExt);						
+	                    
+	                    // 파일 업로드 확인
+	                    if(fileExist.exists()) {
+	        			    chainFileVo.setOrigin_file_nm(originName);
+	        			    chainFileVo.setFile_nm(newName);
+	        			    chainFileVo.setFile_path(savePath);	      
+                            chainFileVo.setFile_size(fileSize);
+	        			    if (chainService.insertChainFile(chainFileVo)) {
+                                System.out.println("Chain File Create success");
+                                result.setResultCode("S000");
+                                result.setResultMsg("Chain File creation successful.");
+                            } else {
+                                System.out.println("chainCreate fail");
+                                result.setResultCode("F000");
+                                result.setResultMsg("Chain File Creation Failed");
+                            }
+	                    } 
+					}
+					
+				}
+			}
+
+            if (chainService.updateChainFile(chainFileVo)) {
+                System.out.println("Chain File Update  success");
+                result.setResultCode("S000");
+                result.setResultMsg("Chain File Update successful.");
+            } else {
+                System.out.println("Chain File Update  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Chain File Update Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Chain File Update Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/deleteChainFile", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO deleteChainFile(@ModelAttribute("ChainFileVO") @Valid ChainFileVO chainFileVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO();         
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            chainFileVo.setChain_no(chainFileVo.getFile_chain_no());
+    	    chainFileVo.setUpt_user_id(member.getUserId());  
+            // System.out.println(chainFileVo.getFile_seq());
+            if (chainService.deleteChainFile(chainFileVo)) {
+                System.out.println("Chain File Delete  success");
+                result.setResultCode("S000");
+                result.setResultMsg("Chain File Delete successful.");
+            } else {
+                System.out.println("Chain File Update  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Chain File Delete Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Chain File Delete Failed");
             e.printStackTrace();
         }
         return result;
