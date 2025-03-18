@@ -292,6 +292,7 @@
           $('#btn_dupchk').show(); 
           $('#ceo_pwd').attr("required", "required");
           $('#ceo_id').removeAttr("readonly");
+          $('#ceo_id_dup_chk').val("N");
         }
 
         $('#btn_dupchk').click(function () {
@@ -308,6 +309,7 @@
           var resultMsg = data.resultMsg;
           if (resultCode == 'S000') {
             swal('성공', '사용가능한 대표자 ID입니다.', 'success');
+            $('#ceo_id_dup_chk').val("Y");
           } else {
             swal('실패', resultMsg, 'error');
           }
@@ -322,6 +324,12 @@
               checked = false;
             }
           });
+
+          var idDupChk = $('#ceo_id_dup_chk').val();
+          if(idDupChk == "N" || idDupChk ==''){
+            swal('확인', '대표자 ID 중복체크를 해주세요요.', 'success');
+            return;
+          }
           if (checked) {
             ConfirmdialogToAjax('create', '/base/organ/chainMng/insertChain', $('#frm_chain_info').serialize(), fn_return_result);
           } 
@@ -418,7 +426,7 @@
             autoWidth: false,
             responsive: true,
             scrollCollapse: true,
-            pageLength: 20,
+            pageLength: 10,
             scrollY: '450px',
             info: false,
             language: {
@@ -465,7 +473,8 @@
           $('#frm_van_info')[0].reset();
           $('#btn_van_update').hide();
           $('#btn_van_create').show();            
-          $('#btn_van_dupchk').show();          
+          $('#btn_van_dupchk').show();     
+          $('#van_id_dup_chk').val("N");        
           $('#van_chain_no').val(van_chain_no);
         }
 
@@ -499,19 +508,40 @@
           var resultMsg = data.resultMsg;
           if (resultCode == 'S000') {
             swal('성공', '사용가능한 VAN ID입니다.', 'success');
+            $('#van_id_dup_chk').val("Y");        
           } else {
             swal('실패', resultMsg, 'error');
           }
         }
+
+        $('#remit_over_stat').change(function(){
+          if($('#remit_over_stat').val() =='Y'){
+            $('#remit_over_stat_cd').attr("disabled", "disabled");
+            $('#remit_over_stat_cd').removeAttr("required");   
+          } else{
+            $('#remit_over_stat_cd').removeAttr("disabled");     
+            $('#remit_over_stat_cd').attr("required", "required");            
+          }
+        });
+
+        $('#risk_stat').change(function(){
+          if($('#risk_stat').val() =='S'){
+            $('#risk_reason_cd').attr("disabled", "disabled");
+            $('#risk_reason_cd').removeAttr("required");   
+          } else{
+            $('#risk_reason_cd').removeAttr("disabled");     
+            $('#risk_reason_cd').attr("required", "required");            
+          }
+        });
         
         $('#btn_van_create').click(function () {    
-           
           $('#crud').val('create');      
           var form = $('#frm_van_info');
           var checked = true;
           var chain_no = $('#van_chain_no').val();
+          var idDupChk = $('#van_id_dup_chk').val();
           if(chain_no == '') {
-            swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
+            swal('확인', "가맹점을 먼저 선택해주세요.", 'error');
             checked = false;
             return;
           }
@@ -521,6 +551,13 @@
               checked = false;
             }
           });
+
+          if(idDupChk=='N' || idDupChk == ''){
+            swal('확인', "VAN ID 중복체크를 해주세요.", 'error');
+            checked = false;
+            return;
+          }
+
           if (checked) {
             ConfirmdialogToAjax('create', '/base/organ/chainMng/insertChainVan', $('#frm_van_info').serialize(), fn_van_return_result);
           } 
@@ -538,7 +575,7 @@
           }
           var chain_no = $('#van_chain_no').val();
           if(chain_no == '') {
-            swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
+            swal('확인', "가맹점을 먼저 선택해주세요.", 'error');
             checked = false;
             return;
           }
@@ -609,7 +646,7 @@
             autoWidth: false,
             scrollX: true ,
             scrollCollapse: true,
-            pageLength: 20,
+            pageLength: 10,
             scrollY: '450px',
             info: false,
             language: {
@@ -663,7 +700,8 @@
           $('#frm_card_info')[0].reset();
           $('#btn_card_update').hide();
           $('#btn_card_create').show();            
-          $('#btn_card_dupchk').show();          
+          $('#btn_card_dupchk').show();           
+          $('#card_id_dup_chk').val("N");
           $('#card_chain_no').val(card_chain_no);
         }
 
@@ -672,23 +710,25 @@
           var card_acq = $('#card_acq').val();
           var card_reg_no = $('#card_reg_no').val();  
           if (chain_no == '' ) {
-            swal('실패', '가맹점을 먼저 선택하세요.', 'error');
+            swal('확인', '가맹점을 먼저 선택하세요.', 'error');
             return;
           }
           if ( card_acq == '') {
-            swal('실패', '카드(매입사)를 선택하세요.', 'error');
+            swal('확인', '카드(매입사)를 선택하세요.', 'error');
             return;
           }
 
           if (card_reg_no == '' ) {
-            swal('실패', '가맹번호를 정확히 입력하세요.', 'error');
+            swal('확인', '가맹번호를 정확히 입력하세요.', 'error');
             return;
           } 
+
           var params = {
               chain_no: chain_no,
-              card_cd: card_cd,
+              card_acq: card_acq,
               card_reg_no: card_reg_no
             };
+
           callAjaxJson('/base/organ/chainMng/getCardDupChk', params, fn_cardid_dupchk);          
         });
 
@@ -697,17 +737,18 @@
           var resultMsg = data.resultMsg;
           if (resultCode == 'S000') {
             swal('성공', '사용 가능한 가맹번호 입니다.', 'success');
+            $('#card_id_dup_chk').val("Y");
           } else {
             swal('실패', resultMsg, 'error');
           }
         }
         
-        $('#btn_card_create').click(function () {    
-           
+        $('#btn_card_create').click(function () {               
           $('#crud').val('create');      
           var form = $('#frm_card_info');
           var checked = true;
           var chain_no = $('#card_chain_no').val();
+          var idDupChk = $('#card_id_dup_chk').val();
           if(chain_no == '') {
             swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
             checked = false;
@@ -719,6 +760,11 @@
               checked = false;
             }
           });
+          if(idDupChk=='N' || idDupChk == ''){
+            swal('확인', "가맹점 번호 중복 체크를 해주세요.", 'error');
+            checked = false;
+            return;
+          }
           if (checked) {
             ConfirmdialogToAjax('create', '/base/organ/chainMng/insertChainCard', $('#frm_card_info').serialize(), fn_card_return_result);
           } 
@@ -762,12 +808,7 @@
           } else {
             swal('실패', resultMsg, 'error');
           }
-        } 
-
-        function resetPreviewArea() {
-          $('#tbl_file_preview tbody').html('');
-          $('#preview_area').css('display', 'none');
-        }
+        }  
 
         var tbl_file = $('#tbl_file').DataTable({
             processing: true,
@@ -801,7 +842,7 @@
             autoWidth: false,
             scrollX: true ,
             scrollCollapse: true,
-            pageLength: 20,
+            pageLength: 10,
             scrollY: '450px',
             info: false,
             language: {
@@ -851,8 +892,7 @@
         });
 
         function fn_frm_file_info_clear(){
-          var file_chain_no = $('#file_chain_no').val(); 
-          // resetPreviewArea();
+          var file_chain_no = $('#file_chain_no').val();  
           $('#frm_file_info')[0].reset();
           $('#btn_file_delete').hide();
           $('#btn_file_create').show();            
@@ -1239,6 +1279,7 @@
                           <div class="col-sm-8">
                             <div class="input-group input-group-sm">
                               <input type="text" class="form-control form-control-sm" id="ceo_id" name="ceo_id" required maxlength="20" />
+                              <input id="ceo_id_dup_chk" type="hidden" name="ceo_id_dup_chk"/>
                               <button type="button" class="btn btn-primary" id="btn_dupchk">중복</button>
                             </div>
                           </div> 
@@ -1368,7 +1409,10 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_rate">정산 수수료</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm text-end" id="svc_rate" type="text" name="svc_rate" placeholder="00.00" istyle="float" required maxlength="4" />
+                            <div class="input-group">
+                              <input class="form-control form-control-sm text-end" id="svc_rate" type="text" name="svc_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <span class="input-group-text">%</span>
+                            </div>
                           </div>         
                         </div>
                       </div>
@@ -1376,7 +1420,10 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="etc_rate">기타 수수료</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm text-end" id="etc_rate" type="text" name="etc_rate" placeholder="00.00" istyle="float" maxlength="4" />
+                            <div class="input-group">
+                              <input class="form-control form-control-sm text-end" id="etc_rate" type="text" name="etc_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <span class="input-group-text">%</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1386,7 +1433,10 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_rate">여신 수수료</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm text-end" id="crd_rate" type="text" name="crd_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                            <div class="input-group">
+                              <input class="form-control form-control-sm text-end" id="crd_rate" type="text" name="crd_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <span class="input-group-text">%</span>
+                            </div>
                           </div>         
                         </div>
                       </div>
@@ -1394,7 +1444,10 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_delay_rate">연체 수수료</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm text-end" id="crd_delay_rate" type="text" name="crd_delay_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                            <div class="input-group">
+                              <input class="form-control form-control-sm text-end" id="crd_delay_rate" type="text" name="crd_delay_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <span class="input-group-text">%</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1423,7 +1476,10 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="day_use_rate">일 한도율</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm  text-end" id="day_use_rate" type="text" name="day_use_rate" placeholder="00.0" istyle="float" maxlength="3" required />
+                            <div class="input-group">
+                              <input class="form-control form-control-sm text-end" id="day_use_rate" type="text" name="day_use_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <span class="input-group-text">%</span>
+                            </div>
                           </div>         
                         </div>
                       </div>
@@ -1558,7 +1614,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="remit_trans_fee">이체수수료</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="remit_trans_fee" type="text" name="remit_trans_fee" istyle="amount" maxlength="5"/>      
+                            <input class="form-control form-control-sm" id="remit_trans_fee" type="text" name="remit_trans_fee" istyle="amount" maxlength="5" required/>      
                           </div>
                         </div>
                       </div>             
@@ -1609,8 +1665,8 @@
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="risk_stat">RM 상태</label>  
                           <select class="form-select form-select-sm" id="risk_stat" placeholder="" name="risk_stat" >
                             <option value="">선택</option>
-                            <option value="Y">정상</option>
-                            <option value="N">위험</option>
+                            <option value="S">정상</option>
+                            <option value="W">위험</option>
                           </select>
                         </div>
                       </div>      
@@ -1718,6 +1774,7 @@
                           <div class="col-sm-8">
                             <div class="input-group input-group-sm">
                               <input class="form-control form-control-sm" id="van_id" type="text" name="van_id" maxlength="20" required />
+                              <input id="van_id_dup_chk" type="hidden" name="van_id_dup_chk"/>
                               <button type="button" class="btn btn-primary" id="btn_van_dupchk">중복</button>
                             </div>                            
                           </div>
@@ -1818,6 +1875,7 @@
                           <div class="col-sm-8">
                             <div class="input-group input-group-sm">
                               <input class="form-control form-control-sm" id="card_reg_no" type="text" name="card_reg_no" maxlength="20" required />
+                              <input id="card_id_dup_chk" type="hidden" name="card_id_dup_chk" />
                               <button type="button" class="btn btn-primary" id="btn_card_dupchk">중복</button>
                             </div>                            
                           </div>
@@ -1841,7 +1899,10 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="card_rate">신용 수수료</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm text-end" id="card_rate" type="text" name="card_rate" placeholder="00.00" istyle="float" required maxlength="4" />
+                            <div class="input-group">
+                              <input class="form-control form-control-sm text-end" id="card_rate" type="text" name="card_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <span class="input-group-text">%</span>
+                            </div>
                           </div>         
                         </div>
                       </div>
@@ -1849,7 +1910,10 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="check_rate">체크 수수료</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm text-end" id="check_rate" type="text" name="check_rate" placeholder="00.00" istyle="float" maxlength="4" />
+                            <div class="input-group">
+                              <input class="form-control form-control-sm text-end" id="check_rate" type="text" name="check_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <span class="input-group-text">%</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1860,7 +1924,10 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="abroad_rate">해외 수수료</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm text-end" id="abroad_rate" type="text" name="abroad_rate" placeholder="00.00" istyle="float" required maxlength="4" />
+                            <div class="input-group">
+                              <input class="form-control form-control-sm text-end" id="abroad_rate" type="text" name="abroad_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <span class="input-group-text">%</span>
+                            </div>
                           </div>         
                         </div>
                       </div>

@@ -74,14 +74,14 @@
         INSERT INTO TB_USER
         (
               user_id           , corp_cd           , corp_type         , user_nm           , user_pwd
-            , user_gb           , auth_grp_cd       , hp_no             , email             
+            , user_gb           , auth_grp_cd       , hp_no             , tel_no            , email             
             , zip_no            , addr              , addr_dtl          , use_yn            
             , ent_dttm          , ent_user_id 
         )
         VALUES
         (
             #{user_id}          , #{corp_cd}        , #{corp_type}      , #{user_nm}       , SHA2(#{user_pwd}, 256)            
-            , '01'              , #{auth_grp_cd}    , #{hp_no}          , #{email}            
+            , '01'              , #{auth_grp_cd}    , #{hp_no}          , #{tel_no}        , #{email}            
             , #{zip_no}         , #{addr}           , #{addr_dtl}       , #{use_yn}
             , NOW()             , #{ent_user_id} 
         )

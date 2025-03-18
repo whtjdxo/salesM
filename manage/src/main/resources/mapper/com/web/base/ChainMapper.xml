@@ -18,7 +18,8 @@
 	</select>
     
     <select id="getChainList" parameterType="java.util.HashMap" resultType="hashMap">
-        SELECT 	TC.CHAIN_NO         AS  chain_no
+        SELECT 	SQL_CALC_FOUND_ROWS
+                TC.CHAIN_NO         AS  chain_no
                 , TC.CHAIN_NM       AS  chain_nm
                 , IFNULL(TC.CORP_CD, '')        AS  corp_cd
                 , IFNULL(CO.CORP_NM, '')        AS  corp_nm
@@ -140,6 +141,7 @@
                 ORDER BY ent_dttm DESC
             </otherwise>
         </choose>
+        LIMIT ${start}, ${end}
     </select> 
 
     <insert id="insertChain" parameterType="com.web.manage.base.domain.ChainVO">
@@ -250,7 +252,8 @@
 
 
     <select id="getChainVanList" parameterType="java.util.HashMap" resultType="hashMap">
-        SELECT CV.VAN_SEQ                               AS van_seq
+        SELECT  SQL_CALC_FOUND_ROWS
+                CV.VAN_SEQ                               AS van_seq
                 , CV.CHAIN_NO                           AS chain_no    
                 , CV.VAN_CD                             AS van_cd
                 , GET_CODE_NM('VAN_CD', CV.VAN_CD)      AS van_nm
@@ -273,6 +276,7 @@
                 ORDER BY ent_dttm DESC
             </otherwise>
         </choose>
+        LIMIT ${start}, ${end}
     </select>
     
     
@@ -309,7 +313,8 @@
     </update> 
 
      <select id="getChainCardList" parameterType="java.util.HashMap" resultType="hashMap">
-        SELECT CC.CARD_SEQ							    AS card_seq
+        SELECT  SQL_CALC_FOUND_ROWS
+                CC.CARD_SEQ							    AS card_seq
                 , CC.CHAIN_NO						    AS chain_no
                 , CC.CARD_ACQ						    AS card_acq
                 , GET_CODE_NM('CARD_ACQ', CC.CARD_ACQ) 	AS card_acq_nm
@@ -336,6 +341,7 @@
                 ORDER BY ent_dttm DESC
             </otherwise>
         </choose>
+        LIMIT ${start}, ${end}
     </select>
     
     
@@ -343,7 +349,7 @@
         SELECT  COUNT(1)
           FROM  TB_CHAIN_CARD
          WHERE  CHAIN_NO    = #{card_chain_no}
-           AND  CARD_CD     = #{card_cd}
+           AND  CARD_ACQ    = #{card_acq}
            AND  CARD_REG_NO = #{card_reg_no}
     </select>
 
@@ -383,7 +389,8 @@
 	</select>
 
     <select id="getChainFileList" parameterType="java.util.HashMap" resultType="hashMap">
-        SELECT  CC.file_seq							        AS file_seq
+        SELECT  SQL_CALC_FOUND_ROWS
+                CC.file_seq							        AS file_seq
                 , CC.chain_no						        AS chain_no
                 , CC.file_gb						        AS file_gb
                 , GET_CODE_NM('FILE_GB', CC.file_gb) 	    AS file_gb_nm
@@ -409,6 +416,7 @@
                 ORDER BY ent_dttm DESC
             </otherwise>
         </choose>
+        LIMIT ${start}, ${end}
     </select>
 
     <insert id="insertChainFile" parameterType="com.web.manage.base.domain.ChainFileVO">

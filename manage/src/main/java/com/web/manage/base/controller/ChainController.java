@@ -358,6 +358,7 @@ public class ChainController {
     @RequestMapping(value = "/getCardDupChk", method = RequestMethod.POST)
     public @ResponseBody ReturnDataVO getCardDupChk(@RequestBody HashMap<String, Object> params) {        
         ReturnDataVO result = new ReturnDataVO();
+        // System.out.println("call getCardDupChk");
         try {
             if (chainService.getCardDupChk(params) == 0) {
                 result.setResultCode("S000");

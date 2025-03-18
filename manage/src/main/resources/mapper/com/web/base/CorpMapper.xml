@@ -6,7 +6,8 @@
 		SELECT FOUND_ROWS()
 	</select>
 	<select id="getCorpList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-		SELECT  CORP_CD 		AS corp_cd
+		SELECT  SQL_CALC_FOUND_ROWS
+                CORP_CD 		AS corp_cd
 				, CORP_NM 		AS corp_nm
 				, BIZ_NO 		AS biz_no
 				, CORP_TYPE 	AS corp_type
@@ -45,6 +46,7 @@
 				ORDER BY TC.CORP_CD DESC
 			</otherwise>
 		</choose>
+		LIMIT ${start}, ${end}
 	</select> 
 
 	<select id="createCorpCd" resultType="java.lang.String">
