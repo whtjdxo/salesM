@@ -16,6 +16,7 @@ import com.google.gson.Gson;
 import com.web.common.util.StringUtil;
 import com.web.manage.api.domain.ScrapCompVO;
 import com.web.manage.api.domain.ScrapErrorLogVO;
+import com.web.manage.api.domain.ScrapLogVO;
 import com.web.manage.api.domain.ScrapUserVO;
 import com.web.manage.api.domain.ScrapVanDataVO;
 import com.web.manage.api.service.ScrapService;  
@@ -127,7 +128,7 @@ public class ScrapController {
 
     @RequestMapping(value = "/scrapApiUploadVanData.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public @ResponseBody String scrapUploadVanData(@RequestParam("vanCd") String vanCd
-                                                    , @RequestParam("chainNo") String chain_no
+                                                    , @RequestParam("chainNo") String chainNo
                                                     , @RequestParam("userId") String userId
                                                     , @RequestParam("apiAuthKey") String apiAuthKey
                                                     , @RequestParam("authKey") String authKey
@@ -135,6 +136,8 @@ public class ScrapController {
                                                 ) {         		
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>(); 
         ScrapUserVO scrapUserVo = new ScrapUserVO();
+        ScrapLogVO logVo = new ScrapLogVO();
+
         // ScrapVanDataVO  scrapVanDataVO = new ScrapVanDataVO(); 
 
         Gson gson = new Gson();
@@ -143,6 +146,7 @@ public class ScrapController {
 
         scrapUserVo.setUserId(userId);
         scrapUserVo.setUserAuthKey(apiAuthKey); 
+        
 
 		if (scrapService.getUserAuthKeyCheck(scrapUserVo) <= 0){
             hashmapResult.put("repCd", "9001");
@@ -152,10 +156,12 @@ public class ScrapController {
             return jString;                       
         }  
         try {
-            
+            logVo.setChain_no(chainNo);
+            logVo.setVan_cd(vanCd);
+            logVo.setScrap_gb("VAN");
             // System.out.println(uploadData);
 
-            if ( scrapService.scrapUploadVanData(uploadData)) {
+            if ( scrapService.scrapUploadVanData(uploadData, logVo)) {
                 hashmapResult.put("repCd", "0000");
                 hashmapResult.put("repMsg", "Data Upload Complete"); 
                 hashmapResult.put("repData", "");
@@ -195,15 +201,13 @@ public class ScrapController {
         // -- 사용자 인증키 체크
         scrapUserVo.setUserId(userId);
         scrapUserVo.setUserAuthKey(apiAuthKey); 
-
 		// if (scrapService.getUserAuthKeyCheck(scrapUserVo) <= 0){
         //     hashmapResult.put("repCd", "9001");
         //     hashmapResult.put("repMsg", "User AuthKey Check Fail~");
         //     hashmapResult.put("apiAuthKey", ""); 
         //     jString = gson.toJson(hashmapResult);
         //     return jString;                       
-        // } 
-
+        // }
         errorLogVo.setUserId(userId);
         errorLogVo.setApiAuthKey(apiAuthKey);
         errorLogVo.setAuthKey(authKey);

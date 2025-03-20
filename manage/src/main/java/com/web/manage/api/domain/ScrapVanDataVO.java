@@ -10,6 +10,7 @@ public class ScrapVanDataVO {
     private String authKey;
     private String tradeNo;    
     private String cardRegNo;
+    private String mid;
     private String chainNo;
     private String confNo;
     private String confGb;
@@ -25,8 +26,7 @@ public class ScrapVanDataVO {
     private String orgConfDt;
     private String storeId;
     private String bizNo;
-    private String bizNm;
-    private String mid;
+    private String bizNm;    
     private String catId;
     private String useYn; 
     private String entDttm;

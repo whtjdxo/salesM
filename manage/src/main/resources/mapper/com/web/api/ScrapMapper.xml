@@ -27,7 +27,27 @@
                 UPDATE  TB_USER
                    SET  USER_AUTH_KEY   = #{userAuthKey}
                  WHERE  USER_ID         = #{userId}
-        </update>    
+        </update> 
+
+        <insert id="writeScrapErrorLog" parameterType="com.web.manage.api.domain.ScrapErrorLogVO">
+                INSERT INTO     TB_SCRAP_ERROR_LOG (
+                        SCRAP_DTTM	, VAN_CD		, CHAIN_NO		, CHAIN_NM		
+                        , LOGIN_ID	, LOGIN_PWD		, ERROR_MSG
+                ) VALUES (                                   
+                        NOW()	        , #{vanCd}		, #{chainNo}		, #{chainNm}	
+                        , #{loginId}    , #{loginPwd}	        , #{errorMsg}     
+                )    
+        </insert> 
+
+        <insert id="writeScrapLog" parameterType="com.web.manage.api.domain.ScrapLogVO">
+                INSERT INTO     TB_SCRAP_LOG (
+                        CHAIN_NO        , SCRAP_GB      , VAN_CD        , LAST_SCRAP_DTTM
+                        , UPLOAD_CNT    , SAVE_CNT      , DUP_CNT       , RSLT_MSG
+                ) VALUES (                                   
+                        #{chain_no}	, #{scrap_gb}   , #{van_cd}     , NOW()
+                        , #{upload_cnt} , #{save_cnt}	, #{dup_cnt}    , #{rslt_msg}     
+                )    
+        </insert>    
 
         <select id="getVanChainList" parameterType="com.web.manage.api.domain.ScrapCompVO" resultType="java.util.HashMap">
                 SELECT 	TC.CHAIN_NO 		AS chainNo
@@ -74,14 +94,6 @@
                 )                
 	</insert>
 
-        <insert id="writeScrapErrorLog" parameterType="com.web.manage.api.domain.ScrapErrorLogVO">
-                INSERT INTO     TB_SCRAP_ERROR_LOG (
-                        SCRAP_DTTM	, VAN_CD		, CHAIN_NO		, CHAIN_NM		
-                        , LOGIN_ID	, LOGIN_PWD		, ERROR_MSG
-                ) VALUES (                                   
-                        NOW()	        , #{vanCd}		, #{chainNo}		, #{chainNm}	
-                        , #{loginId}    , #{loginPwd}	        , #{errorMsg}     
-                )    
-        </insert> 
+        
 	 
 </mapper>

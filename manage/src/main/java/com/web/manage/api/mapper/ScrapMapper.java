@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import com.web.manage.api.domain.ScrapCompVO;
 import com.web.manage.api.domain.ScrapErrorLogVO;
+import com.web.manage.api.domain.ScrapLogVO;
 import com.web.manage.api.domain.ScrapUserVO;
 import com.web.manage.api.domain.ScrapVanDataVO;
 
@@ -21,5 +22,6 @@ public interface ScrapMapper {
 
     boolean scrapUploadVanData(ScrapVanDataVO scrapVanDataVO);
     boolean writeScrapErrorLog(ScrapErrorLogVO errorVo);
+    boolean writeScrapLog(ScrapLogVO logVO);
     
 }

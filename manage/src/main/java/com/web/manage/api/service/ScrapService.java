@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.web.manage.api.domain.ScrapCompVO;
 import com.web.manage.api.domain.ScrapErrorLogVO;
+import com.web.manage.api.domain.ScrapLogVO;
 import com.web.manage.api.domain.ScrapUserVO;
 import com.web.manage.api.domain.ScrapVanDataVO;
 import com.web.manage.api.mapper.ScrapMapper; 
@@ -40,31 +41,52 @@ public class ScrapService {
     }
      
     @Transactional
-    public boolean scrapUploadVanData(String uploadData) {       
+    public boolean scrapUploadVanData(String uploadData, ScrapLogVO logVO) {       
         // ScrapVanDataVO scrapVanDataVO = new ScrapVanDataVO();
+        int totDataCnt = 0;
+		int succDataCnt  = 0;
+		int dupDataCnt   = 0;
         try {
             // Parse JSON and populate scrapVanDataVO
             com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
             
-            System.out.println("vanDataList Mapping ==========================================");
             List<ScrapVanDataVO> vanDataList = objectMapper.readValue(uploadData, 
                     objectMapper.getTypeFactory().constructCollectionType(List.class, ScrapVanDataVO.class)
-                    );
-            System.out.println("vanDataList Mapping ==========================================");
-            
+                    ); 
             for (ScrapVanDataVO vanData : vanDataList) {
+                totDataCnt += 1;
                 try {
-                    System.out.println(vanData);
+                    // System.out.println(vanData);
                     scrapMapper.scrapUploadVanData(vanData);
+                    succDataCnt += 1;
                 } catch (org.springframework.dao.DuplicateKeyException e) {
                     // Ignore duplicate key errors and continue processing
+                    dupDataCnt += 1;
                     continue;
                 } catch (Exception e) {
                     // Rollback for other errors
                     throw new RuntimeException("Error during scrapUploadVanData", e);
                 }
             }
+
+            String rsltMsg = "";
+            dupDataCnt = totDataCnt - succDataCnt;
+            rsltMsg = "Upload : " + totDataCnt + " Save : " + succDataCnt + " Dup : " + dupDataCnt;
+            
+            logVO.setUpload_cnt(String.valueOf(totDataCnt));
+            logVO.setDup_cnt(String.valueOf(dupDataCnt));
+            logVO.setSave_cnt(String.valueOf(succDataCnt));
+            logVO.setRslt_msg(rsltMsg); 
+            
+            // 데이터 처리 결과 insert
+            try {
+                scrapMapper.writeScrapLog(logVO);
+            } catch (Exception e) {
+                // Log the exception or handle it appropriately
+                System.err.println("Error writing scrap log: " + e.getMessage());
+            } 
             return true;
+
         } catch (Exception e) {
             // Rollback for other errors
             throw new RuntimeException("Error during scrapUploadVanData", e);
