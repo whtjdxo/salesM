@@ -1,9 +1,8 @@
-import lombok.Data;
+
 
 package com.web.manage.api.domain;
-
+import lombok.Data;
 @Data
-
 public class ScrapVanDataVO {    
     private String vanCd;
     private String userId;
@@ -27,6 +26,7 @@ public class ScrapVanDataVO {
     private String storeId;
     private String bizNo;
     private String bizNm;
+    private String mid;
     private String catId;
     private String useYn; 
     private String entDttm;

@@ -83,7 +83,7 @@ public class ScrapController {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>(); 
         ScrapUserVO scrapUserVo = new ScrapUserVO();
         ScrapCompVO scrapCompVO = new ScrapCompVO(); 
-		List<HashMap<String, Object>> rusutList = new ArrayList<HashMap<String, Object>>();
+		List<HashMap<String, Object>> resultList = new ArrayList<HashMap<String, Object>>();
         Gson gson = new Gson();
         String jString = null;
         // -- 사용자 인증키 체크
@@ -106,11 +106,12 @@ public class ScrapController {
         scrapCompVO.setAuthKey(authKey); 
         
         try {
-            rusutList = scrapService.getVanChainList(scrapCompVO);
+            resultList = scrapService.getVanChainList(scrapCompVO);
             
             hashmapResult.put("repCd", "0000");
             hashmapResult.put("repMsg", "Get Data List"); 
-            hashmapResult.put("repData", rusutList);
+            hashmapResult.put("repData", resultList);
+            System.out.println("resultList : " + resultList);
             // hashmapResult.put("repData", gson.toJson(list));            
         } catch (Exception e) {
             e.printStackTrace();
@@ -134,7 +135,7 @@ public class ScrapController {
                                                 ) {         		
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>(); 
         ScrapUserVO scrapUserVo = new ScrapUserVO();
-        ScrapVanDataVO  scrapVanDataVO = new ScrapVanDataVO(); 
+        // ScrapVanDataVO  scrapVanDataVO = new ScrapVanDataVO(); 
 
         Gson gson = new Gson();
         String jString = null;
@@ -151,6 +152,9 @@ public class ScrapController {
             return jString;                       
         }  
         try {
+            
+            // System.out.println(uploadData);
+
             if ( scrapService.scrapUploadVanData(uploadData)) {
                 hashmapResult.put("repCd", "0000");
                 hashmapResult.put("repMsg", "Data Upload Complete"); 
@@ -164,7 +168,7 @@ public class ScrapController {
             e.printStackTrace();
             hashmapResult.put("repCd", "9900");
             hashmapResult.put("repMsg", "Insert Data Fail"); 
-            hashmapResult.put("repData", list);
+            hashmapResult.put("repData", null);
         }
 
         jString = gson.toJson(hashmapResult);
@@ -184,7 +188,7 @@ public class ScrapController {
                                                 ) {         		
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>(); 
         ScrapUserVO scrapUserVo = new ScrapUserVO();
-        ScrapErrorLogVO  errorVo = new ScrapErrorLogVO(); 
+        ScrapErrorLogVO  errorLogVo = new ScrapErrorLogVO(); 
 
         Gson gson = new Gson();
         String jString = null;
@@ -200,8 +204,18 @@ public class ScrapController {
         //     return jString;                       
         // } 
 
+        errorLogVo.setUserId(userId);
+        errorLogVo.setApiAuthKey(apiAuthKey);
+        errorLogVo.setAuthKey(authKey);
+        errorLogVo.setVanCd(vanCd);
+        errorLogVo.setChainNo(chainNo);
+        errorLogVo.setChainNm(chainNm);
+        errorLogVo.setLoginId(loginId);
+        errorLogVo.setLoginPwd(loginPwd);
+        errorLogVo.setErrorMsg(errorMsg);
+
         try {
-            if ( scrapService.writeScrapErrorLog(errorVo)) {
+            if ( scrapService.writeScrapErrorLog(errorLogVo)) {
                 hashmapResult.put("repCd", "0000");
                 hashmapResult.put("repMsg", "Error Log Write Complete"); 
                 hashmapResult.put("repData", "");

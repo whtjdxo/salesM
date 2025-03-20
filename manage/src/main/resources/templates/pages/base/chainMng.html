@@ -709,6 +709,14 @@
           $('#card_chain_no').val(card_chain_no);
         }
 
+        $('#card_reg_no').on('change', function() {
+          var chk = $('#card_id_dup_chk').val();
+          if (chk == "Y") {
+            $('#card_id_dup_chk').val("N");
+            $('#btn_card_dupchk').show();             
+          } 
+        });
+
         $('#btn_card_dupchk').click(function () {
           var chain_no = $('#card_chain_no').val();
           var card_acq = $('#card_acq').val();

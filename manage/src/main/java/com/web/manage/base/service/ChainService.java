@@ -7,9 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.web.manage.base.mapper.ChainMapper;
-import com.web.manage.system.domain.BoardVO;
 import com.web.manage.user.domain.UserVO;
-import com.web.manage.user.mapper.UserMngMapper;
 import com.web.manage.user.service.UserMngService;
 import com.web.manage.base.domain.ChainCardVO;
 import com.web.manage.base.domain.ChainFileVO;

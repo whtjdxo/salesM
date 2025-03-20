@@ -45,11 +45,16 @@ public class ScrapService {
         try {
             // Parse JSON and populate scrapVanDataVO
             com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            
+            System.out.println("vanDataList Mapping ==========================================");
             List<ScrapVanDataVO> vanDataList = objectMapper.readValue(uploadData, 
-                objectMapper.getTypeFactory().constructCollectionType(List.class, ScrapVanDataVO.class));
-
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, ScrapVanDataVO.class)
+                    );
+            System.out.println("vanDataList Mapping ==========================================");
+            
             for (ScrapVanDataVO vanData : vanDataList) {
                 try {
+                    System.out.println(vanData);
                     scrapMapper.scrapUploadVanData(vanData);
                 } catch (org.springframework.dao.DuplicateKeyException e) {
                     // Ignore duplicate key errors and continue processing

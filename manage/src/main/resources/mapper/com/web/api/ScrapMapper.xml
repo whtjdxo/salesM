@@ -62,12 +62,12 @@
 
 	<insert id="scrapUploadVanData" parameterType="com.web.manage.api.domain.ScrapVanDataVO">
                 INSERT INTO tb_scrap_van_data(
-                        TRADE_NO        , VAN_CD        , CARD_REG_NO   , CHAIN_NO
+                        TRADE_NO        , VAN_CD        , CHAIN_NO      , CARD_REG_NO   , MID
                         , CONF_NO       , CONF_GB       , CONF_RSLT     , CONF_DTTM     , CONF_TYPE     , CARD_TYPE
                         , CARD_NO       , CARD_ACQ      , CARD_ISSUE    , CONF_AMT      , INSTALL_MON   , ORG_CONF_DT
                         , STORE_ID      , BIZ_NO        , BIZ_NM        , CAT_ID        , USE_YN        , ENT_DTTM
                 ) VALUES (
-                        #{tradeNo}      , #{vanCd}      , #{cardRegNo}  , #{chainNo}
+                        #{tradeNo}      , #{vanCd}      , #{chainNo}    , #{cardRegNo}  , #{mid}
                         , #{confNo}     , #{confGb}     , #{confRslt}   , #{confDttm}   , #{confType}   , #{cardType}
                         , #{cardNo}     , #{cardAcq}    , #{cardIssue}  , #{confAmt}    , #{installMon} , #{orgConfDt}
                         , #{storeId}    , #{bizNo}      , #{bizNm}      , #{catId}      , #{useYn}      , NOW()
@@ -75,7 +75,7 @@
 	</insert>
 
         <insert id="writeScrapErrorLog" parameterType="com.web.manage.api.domain.ScrapErrorLogVO">
-                INSERT INTO     TSC_SCRAP_ERROR_LOG (
+                INSERT INTO     TB_SCRAP_ERROR_LOG (
                         SCRAP_DTTM	, VAN_CD		, CHAIN_NO		, CHAIN_NM		
                         , LOGIN_ID	, LOGIN_PWD		, ERROR_MSG
                 ) VALUES (                                   
