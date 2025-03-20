@@ -1,0 +1,25 @@
+package com.web.manage.api.mapper;
+
+import java.util.HashMap;
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.web.manage.api.domain.ScrapCompVO;
+import com.web.manage.api.domain.ScrapErrorLogVO;
+import com.web.manage.api.domain.ScrapUserVO;
+import com.web.manage.api.domain.ScrapVanDataVO;
+
+@Mapper
+public interface ScrapMapper {
+
+    int getUserCheck(ScrapUserVO scrapUserVo);    
+    boolean setUserAuthKey(ScrapUserVO scrapUserVo);
+    int getUserAuthKeyCheck(ScrapUserVO scrapUserVo);
+
+    public List<HashMap<String, Object>> getVanChainList(ScrapCompVO scrapCompVO);
+
+    boolean scrapUploadVanData(ScrapVanDataVO scrapVanDataVO);
+    boolean writeScrapErrorLog(ScrapErrorLogVO errorVo);
+    
+}

@@ -70,7 +70,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor).excludePathPatterns("/login", "/chkLogin", "/register",
                 "/registerProcess", "/error", "/main", "/logout", "/upload/**", "/js/**", "/css/**", "/img/**",
-                "/vendors/**", "/data/**", "/logos/**", "/video/**");
+                "/vendors/**", "/data/**", "/logos/**", "/video/**", "/api/**");
         ;
     }
 }

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.web.manage.api.mapper.ScrapMapper">
+
+	<select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select>    
+
+        <select id="getUserCheck" parameterType="com.web.manage.api.domain.ScrapUserVO" resultType="int">
+                SELECT  COUNT(1)
+                  FROM  TB_USER
+                WHERE  USER_ID     = #{userId}
+                AND  USER_PWD    = SHA2(#{userPwd}, 256)
+                AND  CORP_TYPE   = 'SC'
+                AND  USE_YN      = 'Y'                
+        </select>    
+        <select id="getUserAuthKeyCheck" parameterType="com.web.manage.api.domain.ScrapUserVO" resultType="int">
+                SELECT  COUNT(1)
+                  FROM  TB_USER
+                 WHERE  USER_ID     = #{userId}
+                   <!-- AND  USER_PWD    = SHA2(#{userPwd}, 256) -->
+                   AND  USER_AUTH_KEY = #{userAuthKey}
+                   AND  USE_YN      = 'Y'                
+        </select>                     
+
+        <update id="setUserAuthKey" parameterType="com.web.manage.api.domain.ScrapUserVO">
+                UPDATE  TB_USER
+                   SET  USER_AUTH_KEY   = #{userAuthKey}
+                 WHERE  USER_ID         = #{userId}
+        </update>    
+
+        <select id="getVanChainList" parameterType="com.web.manage.api.domain.ScrapCompVO" resultType="java.util.HashMap">
+                SELECT 	TC.CHAIN_NO 		AS chainNo
+                        , TC.CHAIN_NM		AS chainNm
+                        , TC.BIZ_NO 		AS bizNo
+                        , VN.VAN_CD		AS vanCd
+                        , CD.CODE_NM 		AS vanNm
+                        , VN.VAN_ID             AS loginId
+                        , VN.VAN_PWD            AS loginPwd
+                FROM 	TB_CHAIN TC
+                        JOIN TB_CHAIN_VAN VN ON VN.CHAIN_NO = TC.CHAIN_NO
+                                AND VN.USE_YN = 'Y'
+                                AND VN.VAN_CD = #{vanCd}
+                                AND VN.USE_YN = 'Y'
+                        JOIN TB_CODE CD ON CD.CODE = VN.VAN_CD
+                                AND CD.CODE_GRP_CD = 'VAN_CD'          
+                                AND CD.USE_YN = 'Y'                
+                WHERE  TC.SVC_STAT IN ('O', 'R')       
+                <if test="chainNo != null and chainNo != ''">			
+                        AND   TC.CHAIN_NO = #{chainNo}
+                </if>
+                AND  NOT EXISTS(
+                                SELECT 1 
+                                FROM TB_SCRAP_LOG SL          
+                                WHERE SL.CHAIN_NO  = TC.CHAIN_NO       
+                                AND SL.SCRAP_GB  = 'VAN'            
+                                AND SL.VAN_CD    = #{vanCd}
+                                AND SL.LAST_SCRAP_DTTM >= DATE_SUB(NOW(), INTERVAL 90 MINUTE)
+                        )                                       
+                ORDER 	BY TC.CHAIN_NO  
+	</select> 
+
+	<insert id="scrapUploadVanData" parameterType="com.web.manage.api.domain.ScrapVanDataVO">
+                INSERT INTO tb_scrap_van_data(
+                        TRADE_NO        , VAN_CD        , CARD_REG_NO   , CHAIN_NO
+                        , CONF_NO       , CONF_GB       , CONF_RSLT     , CONF_DTTM     , CONF_TYPE     , CARD_TYPE
+                        , CARD_NO       , CARD_ACQ      , CARD_ISSUE    , CONF_AMT      , INSTALL_MON   , ORG_CONF_DT
+                        , STORE_ID      , BIZ_NO        , BIZ_NM        , CAT_ID        , USE_YN        , ENT_DTTM
+                ) VALUES (
+                        #{tradeNo}      , #{vanCd}      , #{cardRegNo}  , #{chainNo}
+                        , #{confNo}     , #{confGb}     , #{confRslt}   , #{confDttm}   , #{confType}   , #{cardType}
+                        , #{cardNo}     , #{cardAcq}    , #{cardIssue}  , #{confAmt}    , #{installMon} , #{orgConfDt}
+                        , #{storeId}    , #{bizNo}      , #{bizNm}      , #{catId}      , #{useYn}      , NOW()
+                )                
+	</insert>
+
+        <insert id="writeScrapErrorLog" parameterType="com.web.manage.api.domain.ScrapErrorLogVO">
+                INSERT INTO     TSC_SCRAP_ERROR_LOG (
+                        SCRAP_DTTM	, VAN_CD		, CHAIN_NO		, CHAIN_NM		
+                        , LOGIN_ID	, LOGIN_PWD		, ERROR_MSG
+                ) VALUES (                                   
+                        NOW()	        , #{vanCd}		, #{chainNo}		, #{chainNm}	
+                        , #{loginId}    , #{loginPwd}	        , #{errorMsg}     
+                )    
+        </insert> 
+	 
+</mapper>

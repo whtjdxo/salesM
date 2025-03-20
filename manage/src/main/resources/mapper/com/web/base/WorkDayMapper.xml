@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.web.manage.base.mapper.WorkDayMapper">
+
+	<select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select>
+	<select id="getWorkDayList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT  SQL_CALC_FOUND_ROWS
+                WORK_DATE       AS work_date
+                , WORKING       AS working
+                , DAY_NM        AS day_nm
+				, IFNULL(UPT_USER_ID, ENT_USER_ID) AS upt_user_id
+				, DATE_FORMAT(IFNULL(UPT_DTTM, ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
+		FROM  TB_WORK_DAY 		
+	   WHERE  WORK_DATE  BETWEEN DATE_FORMAT(#{sch_date}, '%Y-%m-01') 
+                             AND LAST_DAY(#{sch_date})
+	</select> 
+ 
+	<insert id="insertWorkDay" parameterType="com.web.manage.base.domain.WorkDayVO">
+        INSERT INTO TB_WORK_DAY (
+                WORK_DATE, WORKING, DAY_NM, DATE_WORK, WDAY, DD, QUARTER, WEEK_OF_MONTH, WEEK_OF_YEAR, ENT_DTTM, ENT_USER_ID
+                )
+        SELECT 	VT.*   
+        FROM    (    
+                    SELECT  WORK_DATE
+                            , #{working}					AS WORKING
+                            , IFNULL(#{day_nm}, '')			AS DAY_NM
+                            , DATE_WORK  							        -- 오늘 날짜
+                            , DATE_FORMAT(DATE_WORK, '%a') 	AS WDAY  	    -- 요일 (월/화/수/목/금/토/일)
+                            , WEEKDAY(DATE_WORK) + 1 		AS DD  	        -- 요일 번호 (월=1, 화=2, ... 일=7)
+                            , QUARTER(DATE_WORK) 			AS QUARTER       -- 분기 (1~4)
+                            , WEEK(DATE_WORK, 0) - WEEK(DATE_FORMAT(DATE_WORK, '%Y-%m-01'), 0) + 1 AS WEEK_OF_MONTH
+                            , WEEKOFYEAR(DATE_WORK) 		AS WEEK_OF_YEAR  -- 년중 주차
+                            , NOW() 						AS ENT_DTTM     -- 현재 시간
+                            , #{upt_user_id}				AS ENT_USER_ID  -- 사용자 ID (실제 사용자 ID로 변경)
+                    FROM 	(
+                                SELECT 	#{work_date} AS WORK_DATE
+                                        , DATE_FORMAT(#{work_date}, '%Y-%m-%d') AS DATE_WORK
+                            ) V
+                ) VT
+        ON DUPLICATE KEY UPDATE
+            WORKING 	    = VT.WORKING
+            , DAY_NM 	    = VT.DAY_NM
+            , DATE_WORK     = VT.DATE_WORK
+            , WDAY 		    = VT.WDAY
+            , DD 		    = VT.DD
+            , QUARTER 	    = VT.QUARTER
+            , WEEK_OF_MONTH = VT.WEEK_OF_MONTH
+            , WEEK_OF_YEAR  = VT.WEEK_OF_YEAR
+            , UPT_DTTM      = NOW()
+            , UPT_USER_ID   = #{upt_user_id}
+	</insert>	
+	  
+</mapper>

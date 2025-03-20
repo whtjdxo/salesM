@@ -286,6 +286,10 @@
           $('#frm_card_info')[0].reset();
           $('#frm_file_info')[0].reset();
 
+          $('#tbl_van tbody').empty();
+          $('#tbl_card tbody').empty();
+          $('#tbl_file tbody').empty(); 
+          
           $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
           $('#btn_update').hide();
           $('#btn_create').show();
@@ -917,74 +921,26 @@
               checked = false;
             }
           });
-          var formData = new FormData($('#frm_file_info')[0]);
-          $.ajax({
-              url: '/base/organ/chainMng/insertChainFile',
-              type: 'POST',
-              data: formData,
-              processData: false,
-              contentType: false,
-              success: function (response) { 
-                console.log("파일 업로드 성공", response);
-                fn_file_return_result(response);   
-              },
-              error: function (xhr, status, error) {
-                swal('실패', resultMsg, 'error');
-                console.error("파일 업로드 실패", error);
-              }
-          }); 
+          if (checked) {
+            var formData = new FormData($('#frm_file_info')[0]);
+            $.ajax({
+                url: '/base/organ/chainMng/insertChainFile',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) { 
+                  console.log("파일 업로드 성공", response);
+                  fn_file_return_result(response);   
+                },
+                error: function (xhr, status, error) {
+                  swal('실패', resultMsg, 'error');
+                  console.error("파일 업로드 실패", error);
+                }
+            }); 
+          }          
         }); 
-
-
-        // $('#btn_file_update').click(function () {
-        //   $('#crud').val('update');
-        //   var form = $('#frm_file_info');
-        //   var checked = true;
-        //   var file_seq = $('#file_seq').val();
-        //   if(file_seq == '') {
-        //     swal('실패', "파일 먼저 선택해주세요.", 'error');
-        //     checked = false;
-        //     return;
-        //   }
-        //   var chain_no = $('#file_chain_no').val();
-        //   if(chain_no == '') {
-        //     swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
-        //     checked = false;
-        //     return;
-        //   }
-
-        //   $.each(form, function (i, val) {
-        //     if (!val.checkValidity()) {
-        //       checked = false;
-        //     }
-        //   });
-          
-        //   var formData = new FormData($('#frm_file_info')[0]);
-        //   $.ajax({
-        //       url: '/base/organ/chainMng/updateChainFile',
-        //       type: 'POST',
-        //       data: formData,
-        //       processData: false,
-        //       contentType: false,
-        //       success: function (response) { 
-        //         console.log("파일 업로드 성공", response);
-        //         var resultCode = response.resultCode;
-        //         var resultMsg = response.resultMsg;                 
-        //         if (resultCode == 'S000') {
-        //           fn_frm_file_info_clear();
-        //           swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
-        //           tbl_file.ajax.reload();                 
-        //         } else {
-        //           swal('실패', resultMsg, 'error');
-        //         } 
-        //       },
-        //       error: function (xhr, status, error) {
-        //         swal('실패', resultMsg, 'error');
-        //         console.error("파일 업로드 실패", error);
-        //       }
-        //   }); 
-        // });     
-
+ 
         $('#btn_file_delete').click(function () {
           $('#crud').val('delete');
           var form = $('#frm_file_info');
@@ -1999,7 +1955,7 @@
                       <div class="row mb-1">
                         <label class="col-sm-2 col-form-label col-form-label-sm" for="file_upload">파일</label>
                         <div class="col-sm-10">
-                          <input class="form-control form-control-sm" id="file_upload" type="file" name="file_upload" novalidate multiple="multiple" />
+                          <input class="form-control form-control-sm" id="file_upload" type="file" name="file_upload" novalidate multiple="multiple" required/>
                           <a id="file_down" style="display:none" target="_blank">Down</a>
                         </div>
                       </div>     
