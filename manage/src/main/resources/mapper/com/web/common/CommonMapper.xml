@@ -40,4 +40,16 @@
             FROM  tb_user
           WHERE  user_id = #{user_id}
 	</select>    
+
+  <select id="getPreWorkDay" parameterType="java.util.HashMap" resultType="String">
+    SELECT GET_PRE_WORKDAY(DATE_FORMAT(NOW(), '%Y-%m-%d')) AS pre_workday
+	</select>
+
+  <select id="getNextWorkDay" parameterType="java.util.HashMap" resultType="String">
+    SELECT GET_NEXT_WORKDAY(DATE_FORMAT(NOW(), '%Y-%m-%d')) AS next_workday
+	</select>
+
+  <select id="getToDay" parameterType="java.util.HashMap" resultType="String">
+    SELECT DATE_FORMAT(NOW(), '%Y-%m-%d') AS to_day
+	</select>
 </mapper>

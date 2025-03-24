@@ -111,7 +111,7 @@
           FROM  TB_CHAIN TC
           JOIN  TB_CORP  CO     ON CO.CORP_CD = TC.CORP_CD
           JOIN  TB_AGENCY AG    ON AG.AGENCY_NO  = TC.AGENCY_NO
-          JOIN  TB_USER  TU     ON TU.USER_ID = TC.CEO_ID
+          LEFT OUTER JOIN  TB_USER  TU     ON TU.USER_ID = TC.CEO_ID
 
         WHERE   1 = 1
         <if test="sch_corp_no != null and sch_corp_no != ''">			
@@ -132,6 +132,9 @@
 		</if>
         <if test="sch_use_yn != null and sch_use_yn != ''">			
 			AND TC.USE_YN = #{sch_use_yn}
+		</if>
+        <if test="sch_svc_stat != null and sch_svc_stat != ''">			
+			AND TC.SVC_STAT = #{sch_svc_stat}
 		</if>
         <choose>
             <when test="sidx != ''">

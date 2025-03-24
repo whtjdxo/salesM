@@ -26,4 +26,16 @@ public class CommonService {
         return commonMapper.getAgencyList(hashmapParam);
     }
 
+    public String getPreWorkDay() {
+        return commonMapper.getPreWorkDay();
+    }
+    
+    public String getNextWorkDay() {
+        return commonMapper.getNextWorkDay();
+    }
+
+    public String getToDay() {
+        return commonMapper.getToDay();
+    }
+
 }

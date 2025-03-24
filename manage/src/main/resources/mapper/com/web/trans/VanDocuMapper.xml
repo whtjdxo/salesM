@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.web.manage.trans.mapper.VanDocuMapper">
+
+	<select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select>    
+ 
+        <select id="getScrapDataSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT	V.CHAIN_NO                              as chain_no 
+                        , TC.CHAIN_NM                           as chain_nm
+                        , V.CONF_DT                             as conf_dt        
+                        , IFNULL(V.CONF_CNT, 0) 		AS conf_cnt
+                        , IFNULL(V.CONF_AMT, 0) 		AS conf_amt
+                        , IFNULL(V.CNCL_CNT, 0) 		AS cncl_cnt
+                        , IFNULL(V.CNCL_AMT, 0) 		AS cncl_amt
+                        , IFNULL(V.TOT_CNT, 0) 			AS tot_cnt
+                        , IFNULL(V.TOT_AMT, 0) 			AS tot_amt
+                        , IFNULL(V.UN_SETTLE_CNT, 0) 	        AS error_cnt
+                FROM 	(        
+                                SELECT 'VAN'				AS GB
+                                        , CHAIN_NO
+                                        , SUBSTR(CONF_DTTM, 1, 10) 						AS CONF_DT
+                                        , SUM(CASE WHEN CONF_GB = '승인' THEN 1 ELSE NULL END)	                AS CONF_CNT
+                                        , SUM(CASE WHEN CONF_GB = '승인' THEN CONF_AMT ELSE NULL END)		AS CONF_AMT
+                                        , SUM(CASE WHEN CONF_GB = '승인' THEN NULL ELSE 1 END)			AS CNCL_CNT
+                                        , SUM(CASE WHEN CONF_GB = '승인' THEN NULL ELSE CONF_AMT END)		AS CNCL_AMT                
+                                        , COUNT(1)								AS TOT_CNT
+                                        , SUM((CONF_AMT * CASE WHEN CONF_GB = '승인' THEN 1 ELSE -1 END))	AS TOT_AMT
+                                        , SUM((CASE WHEN PROC_FG = 'N' THEN 1 ELSE NULL END))			AS 	UN_SETTLE_CNT
+                                  FROM  TB_SCRAP_VAN_DATA T1
+                                 WHERE	CONF_DTTM  &gt;=  #{sch_conf_sdt}
+                                   AND  CONF_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
+                        <if test="schgb_conf_val != ''">
+                                <choose>
+                                        <when test="schgb_conf == 'schgb_conf_no'">
+                                                AND T1.CONF_NO  = #{schgb_conf_val}
+                                        </when>
+                                        <when test="schgb_conf == 'schgb_card_no'">
+                                                AND T1.CARD_NO  = #{schgb_conf_val}
+                                        </when>
+                                        <when test="schgb_conf == 'schgb_conf_amt'">
+                                                AND T1.CONF_AMT  = #{schgb_conf_val}
+                                        </when>
+                                </choose>
+                        </if>  
+                                 GROUP	BY CHAIN_NO, SUBSTR(CONF_DTTM, 1, 10) 	
+                                 UNION	ALL
+                                SELECT  'DELI'				AS GB
+                                        , CHAIN_NO
+                                        , SUBSTR(ORDER_DTTM, 1, 10) 											AS CONF_DT
+                                        , COUNT(1) 			AS CONF_CNT
+                                        , SUM(ORDER_AMT) 	AS CONF_AMT
+                                        , 0 				AS CNCL_CNT
+                                        , 0					AS CNCL_AMT  
+                                        , COUNT(1) 			AS TOT_CNT
+                                        , SUM(ORDER_AMT) 	AS TOT_AMT
+                                        , SUM((CASE WHEN PROC_FG = 'Y' THEN 1 ELSE NULL END))	AS SETTLE_CNT
+                                  FROM  TB_SCRAP_DELI_DATA
+                                 WHERE	ORDER_DTTM  &gt;=  #{sch_conf_sdt}
+                                   AND  ORDER_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
+                        <if test="sch_card_acq != ''">
+                                AND CARD_ACQ  = #{sch_card_acq}
+                        </if>                                   
+                        <if test="schgb_conf_val != ''">
+                                <choose>
+                                        <when test="schgb_conf == 'schgb_conf_no'">
+                                                AND T1.ORDER_NO  = #{schgb_conf_val}
+                                        </when>
+                                        <when test="schgb_conf == 'schgb_card_no'">
+                                                AND T1.ORDER_NO  = #{schgb_conf_val}
+                                        </when>
+                                        <when test="schgb_conf == 'schgb_conf_amt'">
+                                                AND T1.ORDER_AMT  = #{schgb_conf_val}
+                                        </when>
+                                </choose>
+                        </if>
+                                 GROUP	BY CHAIN_NO,  SUBSTR(ORDER_DTTM, 1, 10) 
+                        ) V
+                        JOIN TB_CHAIN TC ON TC.CHAIN_NO = V.CHAIN_NO
+                                        AND TC.USE_YN = 'Y'
+                                        AND TC.SVC_STAT IN ('O', 'R')
+                 WHERE  1 = 1
+                <if test="sch_agency_no != ''">
+                        AND TC.AGENCY_NO  = #{sch_agency_no}
+                </if> 
+                <if test="schgb_chain_val != ''">
+                        <choose>
+                                <when test="schgb_chain == 'schgb_biz_no'">
+                                        AND TC.BIZ_NO  = #{schgb_chain_val}
+                                </when>
+                                <when test="schgb_chain == 'schgb_chanin_nm'">
+                                        AND TC.CHAIN_NM LIKE CONCAT('%', #{schgb_chain_val}, '%')
+                                </when>
+                        </choose>
+                </if>
+                 
+                <choose>
+                        <when test="sidx != ''">
+                                ORDER BY ${sidx} ${sord}
+                        </when>
+                        <otherwise>
+                                ORDER BY V.CHAIN_NO, V.CONF_DT DESC
+                        </otherwise>
+                </choose>
+                
+                LIMIT  ${start}, ${end}
+	</select> 
+        
+	<select id="getVanDocuSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT  SQL_CALC_FOUND_ROWS 
+                        T1.CHAIN_NO             AS chain_no
+                        , T2.CHAIN_NM           AS chain_nm
+                        , T2.BIZ_NO             AS biz_no
+                        , T1.CONF_DT            AS conf_dt
+                        , IFNULL(SUM(CASE WHEN T1.CONF_GB = 'A' THEN 1 ELSE NULL END), 0)               AS conf_cnt
+                        , IFNULL(SUM(CASE WHEN T1.CONF_GB = 'A' THEN T1.CONF_AMT ELSE NULL END), 0)     AS conf_amt
+                        , IFNULL(SUM(CASE WHEN T1.CONF_GB = 'C' THEN 1 ELSE NULL END), 0)               AS cncl_cnt
+                        , IFNULL(SUM(CASE WHEN T1.CONF_GB = 'C' THEN T1.CONF_AMT * -1 ELSE NULL END), 0) AS cncl_amt
+                  FROM  TB_VAN_DOCU T1
+                        JOIN TB_CHAIN  T2 ON T2.CHAIN_NO = T1.CHAIN_NO
+        
+        <if test="schgb_chain_val != ''">
+                <choose>
+                        <when test="schgb_chain == 'schgb_biz_no'">
+                                AND T2.BIZ_NO  = #{schgb_chain_val}
+                        </when>
+                        <when test="schgb_chain == 'schgb_chanin_nm'">
+                                AND T2.CHAIN_NM LIKE CONCAT('%', #{schgb_chain_val}, '%')
+                        </when>
+                </choose>
+        </if>                        
+           WHERE  1 = 1      
+                AND  CONF_DT   &gt;=  #{sch_conf_sdt} 
+                AND  CONF_DT   &lt;=  #{sch_conf_edt}         
+             
+        <if test="schgb_conf_val != ''">
+                <choose>
+                        <when test="schgb_conf == 'schgb_conf_no'">
+                                AND T1.CONF_NO  = #{schgb_conf_val}
+                        </when>
+                        <when test="schgb_conf == 'schgb_card_no'">
+                                AND T1.CARD_NO  = #{schgb_conf_val}
+                        </when>
+                        <when test="schgb_conf == 'schgb_conf_amt'">
+                                AND T1.CONF_AMT  = #{schgb_conf_val}
+                        </when>
+                </choose>
+        </if>               
+         GROUP 	BY T1.CHAIN_NO, T2.CHAIN_NM, T2.BIZ_NO, T1.CONF_DT
+                <choose>
+                        <when test="sidx != ''">
+                                ORDER BY ${sidx} ${sord}
+                        </when>
+                        <otherwise>
+                                ORDER BY agency_no DESC
+                        </otherwise>
+                </choose>
+         
+         LIMIT  ${start}, ${end}
+	</select> 
+
+
+        <select id="getChainDocuSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT  SQL_CALC_FOUND_ROWS 
+                        T1.CARD_ACQ             					AS card_acq
+                        , GET_CODE_NM('CARD_ACQ', T1.CARD_ACQ)                          AS card_acq_nm 
+                        , IFNULL(SUM(CASE WHEN T1.CONF_GB = 'A' THEN 1 ELSE NULL END), 0)               AS conf_cnt
+                        , IFNULL(SUM(CASE WHEN T1.CONF_GB = 'A' THEN T1.CONF_AMT ELSE NULL END), 0)     AS conf_amt
+                        , IFNULL(SUM(CASE WHEN T1.CONF_GB = 'C' THEN 1 ELSE NULL END), 0)               AS cncl_cnt
+                        , IFNULL(SUM(CASE WHEN T1.CONF_GB = 'C' THEN T1.CONF_AMT * -1 ELSE NULL END), 0) AS cncl_amt
+                        , SUM((CONF_AMT * CASE WHEN CONF_GB = 'A' THEN 1 ELSE -1 END))		        AS tot_amt 
+                  FROM  TB_VAN_DOCU T1
+                 WHERE	CHAIN_NO  = #{sch_sub_chain_no} 
+                   AND  CONF_DT   = #{sch_sub_conf_dt} 
+                <if test="schgb_conf_val != ''">
+                        <choose>
+                                <when test="schgb_conf == 'schgb_conf_no'">
+                                        AND T1.CONF_NO  = #{schgb_conf_val}
+                                </when>
+                                <when test="schgb_conf == 'schgb_card_no'">
+                                        AND T1.CARD_NO  = #{schgb_conf_val}
+                                </when>
+                                <when test="schgb_conf == 'schgb_conf_amt'">
+                                        AND T1.CONF_AMT  = #{schgb_conf_val}
+                                </when>
+                        </choose>
+                </if>  
+                 GROUP 	BY T1.CARD_ACQ,    GET_CODE_NM('CARD_ACQ', T1.CARD_ACQ) 
+                <choose>
+                        <when test="sidx != ''">
+                                ORDER BY ${sidx} ${sord}
+                        </when>
+                        <otherwise>
+                                ORDER BY T1.CARD_ACQ DESC
+                        </otherwise>
+                </choose>                
+                LIMIT  ${start}, ${end}
+	</select> 
+
+        <select id="getChainVanDocuList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT  SQL_CALC_FOUND_ROWS 
+                        T1.DOCU_SEQ                             AS docu_seq
+                        , T1.CHAIN_NO                           AS chain_no
+                        , T1.VAN_CD                             AS van_cd
+                        , GET_CODE_NM('VAN_CD', T1.VAN_CD)      AS van_cd_nm
+                        , T1.CARD_REG_NO                        AS card_reg_no
+                        , T1.TRANS_ID                           AS trans_id
+                        , T1.CARD_ISS                           AS card_iss									
+                        , GET_CODE_NM('CARD_ISS', T1.CARD_ISS)  AS card_iss_nm 
+                        , T1.CARD_ACQ                           AS card_acq
+                        , GET_CODE_NM('CARD_ACQ', T1.CARD_ACQ)  AS card_acq_nm 
+                        , T1.CARD_NO                            AS card_no
+                        , T1.INSTALL_MON                        AS install_mon
+                        , T1.CONF_NO                            AS conf_no
+                        , T1.CONF_GB                            AS conf_gb
+                        , GET_CODE_NM('CONF_GB', T1.CONF_GB)    AS conf_gb_nm 
+                        , T1.CONF_DT                            AS conf_dt
+                        , T1.CONF_TM                            AS conf_tm
+                        , CONCAT(T1.CONF_DT, ' ', T1.CONF_TM)   AS conf_dttm
+                        , T1.CONF_AMT                           AS conf_amt
+                        , T1.CARD_TYPE                          AS card_type
+                        , GET_CODE_NM('CARD_TYPE', T1.CARD_TYPE)      AS card_type_nm 
+                        , T1.ORG_CONF_DT                        AS org_conf_dt
+                        , T1.CNCL                               AS cncl_yn
+                        , T1.CNCL_DOCU_SEQ                      AS cncl_docu_seq
+                        , T1.CNCL_USER_ID                       AS cncl_user_id
+                        , T1.CNCL_DATE                          AS cncl_date
+                        , T1.CNCL_TIME                          AS cncl_time
+                        , CASE WHEN T1.PROC_FG = 'Y' THEN '사전정산' ELSE '대기중' END  AS proc_fg_nm
+                        , T1.PROC_DATE                          AS proc_date
+                        , T1.PROC_TIME                          AS proc_time
+                        , T1.PROC_RESULT                        AS proc_result
+                        , T1.SC_SEQ                             AS sc_seq
+                        , IFNULL(GET_CODE_NM('WD_STATUS', W.WD_STATUS), '미정산')               AS wd_status_nm
+                        , T1.ENT_USER_ID                        AS ent_user_id
+                        , DATE_FORMAT(T1.ENT_DTTM, '%Y-%m-%d %h:%i:%s')                         AS ent_dttm
+                  FROM  TB_VAN_DOCU T1
+                        LEFT OUTER JOIN TB_WITHDRAW W ON W.DOCU_SEQ = T1.DOCU_SEQ
+                 WHERE	T1.CHAIN_NO        = #{schlist_chain_no} 
+                   AND  T1.CONF_DT         = #{schlist_conf_dt} 
+                <if test="schlist_card_acq != ''">
+                   AND  FIND_IN_SET(T1.CARD_ACQ, #{schlist_card_acq})
+                </if>   
+                <if test="schlist_conf_val != ''">
+                        <choose>
+                                <when test="schlist_conf == 'schlist_conf_no'">
+                                        AND T1.CONF_NO  = #{schlist_conf_val}
+                                </when>
+                                <when test="schlist_conf == 'schlist_card_no'">
+                                        AND T1.CARD_NO  = #{schlist_conf_val}
+                                </when>
+                                <when test="schlist_conf == 'schlist_conf_amt'">
+                                        AND T1.CONF_AMT  = #{schlist_conf_val}
+                                </when>
+                        </choose>
+                </if>  
+                <choose>
+                        <when test="sidx != ''">
+                                ORDER BY ${sidx} ${sord}
+                        </when>
+                        <otherwise>
+                                ORDER BY T1.DOCU_SEQ DESC
+                        </otherwise>
+                </choose>                
+                LIMIT  ${start}, ${end}
+        </select>
+
+ 
+
+	<insert id="InsertAgency" parameterType="com.web.manage.trans.domain.VanDocuVO">
+                INSERT INTO tb_agency (
+                        agency_no             , agency_nm             , biz_no                , law_no            
+                        , uptae                 , upjong                , email
+                        , corp_zip_no           , corp_addr             , corp_addr_dtl         , corp_tel_no                       
+                        , ceo_id                , remark                , use_yn                
+                        , ent_user_id           , ent_dttm
+                ) VALUES (
+                        #{agency_no}            , #{agency_nm}          , #{biz_no}             , #{law_no}         
+                        , #{uptae}              , #{upjong}             , #{email}
+                        , #{corp_zip_no}        , #{corp_addr}          , #{corp_addr_dtl}      , #{corp_tel_no}
+                        , #{ceo_id}             , #{remark}             , #{use_yn}  
+                        , #{ent_user_id}        , NOW()
+                )   
+	</insert>
+	<update id="UpdateAgency" parameterType="com.web.manage.trans.domain.VanDocuVO">
+                UPDATE  tb_agency
+                SET  agency_nm       = #{agency_nm},
+                        biz_no          = #{biz_no},
+                        law_no          = #{law_no},
+                        uptae           = #{uptae},
+                        upjong          = #{upjong},
+                        email           = #{email},                
+                        corp_zip_no     = #{corp_zip_no},
+                        corp_addr       = #{corp_addr},
+                        corp_addr_dtl   = #{corp_addr_dtl}, 
+                        corp_tel_no     = #{corp_tel_no},
+                        assure_amt      = #{assure_amt},
+                        insure_amt      = #{insure_amt},
+                        ass_sdate       = #{ass_sdate},
+                        ass_edate       = #{ass_edate},
+                        remark          = #{remark},
+                        cont_dt         = #{cont_dt},
+                        svc_stat        = #{svc_stat},
+                        svc_fee_rate    = #{svc_fee_rate},
+                        crd_fee_rate    = #{crd_fee_rate},
+                        loan_fee_rate   = #{loan_fee_rate},
+                        bank_cd         = #{bank_cd},
+                        account_no      = #{account_no},
+                        depositor       = #{depositor},
+                        yubo_limit      = #{yubo_limit},
+                        yubo_rate       = #{yubo_rate},
+                        tot_yubo_amt    = #{tot_yubo_amt},
+                        use_yn          = #{use_yn},
+                        upt_user_id     = #{upt_user_id},
+                        upt_dttm        = NOW()
+                WHERE  agency_no = #{agency_no}
+        </update> 
+
+        <update id="UpdateAgencyCont" parameterType="com.web.manage.trans.domain.VanDocuVO">
+                UPDATE  tb_agency
+                SET  cont_dt       = #{cont_dt},
+                        assure_amt      = #{assure_amt},
+                        insure_amt      = #{insure_amt},
+                        ass_sdate       = #{ass_sdate},
+                        ass_edate       = #{ass_edate},
+                        svc_stat        = #{svc_stat},
+                        svc_fee_rate    = #{svc_fee_rate},
+                        crd_fee_rate    = #{crd_fee_rate},
+                        loan_fee_rate   = #{loan_fee_rate},
+                        bank_cd         = #{bank_cd},
+                        account_no      = #{account_no},
+                        depositor       = #{depositor},
+                        yubo_limit      = #{yubo_limit},
+                        yubo_rate       = #{yubo_rate},
+                        tot_yubo_amt    = #{tot_yubo_amt},
+                        upt_user_id     = #{upt_user_id},
+                        upt_dttm        = NOW()
+                WHERE  agency_no = #{agency_no}
+        </update> 
+</mapper>

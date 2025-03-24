@@ -73,4 +73,54 @@ public class CommonController {
 		}
 		return result;
 	}
+
+
+	@RequestMapping(value="/getPreWorkDay")
+	public @ResponseBody ReturnDataVO getPreWorkDay(@RequestParam HashMap<String, String> hashmapParam){
+		String nDate ="";
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+			nDate = commonService.getPreWorkDay();
+			result.setResultCode("S000");
+			result.setData(nDate);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	@RequestMapping(value="/getPreNextDay")
+	public @ResponseBody ReturnDataVO getPreNextDay(@RequestParam HashMap<String, String> hashmapParam){
+		String nDate ="";
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+			nDate = commonService.getNextWorkDay();
+			result.setResultCode("S000");
+			result.setData(nDate);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	@RequestMapping(value="/getToDay")
+	public @ResponseBody ReturnDataVO getToDay(@RequestParam HashMap<String, String> hashmapParam){
+		String nDate ="";
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+			nDate = commonService.getToDay();
+			result.setResultCode("S000");
+			result.setData(nDate);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
+	 
 }

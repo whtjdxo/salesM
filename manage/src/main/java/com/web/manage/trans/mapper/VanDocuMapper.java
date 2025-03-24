@@ -10,7 +10,12 @@ import com.web.manage.trans.domain.VanDocuVO;
 @Mapper
 public interface VanDocuMapper {
     
-    List<HashMap<String, Object>> getChainSummList(HashMap<String, Object> hashmapParam);
+    List<HashMap<String, Object>> getScrapDataSumm(HashMap<String, Object> hashmapParam);
+    List<HashMap<String, Object>> getVanDocuSumm(HashMap<String, Object> hashmapParam);
+
+    List<HashMap<String, Object>> getChainDocuSumm(HashMap<String, Object> hashmapParam);
+    
+    List<HashMap<String, Object>> getChainVanDocuList(HashMap<String, Object> hashmapParam);
 
     int getQueryTotalCnt();
 

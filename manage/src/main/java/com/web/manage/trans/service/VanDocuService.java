@@ -17,21 +17,25 @@ public class VanDocuService {
     @Autowired
     private VanDocuMapper vanDocuMapper;
 
-    public List<HashMap<String, Object>> getgetChainSummListVanList(HashMap<String, Object> hashmapParam) {
-        return vanDocuMapper.getChainSummList(hashmapParam);
-    }
-
     public int getQueryTotalCnt() {
         return vanDocuMapper.getQueryTotalCnt();
     }
 
-    // public String getNewVanDocuNo() {
-    //     return vanDocuMapper.getNewVanDocuNo();
-    // }
+    public List<HashMap<String, Object>> getScrapDataSumm(HashMap<String, Object> hashmapParam) {
+        return vanDocuMapper.getScrapDataSumm(hashmapParam);
+    }
 
-    // public int getCeoIdDupChk(String ceo_id) {
-    //     return vanDocuMapper.getCeoIdDupChk(ceo_id);
-    // }
+    public List<HashMap<String, Object>> getVanDocuSumm(HashMap<String, Object> hashmapParam) {
+        return vanDocuMapper.getVanDocuSumm(hashmapParam);
+    }
+
+    public List<HashMap<String, Object>> getChainDocuSumm(HashMap<String, Object> hashmapParam) {
+        return vanDocuMapper.getChainDocuSumm(hashmapParam);
+    } 
+
+    public List<HashMap<String, Object>> getChainVanDocuList(HashMap<String, Object> hashmapParam) {
+        return vanDocuMapper.getChainVanDocuList(hashmapParam);
+    }
 
     // @Transactional
     // public boolean InsertVanDocu(VanDocuVO vanDocuVO, UserVO userVO) {

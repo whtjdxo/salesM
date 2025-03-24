@@ -1,50 +1,56 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
   <head>
-    <title>대리점 관리</title>
+    <title>전문문 관리</title>
     <script src="/vendors/tinymce/tinymce.min.js"></script>
     <script src="/vendors/datatables.net/dataTables.min.js"></script>
     <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
     <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
     <script src="/vendors/dropzone/dropzone-min.js"></script>
     <script src="/js/jquery.form.js"></script>
-    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />
-    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />    
     <!-- DataTables Select CSS 추가 -->
     <link rel="stylesheet" href="/css/custom-salesm.css" />
 
     <script th:inline="none">      
-      function execDaumPostcode(target) {
-        new daum.Postcode({
-          oncomplete: function (data) {
-            var roadAddr = data.roadAddress;
-            if (target == 'corp') {
-              document.getElementById('corp_addr').value = roadAddr;
-              document.getElementById('corp_zip_no').value = data.zonecode;
-            } else if (target == 'ceo') {
-              document.getElementById('ceo_addr').value = roadAddr;
-              document.getElementById('ceo_zip_no').value = data.zonecode;
-            }
-          },
-        }).open();
-      }
       $(document).ready(function () {           
-        $('#frm_agency_info').onLoadFunction();     
-        callAjax('/common/totalCodelist', "code_grp_cd=('BANK_CD')", fn_bank_setting);      
-        function fn_bank_setting(data) {
-          codeSetting('BANK_CD', data.data, '#bank_cd', '1', '', '');
-        }  
+        $('#frm_sch').onLoadFunction();      
+        callAjax('/common/getAgencyList', "", fn_agency_list_setting);
+        function fn_agency_list_setting(data) {
+          codeSetting('AGENCY_NO', data.data, '#sch_agency_no', '1', '', ''); 
+        }
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('CARD_ACQ')", fn_van_cd_setting);      
+        function fn_van_cd_setting(data) {
+          codeSetting('CARD_ACQ', data.data, '#sch_card_acq', '1', '', '');
+        } 
+
+        callAjax('/common/getPreWorkDay', "", fn_sch_sdate_setting);
+        function fn_sch_sdate_setting(data) {          
+          $('#sch_conf_sdt').val(data.data)
+          // $('#sch_conf_sdt').val(data.data).datepicker('update');
+        }
         
-        var tbl_agency = $('#tbl_agency').DataTable({
+        callAjax('/common/getToDay', "", fn_sch_edate_setting);
+        function fn_sch_edate_setting(data) {
+          $('#sch_conf_edt').val(data.data);
+          // $('#sch_conf_edt').val(data.data).datepicker('update');
+        }
+
+        $('#btn_search').click(function () {   
+          tbl_chain_summ.ajax.reload();
+        }); 
+
+        var tbl_chain_summ = $('#tbl_chain_summ').DataTable({
           processing: true,
           serverSide: true,
           select: true,
           responsive: true,
           ajax: {
-            url: '/base/organ/agencyMng/list',
+            url: '/trans/trans/vanDocuMng/list',
             contentType: 'application/json',
             dataType: 'JSON',
-            type: 'POST',            
+            type: 'POST',
             data: function (postData) {
               formData = $('#frm_sch').serializeObject();
               Object.assign(postData, formData);
@@ -52,27 +58,35 @@
             },
           },
             columns: [
-                { data: 'agency_no' }
-                , { data: 'agency_nm' }
-                , { data: 'biz_no' }
-                , { data: 'corp_tel_no' }
-                , { data: 'ceo_nm' }
-                , { data: 'ceo_tel_no' }
-                , { data: 'cont_dt' }                
-                , { data: 'chain_cnt' }           
-                , { data: 'use_yn' }                
+            { data: 'chain_nm' }                
+                , { data: 'conf_dt' }
+                , { data: 'conf_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'cncl_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') }                
+                , { data: 'cncl_amt', render: $.fn.dataTable.render.number(',', '.', 0, '')}  
+                , { data: 'tot_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') }                
+                , { data: 'tot_amt', render: $.fn.dataTable.render.number(',', '.', 0, '')}  
+                , { 
+                  data: 'error_cnt', 
+                  render: function(data, type, row) {
+                    if (data > 0) {
+                      return '<span style="color: red; font-weight: bold;">' + $.fn.dataTable.render.number(',', '.', 0, '').display(data) + '</span>';
+                    }
+                    return $.fn.dataTable.render.number(',', '.', 0, '').display(data);
+                  } 
+                } 
               ],
-            columnDefs: [           
-            { targets: 0, width: '150px', className: 'text-center' },
-            { targets: 1, width: '300px', className: 'text-left' },
-            { targets: 2, width: '200px', className: 'text-center' },
-            { targets: 3, width: '200px', className: 'text-center' },
-            { targets: 4, width: '200px', className: 'text-center' },
-            { targets: 5, width: '200px', className: 'text-center' },
-            { targets: 6, width: '150px', className: 'text-center' },
-            { targets: 7, width: '150px', className: 'text-right' },
-            { targets: 8, width: '100px', className: 'text-center' },
-          ],  
+          columnDefs: [           
+                  { targets: 0, width: '120px', className: 'text-left' }
+                  , { targets: 1, width: '90px', className: 'text-left' }                  
+                  , { targets: 2, width: '90px', className: 'text-end' }
+                  , { targets: 3, width: '150px', className: 'text-end' }
+                  , { targets: 4, width: '90px', className: 'text-end' }
+                  , { targets: 5, width: '150px', className: 'text-end' }
+                  , { targets: 6, width: '90px', className: 'text-end' }
+                  , { targets: 7, width: '150px', className: 'text-end' }
+                  , { targets: 8, width: '90px', className: 'text-end' }
+              ],
           order: [[1, 'desc']],
           paging: true,
           lengthChange: false,
@@ -81,8 +95,158 @@
           autoWidth: false,
           responsive: true,
           scrollCollapse: true,
+          pageLength: 10,
+          scrollY: '300px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
+          footerCallback: function (row, data, start, end, display) {
+            var api = this.api();
+    
+            // Helper function to sum column data
+            var intVal = function (i) {
+              return typeof i === 'string'
+                ? i.replace(/[\$,]/g, '') * 1
+                : typeof i === 'number'
+                ? i
+                : 0;
+            };
+    
+            // Calculate totals for each column
+            var confCntTotal = api
+              .column(2)
+              .data()
+              .reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+              }, 0);
+    
+            var confAmtTotal = api
+              .column(3)
+              .data()
+              .reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+              }, 0);
+    
+            var cnclCntTotal = api
+              .column(4)
+              .data()
+              .reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+              }, 0);
+    
+            var cnclAmtTotal = api
+              .column(5)
+              .data()
+              .reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+              }, 0);
+    
+            var totCntTotal = api
+              .column(6)
+              .data()
+              .reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+              }, 0);
+    
+            var totAmtTotal = api
+              .column(7)
+              .data()
+              .reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+              }, 0);
+    
+            var errorCntTotal = api
+              .column(8)
+              .data()
+              .reduce(function (a, b) {
+                return intVal(a) + intVal(b);
+              }, 0);
+    
+            // Update footer with totals
+            $(api.column(2).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(confCntTotal));
+            $(api.column(3).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(confAmtTotal));
+            $(api.column(4).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(cnclCntTotal));
+            $(api.column(5).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(cnclAmtTotal));
+            $(api.column(6).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(totCntTotal));
+            $(api.column(7).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(totAmtTotal));
+            $(api.column(8).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(errorCntTotal));
+          },
+        });  
+ 
+        $('#tbl_chain_summ').on('click', 'tr', function () {  
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+          } else {
+            tbl_chain_summ.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }
+          var row = tbl_chain_summ.row(this).data();
+          $('#frm_chain_day_summ').clearForm();           
+          $('#sch_sub_chain_no').val(row.chain_no);
+          $('#sch_sub_chain_nm').val(row.chain_nm);
+          $('#sch_sub_conf_dt').val(row.conf_dt);    
+
+          $('#schlist_chain_no').val(row.chain_no);
+          $('#schlist_chain_nm').val(row.chain_nm);
+          $('#schlist_conf_dt').val(row.conf_dt);      
+          $('#schlist_card_acq').val('');
+          $('#schlist_conf').val('');
+          $('#schlist_conf_val').val('');
+
+           
+          if ($('#sch_sub_chain_no').val() && $('#sch_sub_conf_dt').val()) {
+            tbl_chain_docu_summ.ajax.reload();
+            tbl_docu_list.ajax.reload();
+          }
+        }); 
+        
+        var tbl_chain_docu_summ = $('#tbl_chain_docu_summ').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          responsive: true,
+          ajax: {
+            url: '/trans/trans/vanDocuMng/getChainDocuSumm',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',
+            data: function (postData) {
+              formData = $('#frm_chain_day_summ').serializeObject();
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
+            },
+          },
+          columns: [
+            { data: 'card_acq_nm' },
+            { data: 'conf_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'cncl_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'cncl_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'tot_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+          ],
+          columnDefs: [
+            { targets: 0, width: '120px', className: 'text-left' },
+            { targets: 1, width: '90px', className: 'text-end' },
+            { targets: 2, width: '130px', className: 'text-end' },
+            { targets: 3, width: '90px', className: 'text-end' },
+            { targets: 4, width: '130px', className: 'text-end' },
+            { targets: 5, width: '130px', className: 'text-end' },
+          ],
+          order: [[1, 'asc']],
+          paging: true,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          autoWidth: false,
+          responsive: true,
+          scrollCollapse: true,
           pageLength: 20,
-          scrollY: '550px',
+          scrollY: '300px',
           info: false,
           language: {
             emptyTable: '데이터가 없습니다.',
@@ -93,410 +257,312 @@
           },
         });
 
-        $('#btn_search').click(function () {
-          tbl_agency.ajax.reload();
+        var tbl_docu_list = $('#tbl_docu_list').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          responsive: true,
+          ajax: {
+            url: '/trans/trans/vanDocuMng/getChainVanDocuList',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',
+            data: function (postData) {
+              formData = $('#frm_sch_list').serializeObject();
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
+            },
+          }, 
+          columns: [
+            { data: 'docu_seq' },
+            { data: 'van_cd_nm' },
+            { data: 'card_iss_nm' },
+            { data: 'card_acq_nm' },
+            { data: 'card_no' },
+            { data: 'card_type_nm' },
+            { data: 'conf_gb_nm' },
+            { data: 'conf_no' },
+            { data: 'conf_dttm' },
+            { data: 'conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'cncl_yn' },
+            { data: 'org_conf_dt' },
+            { data: 'proc_fg_nm' },
+            { data: 'wd_status_nm' },
+          ],
+          columnDefs: [
+            { targets: 0, width: '110px', className: 'text-left' },
+            { targets: 1, width: '90px', className: 'text-center' },
+            { targets: 2, width: '90px', className: 'text-center' },
+            { targets: 3, width: '90px', className: 'text-center' },
+            { targets: 4, width: '150px', className: 'text-center' },
+            { targets: 5, width: '90px', className: 'text-center' },
+            { targets: 6, width: '90px', className: 'text-center' },
+            { targets: 7, width: '100px', className: 'text-center' },
+            { targets: 8, width: '120px', className: 'text-center' },
+            { targets: 9, width: '12px', className: 'text-end' },
+            { targets: 10, width: '90px', className: 'text-center' },
+            { targets: 11, width: '100px', className: 'text-center' },
+            { targets: 12, width: '130px', className: 'text-center' },
+            { targets: 13, width: '120px', className: 'text-center' },
+          ],
+          order: [[1, 'desc']],
+          paging: true,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          autoWidth: false,
+          responsive: true,
+          scrollCollapse: true,
+          pageLength: 20,
+          scrollY: '400px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
         });
         
-        $('#tbl_agency').on('click', 'tr', function () {
+        $('#tbl_chain_docu_summ').on('click', 'tr', function () {            
           if ($(this).hasClass('selected')) {
             $(this).removeClass('selected');
           } else {
-            tbl_agency.$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
           }
-          var data = tbl_agency.row(this).data();
-          if (data) {
-            $('#frm_agency_info')[0].reset();
-            $('#agency_no').val(data.agency_no);            
-            $('#agency_nm').val(data.agency_nm);
-            $('#biz_no').val(data.biz_no);
-            $('#upjong').val(data.upjong);            
-            $('#uptae').val(data.uptae);
-            $('#corp_zip_no').val(data.corp_zip_no);
-            $('#cont_dt').val(data.cont_dt);
-            $('#corp_addr').val(data.corp_addr);
-            $('#corp_addr_dtl').val(data.corp_addr_dtl);
-            $('#corp_tel_no').val(data.corp_tel_no);
-            $('#ceo_id').val(data.ceo_id);
-            // $('#ceo_regno').val(data.ceo_regno);
-            $('#ceo_nm').val(data.ceo_nm);
-            $('#ceo_zip_no').val(data.ceo_zip_no);
-            $('#ceo_addr').val(data.ceo_addr);
-            $('#ceo_addr_dtl').val(data.ceo_addr_dtl);            
-            $('#ceo_tel_no').val(data.ceo_tel_no);
-            $('#email').val(data.email);
-            $('#assure_amt').val(data.assure_amt);
-            $('#insure_amt').val(data.insure_amt);
-            $('#ass_sdate').val(data.ass_sdate);
-            $('#ass_edate').val(data.ass_edate);
-            $('#remark').val(data.remark);
-            $('#svc_stat').val(data.svc_stat);
-            $('#svc_fee_rate').val(data.svc_fee_rate);
-            $('#crd_fee_rate').val(data.crd_fee_rate);
-            $('#loan_fee_rate').val(data.loan_fee_rate);
-            $('#bank_cd').val(data.bank_cd);
-            $('#account_no').val(data.account_no);
-            $('#depositor').val(data.depositor);
-            $('#yubo_limit').val(data.yubo_limit);
-            $('#yubo_rate').val(data.yubo_rate);
-            $('#tot_yubo_amt').val(data.tot_yubo_amt);
-            $("input:radio[name='use_yn'][value='" + data.use_yn + "']").prop('checked', true); 
-            $('#upt_user_id').val(data.upt_user_id);
-            $('#upt_dttm').val(data.upt_dttm);   
 
-            $('#btn_update').show();
-            $('#btn_create').hide();
-            $('#btn_dupchk').hide();
-            $('#ceo_pwd').removeAttr("required");
-            // $('#ceo_pwd').attr("required", "required");
-            
-            $('#crud').val('update'); 
-          }  
-        });      
-
-        $('#btn_clear').click(function () {
-          $('#frm_agency_info').clearForm();
-          $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
-          // $('#ceo_pwd').removeAttr("required");
-          $('#ceo_pwd').attr("required", "required");
-          $('#btn_update').hide();
-          $('#btn_create').show();
-          $('#btn_dupchk').show();
-        }); 
-
-        $('#btn_dupchk').click(function () {
-          var ceo_id = $('#ceo_id').val();
-          if (ceo_id == '') {
-            swal('실패', '대표자 ID를 입력하세요.', 'error');
-            return;
+          var row = tbl_chain_docu_summ.row(this).data();
+          var currentValue = $('#schlist_card_acq').val();
+          var newValue = row.card_acq;
+          if (currentValue.includes(newValue)) {
+            // Remove the value if it already exists
+            var updatedValue = currentValue.split(',').filter(function (value) {
+              return value !== newValue;
+            }).join(',');
+            $('#schlist_card_acq').val(updatedValue);
           } else {
-            callAjax('/base/user/userMng/getUserIdDupChk', 'user_id=' + ceo_id, fn_ceo_dupchk);
-          }
-        });
-        function fn_ceo_dupchk(data) {
-          var resultCode = data.resultCode;
-          var resultMsg = data.resultMsg;
-          if (resultCode == 'S000') {
-            swal('성공', '사용가능한 대표자 ID입니다.', 'success');
-          } else {
-            swal('실패', resultMsg, 'error');
-          }
-        } 
-
-        $('#btn_create').click(function () {
-          $('#crud').val('create');
-          var form = $('#frm_agency_info');
-          var checked = true;
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
+            // Add the value if it doesn't exist
+            if (currentValue) {
+              $('#schlist_card_acq').val(currentValue + ',' + newValue);
+            } else {
+              $('#schlist_card_acq').val(newValue);
             }
-          });
-          if (checked) {
-            ConfirmdialogToAjax('create', '/base/organ/agencyMng/InsertAgency', $('#frm_agency_info').serialize(), fn_return_result);
           } 
-        });
+          if ($('#schlist_chain_no').val() && $('#schlist_conf_dt').val()) {
+            tbl_docu_list.ajax.reload();
+          } 
+        });   
 
-        $('#btn_update').click(function () {
-          $('#crud').val('update');
-          var form = $('#frm_agency_info');
-          var checked = true;
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
+        // Excel download button click event
+        $('#btn_list_excel').click(function () {
+          var formData = $('#frm_sch_list').serializeObject();
+          $.ajax({
+            url: '/trans/trans/vanDocuMng/downloadDocuListExcel',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            xhrFields: {
+              responseType: 'blob'
+            },
+            success: function (data, status, xhr) {
+              var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+              var link = document.createElement('a');
+              link.href = window.URL.createObjectURL(blob);
+              link.download = 'DocuList.xlsx';
+              link.click();
+            },
+            error: function (xhr, status, error) {
+              alert('Excel download failed.');
             }
           });
-          if (checked) {
-            ConfirmdialogToAjax('update', '/base/organ/agencyMng/UpdateAgency', $('#frm_agency_info').serialize(), fn_return_result);
-          }
-        });    
-
-        $('#btn_cont_update').click(function () {
-          $('#crud').val('update');
-          var agency_no = $('#agency_no').val();
-          var form = $('#frm_agency_info');
-          var checked = true;
-          if(agency_no == '') {
-            swal('실패', "대리점을 먼저 선택해주세요.", 'error');
-            checked = false;
-            return;
-          }
-          if (checked) {
-            ConfirmdialogToAjax('update', '/base/organ/agencyMng/UpdateAgencyCont', $('#frm_agency_info').serialize(), fn_return_result);
-          }
-        }); 
-
-        function fn_return_result(data) {
-          var resultCode = data.resultCode;
-          var resultMsg = data.resultMsg;
-          if (resultCode == 'S000') {
-            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
-            $('#frm_agency_info')[0].reset();    
-            tbl_agency.ajax.reload();        
-            $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
-            // $('#ceo_pwd').removeAttr("required");
-            $('#ceo_pwd').attr("required", "required");
-            $('#btn_update').hide();
-            $('#btn_create').show(); 
-            
-            // $('#tbl_agency').setGridParam({ url: '/base/organ/agencyMng/list', page: 1, datatype: 'json' }).trigger('reloadGrid');            
-          } else {
-            swal('실패', resultMsg, 'error');
-          }
-        }
+        });
       });
     </script>
   </head>
-  <div class="content">
-    
-    <div class="row g-3 mb-2">
-      <div class="col-lg-8">
-        <div class="card">
-          <div class="card-header">
-            <div class="row flex-between-end">
-              <div class="col-auto align-self-center">
-                <h5 class="mb-0">대리점 목록</h5>
-              </div>
-              <div class="col-lg-8">
-                <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate="">
-                  <div class="input-group input-group-sm px-3">
-                    <select class="form-select form-control-sm" id="schgb_agency" name="schgb_agency" style="width: 75px">
-                      <option value="">선택</option>
-                      <option value="schgb_agency_no">대리점 번호호</option>
-                      <option value="schgb_agency_nm">대리점 명</option>
-                    </select>
-                    <input type="text" class="form-control form-control-sm" id="schgb_agency_val" name="schgb_agency_val" style="width: 43%" />
-                    <select class="form-select form-control-sm" id="sch_use_yn" name="sch_use_yn" style="width: 75px">
-                      <option value="">사용여부</option>
-                      <option value="Y">사용</option>
-                      <option value="N">미사용</option>
-                    </select>
-                    <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span>
+  <div class="content">    
+    <div class="row g-1 mb-1">
+      <div class="card">
+        <div class="card-header">          
+          <div class="row flex-between-end">
+            <div class="col-lg-2 align-self-center">
+              <h4 class="mb-0">승인전문 관리</h4>
+            </div>            
+            <div class="col-lg-10">
+              <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
+                <div class="row mb-1">  
+                  <div class="col-sm-4">
+                    <div class="input-group">
+                      <div class="input-group input-group-sm mb-1 me-1">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_birth_dt">승인일</label>
+                        <div class="col-sm-4">
+                          <input class="form-control form-control-sm " id="sch_conf_sdt" type="text" name="sch_conf_sdt" istyle="date" maxlength="10" required />
+                        </div>   
+                        <span class="input-group-text">~</span>
+                        <div class="col-sm-4">
+                          <input class="form-control form-control-sm" id="sch_conf_edt" type="text" name="sch_conf_edt" istyle="date" maxlength="10" required />
+                        </div>   
+                      </div> 
+                    </div>
                   </div>
-                </form>
+                  <div class="col-sm-8">
+                    <div class="input-group input-group-sm mb-1">
+                      <select class="form-select form-control-sm me-1" id="sch_agency_no" name="sch_agency_no" style="width: 75px">
+                        <option value="">대리점</option>
+                      </select>
+                      <select class="form-select form-control-sm me-1" id="sch_card_acq" name="sch_card_acq" style="width: 75px">
+                        <option value="">카드사</option>
+                      </select>
+                      <select class="form-select form-control-sm me-1" id="schgb_conf" name="schgb_conf" style="width: 75px">
+                        <option value="">승인 정보</option>
+                        <option value="schgb_conf_no">승인 번호</option>
+                        <option value="schgb_card_no">카드 번호</option>
+                        <option value="schgb_conf_amt">승인 금액</option>
+                      </select>
+                      <input type="text" class="form-control form-control-sm me-1" id="schgb_conf_val" name="schgb_conf_val" style="width:150px" />
+                      <select class="form-select form-control-sm me-1" id="schgb_chain" name="schgb_chain" style="width: 75px">
+                        <option value="">가맹점 정보</option>
+                        <option value="schgb_chain_nm">가맹점 명</option>
+                        <option value="schgb_biz_no">사업자 번호</option>
+                      </select>
+                      <input type="text" class="form-control form-control-sm me-1" id="schgb_chain_val" name="schgb_chain_val" style="width:150px" />
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
+                    </div>
+                  </div> 
+                </div> 
+              </form>
+            </div>
+          </div>          
+        </div>
+      </div>
+    </div>   
+    <div class="row g-1 mb-1">
+      <div class="col-lg-7">
+        <div class="card" style="height: 400px;">
+            <div class="card-body pt-0 px-0" style="padding-top: 0px">
+              <div class="table-responsive scrollbar">
+                <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_chain_summ">  
+                  <thead>
+                    <tr>
+                      <th class="text-center">가맹점 명</th>                      
+                      <th class="text-center">승인 일자</th>
+                      <th class="text-center">승인 건</th>
+                      <th class="text-center">승인 금액</th>
+                      <th class="text-center">취소 건</th>
+                      <th class="text-center">취소 금액</th>                
+                      <th class="text-center">매출 건</th>
+                      <th class="text-center">매출 금액</th>
+                      <th class="text-center">미처리</th>
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th colspan="2" class="text-center">총계</th>
+                      <th class="text-end"></th>
+                      <th class="text-end"></th>
+                      <th class="text-end"></th>
+                      <th class="text-end"></th>
+                      <th class="text-end"></th>
+                      <th class="text-end"></th>
+                      <th class="text-end"></th>
+                    </tr>
+                  </tfoot>
+                  <tbody class="list"></tbody>
+                </table>
               </div>
             </div>
-          </div>
-          
+        </div>      
+      </div>
+      <div class="col-lg-5">
+        <div class="card" style="height: 400px;">      
           <div class="card-body pt-0 px-0" style="padding-top: 0px">
-            <div class="table-responsive scrollbar">
-              <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_agency">
+            <div class="class=col-lg-0 align-self-center">
+              <form id="frm_chain_day_summ" name="frm_chain_day_summ" onsubmit="return false;" novalidate="">
+                <input class="form-control form-control-sm" id="sch_sub_chain_no" type="hidden" name="sch_sub_chain_no" readonly="readonly" />
+                <input class="form-control form-control-sm" id="sch_sub_chain_nm" type="hidden" name="sch_sub_chain_nm"/>
+                <input class="form-control form-control-sm" id="sch_sub_conf_dt" type="hidden" name="sch_sub_conf_dt" readonly="readonly" />
+              </form>  
+            </div>  
+            <div class="table-responsive scrollbar">              
+              <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_chain_docu_summ">
                 <thead>
-                  <tr>
-                    <th class="text-center">대리점 번호</th>
-                    <th class="text-center">대리점 명</th>
-                    <th class="text-center">사업자 번호</th>
-                    <th class="text-center">회사 연락처</th>
-                    <th class="text-center">대표자 명</th>
-                    <th class="text-center">대표 연락처</th>
-                    <th class="text-center">계약일자</th>
-                    <th class="text-center">가맹점 수</th>
-                    <th class="text-center">운영</th>                    
+                  <tr>                    
+                    <th class="text-center">카듯(매입)사</th>
+                    <th class="text-center">승인 건</th>
+                    <th class="text-center">승인 금액</th>
+                    <th class="text-center">취소 건</th>
+                    <th class="text-center">취소 금액</th>   
+                    <th class="text-center">정산대상액</th>   
                   </tr>
                 </thead>
                 <tbody class="list"></tbody>
               </table>
             </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-4">
-        <div class="card">
-          <!-- <div class="card-header">
-            <div class="row flex-between-end">
-              <div class="col-auto align-self-center">
-                <h5 class="mb-0">대리점 상세</h5>
-              </div>
-            </div>
-          </div> -->
-          <div class="card-body">
-            <div class="min-vh-50">
-              <form class="needs-validation" id="frm_agency_info" name="frm_agency_info" onsubmit="return false;" method="post" novalidate=""> 
-                <ul class="nav nav-tabs" id="myTab" role="tablist">
-                  <li class="nav-item"><a class="nav-link active" id="info-tab" data-bs-toggle="tab" href="#tab_agency_info" role="tab" aria-controls="tab-home" aria-selected="true">일반정보</a></li>
-                  <li class="nav-item"><a class="nav-link" id="cont-tab" data-bs-toggle="tab" href="#tab_agency_cont" role="tab" aria-controls="tab-profile" aria-selected="false">계약정보</a></li>
-                </ul>          
-                <div class="tab-content border border-top-2 p-3" id="myTabContent">
-                  <div class="tab-pane fade show active" id="tab_agency_info" role="tabpanel" aria-labelledby="tab_agency_info">
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="agency_no">대리점 명</label>                  
-                      <div class="col-sm-4">
-                        <input class="form-control form-control-sm" id="agency_no" type="text" name="agency_no" readonly="readonly"/>
-                      </div>
-                      <div class="col-sm-6">
-                        <input class="form-control form-control-sm" id="agency_nm" type="text" name="agency_nm" required />
-                      </div>
-                    </div>                
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="biz_no">사업자 번호</label>
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="biz_no" type="text" name="biz_no" placeholder="123-45-67890" maxlength="20" required />
-                      </div>
+          </div> 
+        </div>      
+      </div>        
+    </div> 
+    <div class="row g-1 mb-1">
+      <div class="card">
+        <div class="card-header">          
+          <div class="row flex-between-end">              
+            <div class="col-lg-7 align-self-center">
+              <h4 class="mb-0">승인전문 상세 List</h4>
+            </div>            
+            <div class="col-lg-5">
+              <form id="frm_sch_list" name="frm_sch_list" onsubmit="return false;" novalidate=""> 
+                <div class="row mb-1">
+                  <div class="col-sm-10">
+                    <div class="col-sm input-group">
+                      <input id="schlist_chain_no" type="hidden" name="schlist_chain_no" />
+                      <input id="schlist_chain_nm" type="hidden" name="schlist_chain_nm"/>
+                      <input id="schlist_conf_dt" type="hidden" name="schlist_conf_dt"/>
+                      <input id="schlist_card_acq" type="hidden" name="schlist_card_acq"/>
+                      <select class="form-select form-control-sm me-0" id="schlist_conf" name="schlist_conf" style="width: 75px">
+                        <option value="">승인 정보</option>
+                        <option value="schlist_conf_no">승인 번호</option>
+                        <option value="schlist_card_no">카드 번호</option>
+                        <option value="schlist_conf_amt">승인 금액</option>
+                      </select>
+                      <input type="text" class="form-control form-control-sm me-0" id="schlist_conf_val" name="schlist_conf_val" style="width:150px" />                        
+                      <button type="button" class="btn btn-primary btn-sm-1" id="btn_list_search" name="btn_list_search">조회</button> 
                     </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="upjung">업종 / 업태</label>
-                      <div class="col-sm-5">
-                        <input class="form-control form-control-sm" id="upjong" type="text" name="upjong" maxlength="30" required />                    
-                      </div>
-                      <div class="col-sm-5">
-                        <input class="form-control form-control-sm" id="uptae" type="text" name="uptae" maxlength="30" required />
-                      </div>                  
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="corp_tel_no">회사연락처</label>                  
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="corp_tel_no" type="text" name="corp_tel_no" placeholder="010-000-0000" istyle="phone" required /> 
-                      </div>                  
-                    </div>
-                    <div class="input-group input-group-sm mb-2"> 
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="addr">회사 주소</label>                     
-                      <div class="col-sm-10">
-                        <div class="input-group input-group-sm">
-                          <input type="hidden" class="form-control form-control-sm" id="corp_zip_no" name="corp_zip_no" required />
-                          <input type="text" class="form-control form-control-sm" id="corp_addr" name="corp_addr" readonly="readonly" required />
-                          <button type="button" class="btn btn-primary" onclick="execDaumPostcode('corp')">주소검색</button>
-                        </div>                    
-                        <!-- 상세 주소 입력 -->
-                        <input type="text" class="form-control form-control-sm mt-2" id="corp_addr_dtl" name="corp_addr_dtl" placeholder="상세 주소" required />
-                      </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_id">대표자 ID</label>                     
-                      <div class="col-sm-10">
-                        <div class="input-group input-group-sm">
-                          <input type="text" class="form-control form-control-sm" id="ceo_id" name="ceo_id" required maxlength="20" />
-                          <button type="button" class="btn btn-primary" id="btn_dupchk">중복</button>
-                        </div>
-                      </div> 
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_pwd">PASSWORD</label>                  
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="ceo_pwd" type="password" name="ceo_pwd" maxlength="20" required /> 
-                      </div>                  
-                    </div>   
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_nm">대표자 명</label>                  
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="ceo_nm" type="text" name="ceo_nm" required maxlength="20"/> 
-                      </div>                  
-                    </div>      
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_tel_no">연락처</label>                  
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="ceo_tel_no" type="text" name="ceo_tel_no" placeholder="010-000-0000" istyle="phone" required /> 
-                      </div>                  
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="email">eMail</label>                  
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="email" type="email" name="email" placeholder="example@email.com" istyle="email"/> 
-                      </div>                  
-                    </div> 
-                    <div class="input-group input-group-sm mb-2"> 
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_addr">대표자 주소</label>                     
-                      <div class="col-sm-10">
-                        <div class="input-group input-group-sm">
-                          <input type="hidden" class="form-control form-control-sm" id="ceo_zip_no" name="cep_zip_no"  />
-                          <input type="text" class="form-control form-control-sm" id="ceo_addr" name="ceo_addr" readonly="readonly"  />
-                          <button type="button" class="btn btn-primary" onclick="execDaumPostcode('ceo')">주소검색</button>
-                        </div>
-                        <input type="text" class="form-control form-control-sm mt-2" id="ceo_addr_dtl" name="ceo_addr_dtl" placeholder="상세 주소"  />
-                      </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="remark">Memo</label>
-                      <div class="col-sm-10">
-                        <textarea class="form-control"  id="remark" rows="3" name="remark"></textarea> 
-                      </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="use_yn">사용여부</label>
-                      <div class="col-sm-10">
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" id="use_yn_y" type="radio" name="use_yn" value="Y" required />
-                          <label class="form-check-label" for="use_yn_y">예</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" id="use_yn_n" type="radio" name="use_yn" value="N" required />
-                          <label class="form-check-label" for="use_yn_n">아니요</label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-2"> 
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="addr">수정자 / 일</label>                     
-                      <div class="col-sm-10">
-                        <div class="input-group input-group-sm">
-                          <input type="text" class="form-control form-control-sm" id="upt_user_id" name="upt_user_id" readonly="readonly" />
-                          <input type="text" class="form-control form-control-sm" id="upt_dttm" name="upt_dttm" readonly="readonly" /> 
-                        </div>                    
-                      </div>
-                    </div>   
-                    <div class="card-footer">  
-                      <p class="text-end pb-1 mb-1 pd-1">
-                        <button class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
-                        <button class="btn btn-primary text-end" id="btn_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
-                        <button class="btn btn-primary text-end" id="btn_create"><i class="fa fa-paste"></i>저장</button>
-                      </p>
-                    </div>
-                  </div>                 
-                  <div class="tab-pane fade" id="tab_agency_cont" role="tabpanel" aria-labelledby="tab_agency_cont">
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="cont_dt">계약일</label>
-                      <div class="col-sm-10">
-                        <input class="form-control datetimepicker flatpickr-input" id="cont_dt" name = "cont_dt" type="text" placeholder="yyyy-mm-dd" data-options="{&quot;disableMobile&quot;:true,&quot;dateFormat&quot;:&quot;Y-m-d&quot;}" readonly="readonly">
-                      </div></div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="svc_fee_rate">서비스 수수료</label>
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="svc_fee_rate" type="text" name="svc_fee_rate" placeholder="00.00" istyle="float" />
-                      </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="crd_fee_rate">여신 수수료</label>
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="crd_fee_rate" type="text" name="crd_fee_rate" placeholder="00.00" istyle="float"  />
-                      </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="loan_fee_rate">대출 수수료</label>
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="loan_fee_rate" type="text" name="loan_fee_rate" placeholder="00.00" istyle="float" />
-                      </div>
-                    </div>  
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="bank_cd">입금 은행</label>
-                      <div class="col-sm-10">
-                        <select class="form-select form-select-sm" id="bank_cd" placeholder="" name="bank_cd" />
-                          <option value="">선택</option>
-                        </select>                        
-                      </div>
-                    </div>
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="account_no">계좌 번호</label>
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="account_no" type="text" name="account_no" istyle="number"  />
-                      </div>
-                    </div>  
-                    <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="depositor">예금주</label>
-                      <div class="col-sm-10">
-                        <input class="form-control form-control-sm" id="depositor" type="text" name="depositor"  />                    
-                      </div>                                   
-                    </div>
-                    <div class="card-footer">  
-                      <p class="text-end pb-1 mb-1 pd-1">
-                        <button class="btn btn-primary text-end" id="btn_cont_update"><i class="fa fa-paste"></i>저장</button>
-                      </p>
-                    </div>       
                   </div>
-                </div>
+                  <div class="col-sm-2">
+                    <button type="button" class="btn btn-primary btn-sm-1" id="btn_list_excel" name="btn_list_search">Excel</button>
+                  </div>
+                </div> 
               </form>
             </div>
+          </div>          
+        </div>
+        <div class="card-body pt-0 px-0" style="padding-top: 0px">
+          <div class="table-responsive scrollbar">
+            <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_docu_list">  
+              <thead>
+                  <tr>
+                    <th class="text-center">일련번호</th> 
+                    <th class="text-center">VAN</th>
+                    <th class="text-center">발급사</th>
+                    <th class="text-center">매입사</th>                
+                    <th class="text-center">카드번호</th>
+                    <th class="text-center">카드유형</th>
+                    <th class="text-center">구분</th>
+                    <th class="text-center">승인번호</th>
+                    <th class="text-center">승인일시</th>
+                    <th class="text-center">승인금액</th>                    
+                    <th class="text-center">취소</th>
+                    <th class="text-center">원거래일</th>
+                    <th class="text-center">사전정산</th>
+                    <th class="text-center">정산상태</th>
+                  </tr>        
+                </tr>
+              </thead>
+              <tbody class="list"></tbody>
+            </table>
           </div>
         </div>
-      </div>      
-    </div>    
+        
+      </div>       
   </div>
-  
 </html>

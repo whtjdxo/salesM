@@ -35,9 +35,14 @@
         $('#frm_card_info').onLoadFunction(); 
         $('#frm_file_info').onLoadFunction(); 
 
-        callAjax('/common/totalCodelist', "code_grp_cd=('BANK_CD')", fn_bank_setting);      
-        function fn_bank_setting(data) {
-          codeSetting('BANK_CD', data.data, '#abank_cd', '1', '', '');
+        
+        callAjax('/common/totalCodelist', "code_grp_cd=('BANK_CD') AND CHK_CD1 = 'COLL'", fn_abank_setting);      
+        function fn_abank_setting(data) {
+          codeSetting('BANK_CD', data.data, '#abank_cd', '1', '', ''); 
+        }
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('BANK_CD')", fn_bbank_setting);      
+        function fn_bbank_setting(data) {          
           codeSetting('BANK_CD', data.data, '#bbank_cd', '1', '', '');
         }
         
@@ -124,16 +129,17 @@
                 , { data: 'remit_stat_nm' }                
               ],
             columnDefs: [           
-            { targets: 0, width: '100px', className: 'text-center' },
+            { targets: 0, width: '90px', className: 'text-center' },
             { targets: 1, width: '', className: 'text-left' },
-            { targets: 2, width: '100px', className: 'text-center' },
-            { targets: 3, width: '100px', className: 'text-center' },
-            { targets: 4, width: '120PX', className: 'text-right' },
-            { targets: 5, width: '120PX', className: 'text-right' },
-            { targets: 6, width: '120px', className: 'text-center' },
-            { targets: 7, width: '120px', className: 'text-center' },
-            { targets: 8, width: '80px', className: 'text-center' },
+            { targets: 2, width: '110px', className: 'text-center' },
+            { targets: 3, width: '90px', className: 'text-center' },
+            { targets: 4, width: '110PX', className: 'text-center' },
+            { targets: 5, width: '120PX', className: 'text-end' , render: $.fn.dataTable.render.number(',', '.', 0, '')},
+            { targets: 6, width: '120PX', className: 'text-end' , render: $.fn.dataTable.render.number(',', '.', 0, '')},
+            { targets: 7, width: '90px', className: 'text-center' },
+            { targets: 8, width: '90px', className: 'text-center' },
             { targets: 9, width: '80px', className: 'text-center' },
+            { targets: 10, width: '80px', className: 'text-center' },
           ],  
           order: [[1, 'desc']],
           paging: true,
@@ -144,7 +150,7 @@
           responsive: true,
           scrollCollapse: true,
           pageLength: 20,
-          scrollY: '550px',
+          scrollY: '580px',
           info: false,
           language: {
             emptyTable: '데이터가 없습니다.',
@@ -169,7 +175,7 @@
           }
           var data = tbl_chain.row(this).data();
           if (data) {
-            $('#frm_chain_info')[0].reset();
+            $('#frm_chain_info')[0].reset(); 
             $('#frm_cont_info')[0].reset();
             $('#frm_van_info')[0].reset();
             $('#frm_card_info')[0].reset();
@@ -1051,7 +1057,7 @@
           <div class="card-header">
             <div class="row flex-between-end">
               <div class="col-auto align-self-center">
-                <h5 class="mb-0">가맹점 목록</h5>
+                <h4 class="mb-0">가맹점 목록</h4>
               </div>
               <div class="col-lg-8">
                 <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate="">
@@ -1286,7 +1292,7 @@
                       </div>
                     </div>
                     <div class="row mb-1"> 
-                      <div class="input-group input-group-sm mb-2"> 
+                      <div class="input-group input-group-sm mb-1"> 
                         <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_addr">대표자 주소</label>                     
                         <div class="col-sm-10">
                           <div class="input-group input-group-sm">
@@ -1299,7 +1305,7 @@
                       </div>
                     </div>   
                     <div class="row mb-1">
-                      <div class="input-group input-group-sm mb-2">
+                      <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-2 col-form-label col-form-label-sm" for="remark">Memo</label>
                         <div class="col-sm-10">
                           <textarea class="form-control"  id="remark" rows="2" name="remark"></textarea> 
@@ -1307,7 +1313,7 @@
                       </div>
                     </div>
                     <div class="row mb-1"> 
-                      <div class="input-group input-group-sm mb-2"> 
+                      <div class="input-group input-group-sm mb-1"> 
                         <label class="col-sm-2 col-form-label col-form-label-sm" for="addr">수정자 / 일</label>                     
                         <div class="col-sm-10">
                           <div class="input-group input-group-sm">

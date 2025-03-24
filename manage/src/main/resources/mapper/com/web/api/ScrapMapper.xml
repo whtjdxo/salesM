@@ -87,10 +87,10 @@
                         , CARD_NO       , CARD_ACQ      , CARD_ISSUE    , CONF_AMT      , INSTALL_MON   , ORG_CONF_DT
                         , STORE_ID      , BIZ_NO        , BIZ_NM        , CAT_ID        , USE_YN        , ENT_DTTM
                 ) VALUES (
-                        #{tradeNo}      , #{vanCd}      , #{chainNo}    , #{cardRegNo}  , #{mid}
+                        #{tradeNo}      , #{vanCd}      , #{chainNo}    , #{mid}        , #{mid}
                         , #{confNo}     , #{confGb}     , #{confRslt}   , #{confDttm}   , #{confType}   , #{cardType}
                         , #{cardNo}     , #{cardAcq}    , #{cardIssue}  , #{confAmt}    , #{installMon} , #{orgConfDt}
-                        , #{storeId}    , #{bizNo}      , #{bizNm}      , #{catId}      , #{useYn}      , NOW()
+                        , #{storeId}    , #{bizNo}      , #{bizNm}      , #{catId}      , 'Y'           , NOW()
                 )                
 	</insert>
 

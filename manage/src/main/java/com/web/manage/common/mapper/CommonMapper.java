@@ -14,4 +14,8 @@ public interface CommonMapper {
 
     List<HashMap<String, Object>> getAgencyList(HashMap<String, String> hashmapParam);
 
+    String getPreWorkDay();
+    String getNextWorkDay();
+    String getToDay();
+
 }
