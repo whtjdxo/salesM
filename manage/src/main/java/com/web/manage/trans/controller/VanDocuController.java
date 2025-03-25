@@ -14,10 +14,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.web.manage.trans.service.VanDocuService;
+import com.web.manage.base.domain.CorpVO;
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
 import com.web.manage.common.service.CommonService;
+import com.web.manage.trans.domain.TransProcessVO;
 import com.web.manage.trans.domain.VanDocuVO;
 import jakarta.validation.Valid;
 
@@ -104,7 +106,7 @@ public class VanDocuController {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
         Gson gson = new Gson();
-        System.out.println("getChainDocuSummgetChainDocuSummgetChainDocuSummgetChainDocuSummgetChainDocuSumm");
+        // System.out.println("getChainDocuSummgetChainDocuSummgetChainDocuSummgetChainDocuSummgetChainDocuSumm");
         String jString = null; 
         try {
             PageingVO pageing = new PageingVO();
@@ -227,6 +229,92 @@ public class VanDocuController {
             e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
+    }
+
+    @RequestMapping(value = "/getUnprocessedList", method = RequestMethod.POST)
+    public @ResponseBody String getUnprocessedList(@RequestBody HashMap<String, Object> hashmapParam) {
+        HashMap<String, Object> hashmapResult = new HashMap<>();
+        List<HashMap<String, Object>> list = new ArrayList<>();
+        Gson gson = new Gson();
+        String jString = null;
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = vanDocuService.getUnprocessedList(hashmapParam);
+            int records = vanDocuService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jString;
+    }
+
+    @RequestMapping(value = "/getUnprocessedSumm", method = RequestMethod.POST)
+    public @ResponseBody String getUnprocessedSumm(@RequestBody HashMap<String, Object> hashmapParam) {
+        HashMap<String, Object> hashmapResult = new HashMap<>();
+        List<HashMap<String, Object>> list = new ArrayList<>();
+        Gson gson = new Gson();
+        String jString = null;
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = vanDocuService.getUnprocessedSumm(hashmapParam);
+            int records = vanDocuService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jString;
+    }
+
+    @RequestMapping(value = "/callScrapTransVanDocu", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO callScrapTransVanDocu(@ModelAttribute("TransProcessVO") @Valid TransProcessVO procVo, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            System.out.println("procVo : " + procVo);
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            procVo.setUserId(member.getUserId());
+            
+            return vanDocuService.callScrapTransVanDocu(procVo);             
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("An error occurred while processing the scrap transaction.");
+            e.printStackTrace();
+            return result;
+        }
+        // return result;
     }
 }
 

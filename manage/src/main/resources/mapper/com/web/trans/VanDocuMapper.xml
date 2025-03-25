@@ -265,77 +265,131 @@
                 </choose>                
                 LIMIT  ${start}, ${end}
         </select>
+        <select id="getUnprocessedSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT  SQL_CALC_FOUND_ROWS 
+                        VT.CHAIN_NO             AS chain_no
+                        , TC.CHAIN_NM           AS chain_nm
+                        , VT.PROC_RESULT        AS proc_result        
+                        , VT.UN_PROC_CNT        AS un_proc_cnt
+                FROM 	(						
+                                SELECT 'VAN'				AS GB
+                                        , CHAIN_NO			AS CHAIN_NO 
+                                        , IFNULL(PROC_RESULT, '미처리')   	AS PROC_RESULT
+                                                        , COUNT(1)							AS UN_PROC_CNT
+                                  FROM  TB_SCRAP_VAN_DATA T1
+                                 WHERE	CONF_DTTM  &gt;=  #{sch_unproc_conf_dt}
+                                   AND  CONF_DTTM  &lt;=  CONCAT(#{sch_unproc_conf_dt}, ' 23:59:59')                      
+                                   AND  CHAIN_NO        = #{sch_unproc_chain_no}
+                                   AND	USE_YN 	= 'Y'
+                                   AND  PROC_FG = 'N'
+                                 GROUP	BY CHAIN_NO,  IFNULL(PROC_RESULT, '미처리')	
+                                 UNION	ALL
+                                SELECT  'DELI'				AS GB
+                                        , CHAIN_NO
+                                        , IFNULL(PROC_RESULT, '미처리')   	AS proc_result
+                                        , COUNT(1)				AS unproc_cnt 
+                                  FROM  TB_SCRAP_DELI_DATA
+                                 WHERE	ORDER_DTTM  &gt;=  #{sch_unproc_conf_dt}
+                                   AND  ORDER_DTTM  &lt;=  CONCAT(#{sch_unproc_conf_dt}, ' 23:59:59')   
+                                   AND  CHAIN_NO        = #{sch_unproc_chain_no}
+                                   AND	USE_YN 	= 'Y'
+                                   AND  PROC_FG = 'N'
+                                 GROUP	BY CHAIN_NO,  IFNULL(PROC_RESULT, '미처리')   
+                        ) VT
+                JOIN	TB_CHAIN TC ON TC.CHAIN_NO  = VT.CHAIN_NO
+                                        AND TC.USE_YN = 'Y'       
+                                        AND TC.SVC_STAT IN ('O', 'R')
+                <choose>
+                        <when test="sidx != ''">
+                                ORDER BY ${sidx} ${sord}
+                        </when>
+                        <otherwise>
+                                ORDER BY 1 DESC
+                        </otherwise>
+                </choose>                
+                LIMIT  ${start}, ${end}
+        </select>
 
- 
+        <select id="getUnprocessedList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT	VD.SEQ                                  AS seq
+                        , VD.CHAIN_NO                           AS chain_no
+                        , TC.CHAIN_NM                           AS chain_nm
+                        , VD.VAN_CD                             AS van_cd
+                        , GET_CODE_NM('VAN_CD', VD.VAN_CD)      AS van_cd_nm
+                        , TC.SVC_STAT                           AS svc_stat 
+                        , DATE_FORMAT(NOW(), '%Y-%m-%d')  	AS recv_date 
+                        , DATE_FORMAT(NOW(), '%h-%m-%s')  	AS recv_time
+                        , CASE WHEN CAST(IFNULL(CARD_REG_NO, VD.MID) AS UNSIGNED) > 0 THEN CAST(IFNULL(CARD_REG_NO, VD.MID) AS UNSIGNED)
+                                        ELSE CARD_REG_NO END 		AS card_reg_no
+                        , TRADE_NO					AS trade_no
+                        , CAT_ID 					AS term_id
+                        , CARD_ISSUE					AS card_issue_val
+                        , IFNULL(GET_MATCH_CODE('ISS', VD.CARD_ISSUE), 'ERROR') AS card_iss
+                        , CARD_ACQ						AS card_acq_val
+                        , IFNULL(GET_MATCH_CODE('ACQ', VD.CARD_ACQ), 'ERROR')   AS card_acq
+                        , VD.CARD_NO 		                                AS card_no        
+                        , VD.INSTALL_MON		                        AS install_mon
+                        , CASE 	WHEN  VD.CARD_TYPE LIKE '%신용%'  AND VD.CARD_ISSUE NOT LIKE '%해외%' THEN 'N'
+                                                WHEN  (VD.CARD_TYPE LIKE '%GIFT%' OR VD.CARD_TYPE LIKE '%기프트%') THEN 'C'
+                                                WHEN  VD.CARD_TYPE LIKE '%체크%'  AND VD.CARD_ISSUE NOT LIKE '%해외%' THEN 'C'
+                                                WHEN (VD.CARD_TYPE LIKE '%해외%'  OR  VD.CARD_ISSUE LIKE '%해외%' )   THEN 'B'    
+                                                WHEN  VD.CARD_TYPE LIKE '%청구제외%' THEN 'X'
+                                                ELSE  'N'
+                                                END 		AS card_type
+                        , VD.CONF_NO                    AS conf_no    
+                        , VD.CONF_GB			AS conf_gb_val
+                        , CASE WHEN VD.CONF_GB like '%승인(취소)%'THEN 'A'
+                                        WHEN VD.CONF_GB like '%취소%' 	THEN 'C'
+                                        WHEN VD.CONF_GB like '%승인%' 	THEN 'A'
+                                        WHEN VD.CONF_GB = '환급' 			THEN 'C'
+                                        WHEN VD.CONF_GB ='원거래' 			THEN 'A'
+                                        WHEN VD.CONF_GB = '전화등록' 		THEN 'A'
+                                        WHEN VD.CONF_GB like '%BARO%' 	THEN 'A'
+                                        WHEN VD.CONF_GB like '%온라인 결제%' THEN 'A'
+                                        WHEN VD.CONF_GB = '전화취소' THEN 'C'
+                                        ELSE 'X'
+                                        END 				AS  CONF_GB
+                        , SUBSTR(VD.CONF_DTTM, 1, 10)		        AS CONF_DT		
+                        , SUBSTR(VD.CONF_DTTM, 11, 9)		        AS CONF_TM
+                        , VD.CONF_DTTM                                  AS conf_dttm        
+                        , ABS(VD.CONF_AMT)				AS conf_amt
+                        , VD.ORG_CONF_DT		                AS org_conf_dt         
+                        , VD.PROC_FG                                    AS proc_fg   
+                        , VD.PROC_RESULT			        AS proc_result
+                  FROM 	TB_SCRAP_VAN_DATA  	VD
+                        JOIN TB_CHAIN		TC ON TC.CHAIN_NO = VD.CHAIN_NO		   	
+                 WHERE  VD.USE_YN 	= 'Y'
+                   AND 	VD.PROC_FG 	= 'N'
+                   AND  VD.CHAIN_NO        = #{schmodal_chain_no} 
+                   AND  VD.CONF_DTTM  &gt;=  #{schmodal_conf_dt}
+                   AND  VD.CONF_DTTM  &lt;=  CONCAT(#{schmodal_conf_dt}, ' 23:59:59')
+                   AND 	NOT EXISTS (
+                                SELECT 	'X'
+                                  FROM 	TB_VAN_DOCU TD
+                                 WHERE 	VD.SEQ 		= TD.SC_SEQ
+                                   AND 	VD.VAN_CD 	= TD.VAN_CD
+                                ) 				
+                 ORDER 	BY VD.SEQ 
+        </select>
 
-	<insert id="InsertAgency" parameterType="com.web.manage.trans.domain.VanDocuVO">
-                INSERT INTO tb_agency (
-                        agency_no             , agency_nm             , biz_no                , law_no            
-                        , uptae                 , upjong                , email
-                        , corp_zip_no           , corp_addr             , corp_addr_dtl         , corp_tel_no                       
-                        , ceo_id                , remark                , use_yn                
-                        , ent_user_id           , ent_dttm
-                ) VALUES (
-                        #{agency_no}            , #{agency_nm}          , #{biz_no}             , #{law_no}         
-                        , #{uptae}              , #{upjong}             , #{email}
-                        , #{corp_zip_no}        , #{corp_addr}          , #{corp_addr_dtl}      , #{corp_tel_no}
-                        , #{ceo_id}             , #{remark}             , #{use_yn}  
-                        , #{ent_user_id}        , NOW()
-                )   
-	</insert>
-	<update id="UpdateAgency" parameterType="com.web.manage.trans.domain.VanDocuVO">
-                UPDATE  tb_agency
-                SET  agency_nm       = #{agency_nm},
-                        biz_no          = #{biz_no},
-                        law_no          = #{law_no},
-                        uptae           = #{uptae},
-                        upjong          = #{upjong},
-                        email           = #{email},                
-                        corp_zip_no     = #{corp_zip_no},
-                        corp_addr       = #{corp_addr},
-                        corp_addr_dtl   = #{corp_addr_dtl}, 
-                        corp_tel_no     = #{corp_tel_no},
-                        assure_amt      = #{assure_amt},
-                        insure_amt      = #{insure_amt},
-                        ass_sdate       = #{ass_sdate},
-                        ass_edate       = #{ass_edate},
-                        remark          = #{remark},
-                        cont_dt         = #{cont_dt},
-                        svc_stat        = #{svc_stat},
-                        svc_fee_rate    = #{svc_fee_rate},
-                        crd_fee_rate    = #{crd_fee_rate},
-                        loan_fee_rate   = #{loan_fee_rate},
-                        bank_cd         = #{bank_cd},
-                        account_no      = #{account_no},
-                        depositor       = #{depositor},
-                        yubo_limit      = #{yubo_limit},
-                        yubo_rate       = #{yubo_rate},
-                        tot_yubo_amt    = #{tot_yubo_amt},
-                        use_yn          = #{use_yn},
-                        upt_user_id     = #{upt_user_id},
-                        upt_dttm        = NOW()
-                WHERE  agency_no = #{agency_no}
-        </update> 
+        <!-- <select id="callScrapTransVanDocu" parameterType="com.web.manage.trans.domain.TransProcessVO" statementType="CALLABLE">
+                CALL PRC_SCRAP_TRANS_VAN_DOCU(
+                                #{chainNo}
+                                , #{userId}
+                                , #{resultCode}
+                                , #{resultMsg}
+                                )
+        </select> -->
 
-        <update id="UpdateAgencyCont" parameterType="com.web.manage.trans.domain.VanDocuVO">
-                UPDATE  tb_agency
-                SET  cont_dt       = #{cont_dt},
-                        assure_amt      = #{assure_amt},
-                        insure_amt      = #{insure_amt},
-                        ass_sdate       = #{ass_sdate},
-                        ass_edate       = #{ass_edate},
-                        svc_stat        = #{svc_stat},
-                        svc_fee_rate    = #{svc_fee_rate},
-                        crd_fee_rate    = #{crd_fee_rate},
-                        loan_fee_rate   = #{loan_fee_rate},
-                        bank_cd         = #{bank_cd},
-                        account_no      = #{account_no},
-                        depositor       = #{depositor},
-                        yubo_limit      = #{yubo_limit},
-                        yubo_rate       = #{yubo_rate},
-                        tot_yubo_amt    = #{tot_yubo_amt},
-                        upt_user_id     = #{upt_user_id},
-                        upt_dttm        = NOW()
-                WHERE  agency_no = #{agency_no}
-        </update> 
+        <update id="callScrapTransVanDocu" parameterType="com.web.manage.trans.domain.TransProcessVO" statementType="CALLABLE">
+                { 
+                        CALL PRC_SCRAP_TRANS_VAN_DOCU(
+                                #{chainNo, mode=IN, jdbcType=VARCHAR}
+                                , #{userId, mode=IN, jdbcType=VARCHAR}
+                                , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                                , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+                        ) 
+                }
+        </update>
+
 </mapper>
