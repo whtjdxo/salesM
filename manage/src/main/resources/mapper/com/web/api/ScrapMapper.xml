@@ -71,11 +71,11 @@
                 </if>
                 AND  NOT EXISTS(
                                 SELECT 1 
-                                FROM TB_SCRAP_LOG SL          
-                                WHERE SL.CHAIN_NO  = TC.CHAIN_NO       
-                                AND SL.SCRAP_GB  = 'VAN'            
-                                AND SL.VAN_CD    = #{vanCd}
-                                AND SL.LAST_SCRAP_DTTM >= DATE_SUB(NOW(), INTERVAL 90 MINUTE)
+                                  FROM TB_SCRAP_LOG SL          
+                                 WHERE SL.CHAIN_NO  = TC.CHAIN_NO       
+                                   AND SL.SCRAP_GB  = 'VAN'            
+                                   AND SL.VAN_CD    = #{vanCd}
+                                   AND SL.LAST_SCRAP_DTTM >= DATE_SUB(NOW(), INTERVAL 90 MINUTE)
                         )                                       
                 ORDER 	BY TC.CHAIN_NO  
 	</select> 
@@ -94,6 +94,19 @@
                 )                
 	</insert>
 
+        <insert id="scrapUploadDeliData" parameterType="com.web.manage.api.domain.ScrapDeliDataVO">
+                INSERT INTO TB_SCRAP_DELI_DATA(
+                        CHAIN_NO                , VAN_CD                , CARD_ACQ              , ORDER_NO              , ORDER_DTTM
+                        , ORDER_TYPE            , CAMPAIGN_ID           , ORDER_NM              , PAY_TYPE              , DELI_TYPE             , ORDER_AMT             
+                        , ST_INFO_A             , ST_INFO_B             , ST_INFO_C             , ST_INFO_D             , ST_INFO_E             , ST_INFO_F
+                        , ST_DEPOSIT_AMT        , ST_DEPOSIT_DT         , STORE_NM              , ORDER_INFO            , USE_YN                , ENT_DTTM
+                ) VALUES (
+                        #{chainNo}             , #{vanCd}             , #{cardAcq}           , #{orderNo}           , #{orderDttm}
+                        , #{orderType}         , #{campaignId}        , #{orderNm}           , #{payType}           , #{deliType}          , #{orderAmt}
+                        , #{stInfoA}           , #{stInfoB}           , #{stInfoC}           , #{stInfoD}           , #{stInfoE}           , #{stInfoF}
+                        , #{stDepositAmt}      , #{stDepositDt}       , #{storeNm}           , #{orderInfo}         , 'Y'                  , NOW()
+                )
+        </insert> 
         
 	 
 </mapper>

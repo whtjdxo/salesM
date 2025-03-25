@@ -181,6 +181,60 @@ public class ScrapController {
         return jString;  
     }
 
+
+    @RequestMapping(value = "/scrapApiUploadDeliveryData.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public @ResponseBody String scrapUploadDeliveryData(@RequestParam("vanCd") String vanCd
+                                                    , @RequestParam("chainNo") String chainNo
+                                                    , @RequestParam("userId") String userId
+                                                    , @RequestParam("apiAuthKey") String apiAuthKey
+                                                    , @RequestParam("authKey") String authKey
+                                                    , @RequestParam("uploadData") String uploadData
+                                                ) {         		
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>(); 
+        ScrapUserVO scrapUserVo = new ScrapUserVO();
+        ScrapLogVO logVo = new ScrapLogVO();
+
+        Gson gson = new Gson();
+        String jString = null;
+        // -- 사용자 인증키 체크
+
+        scrapUserVo.setUserId(userId);
+        scrapUserVo.setUserAuthKey(apiAuthKey); 
+        
+
+		if (scrapService.getUserAuthKeyCheck(scrapUserVo) <= 0){
+            hashmapResult.put("repCd", "9001");
+            hashmapResult.put("repMsg", "User AuthKey Check Fail~");
+            hashmapResult.put("apiAuthKey", ""); 
+            jString = gson.toJson(hashmapResult);
+            return jString;                       
+        }  
+        try {
+            logVo.setChain_no(chainNo);
+            logVo.setVan_cd(vanCd);
+            logVo.setScrap_gb("DELI");
+            // System.out.println(uploadData);
+
+            if ( scrapService.scrapUploadDeliData(uploadData, logVo)) {
+                hashmapResult.put("repCd", "0000");
+                hashmapResult.put("repMsg", "Data Upload Complete"); 
+                hashmapResult.put("repData", "");
+            } else {
+                hashmapResult.put("repCd", "9100");
+                hashmapResult.put("repMsg", "Insert Data Fail"); 
+                hashmapResult.put("repData", "");
+            }            
+        } catch (Exception e) {
+            e.printStackTrace();
+            hashmapResult.put("repCd", "9900");
+            hashmapResult.put("repMsg", "Insert Data Fail"); 
+            hashmapResult.put("repData", null);
+        }
+
+        jString = gson.toJson(hashmapResult);
+        return jString;  
+    }
+
     @RequestMapping(value = "/scrapApiWriteErrorLog.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public @ResponseBody String writeScrapErrorLog(@RequestParam("userId") String userId
                                                     , @RequestParam("apiAuthKey") String apiAuthKey
@@ -238,4 +292,5 @@ public class ScrapController {
         jString = gson.toJson(hashmapResult);
         return jString;  
     }
+ 
 }
