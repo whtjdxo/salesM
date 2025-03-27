@@ -57,6 +57,7 @@
                         , CD.CODE_NM 		AS vanNm
                         , VN.VAN_ID             AS loginId
                         , VN.VAN_PWD            AS loginPwd
+                        , VN.TERM_ID            AS vanUrl
                 FROM 	TB_CHAIN TC
                         JOIN TB_CHAIN_VAN VN ON VN.CHAIN_NO = TC.CHAIN_NO
                                 AND VN.USE_YN = 'Y'
@@ -73,7 +74,7 @@
                                 SELECT 1 
                                   FROM TB_SCRAP_LOG SL          
                                  WHERE SL.CHAIN_NO  = TC.CHAIN_NO       
-                                   AND SL.SCRAP_GB  = 'VAN'            
+                                   AND SL.SCRAP_GB  IN ('VAN', 'DELI')
                                    AND SL.VAN_CD    = #{vanCd}
                                    AND SL.LAST_SCRAP_DTTM >= DATE_SUB(NOW(), INTERVAL 90 MINUTE)
                         )                                       

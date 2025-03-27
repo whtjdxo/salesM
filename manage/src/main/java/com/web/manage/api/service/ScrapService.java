@@ -3,20 +3,26 @@ package com.web.manage.api.service;
 import java.util.HashMap;
 import java.util.List;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.web.config.interceptor.AuthInterceptor;
 import com.web.manage.api.domain.ScrapCompVO;
 import com.web.manage.api.domain.ScrapDeliDataVO;
 import com.web.manage.api.domain.ScrapErrorLogVO;
 import com.web.manage.api.domain.ScrapLogVO;
 import com.web.manage.api.domain.ScrapUserVO;
 import com.web.manage.api.domain.ScrapVanDataVO;
-import com.web.manage.api.mapper.ScrapMapper; 
+import com.web.manage.api.mapper.ScrapMapper;
+
+import ch.qos.logback.classic.Logger; 
 
 @Service
 public class ScrapService {
+    static final Logger logger = (Logger) LoggerFactory.getLogger(AuthInterceptor.class);
+
     @Autowired
     private ScrapMapper scrapMapper;
 
@@ -82,9 +88,11 @@ public class ScrapService {
             // 데이터 처리 결과 insert
             try {
                 scrapMapper.writeScrapLog(logVO);
+                logger.debug(">> " + rsltMsg);
             } catch (Exception e) {
                 // Log the exception or handle it appropriately
-                System.err.println("Error writing scrap log: " + e.getMessage());
+                logger.debug(">> " + "Error writing scrap log: " + e.getMessage());
+                // System.err.println("Error writing scrap log: " + e.getMessage());
             } 
             return true;
 

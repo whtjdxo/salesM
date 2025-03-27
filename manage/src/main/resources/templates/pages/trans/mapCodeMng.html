@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>가맹점 관리</title>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script>
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />
+     
+    <!-- DataTables Select CSS 추가 -->
+    <link rel="stylesheet" href="/css/custom-salesm.css" />
+
+    <script th:inline="none">      
+       
+      $(document).ready(function () {             
+        $('#frm_map_code').onLoadFunction();  
+        callAjax('/common/totalCodelist', "code_grp_cd=('MAP_PCODE')", fn_map_pcode_setting);      
+        function fn_map_pcode_setting(data) {
+          codeSetting('MAP_PCODE', data.data, '#sch_map_pcode', '1', '', ''); 
+        }
+        
+        var tbl_map_pcode = $('#tbl_map_pcode').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          responsive: true,
+          ajax: {
+            url: '/trans/trans/vanDocuMng/mapPCodeList',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',            
+            data: function (postData) {
+              formData = $('#frm_sch').serializeObject(); 
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
+            },
+          },
+            columns: [
+                { data: 'map_pcode_nm' }
+                , { data: 'map_code' }
+                , { data: 'map_code_nm' }      
+              ],
+            columnDefs: [           
+            { targets: 0, width: '150px', className: 'text-center' },
+            { targets: 1, width: '100px', className: 'text-left' },
+            { targets: 2, width: '200px', className: 'text-center' }, 
+            
+          ],  
+          order: [[1, 'desc']],
+          paging: true,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          autoWidth: false,
+          responsive: true,
+          scrollCollapse: true,
+          pageLength: 20,
+          scrollY: '580px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
+        });
+
+        $('#btn_search').click(function () {
+          tbl_map_pcode.ajax.reload();
+          $('#frm_map_code')[0].reset();
+        });
+
+        $('#sch_map_pcode').change(function () {
+          tbl_map_pcode.ajax.reload();
+          $('#tbl_mapcode_list').DataTable().clear().draw();
+          $('#frm_map_code')[0].reset();
+        });
+        
+        $('#tbl_map_pcode').on('click', 'tr', function () {
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+          } else {
+            tbl_map_pcode.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }
+          var data = tbl_map_pcode.row(this).data();
+          if (data) {
+            $('#frm_map_code')[0].reset();       
+            $('#map_pcode').val(data.map_pcode);
+            $('#map_pcode_nm').val(data.map_pcode_nm);
+            $('#map_code').val(data.map_code);
+            $('#map_code_nm').val(data.map_code_nm);
+            tbl_mapcode_list.ajax.reload();    
+          }  
+        });      
+         
+        // --------------------------------------------------------------- frm_map_code 정보 처리 ---------------------------------------------------
+        var tbl_mapcode_list = $('#tbl_mapcode_list').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true,
+            responsive: true,
+            ajax: {
+              url: '/trans/trans/vanDocuMng/mapCodeList',
+              contentType: 'application/json',
+              dataType: 'JSON',
+              type: 'POST',
+              data: function (postData) {
+                formData = $('#frm_map_code').serializeObject();
+                Object.assign(postData, formData);
+                return JSON.stringify(postData);
+              },
+            },
+              columns: [
+                  { data: 'map_pcode_nm' }                  
+                  , { data: 'map_code' }
+                  , { data: 'map_code_nm' }
+                  , { data: 'map_text' }
+                  , { data: 'use_yn' }
+                ],
+              columnDefs: [
+              { targets: 0, width: '120px', className: 'text-left' },
+              { targets: 1, width: '120px', className: 'text-left' },
+              { targets: 2, width: '120px', className: 'text-center' },
+              { targets: 3, width: '300px', className: 'text-center' },
+              { targets: 3, width: '90px', className: 'text-center' },
+            ],
+            order: [[1, 'desc']],
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            autoWidth: false,
+            responsive: true,
+            scrollCollapse: true,
+            pageLength: 10,
+            scrollY: '450px',
+            info: false,
+            language: {
+              emptyTable: '데이터가 없습니다.',
+              search: '검색:',
+              zeroRecords: '일치하는 데이터가 없습니다.',
+              loadingRecords: '로딩중...',
+              processing: '처리중...',
+            },
+          }); 
+
+        $('#tbl_mapcode_list').on('click', 'tr', function () {
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+          } else {
+            tbl_mapcode_list.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }
+          var data = tbl_mapcode_list.row(this).data();
+          if (data) {
+            $('#frm_map_code')[0].reset();             
+            $('#map_seq').val(data.map_seq);
+            $('#map_pcode').val(data.map_pcode);
+            $('#map_pcode_nm').val(data.map_pcode_nm);
+            $('#map_code').val(data.map_code);
+            $('#map_code_nm').val(data.map_code_nm);
+            $('#map_text').val(data.map_text);
+            $("input:radio[name='use_yn'][value='" + data.use_yn + "']").prop('checked', true);  
+            $('#van_upt_user_id').val(data.upt_user_id);
+            $('#van_upt_dttm').val(data.upt_dttm);   
+
+            $('#crud').val('update');
+            $('#btn_update').show();
+            $('#btn_create').hide();            
+            
+          }  
+        });      
+
+        $('#btn_clear').click(function () {     
+          fn_frm_map_code_clear(); 
+        });
+
+        function fn_frm_map_code_clear(){
+          $('#map_seq').val('');
+          $('#map_text').val('');
+          $("input:radio[name='use_yn']").prop('checked', false);
+          $('#crud').val('create');
+          $('#btn_update').hide();
+          $('#btn_create').show();      
+        }
+
+        
+        $('#btn_create').click(function () {    
+          $('#crud').val('create');      
+          var checked = true;
+          var form = $('#frm_map_code');
+          
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          }); 
+          
+          if (checked) {
+            ConfirmdialogToAjax('create', '/trans/trans/vanDocuMng/insertMapCode', $('#frm_map_code').serialize(), fn_return_result);
+          }  
+        });
+
+        $('#btn_update').click(function () {
+          $('#crud').val('update');
+          var form = $('#frm_map_code');
+          var checked = true;
+          var map_seq = $('#map_seq').val();
+          if(map_seq == '') {
+            swal('실패', "매핑 코드를 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          }
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          });          
+          if (checked) {
+            ConfirmdialogToAjax('update', '/trans/trans/vanDocuMng/updateMapCode', $('#frm_map_code').serialize(), fn_return_result);
+          }  
+        });     
+
+        function fn_return_result(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg;  
+
+          if (resultCode == 'S000') {            
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+            tbl_mapcode_list.ajax.reload();                 
+            fn_frm_map_code_clear();
+          } else { 
+            swal('실패', resultMsg, 'error');
+          }
+        } 
+      });
+    </script>
+  </head>
+  <div class="content">    
+    <div class="row g-3 mb-2">
+      <div class="col-lg-5">
+        <div class="card">
+          <div class="card-header">
+            <div class="row flex-between-end">
+              <div class="col-auto align-self-center">
+                <h4 class="mb-0">코드 매핑 목록</h4>
+              </div>
+              <div class="col-lg-8">
+                <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate="">
+                  <div class="input-group input-group-sm px-3">
+                    <select class="form-select form-control-sm" id="sch_map_pcode" name="sch_map_pcode" style="width: 150px">
+                      <option value="">선 택</option>
+                    </select>                    
+                    <!-- <select class="form-select form-control-sm" id="schgb_map" name="schgb_map" style="width: 80px">
+                      <option value="">선택</option>
+                      <option value="schgb_code">매핑 코드</option>
+                      <option value="schgb_code_nm">매핑 Text</option> 
+                    </select>
+                    <input type="text" class="form-control form-control-sm" id="schgb_map_val" name="schgb_map_val" style="width: 15%" />          -->          
+                    <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>          
+          <div class="card-body pt-0 px-0" style="padding-top: 0px">
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_map_pcode">
+                <thead>
+                  <tr>
+                    <th class="text-center">대분류 코드 명</th>
+                    <th class="text-center">매핑 코드</th>
+                    <th class="text-center">매핑 코드 명</th>                                                            
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="card">
+          <div class="card-header">
+            <div class="row flex-between-end">
+              <div class="col-auto align-self-center">
+                <h5 class="mb-0">매핑 코드 목록</h5>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="min-vh-50">              
+              <div class="table-responsive scrollbar">
+                <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_mapcode_list">
+                  <thead class="bg-200">
+                    <tr>
+                      <th class="text-center" style="width: 120px;">대분류</th>
+                      <th class="text-center" style="width: 120px;">매핑코드</th>
+                      <th class="text-center" style="width: 120px;">매핑 코드명</th>
+                      <th class="text-center" style="width: 300px;">매핑 Text</th>
+                      <th class="text-center" style="width: 90px;">사용</th>
+                    </tr>
+                  </thead>
+                  <tbody class="list"></tbody>
+                </table>
+              </div> 
+              <div class="mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">상세정보</div>
+                <form class="needs-validation" id="frm_map_code" name="frm_map_code" onsubmit="return false;" method="post" novalidate=""> 
+                  <input id="map_seq" type="hidden" name="map_seq" />                
+                  <div class="row mb-1">
+                    <div class="col-sm-6">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="map_pcode">대분류</label> 
+                        <input class="form-control form-control-sm" id="map_pcode" type="hidden" name="map_pcode" maxlength="20" readonly="readonly" required />
+                        <input class="form-control form-control-sm" id="map_pcode_nm" type="text" name="map_pcode_nm" readonly="readonly"/>
+                      </div>
+                    </div>
+                    <div class="col-sm-6">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="map_code">매핑 항목</label> 
+                        <input class="form-control form-control-sm" id="map_code" type="hidden" name="map_code" maxlength="20" readonly="readonly" required />
+                        <input class="form-control form-control-sm" id="map_code_nm" type="text" name="map_code_nm" readonly="readonly"/>
+                      </div>
+                    </div>
+                  </div>                 
+
+                  <div class="row mb-1">
+                    <div class="col-sm-6">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="map_text">기재내용</label> 
+                        <input class="form-control form-control-sm" id="map_text" type="text" name="map_text" maxlength="30" required />
+                      </div>
+                    </div>
+                    <div class="col-sm-6">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="use_yn">사용여부</label>
+                        <div class="col-sm-8">
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" id="use_yn_y" type="radio" name="use_yn" value="Y" required />
+                            <label class="form-check-label" for="use_yn_y">예</label>
+                          </div>
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" id="use_yn_n" type="radio" name="use_yn" value="N" required />
+                            <label class="form-check-label" for="use_yn_n">아니요</label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>    
+                  <div class="row mb-1">
+                    <div class="col-sm-6">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="map_text">최종수정자</label> 
+                        <input type="text" class="form-control form-control-sm" id="van_upt_user_id" name="van_upt_user_id" readonly="readonly" disabled />
+                      </div>
+                    </div>
+                    <div class="col-sm-6">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="van_upt_user_id">최종 수정일</label>                         
+                        <input type="text" class="form-control form-control-sm" id="van_upt_dttm" name="van_upt_dttm" readonly="readonly" disabled /> 
+                      </div>
+                    </div>
+                  </div>    
+                  <div class="card-footer">
+                    <p class="text-end pb-1 mb-1 pd-1">
+                      <button class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
+                      <button class="btn btn-primary text-end" id="btn_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                      <button class="btn btn-primary text-end" id="btn_create"><i class="fa fa-paste"></i>저장</button>
+                    </p>
+                  </div>
+                </form>
+              </div> 
+            </div>  
+          </div>
+        </div>
+      </div>      
+    </div>    
+  </div>  
+</html>

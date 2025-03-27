@@ -3,11 +3,11 @@
 
 <mapper namespace="com.web.manage.common.mapper.CommonMapper">
     <select id="getTotalCodelist" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-        SELECT code         AS "code"
-             , code_nm      AS "codeNm"
-             , code_grp_cd  AS "group_code"
-             , chk_cd1      AS "chk_cd1"
-             , chk_cd2      AS "chk_cd2"
+        SELECT code         AS code
+             , code_nm      AS codeNm
+             , code_grp_cd  AS group_code
+             , chk_cd1      AS chk_cd1
+             , chk_cd2      AS chk_cd2
           FROM TB_CODE
          WHERE CODE_GRP_CD IN ${code_grp_cd}
            AND USE_YN = 'Y'
@@ -17,7 +17,7 @@
   <select id="getCreditCorpList" resultType="hashMap">
         SELECT  CORP_CD       as code
                 , CORP_NM     as codeNm
-                , 'CORP_CD'   AS "group_code"
+                , 'CORP_CD'   AS group_code
           FROM  TB_CORP
          WHERE  1= 1
            AND  CORP_TYPE = 'LN'
@@ -25,10 +25,20 @@
          ORDER  BY 2
   </select>
 
+  <select id="getChainList" resultType="hashMap">
+        SELECT 	CHAIN_NO		  AS code_no 
+                , CHAIN_NM		AS code_nm
+                , 'CHAIN_NO'  AS group_code
+          FROM 	TB_CHAIN
+         WHERE 	USE_YN = 'Y'
+           AND  SVC_STAT IN ('O', 'R')
+         ORDER	BY CHAIN_NM
+  </select>
+
   <select id="getAgencyList" resultType="hashMap">
         SELECT  AGENCY_NO       as code
                 , AGENCY_NM     as codeNm
-                , 'AGENCY_NO'   AS "group_code"
+                , 'AGENCY_NO'   AS group_code
           FROM  TB_AGENCY
          WHERE  1= 1
            AND  USE_YN  = 'Y'

@@ -199,8 +199,7 @@ public class ScrapController {
         // -- 사용자 인증키 체크
 
         scrapUserVo.setUserId(userId);
-        scrapUserVo.setUserAuthKey(apiAuthKey); 
-        
+        scrapUserVo.setUserAuthKey(apiAuthKey);         
 
 		if (scrapService.getUserAuthKeyCheck(scrapUserVo) <= 0){
             hashmapResult.put("repCd", "9001");

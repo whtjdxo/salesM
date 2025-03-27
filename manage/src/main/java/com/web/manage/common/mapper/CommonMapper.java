@@ -12,6 +12,8 @@ public interface CommonMapper {
 
     List<HashMap<String, Object>> getCreditCorpList(HashMap<String, String> hashmapParam);
 
+    List<HashMap<String, Object>> getChainList(HashMap<String, String> hashmapParam);
+
     List<HashMap<String, Object>> getAgencyList(HashMap<String, String> hashmapParam);
 
     String getPreWorkDay();

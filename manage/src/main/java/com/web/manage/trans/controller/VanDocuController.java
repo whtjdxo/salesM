@@ -11,14 +11,20 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.web.manage.trans.service.VanDocuService;
+
+import ch.qos.logback.classic.Logger;
+
+import com.web.manage.base.domain.ChainVanVO;
 import com.web.manage.base.domain.CorpVO;
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
 import com.web.manage.common.service.CommonService;
+import com.web.manage.trans.domain.MapCodeVO;
 import com.web.manage.trans.domain.TransProcessVO;
 import com.web.manage.trans.domain.VanDocuVO;
 import jakarta.validation.Valid;
@@ -26,24 +32,26 @@ import jakarta.validation.Valid;
 import com.web.common.util.DateUtil;
 import com.web.common.util.StringUtil;
 import com.web.common.util.ValidateUtil;
-
+import com.web.config.interceptor.AuthInterceptor;
 import com.google.gson.Gson;
 import jakarta.servlet.http.HttpSession;
 
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Cell;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.io.ByteArrayOutputStream;
 
+import org.springframework.web.multipart.MultipartFile;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 @Controller
 @RequestMapping("/trans/trans/vanDocuMng/")
 public class VanDocuController {
+    static final Logger logger = (Logger) LoggerFactory.getLogger(AuthInterceptor.class);
 
     @Autowired
     private VanDocuService vanDocuService;    
@@ -55,6 +63,142 @@ public class VanDocuController {
     public String view() {
         return "pages/trans/vanDocuMng";
     }
+
+    @RequestMapping("excel")
+    public String excelUpload() {
+        return "pages/trans/vanDocuUpload";
+    } 
+
+    @RequestMapping("map")
+    public String mapCodeText() {
+        return "pages/trans/mapCodeMng";
+    } 
+
+    @RequestMapping("mapPCodeList")    
+    public @ResponseBody String getMapPcodeList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            // System.out.println(hashmapParam);
+
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = vanDocuService.getMapPcodeList(hashmapParam);
+            int records = vanDocuService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    }
+
+    @RequestMapping("mapCodeList")    
+    public @ResponseBody String getMapCodeList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+            
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = vanDocuService.getMapCodeList(hashmapParam);
+            int records = vanDocuService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    }
+
+
+    @RequestMapping(value = "/insertMapCode", method = RequestMethod.POST)    
+    public @ResponseBody ReturnDataVO insertMapCode(@ModelAttribute("MapCodeVO") @Valid MapCodeVO mapCodeVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+    	    mapCodeVo.setEnt_user_id(member.getUserId());
+
+            if (vanDocuService.insertMapCode(mapCodeVo)) {
+                System.out.println("MapCode Create success");
+                result.setResultCode("S000");
+                result.setResultMsg("MapCode creation successful.");
+            } else {
+                System.out.println("chainCreate fail");
+                result.setResultCode("F000");
+                result.setResultMsg("MapCode creation Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("MapCode creation Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/updateMapCode", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO updateMapCode(@ModelAttribute("MapCodeVO") @Valid MapCodeVO mapCodeVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");            
+    	    mapCodeVo.setUpt_user_id(member.getUserId()); 
+
+            if (vanDocuService.updateMapCode(mapCodeVo)) {
+                System.out.println("Chain MapCode Update  success");
+                result.setResultCode("S000");
+                result.setResultMsg("MapCode Update successful.");
+            } else {
+                System.out.println("Chain MapCode Update  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("MapCode Update Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("MapCode Update Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
 
     @RequestMapping("list")    
     public @ResponseBody String list(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
@@ -315,6 +459,42 @@ public class VanDocuController {
             return result;
         }
         // return result;
+    }
+
+    @SuppressWarnings("deprecation")
+    @RequestMapping(value = "/uploadExcel", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO uploadExcel(@RequestParam("file") MultipartFile file) {
+        ReturnDataVO result = new ReturnDataVO();
+        List<List<String>> data = new ArrayList<>();
+        try {
+            if (file.isEmpty()) {
+                result.setResultCode("F000");
+                result.setResultMsg("File is empty.");
+                return result;
+            }
+
+            Workbook workbook = new XSSFWorkbook(file.getInputStream());
+            Sheet sheet = workbook.getSheetAt(0);
+
+            for (Row row : sheet) {
+                List<String> rowData = new ArrayList<>();
+                for (Cell cell : row) {
+                    cell.setCellType(CellType.STRING);
+                    rowData.add(cell.getStringCellValue());
+                }
+                data.add(rowData);
+            }
+            workbook.close();
+
+            result.setResultCode("S000");
+            result.setResultMsg("File processed successfully.");
+            result.setData(data);
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("An error occurred while processing the file: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return result;
     }
 }
 

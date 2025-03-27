@@ -20,8 +20,8 @@
           codeSetting('AGENCY_NO', data.data, '#sch_agency_no', '1', '', ''); 
         }
 
-        callAjax('/common/totalCodelist', "code_grp_cd=('CARD_ACQ')", fn_van_cd_setting);      
-        function fn_van_cd_setting(data) {
+        callAjax('/common/totalCodelist', "code_grp_cd=('CARD_ACQ')", fn_cardAcq_setting);      
+        function fn_cardAcq_setting(data) {
           codeSetting('CARD_ACQ', data.data, '#sch_card_acq', '1', '', '');
         } 
 
@@ -468,6 +468,10 @@
           if (triggerElement) {
             $(triggerElement).focus();
           }
+          
+          tbl_chain_summ.ajax.reload();
+          tbl_chain_docu_summ.ajax.reload();
+          tbl_docu_list.ajax.reload();
           return true; // 모달 닫기 허용
         });
 
@@ -510,50 +514,7 @@
             <div class="col-lg-2 align-self-center">
               <h4 class="mb-0">승인전문 관리</h4>
             </div>            
-            <div class="col-lg-10">
-              <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
-                <div class="row mb-1">  
-                  <div class="col-sm-4">
-                    <div class="input-group">
-                      <div class="input-group input-group-sm mb-1 me-1">
-                        <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_birth_dt">승인일</label>
-                        <div class="col-sm-4">
-                          <input class="form-control form-control-sm " id="sch_conf_sdt" type="text" name="sch_conf_sdt" istyle="date" maxlength="10" required />
-                        </div>   
-                        <span class="input-group-text">~</span>
-                        <div class="col-sm-4">
-                          <input class="form-control form-control-sm" id="sch_conf_edt" type="text" name="sch_conf_edt" istyle="date" maxlength="10" required />
-                        </div>   
-                      </div> 
-                    </div>
-                  </div>
-                  <div class="col-sm-8">
-                    <div class="input-group input-group-sm mb-1">
-                      <select class="form-select form-control-sm me-1" id="sch_agency_no" name="sch_agency_no" style="width: 75px">
-                        <option value="">대리점</option>
-                      </select>
-                      <select class="form-select form-control-sm me-1" id="sch_card_acq" name="sch_card_acq" style="width: 75px">
-                        <option value="">카드사</option>
-                      </select>
-                      <select class="form-select form-control-sm me-1" id="schgb_conf" name="schgb_conf" style="width: 75px">
-                        <option value="">승인 정보</option>
-                        <option value="schgb_conf_no">승인 번호</option>
-                        <option value="schgb_card_no">카드 번호</option>
-                        <option value="schgb_conf_amt">승인 금액</option>
-                      </select>
-                      <input type="text" class="form-control form-control-sm me-1" id="schgb_conf_val" name="schgb_conf_val" style="width:150px" />
-                      <select class="form-select form-control-sm me-1" id="schgb_chain" name="schgb_chain" style="width: 75px">
-                        <option value="">가맹점 정보</option>
-                        <option value="schgb_chain_nm">가맹점 명</option>
-                        <option value="schgb_biz_no">사업자 번호</option>
-                      </select>
-                      <input type="text" class="form-control form-control-sm me-1" id="schgb_chain_val" name="schgb_chain_val" style="width:150px" />
-                      <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
-                    </div>
-                  </div> 
-                </div> 
-              </form>
-            </div>
+            
           </div>          
         </div>
       </div>
