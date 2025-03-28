@@ -117,78 +117,23 @@
             zeroRecords: '일치하는 데이터가 없습니다.',
             loadingRecords: '로딩중...',
             processing: '처리중...',
-          },          
+          }, 
           footerCallback: function (row, data, start, end, display) {
             var api = this.api();
-    
-            // Helper function to sum column data
             var intVal = function (i) {
-              return typeof i === 'string'
-                ? i.replace(/[\$,]/g, '') * 1
-                : typeof i === 'number'
-                ? i
-                : 0;
+              return typeof i === 'string' ? i.replace(/[\$,]/g, '') * 1 : typeof i === 'number' ? i : 0;
             };
-    
-            // Calculate totals for each column
-            var confCntTotal = api
-              .column(2)
-              .data()
-              .reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-              }, 0);
-    
-            var confAmtTotal = api
-              .column(3)
-              .data()
-              .reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-              }, 0);
-    
-            var cnclCntTotal = api
-              .column(4)
-              .data()
-              .reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-              }, 0);
-    
-            var cnclAmtTotal = api
-              .column(5)
-              .data()
-              .reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-              }, 0);
-    
-            var totCntTotal = api
-              .column(6)
-              .data()
-              .reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-              }, 0);
-    
-            var totAmtTotal = api
-              .column(7)
-              .data()
-              .reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-              }, 0);
-    
-            var errorCntTotal = api
-              .column(8)
-              .data()
-              .reduce(function (a, b) {
-                return intVal(a) + intVal(b);
-              }, 0);
-    
-            // Update footer with totals
-            $(api.column(2).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(confCntTotal));
-            $(api.column(3).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(confAmtTotal));
-            $(api.column(4).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(cnclCntTotal));
-            $(api.column(5).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(cnclAmtTotal));
-            $(api.column(6).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(totCntTotal));
-            $(api.column(7).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(totAmtTotal));
-            $(api.column(8).footer()).html($.fn.dataTable.render.number(',', '.', 0, '').display(errorCntTotal));
-          },
+            var totals = [2, 3, 4, 5, 6, 7, 8].map(colIdx =>
+              api.column(colIdx).data().reduce((a, b) => intVal(a) + intVal(b), 0)
+            );
+
+            [2, 3, 4, 5, 6, 7, 8].forEach((colIdx, i) => {
+              var footer = api.column(colIdx).footer();
+              if (footer) {  // 🚀 undefined 방지
+                $(footer).html($.fn.dataTable.render.number(',', '.', 0, '').display(totals[i]));
+              }
+            });
+          },          
         });  
  
         $('#tbl_chain_summ').on('click', 'tr', function (e) {
@@ -514,7 +459,50 @@
             <div class="col-lg-2 align-self-center">
               <h4 class="mb-0">승인전문 관리</h4>
             </div>            
-            
+            <div class="col-lg-10">
+              <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
+                <div class="row mb-1">  
+                  <div class="col-sm-4">
+                    <div class="input-group">
+                      <div class="input-group input-group-sm mb-1 me-1">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_birth_dt">승인일</label>
+                        <div class="col-sm-4">
+                          <input class="form-control form-control-sm " id="sch_conf_sdt" type="text" name="sch_conf_sdt" istyle="date" maxlength="10" required />
+                        </div>   
+                        <span class="input-group-text">~</span>
+                        <div class="col-sm-4">
+                          <input class="form-control form-control-sm" id="sch_conf_edt" type="text" name="sch_conf_edt" istyle="date" maxlength="10" required />
+                        </div>   
+                      </div> 
+                    </div>
+                  </div>
+                  <div class="col-sm-8">
+                    <div class="input-group input-group-sm mb-1">
+                      <select class="form-select form-control-sm me-1" id="sch_agency_no" name="sch_agency_no" style="width: 75px">
+                        <option value="">대리점</option>
+                      </select>
+                      <select class="form-select form-control-sm me-1" id="sch_card_acq" name="sch_card_acq" style="width: 75px">
+                        <option value="">카드사</option>
+                      </select>
+                      <select class="form-select form-control-sm me-1" id="schgb_conf" name="schgb_conf" style="width: 75px">
+                        <option value="">승인 정보</option>
+                        <option value="schgb_conf_no">승인 번호</option>
+                        <option value="schgb_card_no">카드 번호</option>
+                        <option value="schgb_conf_amt">승인 금액</option>
+                      </select>
+                      <input type="text" class="form-control form-control-sm me-1" id="schgb_conf_val" name="schgb_conf_val" style="width:150px" />
+                      <select class="form-select form-control-sm me-1" id="schgb_chain" name="schgb_chain" style="width: 75px">
+                        <option value="">가맹점 정보</option>
+                        <option value="schgb_chain_nm">가맹점 명</option>
+                        <option value="schgb_biz_no">사업자 번호</option>
+                      </select>
+                      <input type="text" class="form-control form-control-sm me-1" id="schgb_chain_val" name="schgb_chain_val" style="width:150px" />
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
+                    </div>
+                  </div> 
+                </div> 
+              </form>
+            </div>
           </div>          
         </div>
       </div>
