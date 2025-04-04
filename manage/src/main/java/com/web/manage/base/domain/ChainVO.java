@@ -60,10 +60,10 @@ public class ChainVO {
     private String cont_dt;
     private String svc_start_dt;
     private String svc_end_dt;
-    private String crd_rate;
+    private String crd_fee_rate;
     private String crd_delay_rate;
-    private String svc_rate;
-    private String etc_rate;
+    private String svc_fee_rate;
+    private String etc_fee_rate;
     private String tot_limit_amt;
     private String unit_limit_amt;
     private String day_use_rate;

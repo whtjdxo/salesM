@@ -216,10 +216,10 @@
             $('#svc_end_dt').val(data.svc_end_dt);
 
 
-            $('#crd_rate').val(data.crd_rate);
+            $('#crd_fee_rate').val(data.crd_fee_rate);
             $('#crd_delay_rate').val(data.crd_delay_rate);
-            $('#svc_rate').val(data.svc_rate);
-            $('#etc_rate').val(data.etc_rate);
+            $('#svc_fee_rate').val(data.svc_fee_rate);
+            $('#etc_fee_rate').val(data.etc_fee_rate);
             $('#day_use_rate').val(data.day_use_rate);
             $('#day_use_amt').val(data.day_use_amt); 
             $('#tot_limit_amt').val(data.tot_limit_amt);
@@ -1377,10 +1377,10 @@
                     <div class="row mb-1">
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_rate">정산 수수료</label>  
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_fee_rate">정산 수수료</label>  
                           <div class="col-sm-8">
                             <div class="input-group">
-                              <input class="form-control form-control-sm text-end" id="svc_rate" type="text" name="svc_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <input class="form-control form-control-sm text-end" id="svc_fee_rate" type="text" name="svc_fee_rate" placeholder="00.0" istyle="float" maxlength="4" required />
                               <span class="input-group-text">%</span>
                             </div>
                           </div>         
@@ -1388,10 +1388,10 @@
                       </div>
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="etc_rate">기타 수수료</label>  
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="etc_fee_rate">기타 수수료</label>  
                           <div class="col-sm-8">
                             <div class="input-group">
-                              <input class="form-control form-control-sm text-end" id="etc_rate" type="text" name="etc_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <input class="form-control form-control-sm text-end" id="etc_fee_rate" type="text" name="etc_fee_rate" placeholder="00.0" istyle="float" maxlength="4" required />
                               <span class="input-group-text">%</span>
                             </div>
                           </div>
@@ -1401,10 +1401,10 @@
                     <div class="row mb-1">
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_rate">여신 수수료</label>  
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_fee_rate">여신 수수료</label>  
                           <div class="col-sm-8">
                             <div class="input-group">
-                              <input class="form-control form-control-sm text-end" id="crd_rate" type="text" name="crd_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <input class="form-control form-control-sm text-end" id="crd_fee_rate" type="text" name="crd_fee_rate" placeholder="00.0" istyle="float" maxlength="4" required />
                               <span class="input-group-text">%</span>
                             </div>
                           </div>         

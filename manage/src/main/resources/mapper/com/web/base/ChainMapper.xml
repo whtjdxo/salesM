@@ -71,10 +71,10 @@
                 , IFNULL(TC.CONT_DT, '')            AS  cont_dt
                 , IFNULL(TC.SVC_START_DT, '')       AS  svc_start_dt
                 , IFNULL(TC.SVC_END_DT, '')         AS  svc_end_dt
-                , IFNULL(TC.CRD_RATE, 0)           AS  crd_rate
-                , IFNULL(TC.CRD_DELAY_RATE, 0)     AS  crd_delay_rate
-                , IFNULL(TC.SVC_RATE, 0)           AS  svc_rate
-                , IFNULL(TC.ETC_RATE, 0)           AS  etc_rate
+                , IFNULL(TC.CRD_FEE_RATE, 0)        AS  crd_fee_rate
+                , IFNULL(TC.CRD_DELAY_RATE, 0)      AS  crd_delay_rate
+                , IFNULL(TC.SVC_FEE_RATE, 0)        AS  svc_fee_rate
+                , IFNULL(TC.ETC_FEE_RATE, 0)        AS  etc_fee_rate
                 , IFNULL(TC.TOT_LIMIT_AMT, 0)      AS  tot_limit_amt
                 , IFNULL(TC.UNIT_LIMIT_AMT, 0)     AS  unit_limit_amt
                 , IFNULL(TC.DAY_USE_RATE, 0)       AS  day_use_rate
@@ -217,10 +217,10 @@
                 , SVC_STAT            = #{svc_stat}
                 , SVC_START_DT        = #{svc_start_dt}
                 , SVC_END_DT          = #{svc_end_dt}
-                , CRD_RATE            = #{crd_rate}
+                , CRD_FEE_RATE        = #{crd_fee_rate}
                 , CRD_DELAY_RATE      = #{crd_delay_rate}
-                , SVC_RATE            = #{svc_rate}
-                , ETC_RATE            = #{etc_rate}
+                , SVC_FEE_RATE        = #{svc_fee_rate}
+                , ETC_FEE_RATE        = #{etc_fee_rate}
                 , TOT_LIMIT_AMT       = #{tot_limit_amt}
                 , UNIT_LIMIT_AMT      = #{unit_limit_amt}
                 , DAY_USE_RATE        = #{day_use_rate}

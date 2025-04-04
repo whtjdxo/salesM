@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>Input Form</title>
+    <link rel="stylesheet" href="/css/custom-salesm.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h4 class="mb-3">Input Form</h4>
+      <form id="inputForm" name="inputForm">
+        <div class="row mb-2">
+          <div class="col-md-4">
+            <label for="cmRecordGb" class="form-label">식별코드</label>
+            <input type="text" class="form-control" id="cmRecordGb" name="cmRecordGb" maxlength="9" />
+          </div>
+          <div class="col-md-4">
+            <label for="cmCompCd" class="form-label">업체코드</label>
+            <input type="text" class="form-control" id="cmCompCd" name="cmCompCd" maxlength="8" />
+          </div>
+          <div class="col-md-4">
+            <label for="cmMsgCode" class="form-label">메시지코드</label>
+            <input type="text" class="form-control" id="cmMsgCode" name="cmMsgCode" maxlength="4" />
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-md-4">
+            <label for="cmWorkGb" class="form-label">업무구분코드</label>
+            <input type="text" class="form-control" id="cmWorkGb" name="cmWorkGb" maxlength="3" />
+          </div>
+          <div class="col-md-4">
+            <label for="cmSendCnt" class="form-label">송신횟수</label>
+            <input type="text" class="form-control" id="cmSendCnt" name="cmSendCnt" maxlength="1" />
+          </div>
+          <div class="col-md-4">
+            <label for="cmTransNo" class="form-label">전문번호</label>
+            <input type="number" class="form-control" id="cmTransNo" name="cmTransNo" maxlength="6" />
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-md-4">
+            <label for="cmTransDt" class="form-label">전송일자</label>
+            <input type="date" class="form-control" id="cmTransDt" name="cmTransDt" />
+          </div>
+          <div class="col-md-4">
+            <label for="cmTransTm" class="form-label">전송시간</label>
+            <input type="time" class="form-control" id="cmTransTm" name="cmTransTm" />
+          </div>
+          <div class="col-md-4">
+            <label for="cmBankCd3" class="form-label">은행코드3</label>
+            <input type="text" class="form-control" id="cmBankCd3" name="cmBankCd3" maxlength="3" />
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-md-4">
+            <label for="recordGb" class="form-label">식별코드2</label>
+            <input type="text" class="form-control" id="recordGb" name="recordGb" maxlength="1" />
+          </div>
+          <div class="col-md-4">
+            <label for="seq" class="form-label">처리순번</label>
+            <input type="number" class="form-control" id="seq" name="seq" maxlength="7" />
+          </div>
+          <div class="col-md-4">
+            <label for="accounNo" class="form-label">계좌번호</label>
+            <input type="text" class="form-control" id="accounNo" name="accounNo" maxlength="16" />
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-md-4">
+            <label for="reqGb" class="form-label">신청구분</label>
+            <input type="text" class="form-control" id="reqGb" name="reqGb" maxlength="1" />
+          </div>
+          <div class="col-md-4">
+            <label for="reqDt" class="form-label">신청일자</label>
+            <input type="date" class="form-control" id="reqDt" name="reqDt" />
+          </div>
+          <div class="col-md-4">
+            <label for="idChk" class="form-label">신원확인번호 체크</label>
+            <input type="text" class="form-control" id="idChk" name="idChk" maxlength="1" />
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-md-4">
+            <label for="idNo" class="form-label">신원확인번호</label>
+            <input type="text" class="form-control" id="idNo" name="idNo" maxlength="13" />
+          </div>
+          <div class="col-md-4">
+            <label for="payerNo" class="form-label">납부자번호</label>
+            <input type="text" class="form-control" id="payerNo" name="payerNo" maxlength="20" />
+          </div>
+          <div class="col-md-4">
+            <label for="bankCd3" class="form-label">은행코드3</label>
+            <input type="text" class="form-control" id="bankCd3" name="bankCd3" maxlength="3" />
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-md-4">
+            <label for="depositorGb" class="form-label">예금주실명번호 종류</label>
+            <input type="text" class="form-control" id="depositorGb" name="depositorGb" maxlength="1" />
+          </div>
+          <div class="col-md-4">
+            <label for="agreeFileGb" class="form-label">동의자료구분</label>
+            <input type="text" class="form-control" id="agreeFileGb" name="agreeFileGb" maxlength="1" />
+          </div>
+          <div class="col-md-4">
+            <label for="fileExtNm" class="form-label">확장자명</label>
+            <input type="text" class="form-control" id="fileExtNm" name="fileExtNm" maxlength="4" />
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-md-4">
+            <label for="fileSize" class="form-label">증빙자료크기</label>
+            <input type="number" class="form-control" id="fileSize" name="fileSize" maxlength="7" />
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+  </body>
+</html>

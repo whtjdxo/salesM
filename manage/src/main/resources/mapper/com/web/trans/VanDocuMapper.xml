@@ -367,7 +367,6 @@
                         , T1.CNCL_TIME                          AS cncl_time
                         , CASE WHEN T1.PROC_FG = 'Y' THEN '사전정산' ELSE '대기중' END  AS proc_fg_nm
                         , T1.PROC_DATE                          AS proc_date
-                        , T1.PROC_TIME                          AS proc_time
                         , T1.PROC_RESULT                        AS proc_result
                         , T1.SC_SEQ                             AS sc_seq
                         , IFNULL(GET_CODE_NM('WD_STATUS', W.WD_STATUS), '미정산')               AS wd_status_nm
