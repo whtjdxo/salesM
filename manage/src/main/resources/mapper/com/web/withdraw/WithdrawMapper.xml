@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.web.manage.withdraw.mapper.WithdrawMapper">
+
+	<select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select>
+  
+    <select id="getWDSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+            SELECT  SQL_CALC_FOUND_ROWS
+                    WD.CHAIN_NO                     AS chain_no
+                    , TC.CHAIN_NM                   AS chain_nm
+                    , WD.WORK_DATE                  AS work_date
+                    , IFNULL(SUM( CASE  WHEN WD.WD_STATUS = 'W00000' THEN 1  ELSE NULL END ),0) AS RCOUNT 				 
+                    , IFNULL(SUM( CASE  WHEN WD.WD_STATUS = 'W00000' THEN NULL  ELSE 1 END ),0) AS ERRCOUNT             
+                    , IFNULL(SUM( CASE  WHEN WD.WD_STATUS = 'W00000' THEN WD.CONF_AMT  ELSE NULL END ),0) AS RESV_AMT 	 
+                    , IFNULL(SUM( CASE  WHEN WD.WD_STATUS = 'W00000' THEN NULL  ELSE WD.CONF_AMT END ),0) AS UNRESV_AMT
+                    , COUNT(1) OVER () AS TOTALCOUNT	
+                    -- , TC.OUT_STAT 
+            FROM  TB_WITHDRAW WD
+                    JOIN TB_CHAIN TC ON TC.CHAIN_NO = WD.CHAIN_NO
+            WHERE  WD.WD_STATUS  LIKE 'W%'
+                AND  WD.USE_YN = 'Y'
+            GROUP	BY WD.CHAIN_NO, TC.CHAIN_NM, WD.WORK_DATE    
+                    
+            <choose>
+                    <when test="sidx != ''">
+                            ORDER BY ${sidx} ${sord}
+                    </when>
+                    <otherwise>
+                            ORDER BY 1
+                    </otherwise>
+            </choose>                
+            LIMIT  ${start}, ${end}
+    </select> 
+
+    <update id="callScrapTransDeliDocu" parameterType="com.web.manage.trans.domain.TransProcessVO" statementType="CALLABLE">
+            { 
+                    CALL PRC_SCRAP_TRANS_DELI_DOCU(
+                            #{chainNo, mode=IN, jdbcType=VARCHAR}
+                            , #{userId, mode=IN, jdbcType=VARCHAR}
+                            , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                            , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+                    ) 
+            }
+    </update>
+
+</mapper>

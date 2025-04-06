@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.web.manage.withdraw.mapper.SubtractMapper"> 
+        <select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select>     
+
+        <select id="getSubSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
+                SELECT  SQL_CALC_FOUND_ROWS
+                        TC.CHAIN_NO                     AS chain_no
+                        , TC.CHAIN_NM                   AS chain_nm
+                        , IFNULL(SM.MIN_REG_DATE, DATE_FORMAT(NOW(), '%Y-%m-%d'))               AS min_reg_date
+                        , IFNULL(SM.MAX_REG_DATE, DATE_FORMAT(NOW(), '%Y-%m-%d'))               AS max_reg_date
+                        , IFNULL(OCCUR_AMT, 0)  	AS occur_amt
+                        , IFNULL(OCCUR_BASE_AMT, 0) 	AS occur_base_amt
+                        , IFNULL(OCCUR_SVC_AMT, 0) 	AS occur_svc_amt
+                        , IFNULL(OCCUR_CRD_AMT, 0) 	AS occur_crd_amt
+                        , IFNULL(RECV_AMT, 0) 	        AS recv_amt                        
+                        , IFNULL(RECV_BASE_AMT, 0) 	AS recv_base_amt
+                        , IFNULL(RECV_SVC_AMT, 0) 	AS recv_svc_amt
+                        , IFNULL(RECV_CRD_AMT, 0) 	AS recv_crd_amt
+                        , IFNULL(REMAIN_AMT, 0) 	AS remain_amt
+                        , IFNULL(REMAIN_BASE_AMT, 0) 	AS remain_base_amt
+                        , IFNULL(REMAIN_SVC_AMT, 0) 	AS remain_svc_amt
+                        , IFNULL(REMAIN_CRD_AMT, 0) 	AS remain_crd_amt
+                FROM	TB_CHAIN TC  
+                        LEFT OUTER JOIN (        
+                                SELECT	SM.CHAIN_NO
+                                        , MIN(REG_DATE) 	        AS MIN_REG_DATE
+                                        , MAX(REG_DATE) 	        AS MAX_REG_DATE
+                                        , SUM(SM.OCCUR_AMT) 		AS OCCUR_AMT
+                                        , SUM(SM.OCCUR_BASE_AMT) 	AS OCCUR_BASE_AMT
+                                        , SUM(SM.OCCUR_SVC_AMT) 	AS OCCUR_SVC_AMT
+                                        , SUM(SM.OCCUR_CRD_AMT) 	AS OCCUR_CRD_AMT
+                                        , SUM(SM.RECV_AMT) 	        AS RECV_AMT
+                                        , SUM(SM.RECV_BASE_AMT) 	AS RECV_BASE_AMT
+                                        , SUM(SM.RECV_SVC_AMT) 	        AS RECV_SVC_AMT
+                                        , SUM(SM.RECV_CRD_AMT) 	        AS RECV_CRD_AMT
+                                        , SUM(SM.REMAIN_AMT) 	        AS REMAIN_AMT
+                                        , SUM(SM.REMAIN_BASE_AMT) 	AS REMAIN_BASE_AMT
+                                        , SUM(SM.REMAIN_SVC_AMT) 	AS REMAIN_SVC_AMT
+                                        , SUM(SM.REMAIN_CRD_AMT) 	AS REMAIN_CRD_AMT    
+                                  FROM 	TB_SUB_MST SM
+                                 WHERE  SM.USE_YN = 'Y'
+                                   AND	SUB_STATUS IN ('000000', '100000', '900000')
+                        <!-- <if test="sch_reg_sdt != ''">
+                                AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
+                        </if>
+                        <if test="sch_reg_edt != ''">
+                                AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
+                        </if>
+                        <if test="sch_sub_type != ''">
+                                AND  SM.SUB_TYPE = #{sch_sub_type} 
+                        </if>
+                        <if test="sch_sub_code != ''">
+                                AND  SM.SUB_CODE = #{sch_sub_code} 
+                        </if>
+                        <if test="sch_sub_status != ''">
+                                AND  SM.SUB_STATUS = #{sch_sub_status} 
+                        </if>  -->
+                                 GROUP 	BY SM.CHAIN_NO
+                        ) SM ON SM.CHAIN_NO = TC.CHAIN_NO
+                 WHERE	TC.USE_YN = 'Y'         
+                   AND  TC.SVC_STAT IN ('O', 'R')
+                   <if test="sch_chain_nm != ''">                   
+                        AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                   </if>                        
+                <choose>
+                        <when test="sidx != ''">
+                                ORDER BY ${sidx} ${sord}
+                        </when>
+                        <otherwise>
+                                ORDER BY 1
+                        </otherwise>
+                </choose>                
+                LIMIT  ${start}, ${end}
+        </select>
+
+        <select id="getChainSubList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT  SQL_CALC_FOUND_ROWS
+                        SM.SUB_NO                                       AS sub_no
+                        , SM.CHAIN_NO                                   AS chain_no       
+                        , SM.SUB_STATUS                                 AS sub_status        
+                        , GET_CODE_NM('SUB_STATUS', SM.SUB_STATUS) 	AS sub_status_nm
+                        , SM.CHAIN_NO                                   AS chain_no    
+                        , TC.CHAIN_NM			                AS chain_nm
+                        , GET_CODE_NM('SVC_STAT', TC.SVC_STAT)          AS svc_stat_nm
+                        , SM.REG_DATE                   AS reg_date
+                        , SM.SUB_TYPE                   AS sub_type    
+                        , GET_CODE_NM('SUB_TYPE', SM.SUB_TYPE) 	        AS sub_type_nm
+                        , SM.SUB_CODE                   AS sub_code
+                        , GET_CODE_NM('SUB_CODE', SM.SUB_CODE) 	        AS sub_code_nm
+                        , SM.RECV_SEQ                   AS recv_seq
+                        , SM.SUB_MEMO                   AS sub_memo
+                        , SM.SHIFT_FLAG                 AS shift_flag
+                        , SM.CHAIN_SEQ                  AS chain_seq       
+                        , SM.REQ_SEQ                    AS req_seq
+                        , SM.LOAN_BIZ_NO                AS loan_biz_no
+                        , SM.OCCUR_AMT                  AS occur_amt
+                        , SM.OCCUR_BASE_AMT             AS occur_base_amt
+                        , SM.OCCUR_SVC_AMT              AS occur_svc_amt                
+                        , SM.OCCUR_CRD_AMT              AS occur_crd_amt
+                        , SM.RECV_AMT                   AS recv_amt
+                        , SM.RECV_BASE_AMT              AS recv_base_amt
+                        , SM.RECV_SVC_AMT               AS recv_svc_amt 
+                        , SM.RECV_CRD_AMT               AS recv_crd_amt
+                        , SM.REMAIN_AMT                 AS remain_amt      
+                        , SM.REMAIN_BASE_AMT            AS remain_base_amt       
+                        , SM.REMAIN_SVC_AMT             AS remain_svc_amt 
+                        , SM.REMAIN_CRD_AMT             AS remain_crd_amt
+                        , SM.DOCU_SEQ                   AS docu_seq
+                        , SM.WD_SEQ                     AS wd_seq
+                        , SM.REMIT_SEQ                  AS remit_seq
+                        , SM.ADJUST_SEQ                 AS adjust_seq
+                        , SM.USE_YN                     AS use_yn
+                        , DATE_FORMAT(IFNULL(SM.UPT_DTTM, SM.ENT_DTTM), '%%% %%%')      AS upt_dttm
+                        , IFNULL(SM.UPT_USER_ID, SM.ENT_USER_ID) 		        AS upt_user_id
+                FROM 	TB_SUB_MST SM
+                                JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
+                                                AND TC.USE_YN  = 'Y'
+                WHERE	SM.USE_YN = 'Y'          
+                  AND   SM.CHAIN_NO =  #{chainNo}
+                <if test="sch_reg_sdt != ''">
+                        AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
+                </if>
+                <if test="sch_reg_edt != ''">
+                        AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
+                </if>
+                <if test="sch_sub_type != ''">
+                        AND  SM.SUB_TYPE = #{sch_sub_type} 
+                </if>
+                <if test="sch_sub_code != ''">
+                        AND  SM.SUB_CODE = #{sch_sub_code} 
+                </if>
+                <if test="sch_sub_status != ''">
+                        AND  SM.SUB_STATUS = #{sch_sub_status} 
+                </if>                 
+                <choose>
+                        <when test="sidx != ''">
+                                ORDER BY ${sidx} ${sord}
+                        </when>
+                        <otherwise>
+                                ORDER BY 1 desc
+                        </otherwise>
+                </choose>                
+                LIMIT  ${start}, ${end}
+        </select> 
+
+         <select id="getNewSubNo" resultType="java.lang.String">
+	    /* SubtractMapper.getNewSubNo */
+		SELECT GET_JOB_SEQ('TB_SUB_MST', 'SUB_NO')
+	</select>
+
+        <insert id="insertSubMst" parameterType="com.web.manage.withdraw.domain.SubMstVO">
+                INSERT INTO TB_SUB_MST (
+                        SUB_NO                  , CHAIN_NO              , REG_DATE      
+                        , SUB_TYPE              , SUB_STATUS            , SUB_CODE      
+                        , CHAIN_SEQ             , REQ_SEQ               , LOAN_BIZ_NO
+                        , OCCUR_AMT             , OCCUR_BASE_AMT        , OCCUR_SVC_AMT         , OCCUR_CRD_AMT
+                        , RECV_AMT              , RECV_BASE_AMT         , RECV_SVC_AMT          , RECV_CRD_AMT
+                        , REMAIN_AMT            , REMAIN_BASE_AMT       , REMAIN_SVC_AMT        , REMAIN_CRD_AMT                        
+                        , USE_YN                , ENT_USER_ID           , ENT_DTTM       
+                )  VALUES  (
+                        #{sub_no}               , #{chain_no}           , #{reg_date}
+                        , #{sub_type}           , #{sub_status}         , #{sub_code}           
+                        , #{chain_seq}          , #{req_seq}            , #{loan_biz_no}
+                        , #{occur_amt}          , #{occur_base_amt}     , #{occur_svc_amt}      , #{occur_crd_amt}
+                        , #{recv_amt}           , #{recv_base_amt}      , #{recv_svc_amt}       , #{recv_crd_amt}
+                        , #{remain_amt}         , #{remain_base_amt}    , #{remain_svc_amt}     , #{remain_crd_amt}
+                        , #{use_yn}             , #{ent_user_id}        , NOW()          
+                )                                
+	</insert>
+
+	<update id="updateSubMst" parameterType="com.web.manage.withdraw.domain.SubMstVO">
+                UPDATE TB_SUB_MST
+                   SET 
+                        REG_DATE        = #{reg_date},
+                        SUB_TYPE        = #{sub_type},
+                        SUB_STATUS      = #{sub_status},
+                        SUB_CODE        = #{sub_code},
+                        CHAIN_SEQ       = #{chain_seq},
+                        REQ_SEQ         = #{req_seq},
+                        LOAN_BIZ_NO     = #{loan_biz_no},
+                        OCCUR_AMT       = #{occur_amt},
+                        OCCUR_BASE_AMT  = #{occur_base_amt},
+                        OCCUR_SVC_AMT   = #{occur_svc_amt},
+                        OCCUR_CRD_AMT   = #{occur_crd_amt},
+                        RECV_AMT        = #{recv_amt},
+                        RECV_BASE_AMT   = #{recv_base_amt},
+                        RECV_SVC_AMT    = #{recv_svc_amt},
+                        RECV_CRD_AMT    = #{recv_crd_amt},
+                        REMAIN_AMT      = #{remain_amt},
+                        REMAIN_BASE_AMT = #{remain_base_amt},
+                        REMAIN_SVC_AMT  = #{remain_svc_amt},
+                        REMAIN_CRD_AMT  = #{remain_crd_amt},
+                        USE_YN          = #{use_yn},
+                        UPT_USER_ID     = #{upt_user_id},
+                        UPT_DTTM        = NOW()
+                WHERE   SUB_NO  = #{sub_no};
+	</update>
+
+        <update id="callScrapTransDeliDocu" parameterType="com.web.manage.trans.domain.TransProcessVO" statementType="CALLABLE">
+                { 
+                        CALL PRC_SCRAP_TRANS_DELI_DOCU(
+                                #{chainNo, mode=IN, jdbcType=VARCHAR}
+                                , #{userId, mode=IN, jdbcType=VARCHAR}
+                                , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                                , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+                        ) 
+                }
+        </update>
+
+</mapper>
