@@ -90,12 +90,7 @@
                         , GET_CODE_NM('SUB_TYPE', SM.SUB_TYPE) 	        AS sub_type_nm
                         , SM.SUB_CODE                   AS sub_code
                         , GET_CODE_NM('SUB_CODE', SM.SUB_CODE) 	        AS sub_code_nm
-                        , SM.RECV_SEQ                   AS recv_seq
-                        , SM.SUB_MEMO                   AS sub_memo
-                        , SM.SHIFT_FLAG                 AS shift_flag
-                        , SM.CHAIN_SEQ                  AS chain_seq       
-                        , SM.REQ_SEQ                    AS req_seq
-                        , SM.LOAN_BIZ_NO                AS loan_biz_no
+                        , SM.SUB_MEMO                   AS sub_memo                        
                         , SM.OCCUR_AMT                  AS occur_amt
                         , SM.OCCUR_BASE_AMT             AS occur_base_amt
                         , SM.OCCUR_SVC_AMT              AS occur_svc_amt                
@@ -108,18 +103,20 @@
                         , SM.REMAIN_BASE_AMT            AS remain_base_amt       
                         , SM.REMAIN_SVC_AMT             AS remain_svc_amt 
                         , SM.REMAIN_CRD_AMT             AS remain_crd_amt
-                        , SM.DOCU_SEQ                   AS docu_seq
-                        , SM.WD_SEQ                     AS wd_seq
-                        , SM.REMIT_SEQ                  AS remit_seq
-                        , SM.ADJUST_SEQ                 AS adjust_seq
+                        , SM.SHIFT_FLAG                 AS shift_flag
+                        , SM.SHIFT_SUB_NO               AS shift_sub_no                         
+                        , SM.LOAN_NO                    AS loan_no
+                        , SM.LOAN_SCHD_SEQ              AS loan_schd_seq
+                        , SM.ADJUST_NO                  AS adjust_no
+                        , SM.REMIT_NO                   AS remit_no
                         , SM.USE_YN                     AS use_yn
-                        , DATE_FORMAT(IFNULL(SM.UPT_DTTM, SM.ENT_DTTM), '%%% %%%')      AS upt_dttm
+                        , DATE_FORMAT(IFNULL(SM.UPT_DTTM, SM.ENT_DTTM), '%Y-%m-%d %H:%i:%s')      AS upt_dttm
                         , IFNULL(SM.UPT_USER_ID, SM.ENT_USER_ID) 		        AS upt_user_id
                 FROM 	TB_SUB_MST SM
                                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
                                                 AND TC.USE_YN  = 'Y'
                 WHERE	SM.USE_YN = 'Y'          
-                  AND   SM.CHAIN_NO =  #{chainNo}
+                  AND   SM.CHAIN_NO =  #{sch_chain_no}
                 <if test="sch_reg_sdt != ''">
                         AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
                 </if>
@@ -154,16 +151,14 @@
         <insert id="insertSubMst" parameterType="com.web.manage.withdraw.domain.SubMstVO">
                 INSERT INTO TB_SUB_MST (
                         SUB_NO                  , CHAIN_NO              , REG_DATE      
-                        , SUB_TYPE              , SUB_STATUS            , SUB_CODE      
-                        , CHAIN_SEQ             , REQ_SEQ               , LOAN_BIZ_NO
+                        , SUB_TYPE              , SUB_STATUS            , SUB_CODE              , SUB_MEMO                            
                         , OCCUR_AMT             , OCCUR_BASE_AMT        , OCCUR_SVC_AMT         , OCCUR_CRD_AMT
                         , RECV_AMT              , RECV_BASE_AMT         , RECV_SVC_AMT          , RECV_CRD_AMT
                         , REMAIN_AMT            , REMAIN_BASE_AMT       , REMAIN_SVC_AMT        , REMAIN_CRD_AMT                        
                         , USE_YN                , ENT_USER_ID           , ENT_DTTM       
                 )  VALUES  (
                         #{sub_no}               , #{chain_no}           , #{reg_date}
-                        , #{sub_type}           , #{sub_status}         , #{sub_code}           
-                        , #{chain_seq}          , #{req_seq}            , #{loan_biz_no}
+                        , #{sub_type}           , #{sub_status}         , #{sub_code}           , #{sub_memo}
                         , #{occur_amt}          , #{occur_base_amt}     , #{occur_svc_amt}      , #{occur_crd_amt}
                         , #{recv_amt}           , #{recv_base_amt}      , #{recv_svc_amt}       , #{recv_crd_amt}
                         , #{remain_amt}         , #{remain_base_amt}    , #{remain_svc_amt}     , #{remain_crd_amt}
@@ -175,12 +170,10 @@
                 UPDATE TB_SUB_MST
                    SET 
                         REG_DATE        = #{reg_date},
-                        SUB_TYPE        = #{sub_type},
-                        SUB_STATUS      = #{sub_status},
+                        SUB_TYPE        = #{sub_type},                        
                         SUB_CODE        = #{sub_code},
-                        CHAIN_SEQ       = #{chain_seq},
-                        REQ_SEQ         = #{req_seq},
-                        LOAN_BIZ_NO     = #{loan_biz_no},
+                        SUB_STATUS      = #{sub_status},
+                        SUB_MEMO        = #{sub_memo},
                         OCCUR_AMT       = #{occur_amt},
                         OCCUR_BASE_AMT  = #{occur_base_amt},
                         OCCUR_SVC_AMT   = #{occur_svc_amt},
@@ -192,7 +185,7 @@
                         REMAIN_AMT      = #{remain_amt},
                         REMAIN_BASE_AMT = #{remain_base_amt},
                         REMAIN_SVC_AMT  = #{remain_svc_amt},
-                        REMAIN_CRD_AMT  = #{remain_crd_amt},
+                        REMAIN_CRD_AMT  = #{remain_crd_amt},                        
                         USE_YN          = #{use_yn},
                         UPT_USER_ID     = #{upt_user_id},
                         UPT_DTTM        = NOW()

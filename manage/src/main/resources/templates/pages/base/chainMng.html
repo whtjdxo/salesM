@@ -97,8 +97,7 @@
         callAjax('/common/totalCodelist', "code_grp_cd=('FILE_GB')", fn_file_gb_setting);      
         function fn_file_gb_setting(data) {
           codeSetting('FILE_GB', data.data, '#file_gb', '1', '', '');
-        }
-        
+        }        
         var tbl_chain = $('#tbl_chain').DataTable({
           processing: true,
           serverSide: true,
@@ -166,7 +165,7 @@
           tbl_chain.ajax.reload();
         });
         
-        $('#tbl_chain').on('click', 'tr', function () {
+        $('#tbl_chain').on('click', 'tr', function () { 
           if ($(this).hasClass('selected')) {
             $(this).removeClass('selected');
           } else {
@@ -179,17 +178,18 @@
             $('#frm_cont_info')[0].reset();
             $('#frm_van_info')[0].reset();
             $('#frm_card_info')[0].reset();
+            $('#frm_link_chain')[0].reset();
             $('#frm_file_info')[0].reset();
             
             $('#corp_cd').val(data.corp_cd);              
             $('#agency_no').val(data.agency_no);    
-            $('#chain_no').val(data.chain_no);
-            
+            $('#chain_no').val(data.chain_no);            
             $('#cont_chain_no').val(data.chain_no);            
             $('#van_chain_no').val(data.chain_no);            
             $('#card_chain_no').val(data.chain_no);            
-            $('#file_chain_no').val(data.chain_no);
-                       
+            $('#link_org_chain_no').val(data.chain_no);
+            $('#file_chain_no').val(data.chain_no); 
+
             $('#chain_nm').val(data.chain_nm);
             $('#biz_no').val(data.biz_no);
             $('#upjong').val(data.upjong);            
@@ -273,11 +273,13 @@
               $('#knbank_info').hide();
               $('#abank_link_agree_dt').removeAttr("required");
               $('#abank_link_stat').removeAttr("required");
-            }            
+            }
+
             $('#crud').val('update'); 
             tbl_van.ajax.reload();   
             tbl_card.ajax.reload(); 
-            tbl_file.ajax.reload(); 
+            tbl_link_chain.ajax.reload();
+            tbl_file.ajax.reload();                         
           }  
         });      
 
@@ -680,7 +682,7 @@
             $('#frm_card_info')[0].reset();             
             $('#card_seq').val(data.card_seq);
             $('#card_chain_no').val(data.chain_no);
-            $('#card_acq').val(data.card_acq);
+            $('#card_acq').val(data.card_acq);        
             $('#card_reg_no').val(data.card_reg_no);
                    
             $('#depo_chk').val(data.depo_chk);       
@@ -827,7 +829,147 @@
             swal('실패', resultMsg, 'error');
           }
         }  
+        
+        // --------------------------------------------------------------- frm_link_chain 정보 처리 ---------------------------------------------------        
+        var tbl_link_chain = $('#tbl_link_chain').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true,           
+            ajax: {
+              url: '/base/organ/chainMng/linkChainList',
+              contentType: 'application/json',
+              dataType: 'JSON',
+              type: 'POST',
+              data: function (postData) {
+                formData = $('#frm_link_chain').serializeObject();
+                Object.assign(postData, formData);
+                return JSON.stringify(postData);
+              },
+            },
+            columns: [
+                  { data: 'link_chain_no' }
+                , { data: 'link_chain_nm' }
+                , { data: 'ceo_nm' }
+                , { data: 'chain_tel_no' }                
+              ],
+            columnDefs: [
+            { targets: 0, width: '120px', className: 'text-center' },
+            { targets: 1, width: '150px', className: 'text-center' },
+            { targets: 2, width: '90px', className: 'text-center' },
+            { targets: 3, width: '120px', className: 'text-center' },
+            ],
+            order: [[1, 'desc']],
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            responsive: true,
+            autoWidth: false,
+            scrollX: true ,
+            scrollCollapse: true,
+            pageLength: 10,
+            scrollY: '450px',
+            info: false,
+            language: {
+              emptyTable: '데이터가 없습니다.',
+              search: '검색:',
+              zeroRecords: '일치하는 데이터가 없습니다.',
+              loadingRecords: '로딩중...',
+              processing: '처리중...',
+            },
+          }); 
 
+        $('#tbl_link_chain').on('click', 'tr', function () {
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+          } else {
+            tbl_card.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }
+          var data = tbl_link_chain.row(this).data();
+          if (data) {
+            $('#frm_link_chain')[0].reset();  
+            $('#link_chain_no').val(data.link_chain_no);
+            $('#link_chain_nm').val(data.link_chain_nm);
+            $('#link_memo').val(data.memo);
+            $('#link_use_yn').val(data.use_yn); 
+            $('#link_upt_user_id').val(data.upt_user_id);
+            $('#link_upt_dttm').val(data.upt_dttm);   
+
+            $('#btn_link_update').show();
+            $('#btn_link_create').hide();            
+            $('#btn_link_dupchk').hide(); 
+          }  
+        });      
+
+        $('#btn_link_clear').click(function () {     
+          fn_frm_link_chain_clear(); 
+        });
+
+        function fn_frm_link_chain_clear(){
+          var link_org_chain_no = $('#link_org_chain_no').val(); 
+          $('#frm_link_chain')[0].reset();
+          $('#btn_link_update').hide();
+          $('#btn_link_create').show();           
+          $('#link_org_chain_no').val(link_org_chain_no);
+        }
+
+        $('#btn_link_create').click(function () {               
+          $('#crud').val('create');      
+          var form = $('#frm_link_info');
+          var checked = true;
+          var chain_no = $('#link_org_chain_no').val();
+          if(chain_no == '') {
+            swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          }
+
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          });          
+          if (checked) {
+            ConfirmdialogToAjax('create', '/base/organ/chainMng/insertLinkChain', $('#frm_link_chain').serialize(), fn_link_return_result);
+          } 
+        });
+
+        $('#btn_link_update').click(function () {
+          $('#crud').val('update');
+          var form = $('#frm_link_info');
+          var checked = true;           
+          var chain_no = $('#link_org_chain_no').val();
+          if(chain_no == '') {
+            swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          }
+
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          });
+          
+          if (checked) {
+            ConfirmdialogToAjax('update', '/base/organ/chainMng/updateLinkChain', $('#frm_link_chain').serialize(), fn_link_return_result);
+          }
+        });     
+
+        function fn_link_return_result(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg; 
+          if (resultCode == 'S000') {
+            fn_frm_link_info_clear();
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+            tbl_card.ajax.reload();                 
+          } else {
+            swal('실패', resultMsg, 'error');
+          }
+        }
+
+        // --------------------------------------------------------------- frm_file_info 정보 처리 ---------------------------------------------------
         var tbl_file = $('#tbl_file').DataTable({
             processing: true,
             serverSide: true,
@@ -985,7 +1127,7 @@
           var resultCode = data.resultCode;
           var resultMsg = data.resultMsg; 
           if (resultCode == 'S000') {
-            fn_frm_card_info_clear();
+            fn_frm_link_info_clear();
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
             tbl_card.ajax.reload();                 
           } else {
@@ -1046,6 +1188,98 @@
             }
           });
         });
+
+        $('#btn_help_chain').click(function () {
+          var selectedRow = tbl_chain.row('.selected').data();          
+          if (!selectedRow) {
+            swal('실패', '가맹점을 선택해주세요.', 'error');
+            return;
+          } 
+          $('#sch_help_chain_no').val(selectedRow.chain_no);  
+          $('#modal_help_chain').modal('show');
+        });
+        
+        $('#modal_help_chain').on('shown.bs.modal', function() {  
+          // 모달 열릴 때 첫 번째 포커스 가능 요소로 이동          
+          $(this).data('trigger-element', document.activeElement);
+          if ($.fn.DataTable.isDataTable('#tbl_help_chain')) {
+            $('#tbl_help_chain').DataTable().destroy();
+          }  
+          if ($('#tbl_help_chain').length) {
+            $('#tbl_help_chain').DataTable({ 
+                processing: true,
+                serverSide: true,
+                select: true,
+                ajax: {
+                  url: '/common/getLinkChainList',
+                  contentType: 'application/json',
+                  dataType: 'JSON',
+                  type: 'POST',
+                  data: function (postData) {
+                    formData = $('#frm_help_chain').serializeObject();
+                    Object.assign(postData, formData);
+                    return JSON.stringify(postData);
+                  },
+                },
+                columns: [
+                    { data: 'chain_nm' },
+                    { data: 'biz_no' },
+                    { data: 'ceo_nm' },
+                    { data: 'chain_tel_no' },  
+                ],
+                columnDefs: [
+                    { targets: 0, width: '100px', className: 'text-left' },
+                    { targets: 1, width: '120px', className: 'text-left' },
+                    { targets: 2, width: '200px', className: 'text-left' },
+                    { targets: 3, width: '100px', className: 'text-center' },
+                ],
+                order: [[1, 'desc']],
+                paging: true,
+                lengthChange: false,
+                searching: false,
+                ordering: true,
+                autoWidth: false,
+                responsive: true,
+                scrollCollapse: true,
+                pageLength: 10,
+                scrollY: '380px',
+                info: false,
+                language: {
+                  emptyTable: '데이터가 없습니다.',
+                  search: '검색:',
+                  zeroRecords: '일치하는 데이터가 없습니다.',
+                  loadingRecords: '로딩중...',
+                  processing: '처리중...',
+                },
+            });
+          } else {
+            console.error('tbl_help_chain 테이블을 찾을 수 없습니다.');
+          }
+           $(this).find('button:not([disabled]), input:not([disabled])').first().focus();           
+        }); 
+
+        $('#btn_search_chain').click(function () {
+          tbl_help_chain.ajax.reload();
+        });
+
+        $('#tbl_help_chain').on('click', 'tr', function () {
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+          } else {
+            $('#tbl_help_chain').find('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }
+        });
+
+        $('#tbl_help_chain').on('dblclick', 'tr', function () { 
+          var data = $('#tbl_help_chain').DataTable().row(this).data();
+          if (data) {
+            $('#link_chain_no').val(data.chain_no);
+            $('#link_chain_nm').val(data.chain_nm);
+            $('#modal_help_chain').modal('hide');
+          }
+        });
+         
       });
     </script>
   </head>
@@ -1128,6 +1362,7 @@
                 <li class="nav-item"><a class="nav-link" id="cont_info_tab" data-bs-toggle="tab" href="#tab_cont_info" role="tab" aria-controls="tab_cont_info" aria-selected="false">계약 정보</a></li>
                 <li class="nav-item"><a class="nav-link" id="van_info_tab" data-bs-toggle="tab" href="#tab_van_info" role="tab" aria-controls="tab_van_info" aria-selected="false">VAN 정보</a></li>
                 <li class="nav-item"><a class="nav-link" id="card_info_tab" data-bs-toggle="tab" href="#tab_card_info" role="tab" aria-controls="tab_card_info" aria-selected="false">매입 정보</a></li>
+                <li class="nav-item"><a class="nav-link" id="link_chain_tab" data-bs-toggle="tab" href="#tab_link_chain" role="tab" aria-controls="tab_link_chain" aria-selected="false">연관가맹점</a></li>
                 <li class="nav-item"><a class="nav-link" id="file_info_tab" data-bs-toggle="tab" href="#tab_file_info" role="tab" aria-controls="tab_file_info" aria-selected="false">파일 관리</a></li>
               </ul>
               <div class="tab-content border border-top-2 p-3" id="myTabContent">                
@@ -1161,7 +1396,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="chain_no">가맹점번호</label>                      
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="chain_no" type="text" name="chain_no" readonly="readonly" />
+                            <input class="form-control form-control-sm bg-light" id="chain_no" type="text" name="chain_no" readonly="readonly" />
                           </div>     
                         </div>
                       </div>
@@ -1938,6 +2173,79 @@
                     </div>
                   </form>  
                 </div>  
+
+                <!-- 연관가맹점점 정보 TAB ----------------------------------------------------------------------------------------------------------------- -->                               
+                <div class="tab-pane fade" id="tab_link_chain" role="tabpanel" aria-labelledby="link_chain_tab">                   
+                  <div class="row mb-0">
+                    <div class="table-responsive scrollbar">
+                      <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_link_chain">
+                        <thead>
+                          <tr>
+                                <th class="text-center" style="width: 120px;">가맹점 코드</th>
+                                <th class="text-center" style="width: 150px;">가맹점 명</th>
+                                <th class="text-center" style="width: 90px;">대표자 명</th>
+                                <th class="text-center" style="width: 120px;">연락처</th>                                
+                          </tr>
+                        </thead>
+                        <tbody class="list"></tbody>
+                      </table>
+                    </div>
+                  </div>                  
+                  <div class="mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">상세정보</div> 
+                  <form class="needs-validation" id="frm_link_chain" name="frm_link_chain" onsubmit="return false;" method="post" novalidate="">                     
+                    <div class="row mb-1">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-3 col-form-label col-form-label-sm" for="link_chain_no">연관가맹점</label>
+                        <div class="col-sm-9">
+                          <div class="input-group input-group-sm">
+                            <input class="form-control form-control-sm" id="link_org_chain_no" type="hidden" name="link_org_chain_no" />                            
+                            <input class="form-control form-control-sm" id="link_chain_no" type="hidden" name="link_chain_no" />                            
+                            <input class="form-control form-control-sm  bg-light" id="link_chain_nm" type="text" name="link_chain_nm" maxlength="20" readonly="readonly" required />
+                            <button type="button" class="btn btn-primary" id="btn_help_chain">찾기</button>
+                          </div>                            
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mb-1">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-3 col-form-label col-form-label-sm" for="link_memo">메 모</label>
+                        <div class="col-sm-9">
+                          <textarea class="form-control"  id="link_memo" rows="2" name="link_memo"></textarea> 
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mb-1">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-3 col-form-label col-form-label-sm" for="link_use_yn">운영 상태</label>
+                        <div class="col-sm-9">
+                          <select class="form-select form-select-sm" id="link_use_yn" name="link_use_yn" required>
+                            <option value="Y">운영</option>
+                            <option value="N">종료</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>                      
+                    <div class="row mb-1"> 
+                      <div class="input-group input-group-sm mb-1"> 
+                        <label class="col-sm-3 col-form-label col-form-label-sm" for="addr">수정자 / 일</label>
+                        <div class="col-sm-9">
+                          <div class="input-group input-group-sm">
+                            <input type="text" class="form-control form-control-sm" id="link_upt_user_id" name="link_upt_user_id" readonly="readonly" disabled />
+                            <input type="text" class="form-control form-control-sm" id="link_upt_dttm" name="link_upt_dttm" readonly="readonly" disabled /> 
+                          </div>
+                        </div>
+                      </div>
+                    </div> 
+                    <div class="card-footer">  
+                      <p class="text-end pb-1 mb-1 pd-1">
+                        <button class="btn btn-info text-end" id="btn_link_clear"><i class="fa fa-check"></i>신규</button>
+                        <button class="btn btn-primary text-end" id="btn_link_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                        <button class="btn btn-primary text-end" id="btn_link_create"><i class="fa fa-paste"></i>저장</button>
+                      </p>
+                    </div>
+                  </form>  
+                </div>
+
                 <!-- File 정보 TAB ----------------------------------------------------------------------------------------------------------------- -->               
                 <div class="tab-pane fade" id="tab_file_info" role="tabpanel" aria-labelledby="file_info_tab"> 
                   
@@ -2000,4 +2308,46 @@
       </div>      
     </div>    
   </div>  
+
+  <div class="modal fade" id="modal_help_chain" tabindex="-1" aria-labelledby="unprocessedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md"> <!-- Changed modal-lg to modal-xl for larger size -->
+      <div class="modal-content"> 
+        
+        <div class="modal-header">
+          <div class="row flex-between-end">
+            <div class="col-auto align-self-center">
+              <h4 class="mb-0">가맹점 찾기</h4>
+            </div>
+            <div class="col-lg-6">
+              <form id="frm_help_chain" name="frm_help_chain" onsubmit="return false;" novalidate="">
+                <input type="hidden" id="sch_help_chain_no" name="sch_help_chain_no" />                    
+                <div class="input-group input-group-sm px-3">
+                  <input type="text" class="form-control form-control-sm" id="sch_help_chain_nm" name="sch_help_chain_nm"/>
+                  <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search_chain" name="btn_search_chain">조회</button></span>     
+                </div>  
+              </form>              
+            </div>           
+          </div>
+        </div> 
+        <div class="modal-body"> 
+          <div class="table-responsive scrollbar">
+            <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_help_chain">  
+              <thead>
+                  <tr>
+                    <th class="text-center">가맹점 명</th> 
+                    <th class="text-center">사업자 번호</th>
+                    <th class="text-center">대표자 명</th>
+                    <th class="text-center">연락처</th>   
+                  </tr>   
+              </thead>
+              <tbody class="list"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">           
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
+        </div>        
+      </div>
+    </div>
+  </div>
 </html>

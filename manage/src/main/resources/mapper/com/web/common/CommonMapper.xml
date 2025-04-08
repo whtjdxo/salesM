@@ -2,7 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="com.web.manage.common.mapper.CommonMapper">
-    <select id="getTotalCodelist" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+  <select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select>
+
+  <select id="getTotalCodelist" parameterType="java.util.HashMap" resultType="java.util.HashMap">
         SELECT code         AS code
              , code_nm      AS codeNm
              , code_grp_cd  AS group_code
@@ -26,13 +30,46 @@
   </select>
 
   <select id="getChainList" resultType="hashMap">
-        SELECT 	CHAIN_NO		  AS code_no 
-                , CHAIN_NM		AS code_nm
+        SELECT 	CHAIN_NO		  AS code 
+                , CHAIN_NM		AS codeNm
                 , 'CHAIN_NO'  AS group_code
           FROM 	TB_CHAIN
          WHERE 	USE_YN = 'Y'
            AND  SVC_STAT IN ('O', 'R')
          ORDER	BY CHAIN_NM
+  </select>
+
+  <select id="getLinkChainList" resultType="hashMap">
+      SELECT 	SQL_CALC_FOUND_ROWS
+              TC.CHAIN_NO		            AS chain_no
+              , TC.CHAIN_NM             AS chain_nm
+              , TU.USER_NM              AS ceo_nm  
+              , TC.BIZ_NO               AS biz_no
+              , TC.CHAIN_ADDR           AS chain_addr
+              , TC.CHAIN_TEL_NO         AS chain_tel_no              
+              , TU.TEL_NO               AS ceo_tel_no
+        FROM	TB_CHAIN TC
+              JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID 
+       WHERE  TC.USE_YN = 'Y'
+         AND 	TC.SVC_STAT IN ('O', 'R')  
+         AND  TC.CHAIN_NO != #{sch_help_chain_no}
+         AND 	NOT EXISTS (SELECT  1 
+                            FROM  TB_CHAIN_LINK L
+                           WHERE  L.CHAIN_NO  = #{sch_help_chain_no}
+                             AND  L.LINK_CHAIN_NO = TC.CHAIN_NO
+                          ) 
+        <if test="sch_link_chain_nm != null and sch_link_chain_nm != ''">
+          AND TC.CHAIN_NM LIKE CONCAT('%', #{sch_help_chain_nm}, '%')
+        </if>
+        <choose>
+            <when test="sidx != ''">
+                ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                ORDER BY 1 DESC
+            </otherwise>
+        </choose>
+        LIMIT ${start}, ${end}
   </select>
 
   <select id="getAgencyList" resultType="hashMap">

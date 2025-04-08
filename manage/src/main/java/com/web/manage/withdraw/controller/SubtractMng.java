@@ -23,8 +23,7 @@ import ch.qos.logback.classic.Logger;
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
-import com.web.manage.common.service.CommonService;
-import com.web.manage.trans.domain.SubtractVO;
+import com.web.manage.common.service.CommonService; 
 import com.web.manage.trans.domain.TransProcessVO;
 import jakarta.validation.Valid;
 
@@ -80,9 +79,7 @@ public class SubtractMng {
         try {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam); 
-
-            System.out.println("hashmapParam : " + hashmapParam);  
-
+ 
             int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
             hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
             hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
@@ -104,7 +101,6 @@ public class SubtractMng {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return jString;  
     }
 
@@ -141,10 +137,8 @@ public class SubtractMng {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return jString;  
     }
-
 
     @RequestMapping(value = "/insertSubMst", method = RequestMethod.POST)    
     public @ResponseBody ReturnDataVO insertSubMst(@ModelAttribute("SubMstVO") @Valid SubMstVO subMstVo, BindingResult bindingResult, HttpSession session) {
@@ -153,6 +147,21 @@ public class SubtractMng {
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
     	    subMstVo.setEnt_user_id(member.getUserId());
             subMstVo.setSub_no(subtractService.getNewSubNo()); // 신규 생성 번호 
+
+            subMstVo.setOccur_crd_amt(subMstVo.getOccur_crd_amt() == null ? "0" : subMstVo.getOccur_crd_amt().replaceAll(",", ""));
+            subMstVo.setOccur_svc_amt(subMstVo.getOccur_svc_amt() == null ? "0" : subMstVo.getOccur_svc_amt().replaceAll(",", ""));
+            subMstVo.setOccur_base_amt(subMstVo.getOccur_base_amt() == null ? "0" : subMstVo.getOccur_base_amt().replaceAll(",", ""));
+            subMstVo.setOccur_amt(subMstVo.getOccur_amt() == null ? "0" : subMstVo.getOccur_amt().replaceAll(",", ""));
+
+            subMstVo.setRecv_crd_amt(subMstVo.getRecv_crd_amt() == null ? "0" : subMstVo.getRecv_crd_amt().replaceAll(",", ""));
+            subMstVo.setRecv_svc_amt(subMstVo.getRecv_svc_amt() == null ? "0" : subMstVo.getRecv_svc_amt().replaceAll(",", ""));
+            subMstVo.setRecv_base_amt(subMstVo.getRecv_base_amt() == null ? "0" : subMstVo.getRecv_base_amt().replaceAll(",", ""));
+            subMstVo.setRecv_amt(subMstVo.getRecv_amt() == null ? "0" : subMstVo.getRecv_amt().replaceAll(",", ""));
+            
+            subMstVo.setRemain_crd_amt(subMstVo.getRemain_crd_amt() == null ? "0" : subMstVo.getRemain_crd_amt().replaceAll(",", ""));
+            subMstVo.setRemain_svc_amt(subMstVo.getRemain_svc_amt() == null ? "0" : subMstVo.getRemain_svc_amt().replaceAll(",", ""));
+            subMstVo.setRemain_base_amt(subMstVo.getRemain_base_amt() == null ? "0" : subMstVo.getRemain_base_amt().replaceAll(",", ""));
+            subMstVo.setRemain_amt(subMstVo.getRemain_amt() == null ? "0" : subMstVo.getRemain_amt().replaceAll(",", ""));
 
             if (subtractService.insertSubMst(subMstVo)) {
                 System.out.println("Subtract Create success");
@@ -171,29 +180,44 @@ public class SubtractMng {
         return result;
     }
 
-    // @RequestMapping(value = "/updateSubtract", method = RequestMethod.POST)
-    // public @ResponseBody ReturnDataVO updateSubtract(@ModelAttribute("SubtractVO") @Valid SubtractVO SubtractVo, BindingResult bindingResult, HttpSession session) {
-    //     ReturnDataVO result = new ReturnDataVO(); 
-    //     try {
-    //         SessionVO member = (SessionVO) session.getAttribute("S_USER");            
-    // 	    SubtractVo.setUpt_user_id(member.getUserId()); 
+    @RequestMapping(value = "/updateSubMst", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO updateSubMst(@ModelAttribute("SubMstVO") @Valid SubMstVO subMstVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");            
+    	    subMstVo.setUpt_user_id(member.getUserId()); 
+            
+            subMstVo.setOccur_crd_amt(subMstVo.getOccur_crd_amt() == null ? "0" : subMstVo.getOccur_crd_amt().replaceAll(",", ""));
+            subMstVo.setOccur_svc_amt(subMstVo.getOccur_svc_amt() == null ? "0" : subMstVo.getOccur_svc_amt().replaceAll(",", ""));
+            subMstVo.setOccur_base_amt(subMstVo.getOccur_base_amt() == null ? "0" : subMstVo.getOccur_base_amt().replaceAll(",", ""));
+            subMstVo.setOccur_amt(subMstVo.getOccur_amt() == null ? "0" : subMstVo.getOccur_amt().replaceAll(",", ""));
 
-    //         if (subtractService.updateSubtract(SubtractVo)) {
-    //             System.out.println("Chain Subtract Update  success");
-    //             result.setResultCode("S000");
-    //             result.setResultMsg("Subtract Update successful.");
-    //         } else {
-    //             System.out.println("Chain Subtract Update  Fail");
-    //             result.setResultCode("F000");
-    //             result.setResultMsg("Subtract Update Failed");
-    //         }
-    //     } catch (Exception e) {
-    //         result.setResultCode("F000");
-    //         result.setResultMsg("Subtract Update Failed");
-    //         e.printStackTrace();
-    //     }
-    //     return result;
-    // }
+            subMstVo.setRecv_crd_amt(subMstVo.getRecv_crd_amt() == null ? "0" : subMstVo.getRecv_crd_amt().replaceAll(",", ""));
+            subMstVo.setRecv_svc_amt(subMstVo.getRecv_svc_amt() == null ? "0" : subMstVo.getRecv_svc_amt().replaceAll(",", ""));
+            subMstVo.setRecv_base_amt(subMstVo.getRecv_base_amt() == null ? "0" : subMstVo.getRecv_base_amt().replaceAll(",", ""));
+            subMstVo.setRecv_amt(subMstVo.getRecv_amt() == null ? "0" : subMstVo.getRecv_amt().replaceAll(",", ""));
+            
+            subMstVo.setRemain_crd_amt(subMstVo.getRemain_crd_amt() == null ? "0" : subMstVo.getRemain_crd_amt().replaceAll(",", ""));
+            subMstVo.setRemain_svc_amt(subMstVo.getRemain_svc_amt() == null ? "0" : subMstVo.getRemain_svc_amt().replaceAll(",", ""));
+            subMstVo.setRemain_base_amt(subMstVo.getRemain_base_amt() == null ? "0" : subMstVo.getRemain_base_amt().replaceAll(",", ""));
+            subMstVo.setRemain_amt(subMstVo.getRemain_amt() == null ? "0" : subMstVo.getRemain_amt().replaceAll(",", ""));
+
+            if (subtractService.updateSubMst(subMstVo)) {
+                System.out.println("Chain Subtract Update  success");
+                result.setResultCode("S000");
+                result.setResultMsg("Subtract Update successful.");
+            } else {
+                System.out.println("Chain Subtract Update  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Subtract Update Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Subtract Update Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
 
 
     // @RequestMapping("list")    

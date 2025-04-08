@@ -9,6 +9,7 @@ import com.web.manage.base.domain.ChainCardVO;
 import com.web.manage.base.domain.ChainFileVO;
 import com.web.manage.base.domain.ChainVO;
 import com.web.manage.base.domain.ChainVanVO;
+import com.web.manage.base.domain.LinkChainVO;
 
 @Mapper
 public interface ChainMapper {
@@ -16,9 +17,7 @@ public interface ChainMapper {
     List<HashMap<String, Object>> getChainList(HashMap<String, Object> hashmapParam);
 
     List<HashMap<String, Object>> getChainVanList(HashMap<String, Object> hashmapParam);
-
-    List<HashMap<String, Object>> getChainCardList(HashMap<String, Object> hashmapParam);
-
+    
     List<HashMap<String, Object>> getChainFileList(HashMap<String, Object> hashmapParam);
  
 
@@ -39,8 +38,13 @@ public interface ChainMapper {
     boolean insertChainVan(ChainVanVO chainVanVO);
     boolean updateChainVan(ChainVanVO chainVanVO);
 
+    List<HashMap<String, Object>> getChainCardList(HashMap<String, Object> hashmapParam);
     boolean insertChainCard(ChainCardVO chainCardVo);
     boolean updateChainCard(ChainCardVO chainCardVo);
+
+    List<HashMap<String, Object>> getLinkChainList(HashMap<String, Object> hashmapParam);    
+    boolean insertLinkChain(LinkChainVO linkChainVo);
+    boolean updateLinkChain(LinkChainVO linkChainVo);
 
     String getNewFileNo();
     boolean insertChainFile(ChainFileVO chainFileVo);

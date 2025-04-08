@@ -176,6 +176,9 @@ public class CenterMngController {
             }
             System.out.println(file.getOriginalFilename());
             String originName = file.getOriginalFilename();
+            if (originName == null) {
+                throw new IllegalArgumentException("File name cannot be null");
+            }
             int pos = originName.lastIndexOf(".");
             String fileExt = originName.substring(pos + 1);
             String newName = "logos" + "_" + aca_id + "_" + file_gb;

@@ -13,6 +13,7 @@ import com.web.manage.base.domain.ChainCardVO;
 import com.web.manage.base.domain.ChainFileVO;
 import com.web.manage.base.domain.ChainVO;
 import com.web.manage.base.domain.ChainVanVO;
+import com.web.manage.base.domain.LinkChainVO;
 
 @Service
 public class ChainService {
@@ -94,6 +95,16 @@ public class ChainService {
     }
     public boolean updateChainCard(ChainCardVO chainCardVo) {
         return chainMapper.updateChainCard(chainCardVo); 
+    }
+
+    public List<HashMap<String, Object>> getLinkChainList(HashMap<String, Object> hashmapParam) {
+        return chainMapper.getLinkChainList(hashmapParam);
+    }
+    public boolean insertLinkChain(LinkChainVO linkChainVO ) {
+        return chainMapper.insertLinkChain(linkChainVO); 
+    }
+    public boolean updateLinkChain(LinkChainVO linkChainVO) {
+        return chainMapper.updateLinkChain(linkChainVO); 
     }
   
     public String getNewFileNo() {

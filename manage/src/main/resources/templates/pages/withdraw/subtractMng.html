@@ -18,6 +18,7 @@
       $(document).ready(function () {             
         $('#frm_sch_sub').onLoadFunction();  
         $('#frm_sub_mst').onLoadFunction();  
+        var isListClick = false;
         callAjax('/common/totalCodelist', "code_grp_cd=('SUB_TYPE')", fn_sub_type_setting);      
         function fn_sub_type_setting(data) {
           codeSetting('SUB_TYPE', data.data, '#sch_sub_type', '1', '', ''); 
@@ -27,10 +28,6 @@
         callAjax('/common/totalCodelist', "code_grp_cd=('SUB_CODE') AND CHK_CD1 = '" + $('#sch_sub_type').val() + "'", fn_sch_sub_code_setting);      
         function fn_sch_sub_code_setting(data) {
           codeSetting('SUB_CODE', data.data, '#sch_sub_code', '1', '', ''); 
-        }
-
-        function fn_sub_code_setting(data) {
-          codeSetting('SUB_CODE', data.data, '#sub_code', '1', '', ''); 
         }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('SUB_STATUS')", fn_sub_status_setting);      
@@ -43,7 +40,8 @@
         var twoMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1);
 
         $('#sch_reg_sdt').val(twoMonthsAgo.toISOString().split('T')[0]);
-        $('#sch_reg_edt').val(today.toISOString().split('T')[0]);
+        $('#sch_reg_edt').val(today.toISOString().split('T')[0]); 
+        $('#reg_date').val(today.toISOString().split('T')[0]); 
         
         var tbl_sub_summary = $('#tbl_sub_summary').DataTable({
           processing: true,
@@ -99,19 +97,18 @@
           $('#frm_sub_mst')[0].reset();
         });
  
-        $('#sch_sub_type').change(function () {
-            var sub_type = $('#sch_sub_type').val(); 
-            if (sub_type != '') {
-              callAjax('/common/totalCodelist', "code_grp_cd=('SUB_CODE') AND CHK_CD1 = '" + sub_type + "'", fn_sch_sub_code_setting);      
-            }
-          });
-
         $('#sub_type').change(function () {
-            var sub_type = $('#sub_type').val(); 
-            if (sub_type != '') {
-              callAjax('/common/totalCodelist', "code_grp_cd=('SUB_CODE') AND CHK_CD1 = '" + sub_type + "'", fn_sub_code_setting);      
-            }
-          });  
+          if (isListClick) return; // 리스트 클릭 상태일 때는 무시
+          var sub_type = $('#sub_type').val(); 
+          
+          if (sub_type != '') {
+            callAjax('/common/totalCodelist', "code_grp_cd=('SUB_CODE') AND CHK_CD1 = '" + sub_type + "'", fn_sub_code_setting);      
+          }
+        });  
+
+        function fn_sub_code_setting(data) {
+          codeSetting('SUB_CODE', data.data, '#sub_code', '1', '', ''); 
+        }
         
         $('#tbl_sub_summary').on('click', 'tr', function () {
           if ($(this).hasClass('selected')) {
@@ -126,7 +123,8 @@
             $('#frm_sub_mst')[0].reset();       
             $('#sch_reg_sdt').val(data.min_reg_date);
             $('#sch_reg_edt').val(data.max_reg_date);
-            $('#sch_chain_no').val(data.chain_no);            
+            $('#sch_chain_no').val(data.chain_no); 
+            $('#chain_no').val(data.chain_no);            
             tbl_sub_list.ajax.reload();    
           }  
         });      
@@ -149,8 +147,7 @@
               },
             },
               columns: [
-                  { data: 'sub_no' }                                    
-                  , { data: 'sub_code_nm' }
+                    { data: 'sub_code_nm' }
                   , { data: 'reg_date' }
                   , { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                   , { data: 'recv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
@@ -159,14 +156,13 @@
                   , { data: 'sub_status_nm' }
                 ],
               columnDefs: [
-              { targets: 0, width: '120px', className: 'text-left' },
-              { targets: 1, width: '120px', className: 'text-left' },
-              { targets: 2, width: '120px', className: 'text-center' },
-              { targets: 3, width: '120px', className: 'text-right' },
-              { targets: 4, width: '120px', className: 'text-right' },
-              { targets: 5, width: '120px', className: 'text-right' },
-              { targets: 6, width: '200px', className: 'text-center' },
-              { targets: 7, width: '100px', className: 'text-center' },
+                { targets: 0, width: '150px', className: 'text-left' }
+              , { targets: 1, width: '100px', className: 'text-center' }
+              , { targets: 2, width: '120px', className: 'text-right' }
+              , { targets: 3, width: '120px', className: 'text-right' }
+              , { targets: 4, width: '120px', className: 'text-right' }
+              , { targets: 5, width: '300px', className: 'text-left' }
+              , { targets: 6, width: '100px', className: 'align-middle white-space-nowrap text-center pe-0' }
             ],
             order: [[1, 'desc']],
             paging: true,
@@ -196,14 +192,20 @@
             $(this).addClass('selected');
           }
           var data = tbl_sub_list.row(this).data();
+          isListClick = true;
           if (data) {
             $('#frm_sub_mst')[0].reset();             
             $('#sub_no').val(data.sub_no);
-            $('#sub_type').val(data.sub_type); 
-            $('#sub_code').val(data.sub_code); 
+            $('#sub_type').val(data.sub_type).prop('selected', true).trigger('change');                 
+            callAjax('/common/totalCodelist', "code_grp_cd=('SUB_CODE') AND CHK_CD1 = '" + data.sub_type + "'", fn_sub_code_setting)
+            .then(() => {       
+              $('#sub_code').val(data.sub_code).prop('selected', true);
+            });
+ 
             $('#sub_status').val(data.sub_status); 
             $('#reg_date').val(data.reg_date);
-            
+            $('#sub_memo').val(data.sub_memo);
+
             $('#occur_crd_amt').val(data.occur_crd_amt);
             $('#occur_svc_amt').val(data.occur_svc_amt);
             $('#occur_base_amt').val(data.occur_base_amt);
@@ -217,17 +219,16 @@
             $('#remain_crd_amt').val(data.remain_crd_amt);
             $('#remain_svc_amt').val(data.remain_svc_amt);
             $('#remain_base_amt').val(data.remain_base_amt);
-            $('#remain_amt').val(data.remain_amt);
+            $('#remain_amt').val(data.remain_amt); 
             
-            $('#sub_memo').val(data.sub_memo);
             $("input:radio[name='use_yn'][value='" + data.use_yn + "']").prop('checked', true);  
             $('#upt_user_id').val(data.upt_user_id);
             $('#upt_dttm').val(data.upt_dttm);   
 
             $('#crud').val('update');
             $('#btn_update').show();
-            $('#btn_create').hide();            
-            
+            $('#btn_create').hide();
+            isListClick = false;
           }  
         });      
 
@@ -236,20 +237,29 @@
         });
 
         function fn_frm_sub_mst_clear(){
-          $('#sub_no').val('');
-          $('#sub_memo').val('');
+          var chain_no = $('#chain_no').val(); 
+          $('#frm_sub_mst')[0].reset();
+
+          $('#reg_date').val(today.toISOString().split('T')[0]);
+          $('#sub_status').val('000000');
           $("input:radio[name='use_yn']").prop('checked', false);
+          $('#chain_no').val(chain_no); 
+
           $('#crud').val('create');
           $('#btn_update').hide();
           $('#btn_create').show();      
+          
         }
-
         
         $('#btn_create').click(function () {    
           $('#crud').val('create');      
           var checked = true;
-          var form = $('#frm_sub_mst');
-          
+          if($('#chain_no').val() == '') {
+            swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          } 
+          var form = $('#frm_sub_mst');          
           $.each(form, function (i, val) {
             if (!val.checkValidity()) {
               checked = false;
@@ -257,7 +267,7 @@
           }); 
           
           if (checked) {
-            ConfirmdialogToAjax('create', '/withdraw/subtractsubMng/insertMapCode', $('#frm_sub_mst').serialize(), fn_return_result);
+            ConfirmdialogToAjax('create', '/withdraw/subtract/subMng/insertSubMst', $('#frm_sub_mst').serialize(), fn_return_result);
           }  
         });
 
@@ -267,7 +277,7 @@
           var checked = true;
           var sub_no = $('#sub_no').val();
           if(sub_no == '') {
-            swal('실패', "매핑 코드를 먼저 선택해주세요.", 'error');
+            swal('실패', "차감번호를 먼저 선택해주세요.", 'error');
             checked = false;
             return;
           }
@@ -277,7 +287,7 @@
             }
           });          
           if (checked) {
-            ConfirmdialogToAjax('update', '/withdraw/subtractsubMng/updateMapCode', $('#frm_sub_mst').serialize(), fn_return_result);
+            ConfirmdialogToAjax('update', '/withdraw/subtract/subMng/updateSubMst', $('#frm_sub_mst').serialize(), fn_return_result);
           }  
         });     
 
@@ -287,12 +297,65 @@
 
           if (resultCode == 'S000') {            
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
-            tbl_sub_list.ajax.reload();                 
+            tbl_sub_summary.ajax.reload();
+            tbl_sub_list.ajax.reload();
             fn_frm_sub_mst_clear();
           } else { 
             swal('실패', resultMsg, 'error');
           }
-        } 
+        }  
+
+      $('#btn_receipt_process').click(function () {
+        var selectedRow = tbl_sub_list.row('.selected').data();
+        if (!selectedRow) {
+          swal('실패', '차감 상세 항목을 선택해주세요.', 'error');
+          return;
+        }
+
+        // Populate modal fields with selected row data
+        $('#mng_remain_amt').val(selectedRow.remain_amt);
+        $('#mng_remain_base_amt').val(selectedRow.remain_base_amt);
+        $('#mng_remain_crd_amt').val(selectedRow.remain_crd_amt);
+        $('#mng_remain_svc_amt').val(selectedRow.remain_svc_amt);
+        $('#mng_sub_no').val(selectedRow.sub_no);
+
+        // Show the modal
+        $('#modal_sub_mng').modal('show');
+      });
+
+        // 모달 창 표시될때 초기화 처리
+      $('#modal_sub_mng').on('shown.bs.modal', function() {  
+          // 모달 열릴 때 첫 번째 포커스 가능 요소로 이동          
+          $(this).data('trigger-element', document.activeElement);
+          
+          // 첫 번째 포커스 가능 요소로 이동
+          $(this).find('button:not([disabled]), input:not([disabled])').first().focus();
+           
+        });
+
+      // 모달이 닫힐 때 포커스 복원
+        $('#modal_sub_mng').on('hidden.bs.modal', function() {
+            var triggerElement = $(this).data('trigger-element');
+            if (triggerElement) {
+          $(triggerElement).focus();
+            }            
+            tbl_sub_summary.ajax.reload();
+            tbl_sub_list.ajax.reload();
+            fn_frm_sub_mst_clear();
+            return true; // 모달 닫기 허용
+        });
+
+        $('input[name="mng_action_type"]').on('change', function() {
+          if ($(this).val() === 'deposit') {
+            $('#mng_sub_deposit_div').show();
+            $('#mng_sub_shift_div').hide();
+          } else {
+            $('#mng_sub_deposit_div').hide();
+            $('#mng_sub_shift_div').show();
+          }
+        });
+
+
       });
     </script>
   </head>
@@ -347,6 +410,7 @@
                     <div class="input-group">
                       <div class="input-group input-group-sm mb-1 me-1">
                         <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_reg_sdt">발생일</label>
+                        <input class="form-control form-control-sm" id="sch_chain_no" type="hidden" name="sch_chain_no" readonly="readonly"/>
                         <div class="col-sm-4">
                           <input class="form-control form-control-sm " id="sch_reg_sdt" type="text" name="sch_reg_sdt" istyle="date" maxlength="10" required />
                         </div>   
@@ -360,13 +424,13 @@
                   <div class="col-sm-6">
                     <div class="input-group input-group-sm px-3">
                       <!-- <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_reg_sdate">차감유형</label> -->
-                      <select class="form-select form-control-sm" id="sch_sub_type" name="sch_sub_type" style="width: 100px">
+                      <select class="form-select form-control-sm" id="sch_sub_type" name="sch_sub_type" style="width: 120px">
                         <option value="">선 택</option>
                       </select>                    
-                      <select class="form-select form-control-sm" id="sch_sub_code" name="sch_sub_code" style="width: 120px">
+                      <select class="form-select form-control-sm" id="sch_sub_code" name="sch_sub_code" style="width: 150px">
                         <option value="">선택</option> 
                       </select>                    
-                      <select class="form-select form-control-sm" id="sch_sub_status" name="sch_sub_status" style="width: 120px">
+                      <select class="form-select form-control-sm" id="sch_sub_status" name="sch_sub_status" style="width: 100px">
                         <option value="">선택</option> 
                       </select>
                       <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
@@ -376,32 +440,40 @@
               </form>
             </div>
           </div>
-          <div class="card-body">
+          <div class="card-body pt-0 px-0" style="padding-top: 0px">
             <div class="min-vh-50">              
               <div class="table-responsive scrollbar">
                 <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_sub_list">
                   <thead class="bg-200">
                     <tr>
-                      <th class="text-center" style="width: 120px;">차감번호</th>
-                      <th class="text-center" style="width: 120px;">차감유형</th>
-                      <th class="text-center" style="width: 120px;">차감일자</th>
+                      <th class="text-center" style="width: 150px;">차감 코드명</th>
+                      <th class="text-center" style="width: 100px;">차감일자</th>
                       <th class="text-center" style="width: 120px;">등록금액</th>
-                      <th class="text-center" style="width: 300px;">실행금액</th>
+                      <th class="text-center" style="width: 120px;">실행금액</th>
                       <th class="text-center" style="width: 120px;">미차감</th>
                       <th class="text-center" style="width: 300px;">비고</th>
-                      <th class="text-center" style="width: 120px;">관리</th>
+                      <th class="text-center" style="width: 100px;">관리</th>
                     </tr>
                   </thead>
                   <tbody class="list"></tbody>
                 </table>
               </div> 
-              <div class="mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">상세정보</div>
+              <div class="row flex-between-end">
+                <div class="d-flex justify-content-between align-items-center mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">
+                  <span>상세정보</span>
+                  <div>
+                    <button class="btn btn-success me-2" id="btn_receipt_process">수납처리</button>
+                    <button class="btn btn-success" id="btn_alternative_deduction">대체차감</button>
+                  </div>
+                </div>
+                
                 <form class="needs-validation" id="frm_sub_mst" name="frm_sub_mst" onsubmit="return false;" method="post" novalidate=""> 
                   <div class="row mb-1">
                     <div class="col-sm-3">
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="sub_no">차감번호</label> 
-                        <input class="form-control form-control-sm" id="sub_no" type="text" name="sub_no" readonly="readonly"/>
+                        <input class="form-control form-control-sm" id="chain_no" type="hidden" name="chain_no" readonly="readonly"/>
+                        <input class="form-control form-control-sm bg-light" id="sub_no" type="text" name="sub_no" readonly="readonly"/>
                       </div>
                     </div>
                     <div class="col-sm-3">
@@ -435,7 +507,7 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="occur_crd_amt">등록 이자</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end " id="occur_crd_amt" type="text" name="occur_crd_amt" istyle="amount"  />
+                          <input class="form-control form-control-sm text-end " id="occur_crd_amt" type="text" name="occur_crd_amt" istyle="amount" value="0" />
                         </div>  
                       </div>
                     </div>
@@ -443,7 +515,7 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="occur_svc_amt">등록 수수료</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end" id="occur_svc_amt" type="text" name="occur_svc_amt" istyle="amount" />
+                          <input class="form-control form-control-sm text-end" id="occur_svc_amt" type="text" name="occur_svc_amt" istyle="amount" value="0" />
                         </div>
                       </div>
                     </div>
@@ -451,7 +523,7 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="occur_base_amt">등록 원금</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end" id="occur_base_amt" type="text" name="occur_base_amt" istyle="amount" />
+                          <input class="form-control form-control-sm text-end" id="occur_base_amt" type="text" name="occur_base_amt" istyle="amount" value="0" />
                         </div>
                       </div>
                     </div>
@@ -459,20 +531,38 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="occur_amt">등록 금액</label> 
                         <div class="col-sm-8">
-                            <input class="form-control form-control-sm text-end" id="occur_amt" type="text" name="occur_amt" istyle="amount" readonly />
+                            <input class="form-control form-control-sm text-end bg-light" id="occur_amt" type="text" name="occur_amt" istyle="amount" value="0" readonly />
                             <script>
                               document.addEventListener('DOMContentLoaded', function () {
                                 const occurCrdAmt = document.getElementById('occur_crd_amt');
+                                const remainCrdAmt = document.getElementById('remain_crd_amt');
+
+                                occurCrdAmt.addEventListener('input', function () {
+                                  remainCrdAmt.value = occurCrdAmt.value;
+                                });
                                 const occurSvcAmt = document.getElementById('occur_svc_amt');
+                                const remainSvcAmt = document.getElementById('remain_svc_amt');
+
+                                occurSvcAmt.addEventListener('input', function () {
+                                  remainSvcAmt.value = occurSvcAmt.value;
+                                });
                                 const occurBaseAmt = document.getElementById('occur_base_amt');
+                                const remainBaseAmt = document.getElementById('remain_base_amt');
+
+                                occurBaseAmt.addEventListener('input', function () {
+                                  remainBaseAmt.value = occurBaseAmt.value;
+                                });
+
                                 const occurAmt = document.getElementById('occur_amt');
+                                const remainAmt = document.getElementById('remain_amt');
 
                                 function calculateTotal() {
-                                const crdAmt = parseFloat(occurCrdAmt.value.replace(/,/g, '')) || 0;
-                                const svcAmt = parseFloat(occurSvcAmt.value.replace(/,/g, '')) || 0;
-                                const baseAmt = parseFloat(occurBaseAmt.value.replace(/,/g, '')) || 0;
-                                const total = crdAmt + svcAmt + baseAmt;
-                                occurAmt.value = total.toLocaleString();
+                                  const crdAmt = parseFloat(occurCrdAmt.value.replace(/,/g, '')) || 0;
+                                  const svcAmt = parseFloat(occurSvcAmt.value.replace(/,/g, '')) || 0;
+                                  const baseAmt = parseFloat(occurBaseAmt.value.replace(/,/g, '')) || 0;
+                                  const total = crdAmt + svcAmt + baseAmt;
+                                  occurAmt.value = total.toLocaleString();
+                                  remainAmt.value = occurAmt.value;
                                 }
 
                                 occurCrdAmt.addEventListener('input', calculateTotal);
@@ -490,7 +580,7 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="recv_crd_amt">수납 이자</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end" id="recv_crd_amt" type="text" name="recv_crd_amt" istyle="amount" />
+                          <input class="form-control form-control-sm text-end bg-light" id="recv_crd_amt" type="text" name="recv_crd_amt" istyle="amount" value="0" />
                         </div>
                       </div>
                     </div>
@@ -498,7 +588,7 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="recv_svc_amt">수납 수수료</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end" id="recv_svc_amt" type="text" name="recv_svc_amt" istyle="amount" />
+                          <input class="form-control form-control-sm text-end bg-light" id="recv_svc_amt" type="text" name="recv_svc_amt" istyle="amount" value="0" />
                         </div>
                       </div>
                     </div>
@@ -506,7 +596,7 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="recv_base_amt">수납 원금</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end" id="recv_base_amt" type="text" name="recv_base_amt" istyle="amount" />
+                          <input class="form-control form-control-sm text-end bg-light" id="recv_base_amt" type="text" name="recv_base_amt" istyle="amount" value="0" />
                         </div>
                       </div>
                     </div>
@@ -514,27 +604,7 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="recv_amt">수납 금액</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end" id="recv_amt" type="text" name="recv_amt" istyle="amount"  readonly />
-                          <script>
-                            document.addEventListener('DOMContentLoaded', function () {
-                              const recvCrdAmt = document.getElementById('recv_crd_amt');
-                              const recvSvcAmt = document.getElementById('recv_svc_amt');
-                              const recvBaseAmt = document.getElementById('recv_base_amt');
-                              const recvAmt = document.getElementById('recv_amt');
-
-                              function calculateTotal() {
-                              const crdAmt = parseFloat(recvCrdAmt.value.replace(/,/g, '')) || 0;
-                              const svcAmt = parseFloat(recvSvcAmt.value.replace(/,/g, '')) || 0;
-                              const baseAmt = parseFloat(recvBaseAmt.value.replace(/,/g, '')) || 0;
-                              const total = crdAmt + svcAmt + baseAmt;
-                              recvAmt.value = total.toLocaleString();
-                              }
-
-                              recvCrdAmt.addEventListener('input', calculateTotal);
-                              recvSvcAmt.addEventListener('input', calculateTotal);
-                              recvBaseAmt.addEventListener('input', calculateTotal);
-                            });
-                          </script>  
+                          <input class="form-control form-control-sm text-end bg-light" id="recv_amt" type="text" name="recv_amt" istyle="amount"  value="0" readonly />                           
                         </div>
                       </div>
                     </div>
@@ -545,7 +615,7 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_crd_amt">미수 이자</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end" id="remain_crd_amt" type="text" name="remain_crd_amt" istyle="amount" />
+                          <input class="form-control form-control-sm text-end bg-light" id="remain_crd_amt" type="text" name="remain_crd_amt" istyle="amount" value="0" readonly />
                         </div>
                       </div>
                     </div>
@@ -553,48 +623,27 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_svc_amt">미수 수수료</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end" id="remain_svc_amt" type="text" name="remain_svc_amt" istyle="amount" />
+                          <input class="form-control form-control-sm text-end bg-light" id="remain_svc_amt" type="text" name="remain_svc_amt" istyle="amount" value="0" readonly />
                         </div>
                       </div>
                     </div>
                     <div class="col-sm-3">
                       <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_base_amt">미수납 원금</label> 
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_base_amt">미수 원금</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end" id="remain_base_amt" type="text" name="remain_base_amt" istyle="amount" />
+                          <input class="form-control form-control-sm text-end bg-light" id="remain_base_amt" type="text" name="remain_base_amt" istyle="amount" value="0" readonly />
                         </div>
                       </div>
                     </div>
                     <div class="col-sm-3">
                       <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_amt">미수납 금액</label> 
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_amt">미수 금액</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end" id="remain_amt" type="text" name="remain_amt" istyle="amount" readonly />
-                          <script>
-                            document.addEventListener('DOMContentLoaded', function () {
-                              const remainCrdAmt = document.getElementById('remain_crd_amt');
-                              const remainSvcAmt = document.getElementById('remain_svc_amt');
-                              const remainBaseAmt = document.getElementById('remain_base_amt');
-                              const remainAmt = document.getElementById('remain_amt');
-
-                              function calculateTotal() {
-                              const crdAmt = parseFloat(remainCrdAmt.value.replace(/,/g, '')) || 0;
-                              const svcAmt = parseFloat(remainSvcAmt.value.replace(/,/g, '')) || 0;
-                              const baseAmt = parseFloat(remainBaseAmt.value.replace(/,/g, '')) || 0;
-                              const total = crdAmt + svcAmt + baseAmt;
-                              remainAmt.value = total.toLocaleString();
-                              }
-
-                              remainCrdAmt.addEventListener('input', calculateTotal);
-                              remainSvcAmt.addEventListener('input', calculateTotal);
-                              remainBaseAmt.addEventListener('input', calculateTotal);
-                            });
-                          </script>  
+                            <input class="form-control form-control-sm text-end bg-light" id="remain_amt" type="text" name="remain_amt" istyle="amount" value="0" readonly />
                         </div>
                       </div>
                     </div>
-                  </div>
-                  
+                  </div>                  
                   <div class="row mb-1">
                     <div class="col-sm-3">
                       <div class="input-group input-group-sm mb-1">
@@ -607,12 +656,10 @@
                     <div class="col-sm-9">
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-1 col-form-label col-form-label-sm" for="sub_type">비고</label> 
-                        <input class="form-control form-control-sm" id="sub_memo" type="text" name="sub_memo" maxlength="50" required />
+                        <input class="form-control form-control-sm" id="sub_memo" type="text" name="sub_memo" maxlength="50" />
                       </div>
                     </div>                     
-                  </div>
-
-                  
+                  </div>                  
                   <div class="row mb-1">
                     <div class="col-sm-6">
                       <div class="input-group input-group-sm mb-1">
@@ -656,5 +703,94 @@
         </div>
       </div>      
     </div>    
+  </div>
+  <div class="modal fade" id="modal_sub_mng" tabindex="-1" aria-labelledby="subtractmanage" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form class="needs-validation" novalidate="" id="frm_sub_mng" name="frm_sub_mng" onsubmit="return false;">           
+          <input id="mng_sub_no" type="hidden" name="mng_sub_no"/>
+          <div class="modal-header">
+            <h5 class="modal-title">차감관리</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body"> 
+            <div class="row mb-1">
+              <div class="col-sm-6">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-4 col-form-label col-form-label-sm" for="mng_remain_amt">미차감액</label>
+                  <div class="col-sm-8">
+                    <input class="form-control form-control-sm text-end bg-light" id="mng_remain_amt" type="text" name="mng_remain_amt" value="0" readonly />
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_base_amt">원금</label>
+                  <div class="col-sm-8">
+                    <input class="form-control form-control-sm text-end bg-light" id="mng_remain_base_amt" type="text" name="mng_remain_base_amt" value="0" readonly />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-1">
+              <div class="col-sm-6">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-4 col-form-label col-form-label-sm" for="mng_remain_crd_amt">이자</label>
+                  <div class="col-sm-8">
+                    <input class="form-control form-control-sm text-end bg-light" id="mng_remain_crd_amt" type="text" name="mng_remain_crd_amt" value="0" readonly />
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-4 col-form-label col-form-label-sm" for="mng_remain_svc_amt">수수료</label>
+                  <div class="col-sm-8">
+                    <input class="form-control form-control-sm text-end bg-light" id="mng_remain_svc_amt" type="text" name="mng_remain_svc_amt" value="0" readonly />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-1">
+              <div class="col-sm-4">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="mng_action_type" id="mng_action_deposit" value="deposit" checked />
+                  <label class="form-check-label" for="mng_action_deposit">입금</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="mng_action_type" id="mng_action_shift" value="shift" />
+                  <label class="form-check-label" for="mng_action_alternative">대체차감</label>
+                </div>
+              </div>
+              <div class="col-sm-8">
+                <div class="input-group input-group-sm mb-1" id="mng_sub_deposit_div">
+                  <label class="col-sm-4 col-form-label col-form-label-sm" for="mng_deposit_amt">입금액</label>
+                  <div class="col-sm-8">
+                    <input class="form-control form-control-sm text-end" id="mng_deposit_amt" type="text" name="mng_deposit_amt" istyle="amount" placeholder="0" />
+                  </div>
+                </div>
+                <div class="input-group input-group-sm mb-1" style="display: none;" id="mng_sub_shift_div">
+                  <label class="col-sm-4 col-form-label col-form-label-sm" for="alternative_chain">대체차감</label>
+                  <select class="form-select form-control-sm" id="mng_shift_chain_no" name="mng_shift_chain_no">
+                    <option value="">-- 선택 --</option>
+                  </select>
+                </div>
+              </div>
+            </div>            
+            <div class="row mb-1">
+              <div class="col-sm-12">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-2 col-form-label col-form-label-sm" for="mng_sub_memo">비고</label>
+                  <input class="form-control form-control-sm" id="mng_sub_memo" type="text" name="mng_sub_memo" maxlength="100" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" id="btn_sub_mng" type="submit" aria-label="처리">적용</button>
+            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
+          </div>          
+        </form>
+      </div>
+    </div>
   </div>  
 </html>

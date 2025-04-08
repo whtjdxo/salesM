@@ -315,7 +315,7 @@
          WHERE  VAN_SEQ = #{van_seq}           
     </update> 
 
-     <select id="getChainCardList" parameterType="java.util.HashMap" resultType="hashMap">
+    <select id="getChainCardList" parameterType="java.util.HashMap" resultType="hashMap">
         SELECT  SQL_CALC_FOUND_ROWS
                 CC.CARD_SEQ							    AS card_seq
                 , CC.CHAIN_NO						    AS chain_no
@@ -385,6 +385,61 @@
                 , UPT_DTTM        = NOW()
          WHERE  CARD_SEQ = #{card_seq}           
     </update>
+
+    <select id="getLinkChainList" parameterType="java.util.HashMap" resultType="hashMap">
+        SELECT  SQL_CALC_FOUND_ROWS
+          	    L.LINK_CHAIN_NO 	    AS link_chain_no
+                , TC.CHAIN_NM			AS link_chain_nm
+                , TC.BIZ_NO				AS chain_biz_no
+                , TC.CEO_ID				AS ceo_id
+                , TU.USER_NM			as ceo_nm
+                , IFNULL(TC.CHAIN_TEL_NO, TU.TEL_NO)	AS chain_tel_no
+                , L.MEMO                                AS memo
+                , L.USE_YN 							    AS use_yn
+                , IFNULL(L.UPT_USER_ID, L.ENT_USER_ID)  AS upt_user_id
+                , DATE_FORMAT(IFNULL(L.UPT_DTTM, L.ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
+        FROM 	TB_CHAIN_LINK L
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = L.LINK_CHAIN_NO
+                                    AND TC.USE_YN = 'Y'
+                                    AND TC.SVC_STAT IN ('O', 'R')
+                JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
+         WHERE  L.CHAIN_NO = #{link_org_chain_no}
+        <choose>
+            <when test="sidx != ''">
+                ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                ORDER BY 1 DESC
+            </otherwise>
+        </choose>
+        LIMIT ${start}, ${end}
+    </select>
+    
+
+    <insert id="insertLinkChain" parameterType="com.web.manage.base.domain.LinkChainVO">
+        INSERT INTO TB_CHAIN_LINK (
+            CHAIN_NO            , LINK_CHAIN_NO         , MEMO              , USE_YN
+            , ENT_DTTM          , ENT_USER_ID
+        ) VALUES (
+            #{link_org_chain_no}, #{link_chain_no}      , #{link_memo}      , #{link_use_yn} 
+            , NOW()             , #{ent_user_id}
+        ) on DUPLICATE KEY UPDATE
+            MEMO                = #{link_memo} 
+            , USE_YN            = #{link_use_yn} 
+            , UPT_USER_ID       = #{upt_user_id}
+            , UPT_DTTM          = NOW()
+    </insert>
+
+    <update id="updateLinkChain" parameterType="com.web.manage.base.domain.LinkChainVO">
+        UPDATE  TB_CHAIN_LINK
+           SET  MEMO            = #{link_memo} 
+                , USE_YN        = #{link_use_yn} 
+                , UPT_USER_ID   = #{upt_user_id}
+                , UPT_DTTM      = NOW()
+         WHERE  CHAIN_NO        = #{link_org_chain_no} 
+           AND  LINK_CHAIN_NO   = #{link_chain_no}          
+    </update>
+
 
     <select id="getNewFileNo" resultType="java.lang.String">
 	    /* ChainMapper.getNewFileNo */

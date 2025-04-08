@@ -14,6 +14,10 @@ public class CommonService {
     @Autowired
     private CommonMapper commonMapper;
 
+    public int getQueryTotalCnt() {
+        return commonMapper.getQueryTotalCnt();
+    }
+
     public List<HashMap<String, Object>> getTotalCodelist(HashMap<String, String> hashmapParam) {
         return commonMapper.getTotalCodelist(hashmapParam);
     }
@@ -25,6 +29,10 @@ public class CommonService {
     public List<HashMap<String, Object>> getChainList(HashMap<String, String> hashmapParam) {
         return commonMapper.getChainList(hashmapParam);
     }    
+
+    public List<HashMap<String, Object>> getLinkChainList(HashMap<String, Object> hashmapParam){
+        return commonMapper.getLinkChainList(hashmapParam);
+    }  
 
     public List<HashMap<String, Object>> getAgencyList(HashMap<String, String> hashmapParam) {
         return commonMapper.getAgencyList(hashmapParam);

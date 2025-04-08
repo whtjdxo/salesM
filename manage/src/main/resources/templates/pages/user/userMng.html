@@ -16,7 +16,7 @@
     <script th:inline="none">      
              
       $(document).ready(function () {
-
+        var isListClick = false; // 리스트 클릭 여부
         $('#frm_user_info').onLoadFunction();        
 
         callAjax('/common/totalCodelist', "code_grp_cd=('AUTH_GRP_CD')", fn_code_setting);
@@ -95,6 +95,7 @@
             tbl_user.$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
           }
+          isListClick = true; // 리스트 클릭 상태로 변경
           var data = tbl_user.row(this).data();
           // corp_type 값 변경 및 AJAX 완료 후 corp_cd 설정
           $('#corp_type').val(data.corp_type).prop('selected', true).trigger('change');           
@@ -119,23 +120,17 @@
           $('#btn_create').hide();
           $('#user_pwd').removeAttr("required");          
           $('#crud').val('update'); 
+
+          isListClick = false; // 리스트 클릭 상태 해제
         }); 
          
         $('#btn_search').click(function () {           
           tbl_user.ajax.reload();
         });
-
-        // corp_cd 업데이트 함수 (AJAX 완료 후 처리)
-        function updateCorpCd(corpCd) {          
-          $('#corp_type').off('ajaxComplete').on('ajaxComplete', function (event, xhr, settings) {            
-            if (settings.url === '/base/user/userMng/getCorpList') {
-              $('#corp_cd').val(corpCd).prop('selected', true);
-            }
-          });
-        }
-
+ 
         $('#corp_type').change(function () {
-            var corp_type = $('#corp_type').val(); 
+            if (isListClick) return; // 리스트 클릭 상태일 때는 무시
+            var corp_type = $('#corp_type').val();  
             if (corp_type != '') {
               callAjaxCombo('/base/user/userMng/getCorpList', "corp_type="+corp_type, '#corp_cd', '1', '');
             }

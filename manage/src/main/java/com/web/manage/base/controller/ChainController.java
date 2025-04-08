@@ -31,6 +31,7 @@ import com.web.manage.base.domain.ChainCardVO;
 import com.web.manage.base.domain.ChainFileVO;
 import com.web.manage.base.domain.ChainVO;
 import com.web.manage.base.domain.ChainVanVO;
+import com.web.manage.base.domain.LinkChainVO;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -184,7 +185,7 @@ public class ChainController {
             chainVo.setTot_use_amt(chainVo.getTot_use_amt() == null ? "0" : chainVo.getTot_use_amt().replaceAll(",", ""));
             chainVo.setRemit_trans_fee(chainVo.getRemit_trans_fee() == null ? "0" : chainVo.getRemit_trans_fee().replaceAll(",", ""));
 
-            System.out.println(chainVo);   
+            // System.out.println(chainVo);   
 
             if (chainService.updateChainCont(chainVo)) {
                 System.out.println("chain Contract Update  success");
@@ -412,7 +413,7 @@ public class ChainController {
             if (chainService.updateChainCard(chainCardVo)) {
                 System.out.println("Chain CardInfo Update  success");
                 result.setResultCode("S000");
-                result.setResultMsg("Chain Van Update successful.");
+                result.setResultMsg("Chain Card Update successful.");
             } else {
                 System.out.println("Chain CardInfo Update  Fail");
                 result.setResultCode("F000");
@@ -421,6 +422,93 @@ public class ChainController {
         } catch (Exception e) {
             result.setResultCode("F000");
             result.setResultMsg("Chain Card Update Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
+    /* -----------------------------------------------------------------------------------------------------------------------------------------
+    * Link Chain 관리
+    -----------------------------------------------------------------------------------------------------------------------------------------  */     
+    @RequestMapping("linkChainList")
+    public @ResponseBody String getLinkChainList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();        
+        String jString = null;
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+            
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = chainService.getLinkChainList(hashmapParam);
+            int records = chainService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    } 
+
+    @RequestMapping(value = "/insertLinkChain", method = RequestMethod.POST)    
+    public @ResponseBody ReturnDataVO insertLinkChain(@ModelAttribute("LinkChainVO") @Valid LinkChainVO linkChainVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+    	    linkChainVo.setEnt_user_id(member.getUserId());
+
+            if (chainService.insertLinkChain(linkChainVo)) {
+                System.out.println("Chain Link Create success");
+                result.setResultCode("S000");
+                result.setResultMsg("Chain Link creation successful.");
+            } else {
+                System.out.println("chainCreate fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Chain Link creation Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Chain Link creation Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/updateLinkChain", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO updateLinkChain(@ModelAttribute("LinkChainVO") @Valid LinkChainVO linkChainVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER"); 
+    	    linkChainVo.setUpt_user_id(member.getUserId()); 
+
+            if (chainService.updateLinkChain(linkChainVo)) {
+                System.out.println("Chain Link Update  success");
+                result.setResultCode("S000");
+                result.setResultMsg("Chain Link Update successful.");
+            } else {
+                System.out.println("Chain Link Update  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Chain Link Update Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Chain Link Update Failed");
             e.printStackTrace();
         }
         return result;
