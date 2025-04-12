@@ -72,6 +72,20 @@
         LIMIT ${start}, ${end}
   </select>
 
+  <select id="getShiftChainList" resultType="hashMap">
+        SELECT  CL.LINK_CHAIN_NO      AS code
+                , CONCAT(TC.CHAIN_NM, ' (', TC.BIZ_NO, ') ', TU.USER_NM)            as codeNm
+                , 'LINK_CHAIN'        AS group_code
+          FROM  TB_CHAIN_LINK CL
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = CL.LINK_CHAIN_NO
+                        AND TC.SVC_STAT = 'O'
+                        AND TC.USE_YN = 'Y'
+                JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID                
+         WHERE  CL.USE_YN  = 'Y'
+           AND  CL.CHAIN_NO = #{chain_no}
+         ORDER  BY 1
+  </select>
+
   <select id="getAgencyList" resultType="hashMap">
         SELECT  AGENCY_NO       as code
                 , AGENCY_NM     as codeNm

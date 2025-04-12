@@ -18,6 +18,8 @@
       $(document).ready(function () {             
         $('#frm_sch_sub').onLoadFunction();  
         $('#frm_sub_mst').onLoadFunction();  
+        $('#frm_sub_mng').onLoadFunction();  
+        
         var isListClick = false;
         callAjax('/common/totalCodelist', "code_grp_cd=('SUB_TYPE')", fn_sub_type_setting);      
         function fn_sub_type_setting(data) {
@@ -95,6 +97,7 @@
           tbl_sub_summary.ajax.reload();
           $('#tbl_sub_list').DataTable().clear().draw();
           $('#frm_sub_mst')[0].reset();
+          $('#tbl_sub_recv_list').DataTable().clear().draw();
         });
  
         $('#sub_type').change(function () {
@@ -117,15 +120,18 @@
             tbl_sub_summary.$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
           }
+
+          fn_frm_sub_mst_clear();    
           var data = tbl_sub_summary.row(this).data();
-          if (data) {
+          if (data) {            
             $('#frm_sch_sub')[0].reset();
             $('#frm_sub_mst')[0].reset();       
             $('#sch_reg_sdt').val(data.min_reg_date);
             $('#sch_reg_edt').val(data.max_reg_date);
             $('#sch_chain_no').val(data.chain_no); 
             $('#chain_no').val(data.chain_no);            
-            tbl_sub_list.ajax.reload();    
+            
+            tbl_sub_list.ajax.reload();            
           }  
         });      
          
@@ -195,7 +201,7 @@
           isListClick = true;
           if (data) {
             $('#frm_sub_mst')[0].reset();             
-            $('#sub_no').val(data.sub_no);
+            $('#sub_no').val(data.sub_no); 
             $('#sub_type').val(data.sub_type).prop('selected', true).trigger('change');                 
             callAjax('/common/totalCodelist', "code_grp_cd=('SUB_CODE') AND CHK_CD1 = '" + data.sub_type + "'", fn_sub_code_setting)
             .then(() => {       
@@ -220,7 +226,22 @@
             $('#remain_svc_amt').val(data.remain_svc_amt);
             $('#remain_base_amt').val(data.remain_base_amt);
             $('#remain_amt').val(data.remain_amt); 
-            
+
+            if (data.sub_status == '500000'){
+              $('#btn_receipt_process').hide();
+            } else{
+              $('#btn_receipt_process').show();
+            }
+            // 금액을 조금이라도 수납하면. 수정 불가 
+            if (data.recv_amt > '0') {
+              $('#occur_crd_amt').prop('readonly', true);
+              $('#occur_svc_amt').prop('readonly', true);
+              $('#occur_base_amt').prop('readonly', true); 
+            }else{
+              $('#occur_crd_amt').prop('readonly', false);
+              $('#occur_svc_amt').prop('readonly', false);
+              $('#occur_base_amt').prop('readonly', false); 
+            } 
             $("input:radio[name='use_yn'][value='" + data.use_yn + "']").prop('checked', true);  
             $('#upt_user_id').val(data.upt_user_id);
             $('#upt_dttm').val(data.upt_dttm);   
@@ -228,23 +249,83 @@
             $('#crud').val('update');
             $('#btn_update').show();
             $('#btn_create').hide();
+
+            tbl_sub_recv_list.ajax.reload();
             isListClick = false;
           }  
-        });      
+        });
+        
+         
+        var tbl_sub_recv_list = $('#tbl_sub_recv_list').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true,
+            responsive: true,
+            ajax: {
+              url: '/withdraw/subtract/subMng/subReceiveList',
+              contentType: 'application/json',
+              dataType: 'JSON',
+              type: 'POST',
+              data: function (postData) {
+                formData = $('#frm_sub_mst').serializeObject();
+                Object.assign(postData, formData);
+                return JSON.stringify(postData);
+              },
+            },
+            columns: [
+                  { data: 'recv_date' }
+                , { data: 'recv_type_nm' }
+                , { data: 'recv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'recv_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'recv_svc_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
+                , { data: 'recv_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
+                , { data: 'memo' }
+                , { data: 'trans_chk' }
+              ],
+            columnDefs: [
+                { targets: 0, width: '120px', className: 'text-left' }
+              , { targets: 1, width: '150px', className: 'text-center' }
+              , { targets: 2, width: '120px', className: 'text-right' }
+              , { targets: 3, width: '120px', className: 'text-right' }
+              , { targets: 4, width: '120px', className: 'text-right' }
+              , { targets: 4, width: '120px', className: 'text-right' }
+              , { targets: 5, width: '300px', className: 'text-left' }
+              , { targets: 6, width: '100px', className: 'align-middle white-space-nowrap text-center pe-0' }
+            ],
+            order: [[1, 'desc']],
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            autoWidth: false,
+            responsive: true,
+            scrollCollapse: true,
+            pageLength: 10,
+            scrollY: '250px',
+            info: false,
+            language: {
+              emptyTable: '데이터가 없습니다.',
+              search: '검색:',
+              zeroRecords: '일치하는 데이터가 없습니다.',
+              loadingRecords: '로딩중...',
+              processing: '처리중...',
+            },
+        }); 
 
         $('#btn_clear').click(function () {     
           fn_frm_sub_mst_clear(); 
         });
 
         function fn_frm_sub_mst_clear(){
-          var chain_no = $('#chain_no').val(); 
+          var chain_no = $('#chain_no').val();           
           $('#frm_sub_mst')[0].reset();
-
           $('#reg_date').val(today.toISOString().split('T')[0]);
+          $('#sub_type').val('M').prop('selected', true).trigger('change');                      
           $('#sub_status').val('000000');
-          $("input:radio[name='use_yn']").prop('checked', false);
-          $('#chain_no').val(chain_no); 
+          $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
+          $('#tbl_sub_recv_list').DataTable().clear().draw();
 
+          $('#chain_no').val(chain_no); 
           $('#crud').val('create');
           $('#btn_update').hide();
           $('#btn_create').show();      
@@ -281,6 +362,11 @@
             checked = false;
             return;
           }
+          if ($('#recv_amt').val() > 0 && $("input[name='use_yn']:checked").val() === 'N') {
+            swal('실패', "수납금액이 존재하면 사용여부를 '아니요'로 설정할 수 없습니다.", 'error');
+            checked = false;
+            return;
+          }
           $.each(form, function (i, val) {
             if (!val.checkValidity()) {
               checked = false;
@@ -305,33 +391,44 @@
           }
         }  
 
-      $('#btn_receipt_process').click(function () {
-        var selectedRow = tbl_sub_list.row('.selected').data();
-        if (!selectedRow) {
-          swal('실패', '차감 상세 항목을 선택해주세요.', 'error');
-          return;
-        }
+        $('#btn_receipt_process').click(function () {
+          var selectedRow = tbl_sub_list.row('.selected').data();
+          if (!selectedRow) {
+            swal('실패', '차감 상세 항목을 선택해주세요.', 'error');
+            return;
+          } 
 
-        // Populate modal fields with selected row data
-        $('#mng_remain_amt').val(selectedRow.remain_amt);
-        $('#mng_remain_base_amt').val(selectedRow.remain_base_amt);
-        $('#mng_remain_crd_amt').val(selectedRow.remain_crd_amt);
-        $('#mng_remain_svc_amt').val(selectedRow.remain_svc_amt);
-        $('#mng_sub_no').val(selectedRow.sub_no);
+          $('#frm_sub_mng')[0].reset();
+          // Populate modal fields with selected row data
+          $('#mng_remain_amt').val(selectedRow.remain_amt);
+          $('#mng_deposit_amt').val(selectedRow.remain_amt);
+          $('#mng_remain_base_amt').val(selectedRow.remain_base_amt);
+          $('#mng_remain_crd_amt').val(selectedRow.remain_crd_amt);
+          $('#mng_remain_svc_amt').val(selectedRow.remain_svc_amt);
+          $('#mng_sub_no').val(selectedRow.sub_no);            
 
-        // Show the modal
-        $('#modal_sub_mng').modal('show');
-      });
-
-        // 모달 창 표시될때 초기화 처리
-      $('#modal_sub_mng').on('shown.bs.modal', function() {  
-          // 모달 열릴 때 첫 번째 포커스 가능 요소로 이동          
-          $(this).data('trigger-element', document.activeElement);
-          
-          // 첫 번째 포커스 가능 요소로 이동
-          $(this).find('button:not([disabled]), input:not([disabled])').first().focus();
-           
+          // Show the modal
+          $('#modal_sub_mng').modal('show');
         });
+
+          // 모달 창 표시될때 초기화 처리
+        $('#modal_sub_mng').on('shown.bs.modal', function() {  
+            // 모달 열릴 때 첫 번째 포커스 가능 요소로 이동          
+            $(this).data('trigger-element', document.activeElement);            
+            var chainNo = $('#chain_no').val();
+            if (chainNo != '') {
+              callAjax('/common/getShiftChainList', "chain_no=" + chainNo , fn_link_chain_setting);      
+            } else {
+              swal('실패', '가맹점을 선택해주세요.', 'error');
+              return; 
+            }
+            $(this).find('button:not([disabled]), input:not([disabled])').first().focus();
+            
+          });
+        
+        function fn_link_chain_setting(data) { 
+            codeSetting('LINK_CHAIN', data.data, '#mng_shift_chain_no', '1', '', ''); 
+        }
 
       // 모달이 닫힐 때 포커스 복원
         $('#modal_sub_mng').on('hidden.bs.modal', function() {
@@ -345,17 +442,66 @@
             return true; // 모달 닫기 허용
         });
 
-        $('input[name="mng_action_type"]').on('change', function() {
-          if ($(this).val() === 'deposit') {
-            $('#mng_sub_deposit_div').show();
+        $('input[name="mng_recv_type"]').on('change', function() {
+          if ($(this).val() === 'M10000') {           // 수가 차감            
             $('#mng_sub_shift_div').hide();
           } else {
-            $('#mng_sub_deposit_div').hide();
             $('#mng_sub_shift_div').show();
           }
         });
 
+        $('#btn_sub_mng').click(function () {
+          $('#crud').val('update');
+          var form = $('#frm_sub_mng');
+          var checked = true;
+          var sub_no = $('#mng_sub_no').val();
+          if(sub_no == '') {
+            swal('실패', "차감번호를 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          }
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          }); 
+          // 대체 차감의 경우 체크
+          var selectedRecvType = $('input[name="mng_recv_type"]:checked').val();          
+          if(selectedRecvType == 'O20000') {
+            if($('#mng_shift_chain_no').val() == '') {
+              swal('실패', "대체 가맹점을 먼저 선택해주세요.", 'error');
+              checked = false;
+              return;   
+            }            
+          }           
+          var formData = {
+            subNo         : $('#mng_sub_no').val(),
+            recvType      : selectedRecvType,    
+            shiftChainNo  : $('#mng_shift_chain_no').val(),                 
+            actionNo      : '',    
+            recvAmt       : parseInt($('#mng_deposit_amt').val().replace(/,/g, ''), 10),
+            memo          : $('#mng_sub_memo').val(),                        
+          }
+          if (checked) {
+            ConfirmdialogToAjax('execute', '/withdraw/subtract/subMng/callProcSubReceive', formData, fn_return_subReveive_result);            
+          }  
+          // Show the modal
+          $('#modal_sub_mng').modal('hide');
+        });     
 
+        function fn_return_subReveive_result(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg;  
+
+          if (resultCode == 'S000') {            
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+            tbl_sub_summary.ajax.reload();
+            tbl_sub_list.ajax.reload();
+            fn_frm_sub_mst_clear();
+          } else { 
+            swal('실패', resultMsg, 'error');
+          }
+        }
       });
     </script>
   </head>
@@ -368,12 +514,24 @@
               <div class="col-auto align-self-center">
                 <h5 class="mb-0">가맹점 목록</h5>
               </div>              
-              <div class="col-lg-8">
+              <div class="col-lg-9">
                 <form id="frm_sch_chain" name="frm_sch_chain" onsubmit="return false;" novalidate="">
-                  <div class="input-group input-group-sm px-3">
-                    <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_chain_nm">가맹점 명</label>
-                    <input type="text" class="form-control form-control-sm" id="sch_chain_nm" name="sch_chain_nm" />     
-                    <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
+                  <div class="row mb-0">
+                    <div class="col-sm-4">
+                      <div class="input-group input-group-sm mb-0">
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="checkbox" id="sch_all" name="sch_all" />
+                          <label class="form-check-label" for="sch_all">완료포함</label>
+                        </div> 
+                      </div>
+                    </div>
+                    <div class="col-sm-8">
+                      <div class="input-group input-group-sm mb-0">
+                        <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_chain_nm">가맹점 명</label>
+                        <input type="text" class="form-control form-control-sm" id="sch_chain_nm" name="sch_chain_nm" />     
+                        <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
+                      </div>
+                    </div>
                   </div>
                 </form>
               </div>
@@ -462,8 +620,7 @@
                 <div class="d-flex justify-content-between align-items-center mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">
                   <span>상세정보</span>
                   <div>
-                    <button class="btn btn-success me-2" id="btn_receipt_process">수납처리</button>
-                    <button class="btn btn-success" id="btn_alternative_deduction">대체차감</button>
+                    <button class="btn btn-success me-2" id="btn_receipt_process">수납처리</button> 
                   </div>
                 </div>
                 
@@ -580,7 +737,7 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="recv_crd_amt">수납 이자</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end bg-light" id="recv_crd_amt" type="text" name="recv_crd_amt" istyle="amount" value="0" />
+                          <input class="form-control form-control-sm text-end bg-light" id="recv_crd_amt" type="text" name="recv_crd_amt" istyle="amount" value="0" readonly />
                         </div>
                       </div>
                     </div>
@@ -588,7 +745,7 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="recv_svc_amt">수납 수수료</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end bg-light" id="recv_svc_amt" type="text" name="recv_svc_amt" istyle="amount" value="0" />
+                          <input class="form-control form-control-sm text-end bg-light" id="recv_svc_amt" type="text" name="recv_svc_amt" istyle="amount" value="0" readonly/>
                         </div>
                       </div>
                     </div>
@@ -596,7 +753,7 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="recv_base_amt">수납 원금</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end bg-light" id="recv_base_amt" type="text" name="recv_base_amt" istyle="amount" value="0" />
+                          <input class="form-control form-control-sm text-end bg-light" id="recv_base_amt" type="text" name="recv_base_amt" istyle="amount" value="0" readonly/>
                         </div>
                       </div>
                     </div>
@@ -697,7 +854,27 @@
                     </p>
                   </div>
                 </form>
-              </div> 
+              </div>
+              <div class="card-body pt-0 px-0" style="padding-top: 0px">
+                <div class="table-responsive scrollbar">
+                  <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_sub_recv_list">
+                    <thead class="bg-200">
+                      <tr>
+                        <th class="text-center" style="width: 120px;">실행일</th>
+                        <th class="text-center" style="width: 150px;">실행유형</th>
+                        <th class="text-center" style="width: 120px;">수납금액</th>
+                        <th class="text-center" style="width: 120px;">원금</th>
+                        <th class="text-center" style="width: 120px;">수수료</th>
+                        <th class="text-center" style="width: 120px;">이자</th>
+                        <th class="text-center" style="width: 300px;">비고</th>
+                        <th class="text-center" style="width: 100px;">관리</th>
+                      </tr>
+                    </thead>
+                    <tbody class="list"></tbody>
+                  </table>
+                </div>
+              </div>
+               
             </div>  
           </div>
         </div>
@@ -753,11 +930,11 @@
             <div class="row mb-1">
               <div class="col-sm-4">
                 <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" name="mng_action_type" id="mng_action_deposit" value="deposit" checked />
+                  <input class="form-check-input" type="radio" name="mng_recv_type" id="mng_recv_type" value="M10000" checked />
                   <label class="form-check-label" for="mng_action_deposit">입금</label>
                 </div>
                 <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" name="mng_action_type" id="mng_action_shift" value="shift" />
+                  <input class="form-check-input" type="radio" name="mng_recv_type" id="mng_recv_type" value="O20000" />
                   <label class="form-check-label" for="mng_action_alternative">대체차감</label>
                 </div>
               </div>
@@ -766,15 +943,31 @@
                   <label class="col-sm-4 col-form-label col-form-label-sm" for="mng_deposit_amt">입금액</label>
                   <div class="col-sm-8">
                     <input class="form-control form-control-sm text-end" id="mng_deposit_amt" type="text" name="mng_deposit_amt" istyle="amount" placeholder="0" />
+                    <script>
+                      document.addEventListener('DOMContentLoaded', function () {
+                      const depositAmtInput = document.getElementById('mng_deposit_amt');
+                      const remainAmtInput = document.getElementById('mng_remain_amt');
+
+                      depositAmtInput.addEventListener('input', function () {
+                          const depositAmt = parseFloat(depositAmtInput.value.replace(/,/g, '')) || 0;
+                          const remainAmt = parseFloat(remainAmtInput.value.replace(/,/g, '')) || 0;
+
+                          if (depositAmt > remainAmt) {
+                            alert('입금액은 미차감액보다 클 수 없습니다.');
+                            depositAmtInput.value = remainAmt.toLocaleString();
+                          }
+                        });
+                      });
+                    </script>
+                  </div>
+                  <div class="input-group input-group-sm mb-1" style="display: none;" id="mng_sub_shift_div">
+                    <label class="col-sm-4 col-form-label col-form-label-sm" for="alternative_chain">대체차감</label>
+                    <select class="form-select form-control-sm" id="mng_shift_chain_no" name="mng_shift_chain_no">
+                      <option value="">-- 선택 --</option>
+                    </select>
                   </div>
                 </div>
-                <div class="input-group input-group-sm mb-1" style="display: none;" id="mng_sub_shift_div">
-                  <label class="col-sm-4 col-form-label col-form-label-sm" for="alternative_chain">대체차감</label>
-                  <select class="form-select form-control-sm" id="mng_shift_chain_no" name="mng_shift_chain_no">
-                    <option value="">-- 선택 --</option>
-                  </select>
-                </div>
-              </div>
+              </div>  
             </div>            
             <div class="row mb-1">
               <div class="col-sm-12">

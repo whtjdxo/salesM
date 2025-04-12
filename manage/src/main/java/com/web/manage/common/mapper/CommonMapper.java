@@ -16,6 +16,8 @@ public interface CommonMapper {
     
     List<HashMap<String, Object>> getLinkChainList(HashMap<String, Object> hashmapParam);
 
+    List<HashMap<String, Object>> getShiftChainList(HashMap<String, String> hashmapParam);
+
     List<HashMap<String, Object>> getAgencyList(HashMap<String, String> hashmapParam);
 
     String getPreWorkDay();

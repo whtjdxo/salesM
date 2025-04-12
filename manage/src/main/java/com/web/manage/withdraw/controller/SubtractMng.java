@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.web.manage.withdraw.domain.SubMstVO;
+import com.web.manage.withdraw.domain.ProcSubReceiveVO;
 import com.web.manage.withdraw.service.SubtractService;
 
 import ch.qos.logback.classic.Logger;
@@ -47,7 +48,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 @Controller
-@RequestMapping("/withdraw/subtract/subMng/")
+@RequestMapping("/withdraw/subtract/")
 public class SubtractMng {
     static final Logger logger = (Logger) LoggerFactory.getLogger(AuthInterceptor.class);
 
@@ -57,18 +58,17 @@ public class SubtractMng {
    @Autowired
    private CommonService commonService; 
 
-    @RequestMapping("mngview")
+    @RequestMapping("subMng/view")
     public String view() {
         return "pages/withdraw/subtractMng";
     }
 
-    @RequestMapping("excel")
+    @RequestMapping("subMng/excel")
     public String excelUpload() {
         return "pages/withdraw/vanDocuUpload";
-    } 
-
+    }
     
-    @RequestMapping("subSummary")    
+    @RequestMapping("subMng/subSummary")    
     public @ResponseBody String getSubSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -104,7 +104,7 @@ public class SubtractMng {
         return jString;  
     }
 
-    @RequestMapping("chainSubList")    
+    @RequestMapping("subMng/chainSubList")    
     public @ResponseBody String getChainSubList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -140,7 +140,43 @@ public class SubtractMng {
         return jString;  
     }
 
-    @RequestMapping(value = "/insertSubMst", method = RequestMethod.POST)    
+    @RequestMapping("subMng/subReceiveList")    
+    public @ResponseBody String getSubReceiveList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+            
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = subtractService.getSubReceiveList(hashmapParam);
+            int records = subtractService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jString;  
+    } 
+
+    @RequestMapping(value = "subMng/insertSubMst", method = RequestMethod.POST)    
     public @ResponseBody ReturnDataVO insertSubMst(@ModelAttribute("SubMstVO") @Valid SubMstVO subMstVo, BindingResult bindingResult, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO(); 
         try {
@@ -180,7 +216,7 @@ public class SubtractMng {
         return result;
     }
 
-    @RequestMapping(value = "/updateSubMst", method = RequestMethod.POST)
+    @RequestMapping(value = "subMng/updateSubMst", method = RequestMethod.POST)
     public @ResponseBody ReturnDataVO updateSubMst(@ModelAttribute("SubMstVO") @Valid SubMstVO subMstVo, BindingResult bindingResult, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO(); 
         try {
@@ -218,303 +254,191 @@ public class SubtractMng {
         }
         return result;
     }
+ 
 
+    @RequestMapping(value = "subMng/callProcSubReceive", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO callProcSubReceive(@ModelAttribute("ProcSubReceiveVO") @Valid ProcSubReceiveVO procSRVo, HttpSession session) {
+        
+        ReturnDataVO result = new ReturnDataVO();
+        // procSRVo.setRecvAmt(procSRVo.getRecvAmt().replace(",",""));    // 숫자, 제거 
 
-    // @RequestMapping("list")    
-    // public @ResponseBody String list(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
-    //     HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
-    //     List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
-    //     Gson gson = new Gson();
-    //     SessionVO member = (SessionVO) session.getAttribute("S_USER");
-    //     hashmapParam.put("user_id", member.getUserId());
-    //     String jString = null; 
-    //     try {
-    //         PageingVO pageing = new PageingVO();
-    //         pageing.setPageingVO(hashmapParam);
-    //         if (hashmapParam.get("sch_conf_sdt") != null) {
-    //             String sch_conf_sdt = commonService.getPreWorkDay();
-    //             hashmapParam.put("sch_conf_sdt", sch_conf_sdt);
-    //         }
-    //         if (hashmapParam.get("sch_conf_edt") != null) {
-    //             String sch_conf_edt = commonService.getToDay();
-    //             hashmapParam.put("sch_conf_edt", sch_conf_edt);
-    //         }
-
-    //         int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-    //         hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-    //         hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
-    //         hashmapParam.put("start", pageing.getStart());
-    //         hashmapParam.put("end", pageing.getLength());
-
-    //         list = subtractService.getScrapDataSumm(hashmapParam);
-    //         int records = subtractService.getQueryTotalCnt();
-
-    //         pageing.setRecords(records);
-    //         pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
-
-    //         hashmapResult.put("draw", pageing.getDraw());
-    //         hashmapResult.put("recordsTotal", pageing.getRecords());
-    //         hashmapResult.put("recordsFiltered", pageing.getRecords());
-    //         hashmapResult.put("data", list);
-
-    //         jString = gson.toJson(hashmapResult);
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //     }
-
-    //     return jString;  
-    // }
-
-    // @RequestMapping(value = "/getChainDocuSumm", method = RequestMethod.POST)
-    // public @ResponseBody String getChainDocuSumm(@RequestBody HashMap<String, Object> hashmapParam) {
-    //     HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
-    //     List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
-    //     Gson gson = new Gson();
-    //     // System.out.println("getChainDocuSummgetChainDocuSummgetChainDocuSummgetChainDocuSummgetChainDocuSumm");
-    //     String jString = null; 
-    //     try {
-    //         PageingVO pageing = new PageingVO();
-    //         pageing.setPageingVO(hashmapParam);
-
-    //         int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-    //         hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-    //         hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
-    //         hashmapParam.put("start", pageing.getStart());
-    //         hashmapParam.put("end", pageing.getLength());
-
-    //         list = subtractService.getChainDocuSumm(hashmapParam);
-    //         int records = subtractService.getQueryTotalCnt();
-
-    //         pageing.setRecords(records);
-    //         pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
-
-    //         hashmapResult.put("draw", pageing.getDraw());
-    //         hashmapResult.put("recordsTotal", pageing.getRecords());
-    //         hashmapResult.put("recordsFiltered", pageing.getRecords());
-    //         hashmapResult.put("data", list);
-
-    //         jString = gson.toJson(hashmapResult); 
+        System.out.println(procSRVo);
+        
+        try {
+            System.out.println("procVo : " + procSRVo);
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            procSRVo.setUserId(member.getUserId());
             
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //     }
-    //     return jString;  
-    // }
+            return subtractService.callProcSubReveive(procSRVo);             
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("An error occurred while processing the scrap transaction.");
+            e.printStackTrace();
+            return result;
+        } 
+    }
 
-    // @RequestMapping(value = "/getChainVanDocuList", method = RequestMethod.POST)
-    // public @ResponseBody String getChainVanDocuList(@RequestBody HashMap<String, Object> hashmapParam) {
-    //     HashMap<String, Object> hashmapResult = new HashMap<>();
-    //     List<HashMap<String, Object>> list = new ArrayList<>();
-    //     Gson gson = new Gson();
-    //     String jString = null;
-    //     try {
-    //         PageingVO pageing = new PageingVO();
-    //         pageing.setPageingVO(hashmapParam);
+    @RequestMapping("subStat/view")
+    public String statView() {
+        return "pages/withdraw/subStat";
+    } 
 
-    //         int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-    //         hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-    //         hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
-    //         hashmapParam.put("start", pageing.getStart());
-    //         hashmapParam.put("end", pageing.getLength());
+    @RequestMapping("subStat/subStatSummary")    
+    public @ResponseBody String getSubStatSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam); 
+ 
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
 
-    //         list = subtractService.getChainVanDocuList(hashmapParam);
-    //         int records = subtractService.getQueryTotalCnt();
+            list = subtractService.getSubStatSummary(hashmapParam);
+            int records = subtractService.getQueryTotalCnt();
 
-    //         pageing.setRecords(records);
-    //         pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
 
-    //         hashmapResult.put("draw", pageing.getDraw());
-    //         hashmapResult.put("recordsTotal", pageing.getRecords());
-    //         hashmapResult.put("recordsFiltered", pageing.getRecords());
-    //         hashmapResult.put("data", list);
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
 
-    //         jString = gson.toJson(hashmapResult);
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //     }
-    //     return jString;
-    // }
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jString;  
+    }
 
-    // @RequestMapping(value = "/downloadDocuListExcel", method = RequestMethod.POST)
-    // public ResponseEntity<byte[]> downloadDocuListExcel(@RequestBody HashMap<String, Object> hashmapParam) {
-    //     try {
-    //         // Fetch data for the Excel file
-    //         hashmapParam.put("sidx", "");
-    //         hashmapParam.put("sord", "");
-    //         hashmapParam.put("start", "0");
-    //         hashmapParam.put("end", "9999");
-    //         List<HashMap<String, Object>> list = subtractService.getChainVanDocuList(hashmapParam);
-
-    //         // Create an Excel workbook
-    //         Workbook workbook = new XSSFWorkbook();
-    //         Sheet sheet = workbook.createSheet("Docu List");
-
-    //         // Create header row
-    //         Row headerRow = sheet.createRow(0);
-    //         String[] headers = {"일련번호", "VAN", "발급사", "매입사", "카드번호", "카드유형", "구분", "승인번호", "승인일시", "승인금액", "취소", "원거래일", "사전정산", "정산상태", "가맹점명", "가맹점명"};
-    //         for (int i = 0; i < headers.length; i++) {
-    //             Cell cell = headerRow.createCell(i);
-    //             cell.setCellValue(headers[i]);
-    //         }
-    //         // Populate data rows
-    //         int rowIndex = 1;
-    //         for (HashMap<String, Object> row : list) {
-    //             Row dataRow = sheet.createRow(rowIndex++);
-    //             dataRow.createCell(0).setCellValue(String.valueOf(row.get("docu_seq")));
-    //             dataRow.createCell(1).setCellValue(String.valueOf(row.get("van_cd_nm")));
-    //             dataRow.createCell(2).setCellValue(String.valueOf(row.get("card_iss_nm")));
-    //             dataRow.createCell(3).setCellValue(String.valueOf(row.get("card_acq_nm")));
-    //             dataRow.createCell(4).setCellValue(String.valueOf(row.get("card_no")));
-    //             dataRow.createCell(5).setCellValue(String.valueOf(row.get("card_type_nm")));
-    //             dataRow.createCell(6).setCellValue(String.valueOf(row.get("conf_gb_nm")));
-    //             dataRow.createCell(7).setCellValue(String.valueOf(row.get("conf_no")));
-    //             dataRow.createCell(8).setCellValue(String.valueOf(row.get("conf_dttm")));
-    //             dataRow.createCell(9).setCellValue(String.valueOf(row.get("conf_amt")));
-    //             dataRow.createCell(10).setCellValue(String.valueOf(row.get("cncl_yn")));
-    //             dataRow.createCell(11).setCellValue(String.valueOf(row.get("org_conf_dt")));
-    //             dataRow.createCell(12).setCellValue(String.valueOf(row.get("proc_fg_nm")));
-    //             dataRow.createCell(13).setCellValue(String.valueOf(row.get("wd_status_nm")));
-    //         }
-
-    //         // Write workbook to a byte array
-    //         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    //         workbook.write(outputStream);
-    //         workbook.close();
-
-    //         // Set response headers
-    //         HttpHeaders hHeaders = new HttpHeaders();
-    //         hHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    //         hHeaders.setContentDispositionFormData("attachment", "DocuList.xlsx");
-
-    //         return ResponseEntity.ok()
-    //                 .headers(hHeaders)
-    //                 .body(outputStream.toByteArray());
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //         return ResponseEntity.status(500).build();
-    //     }
-    // }
-
-    // @RequestMapping(value = "/getUnprocessedList", method = RequestMethod.POST)
-    // public @ResponseBody String getUnprocessedList(@RequestBody HashMap<String, Object> hashmapParam) {
-    //     HashMap<String, Object> hashmapResult = new HashMap<>();
-    //     List<HashMap<String, Object>> list = new ArrayList<>();
-    //     Gson gson = new Gson();
-    //     String jString = null;
-    //     try {
-    //         PageingVO pageing = new PageingVO();
-    //         pageing.setPageingVO(hashmapParam);
-
-    //         int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-    //         hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-    //         hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
-    //         hashmapParam.put("start", pageing.getStart());
-    //         hashmapParam.put("end", pageing.getLength());
-
-    //         list = subtractService.getUnprocessedList(hashmapParam);
-    //         int records = subtractService.getQueryTotalCnt();
-
-    //         pageing.setRecords(records);
-    //         pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
-
-    //         hashmapResult.put("draw", pageing.getDraw());
-    //         hashmapResult.put("recordsTotal", pageing.getRecords());
-    //         hashmapResult.put("recordsFiltered", pageing.getRecords());
-    //         hashmapResult.put("data", list);
-
-    //         jString = gson.toJson(hashmapResult);
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //     }
-    //     return jString;
-    // }
-
-    // @RequestMapping(value = "/getUnprocessedSumm", method = RequestMethod.POST)
-    // public @ResponseBody String getUnprocessedSumm(@RequestBody HashMap<String, Object> hashmapParam) {
-    //     HashMap<String, Object> hashmapResult = new HashMap<>();
-    //     List<HashMap<String, Object>> list = new ArrayList<>();
-    //     Gson gson = new Gson();
-    //     String jString = null;
-    //     try {
-    //         PageingVO pageing = new PageingVO();
-    //         pageing.setPageingVO(hashmapParam);
-
-    //         int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-    //         hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-    //         hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
-    //         hashmapParam.put("start", pageing.getStart());
-    //         hashmapParam.put("end", pageing.getLength());
-
-    //         list = subtractService.getUnprocessedSumm(hashmapParam);
-    //         int records = subtractService.getQueryTotalCnt();
-
-    //         pageing.setRecords(records);
-    //         pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
-
-    //         hashmapResult.put("draw", pageing.getDraw());
-    //         hashmapResult.put("recordsTotal", pageing.getRecords());
-    //         hashmapResult.put("recordsFiltered", pageing.getRecords());
-    //         hashmapResult.put("data", list);
-
-    //         jString = gson.toJson(hashmapResult);
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //     }
-    //     return jString;
-    // }
-
-    // @RequestMapping(value = "/callScrapTransVanDocu", method = RequestMethod.POST)
-    // public @ResponseBody ReturnDataVO callScrapTransVanDocu(@ModelAttribute("TransProcessVO") @Valid TransProcessVO procVo, HttpSession session) {
-    //     ReturnDataVO result = new ReturnDataVO();
-    //     try {
-    //         System.out.println("procVo : " + procVo);
-    //         SessionVO member = (SessionVO) session.getAttribute("S_USER");
-    //         procVo.setUserId(member.getUserId());
+    @RequestMapping("subStat/subStatDetail")    
+    public @ResponseBody String getSubStatDetail(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
             
-    //         return subtractService.callScrapTransVanDocu(procVo);             
-    //     } catch (Exception e) {
-    //         result.setResultCode("F000");
-    //         result.setResultMsg("An error occurred while processing the scrap transaction.");
-    //         e.printStackTrace();
-    //         return result;
-    //     }
-    //     // return result;
-    // }
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
 
-    // @SuppressWarnings("deprecation")
-    // @RequestMapping(value = "/uploadExcel", method = RequestMethod.POST)
-    // public @ResponseBody ReturnDataVO uploadExcel(@RequestParam("file") MultipartFile file) {
-    //     ReturnDataVO result = new ReturnDataVO();
-    //     List<List<String>> data = new ArrayList<>();
-    //     try {
-    //         if (file.isEmpty()) {
-    //             result.setResultCode("F000");
-    //             result.setResultMsg("File is empty.");
-    //             return result;
-    //         }
+            list = subtractService.getSubStatDetail(hashmapParam);
+            int records = subtractService.getQueryTotalCnt();
 
-    //         Workbook workbook = new XSSFWorkbook(file.getInputStream());
-    //         Sheet sheet = workbook.getSheetAt(0);
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
 
-    //         for (Row row : sheet) {
-    //             List<String> rowData = new ArrayList<>();
-    //             for (Cell cell : row) {
-    //                 cell.setCellType(CellType.STRING);
-    //                 rowData.add(cell.getStringCellValue());
-    //             }
-    //             data.add(rowData);
-    //         }
-    //         workbook.close();
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
 
-    //         result.setResultCode("S000");
-    //         result.setResultMsg("File processed successfully.");
-    //         result.setData(data);
-    //     } catch (Exception e) {
-    //         result.setResultCode("F000");
-    //         result.setResultMsg("An error occurred while processing the file: " + e.getMessage());
-    //         e.printStackTrace();
-    //     }
-    //     return result;
-    // }
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jString;  
+    }
+
+    @RequestMapping(value = "subStat/downExcelSubSumm", method = RequestMethod.POST)
+    public ResponseEntity<byte[]> downExcelSubSumm(@RequestBody HashMap<String, Object> hashmapParam) {
+        try {
+            // Fetch data for the Excel file
+            hashmapParam.put("sidx", "");
+            hashmapParam.put("sord", "");
+            hashmapParam.put("start", "0");
+            hashmapParam.put("end", "9999");
+            List<HashMap<String, Object>> list = subtractService.getSubStatSummary(hashmapParam);
+
+            // Create an Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Docu List");
+
+            // Create header row
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {
+                "가맹점 명", "사업자번호",
+                "출금차감 건", "출금차감 발생금액", "출금차감 차감금액", "출금차감 미차감액",
+                "입금차감 건", "입금차감 발생금액", "입금차감 차감금액", "입금차감 미차감액",
+                "대출차감 건", "대출차감 발생금액", "대출차감 차감금액", "대출차감 미차감액",
+                "수기차감 건", "수기차감 발생금액", "수기차감 차감금액", "수기차감 미차감액",
+                "기타차감 건", "기타차감 발생금액", "기타차감 차감금액", "기타차감 미차감액",
+                "총계 건", "총계 발생금액", "총계 차감금액", "총계 미차감액"
+            };
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+            }
+            // Populate data rows
+            int rowIndex = 1;
+            for (HashMap<String, Object> row : list) {
+                Row dataRow = sheet.createRow(rowIndex++);
+                dataRow.createCell(0).setCellValue(String.valueOf(row.get("chain_nm")));
+                dataRow.createCell(1).setCellValue(String.valueOf(row.get("biz_no")));
+
+                dataRow.createCell(2).setCellValue(String.valueOf(row.get("count_o")));
+                dataRow.createCell(3).setCellValue(String.valueOf(row.get("occur_amt_o")));
+                dataRow.createCell(4).setCellValue(String.valueOf(row.get("recv_amt_o")));
+                dataRow.createCell(5).setCellValue(String.valueOf(row.get("remain_amt_o")));
+
+                dataRow.createCell(6).setCellValue(String.valueOf(row.get("count_i")));
+                dataRow.createCell(7).setCellValue(String.valueOf(row.get("occur_amt_i")));
+                dataRow.createCell(8).setCellValue(String.valueOf(row.get("recv_amt_i")));
+                dataRow.createCell(9).setCellValue(String.valueOf(row.get("remain_amt_i")));
+
+                dataRow.createCell(10).setCellValue(String.valueOf(row.get("count_l")));
+                dataRow.createCell(11).setCellValue(String.valueOf(row.get("occur_amt_l")));
+                dataRow.createCell(12).setCellValue(String.valueOf(row.get("recv_amt_l")));
+                dataRow.createCell(13).setCellValue(String.valueOf(row.get("remain_amt_l")));
+
+                dataRow.createCell(14).setCellValue(String.valueOf(row.get("count_m")));
+                dataRow.createCell(15).setCellValue(String.valueOf(row.get("occur_amt_m")));
+                dataRow.createCell(16).setCellValue(String.valueOf(row.get("recv_amt_m")));
+                dataRow.createCell(17).setCellValue(String.valueOf(row.get("remain_amt_m")));
+
+                dataRow.createCell(18).setCellValue(String.valueOf(row.get("count_etc")));
+                dataRow.createCell(19).setCellValue(String.valueOf(row.get("occur_amt_etc")));
+                dataRow.createCell(20).setCellValue(String.valueOf(row.get("recv_amt_etc")));
+                dataRow.createCell(21).setCellValue(String.valueOf(row.get("remain_amt_etc")));
+
+                dataRow.createCell(22).setCellValue(String.valueOf(row.get("tot_cnt")));
+                dataRow.createCell(23).setCellValue(String.valueOf(row.get("occur_amt_tot")));
+                dataRow.createCell(24).setCellValue(String.valueOf(row.get("recv_amt_tot")));
+                dataRow.createCell(25).setCellValue(String.valueOf(row.get("remain_amt_tot")));
+            }
+
+            // Write workbook to a byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            workbook.close();
+
+            // Set response headers
+            HttpHeaders hHeaders = new HttpHeaders();
+            hHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            hHeaders.setContentDispositionFormData("attachment", "subsummary.xlsx");
+
+            return ResponseEntity.ok()
+                    .headers(hHeaders)
+                    .body(outputStream.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
 }
 

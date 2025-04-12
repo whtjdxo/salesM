@@ -42,7 +42,10 @@
                                         , SUM(SM.REMAIN_CRD_AMT) 	AS REMAIN_CRD_AMT    
                                   FROM 	TB_SUB_MST SM
                                  WHERE  SM.USE_YN = 'Y'
-                                   AND	SUB_STATUS IN ('000000', '100000', '900000')
+                                 <if test="sch_all == null or sch_all == ''">
+                                        AND	SUB_STATUS IN ('000000', '100000', '900000')
+                                </if>
+                                   
                         <!-- <if test="sch_reg_sdt != ''">
                                 AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
                         </if>
@@ -85,24 +88,24 @@
                         , SM.CHAIN_NO                                   AS chain_no    
                         , TC.CHAIN_NM			                AS chain_nm
                         , GET_CODE_NM('SVC_STAT', TC.SVC_STAT)          AS svc_stat_nm
-                        , SM.REG_DATE                   AS reg_date
-                        , SM.SUB_TYPE                   AS sub_type    
+                        , SM.REG_DATE                                   AS reg_date
+                        , SM.SUB_TYPE                                   AS sub_type    
                         , GET_CODE_NM('SUB_TYPE', SM.SUB_TYPE) 	        AS sub_type_nm
-                        , SM.SUB_CODE                   AS sub_code
+                        , SM.SUB_CODE                                   AS sub_code
                         , GET_CODE_NM('SUB_CODE', SM.SUB_CODE) 	        AS sub_code_nm
                         , SM.SUB_MEMO                   AS sub_memo                        
-                        , SM.OCCUR_AMT                  AS occur_amt
-                        , SM.OCCUR_BASE_AMT             AS occur_base_amt
-                        , SM.OCCUR_SVC_AMT              AS occur_svc_amt                
-                        , SM.OCCUR_CRD_AMT              AS occur_crd_amt
-                        , SM.RECV_AMT                   AS recv_amt
-                        , SM.RECV_BASE_AMT              AS recv_base_amt
-                        , SM.RECV_SVC_AMT               AS recv_svc_amt 
-                        , SM.RECV_CRD_AMT               AS recv_crd_amt
-                        , SM.REMAIN_AMT                 AS remain_amt      
-                        , SM.REMAIN_BASE_AMT            AS remain_base_amt       
-                        , SM.REMAIN_SVC_AMT             AS remain_svc_amt 
-                        , SM.REMAIN_CRD_AMT             AS remain_crd_amt
+                        , IFNULL(SM.OCCUR_AMT, 0)       AS occur_amt
+                        , IFNULL(SM.OCCUR_BASE_AMT, 0)  AS occur_base_amt
+                        , IFNULL(SM.OCCUR_SVC_AMT, 0)   AS occur_svc_amt                
+                        , IFNULL(SM.OCCUR_CRD_AMT, 0)   AS occur_crd_amt
+                        , IFNULL(SM.RECV_AMT, 0)        AS recv_amt
+                        , IFNULL(SM.RECV_BASE_AMT, 0)   AS recv_base_amt
+                        , IFNULL(SM.RECV_SVC_AMT, 0)    AS recv_svc_amt 
+                        , IFNULL(SM.RECV_CRD_AMT, 0)    AS recv_crd_amt
+                        , IFNULL(SM.REMAIN_AMT, 0)      AS remain_amt      
+                        , IFNULL(SM.REMAIN_BASE_AMT, 0) AS remain_base_amt       
+                        , IFNULL(SM.REMAIN_SVC_AMT, 0)  AS remain_svc_amt 
+                        , IFNULL(SM.REMAIN_CRD_AMT, 0)  AS remain_crd_amt
                         , SM.SHIFT_FLAG                 AS shift_flag
                         , SM.SHIFT_SUB_NO               AS shift_sub_no                         
                         , SM.LOAN_NO                    AS loan_no
@@ -111,10 +114,10 @@
                         , SM.REMIT_NO                   AS remit_no
                         , SM.USE_YN                     AS use_yn
                         , DATE_FORMAT(IFNULL(SM.UPT_DTTM, SM.ENT_DTTM), '%Y-%m-%d %H:%i:%s')      AS upt_dttm
-                        , IFNULL(SM.UPT_USER_ID, SM.ENT_USER_ID) 		        AS upt_user_id
+                        , IFNULL(SM.UPT_USER_ID, SM.ENT_USER_ID) 		                  AS upt_user_id
                 FROM 	TB_SUB_MST SM
-                                JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
-                                                AND TC.USE_YN  = 'Y'
+                        JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
+                                        AND TC.USE_YN  = 'Y'
                 WHERE	SM.USE_YN = 'Y'          
                   AND   SM.CHAIN_NO =  #{sch_chain_no}
                 <if test="sch_reg_sdt != ''">
@@ -142,6 +145,26 @@
                 </choose>                
                 LIMIT  ${start}, ${end}
         </select> 
+
+        <select id="getSubReceiveList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT  SQL_CALC_FOUND_ROWS
+                        SR.SUB_NO                                       AS sub_no 
+                        , RECV_DATE                                     AS recv_date
+                        , RECV_TYPE                                     AS recv_type        
+                        , GET_CODE_NM('RECV_TYPE', SR.RECV_TYPE)        AS recv_type_nm
+                        , IFNULL(REMIT_NO, '')                          AS remit_no
+                        , IFNULL(RECV_AMT, 0)                           AS recv_amt
+                        , IFNULL(RECV_BASE_AMT, 0)                      AS recv_base_amt 
+                        , IFNULL(RECV_SVC_AMT, 0)                       AS recv_svc_amt
+                        , IFNULL(RECV_CRD_AMT, 0)                       AS recv_crd_amt 
+                        , MEMO                                          AS memo
+                        , TRANS_CHK                                     AS trans_chk
+                        , ENT_USER_ID                                   AS ent_user_id            
+                        , DATE_FORMAT(ENT_DTTM, '%Y-%m-%d %H:%i')       AS ent_dttm
+                  FROM  TB_SUB_RECEIVE SR
+                 WHERE  SUB_NO = #{sub_no} 
+                 ORDER  BY 1
+        </select>
 
          <select id="getNewSubNo" resultType="java.lang.String">
 	    /* SubtractMapper.getNewSubNo */
@@ -192,15 +215,122 @@
                 WHERE   SUB_NO  = #{sub_no};
 	</update>
 
-        <update id="callScrapTransDeliDocu" parameterType="com.web.manage.trans.domain.TransProcessVO" statementType="CALLABLE">
+        <update id="callProcSubReveive" parameterType="com.web.manage.withdraw.domain.ProcSubReceiveVO" statementType="CALLABLE">
                 { 
-                        CALL PRC_SCRAP_TRANS_DELI_DOCU(
-                                #{chainNo, mode=IN, jdbcType=VARCHAR}
-                                , #{userId, mode=IN, jdbcType=VARCHAR}
-                                , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-                                , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+                        CALL PRC_SUB_RECEIVE(
+                                #{subNo         , mode=IN       , jdbcType=VARCHAR}
+                                , #{recvType    , mode=IN       , jdbcType=VARCHAR}
+                                , #{shiftChainNo, mode=IN       , jdbcType=VARCHAR}
+                                , #{actionNo    , mode=IN       , jdbcType=VARCHAR}
+                                , #{recvAmt     , mode=IN       , jdbcType=INTEGER, javaType=java.lang.Integer}
+                                , #{memo        , mode=IN       , jdbcType=VARCHAR}
+                                , #{userId      , mode=IN       , jdbcType=VARCHAR}
+                                , #{resultCode  , mode=OUT      , jdbcType=INTEGER, javaType=java.lang.Integer}
+                                , #{resultBalanceAmt  , mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                                , #{resultMsg   , mode=OUT      , jdbcType=VARCHAR, javaType=java.lang.String}
                         ) 
                 }
         </update>
+
+        <select id="getSubStatSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
+                SELECT  SQL_CALC_FOUND_ROWS
+                        SM.CHAIN_NO             AS chain_no
+                        , TC.CHAIN_NM           AS chain_nm
+                        , TC.BIZ_NO             AS biz_no        
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'O' THEN 1 	ELSE NULL END), 0)     		AS count_o
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'O' THEN OCCUR_AMT 	ELSE NULL END), 0)     	AS occur_amt_o
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'O' THEN RECV_AMT  	ELSE NULL END), 0)     	AS recv_amt_o
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'O' THEN REMAIN_AMT  ELSE NULL END), 0)     	AS remain_amt_o
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'I' THEN 1 	ELSE NULL END), 0)     		AS count_i
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'I' THEN OCCUR_AMT 	ELSE NULL END), 0)     	AS occur_amt_i
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'I' THEN RECV_AMT  	ELSE NULL END), 0)     	AS recv_amt_i
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'I' THEN REMAIN_AMT  ELSE NULL END), 0)     	AS remain_amt_i        
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'L' THEN 1 	ELSE NULL END), 0)     		AS count_l
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'L' THEN (CASE WHEN SUB_STATUS  = '999999'   THEN RECV_AMT ELSE  OCCUR_AMT END ) ELSE NULL END), 0)     	AS occur_amt_l
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'L' THEN RECV_AMT  	ELSE NULL END), 0)     	AS recv_amt_l
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'L' THEN (CASE WHEN SUB_STATUS  = '999999'    THEN NULL ELSE  REMAIN_AMT END )  ELSE NULL END), 0)     	        AS remain_amt_l        
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'M' THEN 1 	ELSE NULL END), 0)     		AS count_m
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'M' THEN OCCUR_AMT 	ELSE NULL END), 0)     	AS occur_amt_m
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'M' THEN RECV_AMT  	ELSE NULL END), 0)     	AS recv_amt_m
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'M' THEN REMAIN_AMT  ELSE NULL END), 0)     	AS remain_amt_m
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE IN ('O', 'I', 'L', 'M') THEN NULL 	ELSE 1 END), 0)     		AS count_etc
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE IN ('O', 'I', 'L', 'M') THEN NULL 	ELSE OCCUR_AMT END), 0)     	AS occur_amt_etc
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE IN ('O', 'I', 'L', 'M') THEN NULL 	ELSE RECV_AMT END), 0)     	AS recv_amt_etc
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE IN ('O', 'I', 'L', 'M') THEN NULL 	ELSE REMAIN_AMT END), 0)     	AS remain_amt_etc
+                        , COUNT(1)						                                                AS tot_cnt
+                        , IFNULL(SUM(CASE WHEN SUB_STATUS  = '999999'   THEN RECV_AMT ELSE  OCCUR_AMT END ), 0)     	        AS occur_amt_tot
+                        , IFNULL(SUM(RECV_AMT  ), 0)     	                                                                AS recv_amt_tot
+                        , IFNULL(SUM(CASE WHEN SUB_STATUS  = '999999'  THEN NULL ELSE  REMAIN_AMT END ), 0)     	        AS remain_amt_tot
+                        , MIN(SM.REG_DATE)                      AS min_reg_dt
+                        , MAX(SM.REG_DATE)                      AS max_reg_dt        
+                  FROM  TB_SUB_MST SM
+                        JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
+                        <if test="sch_chain_nm != ''"> 
+                                AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                        </if>
+                        <if test="sch_agency_no != ''"> 
+                                AND  TC.AGENCY_NO = #{sch_agency_no} 
+                        </if>
+                 WHERE	SM.USE_YN		= 'Y'
+                <if test="sch_reg_sdt != ''">
+                        AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
+                </if>
+                <if test="sch_reg_edt != ''">
+                        AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
+                </if> 
+                GROUP BY SM.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO 
+                <choose>
+                        <when test="sidx != ''">
+                                ORDER BY ${sidx} ${sord}
+                        </when>
+                        <otherwise>
+                                ORDER BY 1
+                        </otherwise>
+                </choose>                
+                LIMIT  ${start}, ${end}
+        </select>
+
+        <select id="getSubStatDetail" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
+                SELECT  SQL_CALC_FOUND_ROWS 
+                        SM.SUB_NO                               AS sub_no 
+                        , SM.REG_DATE                           AS reg_date
+                        , GET_CODE_NM('SUB_TYPE',SM.SUB_TYPE)  	AS sub_type_nm
+                        , GET_CODE_NM('SUB_CODE',SM.SUB_CODE)  	AS sub_code_nm
+                        , SM.SUB_MEMO                           AS sub_memo
+                        , SM.SUB_STATUS                         AS sub_status
+                        , GET_CODE_NM('SUB_STATUS',SM.SUB_STATUS) AS sub_status_nm
+                        , SM.OCCUR_AMT                          AS occur_amt
+                        , SM.RECV_AMT                           AS recv_amt 
+                        , SM.REMAIN_AMT                         AS remain_amt
+                        , IFNULL(SM.UPT_USER_ID, SM.ENT_USER_ID)   AS upt_user_id
+                  FROM  TB_SUB_MST SM
+                        JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO 
+                 WHERE	SM.USE_YN       = 'Y'    
+                   AND  SM.CHAIN_NO     = #{sch_list_chain_no}                 
+                <if test="sch_list_reg_sdt != ''">
+                        AND  SM.REG_DATE &gt;= #{sch_list_reg_sdt} 
+                </if>
+                <if test="sch_list_reg_edt != ''">
+                        AND  SM.REG_DATE &lt;= #{sch_list_reg_edt} 
+                </if>
+                <if test="sch_sub_type != ''">
+                        AND  SM.SUB_TYPE = #{sch_sub_type} 
+                </if>
+                <if test="sch_sub_code != null and sch_sub_code != ''">
+                        AND  SM.SUB_CODE = #{sch_sub_code} 
+                </if>
+                <if test="sch_sub_status != ''">
+                        AND  SM.SUB_STATUS = #{sch_sub_status} 
+                </if>                   
+                <choose>
+                        <when test="sidx != ''">
+                                ORDER BY ${sidx} ${sord}
+                        </when>
+                        <otherwise>
+                                ORDER BY 1
+                        </otherwise>
+                </choose>                
+                LIMIT  ${start}, ${end}
+        </select>
 
 </mapper>

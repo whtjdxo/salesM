@@ -117,6 +117,24 @@ public class CommonController {
         return jString;  
     }  
 
+	@RequestMapping(value="/getShiftChainList")
+	public @ResponseBody ReturnDataVO getShiftChainList(@RequestParam HashMap<String, String> hashmapParam){
+		List<HashMap<String, Object>> list = new ArrayList<HashMap<String,Object>>();
+		ReturnDataVO result = new ReturnDataVO();
+		System.out.println("hashmapParam : " + hashmapParam);
+		try {
+			list = commonService.getShiftChainList(hashmapParam);
+			
+			result.setResultCode("S000");
+			result.setData(list);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
 	@RequestMapping(value="/getAgencyList")
 	public @ResponseBody ReturnDataVO getAgencyList(@RequestParam HashMap<String, String> hashmapParam){
 		List<HashMap<String, Object>> list = new ArrayList<HashMap<String,Object>>();

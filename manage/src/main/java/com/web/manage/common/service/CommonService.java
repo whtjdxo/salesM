@@ -34,6 +34,10 @@ public class CommonService {
         return commonMapper.getLinkChainList(hashmapParam);
     }  
 
+    public List<HashMap<String, Object>> getShiftChainList(HashMap<String, String> hashmapParam) {
+        return commonMapper.getShiftChainList(hashmapParam);
+    }    
+
     public List<HashMap<String, Object>> getAgencyList(HashMap<String, String> hashmapParam) {
         return commonMapper.getAgencyList(hashmapParam);
     }
