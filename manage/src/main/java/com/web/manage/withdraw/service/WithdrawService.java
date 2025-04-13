@@ -33,16 +33,20 @@ public class WithdrawService {
         return withdrawMapper.getQueryTotalCnt();
     }
 
-    public List<HashMap<String, Object>> getWithdrawSummary(HashMap<String, Object> hashmapParam) {
-        return withdrawMapper.getWithdrawSummary(hashmapParam);
+    public List<HashMap<String, Object>> getWDSummary(HashMap<String, Object> hashmapParam) {
+        return withdrawMapper.getWDSummary(hashmapParam);
     }
 
-    public List<HashMap<String, Object>> getChainWithdrawList(HashMap<String, Object> hashmapParam) {
-        return withdrawMapper.getChianWithdrawList(hashmapParam);
+    public List<HashMap<String, Object>> getWDChainSummary(HashMap<String, Object> hashmapParam) {
+        return withdrawMapper.getWDChainSummary(hashmapParam);
+    } 
+    
+    public List<HashMap<String, Object>> getWDCardSummary(HashMap<String, Object> hashmapParam) {
+        return withdrawMapper.getWDCardSummary(hashmapParam);
     }
 
-    public List<HashMap<String, Object>> getWithdrawDetailList(HashMap<String, Object> hashmapParam) {
-        return withdrawMapper.getWithdrawDetailList(hashmapParam);
+    public List<HashMap<String, Object>> getWdResvlList(HashMap<String, Object> hashmapParam) {
+        return withdrawMapper.getWDResvList(hashmapParam);
     }
  
  

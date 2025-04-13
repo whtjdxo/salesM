@@ -46,7 +46,7 @@ public class CommonController {
 		return result;
 	}
 
-	@RequestMapping(value="/getCreditCorpList")
+	@RequestMapping(value="getCreditCorpList")
 	public @ResponseBody ReturnDataVO getCreditCorpList(@RequestParam HashMap<String, String> hashmapParam){
 		List<HashMap<String, Object>> list = new ArrayList<HashMap<String,Object>>();
 		ReturnDataVO result = new ReturnDataVO();

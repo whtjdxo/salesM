@@ -62,12 +62,7 @@ public class SubtractMng {
     public String view() {
         return "pages/withdraw/subtractMng";
     }
-
-    @RequestMapping("subMng/excel")
-    public String excelUpload() {
-        return "pages/withdraw/vanDocuUpload";
-    }
-    
+ 
     @RequestMapping("subMng/subSummary")    
     public @ResponseBody String getSubSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();

@@ -47,18 +47,18 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 @Controller
-@RequestMapping("/withdraw/withdraw/withdrawMng/")
+@RequestMapping("/withdraw/withdraw/")
 
 public class WithdrawMng {
-    // static final Logger logger = (Logger) LoggerFactory.getLogger(AuthInterceptor.class);
+    static final Logger logger = (Logger) LoggerFactory.getLogger(AuthInterceptor.class);
 
-    // @Autowired
-    // private WithdrawService withdrawService; 
+    @Autowired
+    private WithdrawService withdrawService; 
 
-    // @RequestMapping("view")
-    // public String view() {
-    //     return "pages/withdraw/withdrawMng";
-    // }
+    @RequestMapping("wdMng/view")
+    public String view() {
+        return "pages/withdraw/withdrawMng";
+    }
 
     // @RequestMapping("excel") 
     // public String excelUpload() {
@@ -66,42 +66,157 @@ public class WithdrawMng {
     // } 
  
 
-    // @RequestMapping("summary")    
-    // public @ResponseBody String getWithdrawSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
-    //     HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
-    //     List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
-    //     Gson gson = new Gson();
-    //     SessionVO member = (SessionVO) session.getAttribute("S_USER");
-    //     hashmapParam.put("user_id", member.getUserId());
-    //     String jString = null; 
-    //     try {
-    //         PageingVO pageing = new PageingVO();
-    //         pageing.setPageingVO(hashmapParam);
+    @RequestMapping("wdMng/wdSummary")    
+    public @ResponseBody String getWDSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
 
-    //         // System.out.println(hashmapParam);
+            // System.out.println(hashmapParam);
 
-    //         int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-    //         hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-    //         hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
-    //         hashmapParam.put("start", pageing.getStart());
-    //         hashmapParam.put("end", pageing.getLength());
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
 
-    //         list = withdrawService.getWithdrawSummary(hashmapParam);
-    //         int records = withdrawService.getQueryTotalCnt();
+            list = withdrawService.getWDSummary(hashmapParam);
+            int records = withdrawService.getQueryTotalCnt();
 
-    //         pageing.setRecords(records);
-    //         pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
 
-    //         hashmapResult.put("draw", pageing.getDraw());
-    //         hashmapResult.put("recordsTotal", pageing.getRecords());
-    //         hashmapResult.put("recordsFiltered", pageing.getRecords());
-    //         hashmapResult.put("data", list);
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
 
-    //         jString = gson.toJson(hashmapResult);
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //     }
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-    //     return jString;  
-    // }
+        return jString;  
+    } 
+
+    @RequestMapping("wdMng/wdChainSummary")    
+    public @ResponseBody String getWdChainSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            // System.out.println(hashmapParam);
+
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = withdrawService.getWDChainSummary(hashmapParam);
+            int records = withdrawService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    }
+
+    @RequestMapping("wdMng/wdCardSummary")    
+    public @ResponseBody String getWDCardSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            // System.out.println(hashmapParam);
+
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = withdrawService.getWDCardSummary(hashmapParam);
+            int records = withdrawService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    } 
+
+    @RequestMapping("wdMng/wdResvList")    
+    public @ResponseBody String getWdResvlList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam); 
+
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = withdrawService.getWdResvlList(hashmapParam);
+            int records = withdrawService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    } 
 }

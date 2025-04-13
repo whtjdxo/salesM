@@ -9,11 +9,12 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface WithdrawMapper {
     int getQueryTotalCnt(); 
-    List<HashMap<String, Object>> getWithdrawSummary(HashMap<String, Object> hashmapParam);
-
-    List<HashMap<String, Object>> getChianWithdrawList(HashMap<String, Object> hashmapParam);    
-    List<HashMap<String, Object>> getWithdrawDetailList(HashMap<String, Object> hashmapParam);
-    List<HashMap<String, Object>> getWithdrawList(HashMap<String, Object> hashmapParam);
+    List<HashMap<String, Object>> getWDSummary(HashMap<String, Object> hashmapParam);
+    List<HashMap<String, Object>> getWDChainSummary(HashMap<String, Object> hashmapParam);
+    List<HashMap<String, Object>> getWDCardSummary(HashMap<String, Object> hashmapParam);    
+    List<HashMap<String, Object>> getWDResvList(HashMap<String, Object> hashmapParam);
+    
+    
     
 }
 
