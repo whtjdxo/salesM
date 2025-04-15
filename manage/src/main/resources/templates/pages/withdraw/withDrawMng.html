@@ -32,10 +32,10 @@
           codeSetting('WD_STATUS', data.data, '#sch_list_wd_status', '1', '', '');
         } 
 
-        callAjax('/common/getToDay', "", fn_sch_edate_setting);
-        function fn_sch_edate_setting(data) {
-          $('#sch_work_date').val(data.data);
-        }
+        // Set default values for sch_reg_sdt and sch_reg_edt
+        var today = new Date();        
+        $('#sch_work_date').val(today.toISOString().split('T')[0]); 
+ 
 
         $('#btn_search').click(function () {   
           tbl_wd_summ.ajax.reload();
@@ -72,14 +72,14 @@
                 , { data: 'remit_conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '')}  
               ],
             columnDefs: [           
-                  { targets: 0, width: '120px', className: 'text-left px-1' }
-                , { targets: 1, width: '90px', className: 'text-left px-1' }                  
-                , { targets: 2, width: '90px', className: 'text-right px-1' }
-                , { targets: 3, width: '150px', className: 'text-right px-1' }
-                , { targets: 4, width: '90px', className: 'text-right px-1' }
-                , { targets: 5, width: '150px', className: 'text-right px-1' }
-                , { targets: 6, width: '90px', className: 'text-right px-1' }
-                , { targets: 7, width: '150px', className: 'text-right px-1' } 
+                  { targets: 0, width: '150px', className: 'text-left px-1' }
+                , { targets: 1, width: '80px', className: 'text-left px-1' }                  
+                , { targets: 2, width: '80px', className: 'text-right px-1' }
+                , { targets: 3, width: '130px', className: 'text-right px-1' }
+                , { targets: 4, width: '80px', className: 'text-right px-1' }
+                , { targets: 5, width: '130px', className: 'text-right px-1' }
+                , { targets: 6, width: '80px', className: 'text-right px-1' }
+                , { targets: 7, width: '130px', className: 'text-right px-1' } 
               ],
           order: [[1, 'desc']],
           paging: true,
@@ -90,7 +90,7 @@
           responsive: true,
           scrollCollapse: true,
           pageLength: 10,
-          scrollY: '280px',
+          scrollY: '400px',
           info: false,
           language: {
             emptyTable: '데이터가 없습니다.',
@@ -137,19 +137,44 @@
           $('#frm_sch_card')[0].reset();   
           $('#frm_sch_list')[0].reset();
           
-          $('#sch_chain_no').val(row.chain_no);
+          $('#sch_card_chain_no').val(row.chain_no);
           $('#sch_list_chain_no').val(row.chain_no);   // list 검색 조건
           $('#sch_risk_chain_no').val(row.chain_no);   // risk 검색 조건
+
+          $('#sch_card_work_date').val($('#sch_work_date').val());   // 카드 작업일 설정
+          $('#sch_list_work_date').val($('#sch_work_date').val());   // risk 작업일 설정
+           
+
           $('#tot_conf_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.conf_amt));
           $('#card_fee_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.card_fee_amt));
+          $('#card_resv_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.card_resv_amt));
           $('#svc_fee_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.svc_fee_amt));      
           $('#crd_fee_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.crd_fee_amt));
           $('#wd_base_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.wd_base_amt));
-          $('#sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.sub_amt));
+
+          if (row.sub_amt > 0) {
+            $('#sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.sub_amt))
+              .css({ 'color': 'red', 'font-weight': 'bold' });
+          } else {
+            $('#sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.sub_amt))
+              .css({ 'color': '', 'font-weight': '' });
+          }
+          
           $('#exc_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.exc_amt));
-          $('#remit_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.remit_amt));
-          $('#tbl_card_summ').DataTable().ajax.reload();
-          $('#tbl_resv_list').DataTable().ajax.reload(); 
+          if (row.remit_amt > 0) {
+            $('#remit_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.remit_amt))
+              .css({ 'color': 'blue', 'font-weight': 'bold' });
+          } else if (row.remit_amt < 0) {
+            $('#remit_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.remit_amt))
+              .css({ 'color': 'red', 'font-weight': 'bold' });
+          } else {
+            $('#remit_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.remit_amt))
+              .css({ 'color': '', 'font-weight': '' });
+          }
+          $('#tbl_card_summ').DataTable().ajax.reload(); 
+          if ($('#sch_list_chain_no').val() && $('#sch_list_work_date').val()) {
+            tbl_wd_resv_list.ajax.reload();
+          } 
 
         });
         
@@ -170,6 +195,14 @@
             },
           },
           columns: [
+            { 
+              data: 'card_acq', 
+              render: function(data, type, row) {
+              return '<input type="checkbox" class="form-check-input" value="' + data + '">';
+              },
+              orderable: false,
+              className: 'text-center'
+            },
             { data: 'card_acq_nm' },
             { data: 'conf_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
             { data: 'conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
@@ -179,13 +212,14 @@
             { data: 'tot_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
           ],
           columnDefs: [
-            { targets: 0, width: '120px', className: 'text-left' },
-            { targets: 1, width: '90px', className: 'text-end' },
-            { targets: 2, width: '130px', className: 'text-end' },
-            { targets: 3, width: '90px', className: 'text-end' },
-            { targets: 4, width: '130px', className: 'text-end' },
-            { targets: 5, width: '90px', className: 'text-end' },
-            { targets: 6, width: '130px', className: 'text-end' },
+            { targets: 0, width: '50px', className: 'text-center' },
+            { targets: 1, width: '120px', className: 'text-left' },
+            { targets: 2, width: '90px', className: 'text-end' },
+            { targets: 3, width: '130px', className: 'text-end' },
+            { targets: 4, width: '90px', className: 'text-end' },
+            { targets: 5, width: '130px', className: 'text-end' },
+            { targets: 6, width: '90px', className: 'text-end' },
+            { targets: 7, width: '130px', className: 'text-end' },
           ],
           order: [[1, 'asc']],
           paging: true,
@@ -195,8 +229,8 @@
           autoWidth: false,
           responsive: true,
           scrollCollapse: true,
-          pageLength: 10,
-          scrollY: '280px',
+          pageLength: 15,
+          scrollY: '200px',
           info: false,
           language: {
             emptyTable: '데이터가 없습니다.',
@@ -225,12 +259,12 @@
           }, 
           columns: [
             { 
-              data: 'wd_seq', 
+              data: 'wd_no', 
               render: function(data, type, row) {
-              return '<input type="checkbox" class="form-check-input" value="' + data + '">';
+                return '<input type="checkbox" class="form-check-input" value="' + data + '">';
               },
               orderable: false,
-              className: 'text-center'
+              className: 'text-left'
             },
             { data: 'wd_status_nm' },
             { data: 'card_acq_nm' },
@@ -250,27 +284,30 @@
             { data: 'wd_memo' },
           ],
           columnDefs: [
-            { targets: 0, width: '110px', className: 'text-left' },
-            { targets: 1, width: '90px', className: 'text-center' },
-            { targets: 2, width: '90px', className: 'text-center' },
-            { targets: 3, width: '90px', className: 'text-center' },
-            { targets: 4, width: '150px', className: 'text-center' },
-            { targets: 5, width: '90px', className: 'text-center' },
-            { targets: 6, width: '90px', className: 'text-center' },
-            { targets: 7, width: '100px', className: 'text-center' },
-            { targets: 8, width: '130px', className: 'text-center' },
+            { targets: 0, width: '120px', className: 'text-left' },
+            { targets: 1, width: '100px', className: 'text-center' },
+            { targets: 2, width: '100px', className: 'text-center' },
+            { targets: 3, width: '150px', className: 'text-center' },
+            { targets: 4, width: '80px', className: 'text-center' },
+            { targets: 5, width: '80px', className: 'text-center' },
+            { targets: 6, width: '100px', className: 'text-center' },
+            { targets: 7, width: '150px', className: 'text-center' },
+            { targets: 8, width: '120px', className: 'text-center' },
             { targets: 9, width: '120px', className: 'text-end' },
-            { targets: 10, width: '90px', className: 'text-center' },
-            { targets: 11, width: '100px', className: 'text-center' },
-            { targets: 12, width: '130px', className: 'text-center' },
-            { targets: 13, width: '120px', className: 'text-center' },
+            { targets: 10, width: '100px', className: 'text-end' },
+            { targets: 11, width: '120px', className: 'text-end' },
+            { targets: 12, width: '100px', className: 'text-end' },
+            { targets: 13, width: '120px', className: 'text-end' },
+            { targets: 14, width: '100px', className: 'text-end' },
+            { targets: 15, width: '120px', className: 'text-end' },
+            { targets: 16, width: '100px', className: 'text-center' },            
           ],
           order: [[1, 'desc']],
           paging: true,
           lengthChange: false,
           searching: false,
           ordering: true,
-          autoWidth: false,
+          autoWidth: true,
           responsive: true,
           scrollCollapse: true,
           pageLength: 20,
@@ -295,6 +332,7 @@
           var row = tbl_card_summ.row(this).data();
           var currentValue = $('#sch_list_card_acq').val();
           var newValue = row.card_acq;
+          
           if (currentValue.includes(newValue)) {
             // Remove the value if it already exists
             var updatedValue = currentValue.split(',').filter(function (value) {
@@ -309,7 +347,8 @@
               $('#sch_list_card_acq').val(newValue);
             }
           } 
-          if ($('#sch_list_chain_no').val() && $('#sch_list_conf_dt').val()) {
+
+          if ($('#sch_list_chain_no').val() && $('#sch_list_work_date').val()) {
             tbl_wd_resv_list.ajax.reload();
           } 
         });   
@@ -412,7 +451,7 @@
     </script>
   </head>
   <div class="content">    
-    <div class="row g-1 mb-1">
+    <!-- <div class="row g-1 mb-1">
       <div class="card">
         <div class="card-header">          
           <div class="row flex-between-end">
@@ -455,59 +494,93 @@
           </div>          
         </div>
       </div>
-    </div>   
+    </div>    -->
     <div class="row g-1 mb-1">
-      <div class="col-lg-5">
-        <div class="card" style="height: 420px;">
-            <div class="card-body pt-0 px-0" style="padding-top: 0px">
-              <div class="table-responsive scrollbar">
-                <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_wd_summ">  
-                  <thead>
-                    <tr>
-                      <th class="text-center">가맹점 명</th>
-                      <th class="text-center">Risk</th>
-                      <th class="text-center">승인 건</th>
-                      <th class="text-center">승인 금액</th>
-                      <th class="text-center">취소 건</th>
-                      <th class="text-center">취소 금액</th>                
-                      <th class="text-center">출금 건</th>
-                      <th class="text-center">출금 금액</th> 
-                    </tr>
-                  </thead>
-                  <tfoot>
-                    <tr>
-                      <th colspan="2" class="text-center">총계</th>
-                      <th class="text-right px-2"></th>
-                      <th class="text-right px-2"></th>
-                      <th class="text-right px-2"></th>
-                      <th class="text-right px-2"></th>
-                      <th class="text-right px-2"></th>
-                      <th class="text-right px-2"></th> 
-                    </tr>
-                  </tfoot>
-                  <tbody class="list"></tbody>
-                </table>
+      <div class="col-lg-6">
+        <div class="card" style="height: 580px;">
+          <div class="card-header">          
+            <div class="row flex-between-end">
+              <div class="col-lg-2 align-self-center">
+                <h4 class="mb-0">사전 정산</h4>
+              </div>            
+              <div class="col-lg-10">
+                <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
+                  <div class="row mb-1">
+                    <div class="col-sm-12">
+                      <div class="input-group input-group-sm mb-1">
+                        <div class="col-sm-3">
+                          <input class="form-control form-control-sm" id="sch_work_date" type="text" name="sch_work_date" istyle="date" maxlength="10" required />
+                        </div>   
+                        <select class="form-select form-control-sm me-1" id="sch_corp_no" name="sch_corp_no" style="width: 75px">
+                          <option value="">여신사</option>
+                        </select>
+                        <select class="form-select form-control-sm me-1" id="sch_agency_no" name="sch_agency_no" style="width: 75px">
+                          <option value="">대리점</option>
+                        </select>                      
+                        <!-- <select class="form-select form-control-sm me-1" id="schgb_chain" name="schgb_chain" style="width: 75px">
+                          <option value="">가맹점 정보</option>
+                          <option value="schgb_chain_nm">가맹점 명</option>
+                          <option value="schgb_biz_no">사업자 번호</option>
+                        </select> -->
+                        <input type="text" class="form-control form-control-sm me-1" id="schgb_chain_val" name="schgb_chain_val" style="width:100px" />
+                        <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
+                      </div>
+                    </div> 
+                  </div> 
+                </form>                
               </div>
+            </div>          
+          </div>
+          <div class="card-body pt-0 px-0" style="padding-top: 0px">
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_wd_summ">  
+                <thead>
+                  <tr>
+                    <th class="text-center">가맹점 명</th>
+                    <th class="text-center">Risk</th>
+                    <th class="text-center">승인 건</th>
+                    <th class="text-center">승인 금액</th>
+                    <th class="text-center">취소 건</th>
+                    <th class="text-center">취소 금액</th>                
+                    <th class="text-center">정산 건</th>
+                    <th class="text-center">정산 금액</th> 
+                  </tr>
+                </thead>
+                <tfoot>
+                  <tr>
+                    <th colspan="2" class="text-center">총계</th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th> 
+                  </tr>
+                </tfoot>
+                <tbody class="list"></tbody>
+              </table>
             </div>
+          </div>
         </div>      
       </div>
-      <div class="col-lg-7">
-        <div class="card" style="height: 420px;">      
-          <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">
-          <input class="form-control form-control-sm" id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly" />
-          <input class="form-control form-control-sm" id="sch_work_date" type="hidden" name="sch_card_work_date"/>                
-          <div class="card-body pt-2 px-2" style="padding-top: 10px">
+      <div class="col-lg-6">
+        <div class="card" style="height: 580px;">    
+          <div class="card-header">            
+            <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">
+              <input class="form-control form-control-sm" id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly" />
+              <input class="form-control form-control-sm" id="sch_card_work_date" type="hidden" name="sch_card_work_date"/>                
+            </form>          
             <div class="row flex-between-end">
               <div class="row mb-1">
-                <div class="col-sm-3">
+                <div class="col-sm-4">
                   <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="tot_conf_amt">총 승인금액</label> 
+                    <label class="col-sm-4 col-form-label col-form-label-sm" for="tot_conf_amt">총 정산금액</label> 
                     <div class="col-sm-8">
                       <input class="form-control form-control-sm text-end bg-light" id="tot_conf_amt" type="text" name="tot_conf_amt" istyle="amount" readonly />
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-4">
                   <div class="input-group input-group-sm mb-1">
                     <label class="col-sm-4 col-form-label col-form-label-sm" for="card_fee_amt">카드 수수료</label> 
                     <div class="col-sm-8">
@@ -515,7 +588,17 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-4">
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="col-sm-4 col-form-label col-form-label-sm" for="card_resv_amt">입금 예정액</label> 
+                    <div class="col-sm-8">
+                      <input class="form-control form-control-sm text-end bg-light" id="card_resv_amt" type="text" name="card_resv_amt" istyle="amount" readonly/>
+                    </div>
+                  </div>
+                </div>
+              </div>  
+              <div class="row mb-1">
+                <div class="col-sm-4">
                   <div class="input-group input-group-sm mb-1">
                     <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_fee_amt">운영 수수료</label> 
                     <div class="col-sm-8">
@@ -523,17 +606,15 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-4">
                   <div class="input-group input-group-sm mb-1">
                     <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_fee_amt">여신 수수료</label> 
                     <div class="col-sm-8">
                       <input class="form-control form-control-sm text-end bg-light" id="crd_fee_amt" type="text" name="crd_fee_amt" istyle="amount"  readonly />                           
                     </div>
                   </div>
-                </div>
-              </div>
-              <div class="row mb-1">
-                <div class="col-sm-3">
+                </div>              
+                <div class="col-sm-4">
                   <div class="input-group input-group-sm mb-1">
                     <label class="col-sm-4 col-form-label col-form-label-sm" for="wd_base_amt">원    금</label> 
                     <div class="col-sm-8">
@@ -541,7 +622,9 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-3">
+              </div>
+              <div class="row mb-1">
+                <div class="col-sm-4">
                   <div class="input-group input-group-sm mb-1">
                     <label class="col-sm-4 col-form-label col-form-label-sm" for="sub_amt">차 감 액</label> 
                     <div class="col-sm-8">
@@ -549,7 +632,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-4">
                   <div class="input-group input-group-sm mb-1">
                     <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_amt">과 입 금</label> 
                     <div class="col-sm-8">
@@ -557,7 +640,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-4">
                   <div class="input-group input-group-sm mb-1">
                     <label class="col-sm-4 col-form-label col-form-label-sm" for="remit_amt">출금 예정액</label> 
                     <div class="col-sm-8">
@@ -567,10 +650,15 @@
                 </div>
               </div>     
             </div>
+          </div>
+          <div class="card-body pt-0 px-0" style="padding-top: 0px">
             <div class="table-responsive scrollbar">              
               <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_card_summ">
                 <thead>
-                  <tr>                    
+                  <tr>    
+                    <th class="text-center">
+                      <input type="checkbox" id="chk_card_all" class="form-check-input" />
+                    </th>
                     <th class="text-center">카드(매입)사</th>
                     <th class="text-center">승인 건</th>
                     <th class="text-center">승인 금액</th>
@@ -583,8 +671,7 @@
                 <tbody class="list"></tbody>
               </table>
             </div>
-          </div>
-          </form> 
+          </div> 
         </div>      
       </div>        
     </div>     
@@ -597,10 +684,10 @@
             </div>     
             <div class="col-lg-10">
               <form id="frm_sch_list" name="frm_sch_list" onsubmit="return false;" novalidate=""> 
-                <input id="sch_list_chain_no" type="hidden" name="sch_list_chain_no" />
-                <input id="sch_list_chain_nm" type="hidden" name="sch_list_chain_nm"/>
+                <input id="sch_list_chain_no"  type="hidden" name="sch_list_chain_no" />
+                <input id="sch_list_chain_nm"  type="hidden" name="sch_list_chain_nm" />
                 <input id="sch_list_work_date" type="hidden" name="sch_list_work_date"/>
-                <input id="sch_list_card_acq" type="hidden" name="sch_list_card_acq"/>
+                <input id="sch_list_card_acq"  type="hidden" name="sch_list_card_acq" />
                 <div class="row mb-1">
                   <div class="col-sm-6">
                     <div class="input-group input-group-sm mb-1"> 
@@ -608,11 +695,11 @@
                         <option value="">진행상태</option>
                       </select>                     
                       <select class="form-select form-control-sm me-1" id="sch_list_gb" name="sch_list_gb" style="width: 75px">
-                        <option value="sch_list_conf_no">승인 번호</option>
-                        <option value="sch_list_card_no">카드 번호</option>
-                        <option value="sch_list_conf_amt">승인 금액</option>
+                        <option value="sch_list_gb_conf_no">승인 번호</option>
+                        <option value="sch_list_gb_card_no">카드 번호</option>
+                        <option value="sch_list_gb_conf_amt">승인 금액</option>
                       </select>
-                      <input type="text" class="form-control form-control-sm me-1" id="sch_list_conf_val" name="sch_list_conf_val" style="width:150px" />                        
+                      <input type="text" class="form-control form-control-sm me-1" id="sch_list_gb_conf_val" name="sch_list_gb_conf_val" style="width:150px" />                        
                       <button type="button" class="btn btn-primary btn-sm" id="btn_list_search" name="btn_list_search">조회</button> 
                     </div>
                   </div> 

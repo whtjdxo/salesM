@@ -62,9 +62,8 @@
                                         , IFNULL(SUM(SVC_FEE_AMT), 0)           AS SVC_FEE_AMT
                                         , IFNULL(SUM(CRD_FEE_AMT), 0)           AS CRD_FEE_AMT
                                         , IFNULL(SUM(EXC_AMT), 0) 		AS EXC_AMT
-                                  FROM	VW_WITHDRAW_RESV_LIST
-                                 WHERE 	WORK_DATE = '2025-04-04'
-                                <!-- WHERE 	WORK_DATE = '2025-04-04'  #{sch_work_date}  -->
+                                  FROM	VW_WITHDRAW_RESV_LIST                                
+                                WHERE 	WORK_DATE = #{sch_work_date} 
                                 GROUP	BY CHAIN_NO, WORK_DATE 
                         ) VW  
                         LEFT OUTER JOIN (	SELECT  CHAIN_NO, SUM(SUB_AMT) AS SUB_AMT
@@ -182,14 +181,17 @@
                 SELECT  SQL_CALC_FOUND_ROWS
                         WD.WD_NO                AS wd_no
                         , WD.WD_STATUS          AS wd_status
-                        , CWS.CODE_NM           AS wd_status_nm
+                        , GET_CODE_NM('WD_STATUS', WD.WD_STATUS)    AS wd_status_nm
                         , WD.WORK_DATE          AS work_date
                         , WD.CHAIN_NO           AS chain_no
                         , TC.CHAIN_NM           AS chain_nm
                         , WD.DOCU_SEQ           AS docu_seq
                         , WD.CARD_ACQ           AS card_acq
-                        , ACQ.CODE_NM           AS card_acq_nm
+                        , GET_CODE_NM('CARD_ACQ', WD.CARD_ACQ)      AS card_acq_nm
+                        , VD.CARD_NO            AS card_no        
                         , WD.CARD_REG_NO        AS card_reg_no
+                        , VD.CARD_TYPE          AS card_type
+                        , GET_CODE_NM('CARD_TYPE', VD.CARD_TYPE)    AS card_type_nm
                         , WD.CONF_NO            AS conf_no
                         , WD.CONF_GB            AS conf_gb
                         , CASE WHEN WD.CONF_GB = 'A' THEN '승인' ELSE '취소' END AS conf_gb_nm
@@ -199,15 +201,15 @@
                         , WD.CARD_BUY_DATE      AS card_buy_date
                         , WD.CARD_FEE_RATE      AS fard_fee_rate
                         , WD.CARD_FEE_AMT       AS card_fee_amt
-                        , WD.CARD_RESV_AMT      AS card_resv_amt
-                        , WD.CARD_RESV_DAY      AS card_resv_day
-                        , WD.CARD_RESV_DATE     AS card_resv_date
-                        , WD.SVC_FEE_RATE       AS svc_fee_rate
-                        , WD.SVC_FEE_AMT        AS svc_fee_amt
-                        , WD.WD_BASE_AMT        AS wd_base_amt
-                        , WD.CRD_FEE_RATE       AS crd_fee_rate
-                        , WD.CRD_FEE_AMT        AS crd_fee_amt
-                        , WD.SUB_FLAG           AS sub_flag
+                        , IFNULL(WD.CARD_RESV_AMT, 0)   AS card_resv_amt
+                        , IFNULL(WD.CARD_RESV_DAY, 0)   AS card_resv_day
+                        , IFNULL(WD.CARD_RESV_DATE, '') AS card_resv_date
+                        , IFNULL(WD.SVC_FEE_RATE, 0)    AS svc_fee_rate
+                        , IFNULL(WD.SVC_FEE_AMT, 0)     AS svc_fee_amt
+                        , IFNULL(WD.WD_BASE_AMT, 0)     AS wd_base_amt
+                        , IFNULL(WD.CRD_FEE_RATE, 0)    AS crd_fee_rate
+                        , IFNULL(WD.CRD_FEE_AMT, 0)     AS crd_fee_amt
+                        , IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
                         , IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
                         , IFNULL(WD.REMIT_SEQ, '')      AS remit_seq
                         , IFNULL( WD.REMIT_DTTM, '')    AS remit_dttm
@@ -217,34 +219,31 @@
                         , WD.USE_YN                     AS use_yn
                         , IFNULL(WD.WD_MEMO, '')        AS wd_memo
                         , WD.CLOSE_YN                   AS close_yn
-                        , IFNULL(WD.UPT_DTTM, WD.ENT_DTTM)              AS upt_dttm
-                        , IFNULL(WD.ENT_USER_ID,  WD.UPT_USER_ID)       AS upt_user_id
-                FROM  TB_WITHDRAW WD
-                        JOIN TB_CHAIN   TC ON TC.CHAIN_NO = WD.CHAIN_NO
-                        JOIN TB_CODE CWS ON CWS.CODE = WD.WD_STATUS
-                                AND CWS.CODE_GRP_CD = 'WD_STATUS'
-                        JOIN TB_CODE ACQ ON ACQ.CODE = WD.CARD_ACQ
-                                AND ACQ.CODE_GRP_CD = 'CARD_ACQ'
+                        , DATE_FORMAT(IFNULL(WD.UPT_DTTM, WD.ENT_DTTM), '%Y-%m-%d %H:%i:%s')              AS upt_dttm
+                        , DATE_FORMAT(IFNULL(WD.ENT_USER_ID,  WD.UPT_USER_ID), '%Y-%m-%d %H:%i:%s')       AS upt_user_id
+                  FROM  TB_WITHDRAW WD
+                        JOIN TB_VAN_DOCU VD ON VD.DOCU_SEQ = WD.DOCU_SEQ
+                        JOIN TB_CHAIN   TC ON TC.CHAIN_NO = WD.CHAIN_NO 
                 WHERE  1=1
                 AND  WD.WORK_DATE    = #{sch_list_work_date} 
                 AND  WD.CHAIN_NO        = #{sch_list_chain_no} 
-                AND  WD.WD_STATUS    LIKE 'W%'
+                <!-- AND  WD.WD_STATUS    LIKE 'W%' -->
                 <if test="sch_list_wd_status != ''"> 
                         AND  WD.WD_STATUS    = #{sch_list_wd_status} 
                 </if>
-                <if test="sch_chain_nm != ''"> 
-                        AND  WD.CARD_ACQ IN (#{sch_chain_nm})
+                <if test="sch_list_card_acq != ''"> 
+                        AND  FIND_IN_SET(WD.CARD_ACQ, #{sch_list_card_acq})  
                 </if>
-                <if test="sch_list_conf_val != ''">
+                <if test="sch_list_gb_conf_val != ''">
                         <choose>
-                                <when test="sch_list_gb == 'sch_list_conf_no'">
-                                        AND WD.CONF_NO  = #{sch_list_conf_val}
+                                <when test="sch_list_gb == 'sch_list_gb_conf_no'">
+                                        AND WD.CONF_NO  = #{sch_list_gb_conf_val}
                                 </when>
-                                <when test="sch_list_gb == 'sch_list_card_no'">
-                                        AND WD.CARD_NO  = #{sch_list_conf_val}
+                                <when test="sch_list_gb == 'sch_list_gb_card_no'">
+                                        AND WD.CARD_NO  = #{sch_list_gb_conf_val}
                                 </when>
-                                <when test="sch_list_gb == 'sch_list_conf_amt'">
-                                        AND WD.CONF_AMT  = #{sch_list_conf_val}
+                                <when test="sch_list_gb == 'sch_list_gb_conf_amt'">
+                                        AND WD.CONF_AMT  = #{sch_list_gb_conf_val}
                                 </when>
                         </choose>
                 </if>  

@@ -366,12 +366,12 @@
                         , T1.CNCL_DATE                          AS cncl_date
                         , T1.CNCL_TIME                          AS cncl_time
                         , CASE WHEN T1.PROC_FG = 'Y' THEN '사전정산' ELSE '대기중' END  AS proc_fg_nm
-                        , T1.PROC_DATE                          AS proc_date
+                        , IFNULL(DATE_FORMAT(T1.PROC_DATE, '%Y-%m-%d %h:%i:%s'), '')  AS proc_date
                         , T1.PROC_RESULT                        AS proc_result
                         , T1.SC_SEQ                             AS sc_seq
-                        , IFNULL(GET_CODE_NM('WD_STATUS', W.WD_STATUS), '미정산')               AS wd_status_nm
+                        , IFNULL(GET_CODE_NM('WD_STATUS', W.WD_STATUS), '미정산')       AS wd_status_nm
                         , T1.ENT_USER_ID                        AS ent_user_id
-                        , DATE_FORMAT(T1.ENT_DTTM, '%Y-%m-%d %h:%i:%s')                         AS ent_dttm
+                        , IFNULL(DATE_FORMAT(T1.ENT_DTTM, '%Y-%m-%d %h:%i:%s'), '')     AS ent_dttm
                   FROM  TB_VAN_DOCU T1
                         LEFT OUTER JOIN TB_WITHDRAW W ON W.DOCU_SEQ = T1.DOCU_SEQ
                  WHERE	T1.CHAIN_NO        = #{schlist_chain_no} 

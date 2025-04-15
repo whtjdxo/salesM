@@ -133,9 +133,15 @@
         <if test="sch_use_yn != null and sch_use_yn != ''">			
 			AND TC.USE_YN = #{sch_use_yn}
 		</if>
-        <if test="sch_svc_stat != null and sch_svc_stat != ''">			
-			AND TC.SVC_STAT = #{sch_svc_stat}
-		</if>
+        <choose>
+            <when test="sch_svc_stat != null and sch_svc_stat != ''">
+                AND TC.SVC_STAT = #{sch_svc_stat}
+            </when>
+            <when test="sch_svc_stat == ''">
+                AND TC.SVC_STAT IN ('O', 'R')
+            </when>
+        </choose>
+         
         <choose>
             <when test="sidx != ''">
                 ORDER BY ${sidx} ${sord}
