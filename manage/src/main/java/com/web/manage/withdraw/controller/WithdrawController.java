@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.web.manage.withdraw.domain.ProcRemitVO;
+import com.web.manage.withdraw.domain.SubMstVO;
 import com.web.manage.withdraw.service.WithdrawService;
 
 import ch.qos.logback.classic.Logger;
@@ -49,7 +51,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 @Controller
 @RequestMapping("/withdraw/withdraw/")
 
-public class WithdrawMng {
+public class WithdrawController {
     static final Logger logger = (Logger) LoggerFactory.getLogger(AuthInterceptor.class);
 
     @Autowired
@@ -191,6 +193,9 @@ public class WithdrawMng {
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
         String jString = null; 
+        System.out.println("sch_list_wd_status type: " + hashmapParam.get("sch_list_wd_status").getClass());
+        System.out.println(hashmapParam.get("sch_list_wd_status"));
+
         try {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam); 
@@ -287,4 +292,73 @@ public class WithdrawMng {
             return ResponseEntity.status(500).build();
         }
     }
+
+
+    @RequestMapping(value = "wdMng/callProcRemitMain", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO callScrapTransVanDocu(@ModelAttribute("ProcRemitVO") @Valid ProcRemitVO procVo, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            System.out.println("procVo : " + procVo);
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            procVo.setUserId(member.getUserId());            
+            return withdrawService.callPrcRemitMain(procVo);             
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("An error occurred while processing the scrap transaction.");
+            e.printStackTrace();
+            return result;
+        }
+        // return result;
+    }
+
+    @RequestMapping(value = "wdMng/changeWdStatus", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO changeWdStatus(@ModelAttribute("ProcRemitVO") @Valid ProcRemitVO procVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            // System.out.println("procVo : " + procVo);
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            procVo.setUserId(member.getUserId()); 
+            if (withdrawService.changeWdStatus(procVo)) {
+                System.out.println("changeWdStatus Update  success");
+                result.setResultCode("S000");
+                result.setResultMsg("changeWdStatus Update successful.");
+            } else {
+                System.out.println("Chain Subtract Update  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("changeWdStatus Update Failed");
+            }      
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("An error occurred while processing the changeWdStatus.");
+            e.printStackTrace();
+            return result;
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "wdMng/changeWorkDate", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO changeWorkDate(@ModelAttribute("ProcRemitVO") @Valid ProcRemitVO procVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            // System.out.println("procVo : " + procVo);
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            procVo.setUserId(member.getUserId()); 
+            if (withdrawService.changeWorkDate(procVo)) {
+                System.out.println("changeWdStatus Update  success");
+                result.setResultCode("S000");
+                result.setResultMsg("changeWdStatus Update successful.");
+            } else {
+                System.out.println("Chain Subtract Update  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("changeWdStatus Update Failed");
+            }      
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("An error occurred while processing the changeWdStatus.");
+            e.printStackTrace();
+            return result;
+        }
+        return result;
+    }
+
 }

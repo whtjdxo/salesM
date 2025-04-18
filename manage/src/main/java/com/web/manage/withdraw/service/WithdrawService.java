@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.web.manage.withdraw.domain.ProcRemitVO;
+import com.web.manage.withdraw.domain.SubMstVO;
 import com.web.manage.withdraw.mapper.WithdrawMapper; 
 import com.web.manage.user.domain.UserVO;
 import com.web.manage.user.service.UserMngService;
@@ -50,41 +52,37 @@ public class WithdrawService {
     }
  
  
-    // //  transaction 처리 는 Procedure 에서 처리하도록 함
-    // public ReturnDataVO callScrapTransVanDocu(TransProcessVO procVo) {
-    //     // return withdrawMapper.callScrapTransVanDocu(procVo);
-    //     ReturnDataVO result = new ReturnDataVO();
-    //     try {
-    //         // Van 스크래핑 데이터 이관 프로시저 호출
-    //         withdrawMapper.callScrapTransVanDocu(procVo);
+    //  transaction 처리 는 Procedure 에서 처리하도록 함
+    public ReturnDataVO callPrcRemitMain (ProcRemitVO procVo) {
+        // return withdrawMapper.callPrcRemitMain(procVo);
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            // Van 스크래핑 데이터 이관 프로시저 호출
+            withdrawMapper.callPrcRemitMain(procVo);
             
-    //         // 프로시저에서 설정한 OUT 파라미터 확인
-    //         if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
-    //             result.setResultCode("S000");
-    //             result.setResultMsg(procVo.getResultMsg());
-    //         } else {
-    //             result.setResultCode("F000");
-    //             result.setResultMsg(procVo.getResultMsg());
-    //             return result;
-    //         }
-
-    //         // Delivery 스크래핑 데이터 이관 프로시저 호출
-    //         withdrawMapper.callScrapTransDeliDocu(procVo);            
-    //         // 프로시저에서 설정한 OUT 파라미터 확인
-    //         if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
-    //             result.setResultCode("S000");
-    //             result.setResultMsg(procVo.getResultMsg());
-    //         } else {
-    //             result.setResultCode("F000");
-    //             result.setResultMsg(procVo.getResultMsg());
-    //             return result;
-    //         }
-    //     } catch (Exception e) {
-    //         result.setResultCode("F500");
-    //         result.setResultMsg("시스템 오류가 발생했습니다: " + e.getMessage());
-    //         // 로깅 처리
-    //         // logger.error("Scrap transaction processing failed", e);
-    //     }
-    //     return result; 
-
+            // 프로시저에서 설정한 OUT 파라미터 확인
+            if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
+                result.setResultCode("S000");
+                result.setResultMsg(procVo.getResultMsg());
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg(procVo.getResultMsg());
+                return result;
+            } 
+        } catch (Exception e) {
+            result.setResultCode("F500");
+            result.setResultMsg("시스템 오류가 발생했습니다: " + e.getMessage());
+            // 로깅 처리
+            // logger.error("Scrap transaction processing failed", e);
+        }
+        return result; 
+    }
+    
+    public boolean changeWorkDate(ProcRemitVO procVo) { 
+        return withdrawMapper.changeWorkDate(procVo); 
+    }
+    public boolean changeWdStatus(ProcRemitVO procVo) {
+        return withdrawMapper.changeWdStatus(procVo); 
+    }
+ 
 }

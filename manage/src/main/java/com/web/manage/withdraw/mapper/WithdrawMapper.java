@@ -4,7 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Mapper; 
+import com.web.manage.withdraw.domain.ProcRemitVO; 
  
 @Mapper
 public interface WithdrawMapper {
@@ -14,7 +15,10 @@ public interface WithdrawMapper {
     List<HashMap<String, Object>> getWDCardSummary(HashMap<String, Object> hashmapParam);    
     List<HashMap<String, Object>> getWDResvList(HashMap<String, Object> hashmapParam);
     
-    
+    void callPrcRemitMain(ProcRemitVO procVo);
+
+    boolean changeWorkDate(ProcRemitVO procVo);
+    boolean changeWdStatus(ProcRemitVO procVo);
     
 }
 

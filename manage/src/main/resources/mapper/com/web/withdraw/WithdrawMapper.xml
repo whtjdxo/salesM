@@ -77,8 +77,8 @@
                                         <if test="sch_agency_no != ''"> 
                                                 AND  TC.AGENCY_NO = #{sch_agency_no} 
                                         </if>
-                                        <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
-                                                AND  TC.CORP_CD = #{sch_corp_cd} 
+                                        <if test="sch_corp_no != null and sch_corp_no != ''"> 
+                                                AND  TC.CORP_CD = #{sch_corp_no} 
                                         </if> 
                                         <if test="sch_chain_val != ''">
                                                 <choose>
@@ -211,7 +211,7 @@
                         , IFNULL(WD.CRD_FEE_AMT, 0)     AS crd_fee_amt
                         , IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
                         , IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
-                        , IFNULL(WD.REMIT_SEQ, '')      AS remit_seq
+                        , IFNULL(WD.REMIT_NO, '')       AS remit_seq
                         , IFNULL( WD.REMIT_DTTM, '')    AS remit_dttm
                         , IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
                         , IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
@@ -226,11 +226,17 @@
                         JOIN TB_CHAIN   TC ON TC.CHAIN_NO = WD.CHAIN_NO 
                 WHERE  1=1
                 AND  WD.WORK_DATE    = #{sch_list_work_date} 
-                AND  WD.CHAIN_NO        = #{sch_list_chain_no} 
-                <!-- AND  WD.WD_STATUS    LIKE 'W%' -->
-                <if test="sch_list_wd_status != ''"> 
-                        AND  WD.WD_STATUS    = #{sch_list_wd_status} 
-                </if>
+                AND  WD.CHAIN_NO     = #{sch_list_chain_no} 
+                AND  WD.WD_STATUS    LIKE 'W%'  
+                <choose>
+                        <when test='sch_list_wd_status != null and sch_list_wd_status == "Y"'>
+                                AND WD.WD_STATUS  IN ('W00000', 'W00C00', 'W00C11', 'W00C12')
+                        </when>
+                        <when test='sch_list_wd_status != null and sch_list_wd_status == "N"'>
+
+                                AND WD.WD_STATUS  NOT IN ('W00000', 'W00C00', 'W00C11', 'W00C12')
+                        </when>                         
+                </choose>                
                 <if test="sch_list_card_acq != ''"> 
                         AND  FIND_IN_SET(WD.CARD_ACQ, #{sch_list_card_acq})  
                 </if>
@@ -258,15 +264,35 @@
                 LIMIT  ${start}, ${end}
         </select>
 
-        <update id="callScrapTransDeliDocu" parameterType="com.web.manage.trans.domain.TransProcessVO" statementType="CALLABLE">
+        <update id="callPrcRemitMain" parameterType="com.web.manage.withdraw.domain.ProcRemitVO" statementType="CALLABLE">
                 { 
-                        CALL PRC_SCRAP_TRANS_DELI_DOCU(
+                        CALL PRC_REMIT_MAIN(
                                 #{chainNo, mode=IN, jdbcType=VARCHAR}
+                                , #{workDate, mode=IN, jdbcType=VARCHAR}
                                 , #{userId, mode=IN, jdbcType=VARCHAR}
                                 , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
                                 , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
                         ) 
                 }
         </update>
+
+
+        <update id="changeWdStatus" parameterType="com.web.manage.withdraw.domain.ProcRemitVO">
+                UPDATE TB_WITHDRAW
+                   SET 
+                        WD_STATUS       = #{wdStatus},
+                        UPT_USER_ID     = #{userId},
+                        UPT_DTTM        = NOW()
+                WHERE   FIND_IN_SET(WD_NO, #{wdNo})  
+	</update>
+
+        <update id="changeWorkDate" parameterType="com.web.manage.withdraw.domain.ProcRemitVO">
+                UPDATE TB_WITHDRAW
+                   SET 
+                        WD_STATUS       = #{regDate},
+                        UPT_USER_ID     = #{userId},
+                        UPT_DTTM        = NOW()
+                WHERE   FIND_IN_SET(WD_NO, #{wdNo})  
+	</update>
 
 </mapper>

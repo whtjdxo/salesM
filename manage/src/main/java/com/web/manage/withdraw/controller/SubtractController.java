@@ -49,7 +49,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 @Controller
 @RequestMapping("/withdraw/subtract/")
-public class SubtractMng {
+public class SubtractController {
     static final Logger logger = (Logger) LoggerFactory.getLogger(AuthInterceptor.class);
 
     @Autowired
