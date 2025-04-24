@@ -1,11 +1,6 @@
-/**
- * 전역 로딩 바 관리 객체
- */
 const LoadingBar = {
-  // 로딩 바 표시
   show: function(message) {
-    const loadingBar = $('#globalLoadingBar');
-    if (!loadingBar.length) {
+    if (!$('#globalLoadingBar').length) {
       this._injectLoadingBar();
     }
     
@@ -17,14 +12,15 @@ const LoadingBar = {
     $('body').css('overflow', 'hidden');
   },
   
-  // 로딩 바 숨기기
   hide: function() {
-    $('#globalLoadingBar').fadeOut(200);
-    $('body').css('overflow', '');
+    $('#globalLoadingBar').fadeOut(200, () => {
+      $('body').css('overflow', 'auto');
+    });
   },
   
-  // DOM에 로딩 바 주입 (없을 경우)
   _injectLoadingBar: function() {
+    if ($('#globalLoadingBar').length) return;
+    
     $('body').append(`
       <div id="globalLoadingBar" class="global-loading-bar" style="display: none;">
         <div class="loading-bar-container">
@@ -39,7 +35,7 @@ const LoadingBar = {
   }
 };
 
-// 문서 준비 시 자동으로 로딩 바 DOM 준비
+// 문서 준비 시 한 번만 로딩 바 DOM 준비
 $(document).ready(function() {
   LoadingBar._injectLoadingBar();
 });
@@ -52,13 +48,10 @@ function swal(title, text, icon) {
     confirmButtonText: "확인",
   });
 }
-/*
- * 기본 아작스 호출 함수
- * @param target : 호출 URL
- * @param form : 넘기는 값(기본 쿼리스트링)
- * @param callback : 실행후 호출 함수
- */
+
 async function callAjax(target, form, callback) {
+  LoadingBar.show("처리 중입니다...");
+  
   try {
     const response = await fetch(target, {
       method: "POST",
@@ -73,9 +66,7 @@ async function callAjax(target, form, callback) {
       throw new Error("Network response was not ok");
     }
     
-    LoadingBar.show("처리 중입니다...");          
     const data = await response.json();
-    LoadingBar.hide();
 
     if (data.resultCode === "F001") {
       location.replace("/login");
@@ -85,7 +76,10 @@ async function callAjax(target, form, callback) {
       swal("실패", data.resultMsg, "error");
     }
   } catch (error) {
+    console.error("AJAX Error:", error);
     swal("실패", "작업수행에 실패하였습니다.", "error");
+  } finally {
+    LoadingBar.hide();
   }
 }
 /*
@@ -95,6 +89,7 @@ async function callAjax(target, form, callback) {
  * @param callback : 실행후 호출 함수
  */
 async function callAjaxJson(target, params, callback) {
+  LoadingBar.show("처리 중입니다...");
   try {
     const response = await fetch(target, {
       method: "POST",
@@ -119,7 +114,9 @@ async function callAjaxJson(target, params, callback) {
     }
   } catch (error) {
     swal("실패", "작업수행에 실패하였습니다.", "error");
-    console.error("Fetch error: ", error);
+    console.error("Fetch error: ", error); 
+  } finally {
+    LoadingBar.hide();
   }
 }
 
@@ -326,6 +323,7 @@ function ConfirmdialogToAjax(text, target, form, callback) {
     cancelButtonText: "아니요",
   }).then(async (result) => {
     if (result.isDismissed) return;
+    LoadingBar.show("처리 중입니다...");
     try {
       const response = await fetch(target, {
         method: "POST",
@@ -345,12 +343,22 @@ function ConfirmdialogToAjax(text, target, form, callback) {
       if (data.resultCode === "F001") {
         location.replace("/login");
       } else if (data.resultCode === "S000") {
+        // alert("처리되었습니다.");
         callback(data);
+      
       } else {
         swal("실패", data.resultMsg, "error");
       }
     } catch (error) {
       swal("실패", "작업수행에 실패하였습니다.", "error");
+      console.error("Detailed error:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      throw error;
+    } finally {
+      LoadingBar.hide();
     }
     window.onkeydown = null;
     window.onfocus = null;

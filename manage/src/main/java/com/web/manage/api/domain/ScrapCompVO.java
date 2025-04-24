@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class ScrapCompVO {
     private String vanCd;
+    private String bankCd;
     private String chainNo;
     private String userId;
     private String bankAccountNo;

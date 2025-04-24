@@ -264,7 +264,7 @@
                 LIMIT  ${start}, ${end}
         </select>
 
-        <update id="callPrcRemitMain" parameterType="com.web.manage.withdraw.domain.ProcRemitVO" statementType="CALLABLE">
+        <update id="callProcRemitMain" parameterType="com.web.manage.withdraw.domain.ProcRemitVO" statementType="CALLABLE">
                 { 
                         CALL PRC_REMIT_MAIN(
                                 #{chainNo, mode=IN, jdbcType=VARCHAR}
@@ -289,10 +289,212 @@
         <update id="changeWorkDate" parameterType="com.web.manage.withdraw.domain.ProcRemitVO">
                 UPDATE TB_WITHDRAW
                    SET 
-                        WD_STATUS       = #{regDate},
+                        WD_STATUS       = #{workDate},
                         UPT_USER_ID     = #{userId},
                         UPT_DTTM        = NOW()
                 WHERE   FIND_IN_SET(WD_NO, #{wdNo})  
 	</update>
 
+        <select id="getRemitSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT  SQL_CALC_FOUND_ROWS
+                        RM.CHAIN_NO                                             AS chain_no       
+                        , TC.CHAIN_NM 		                                AS chain_nm
+                        , TC.BIZ_NO                                             AS biz_no
+                        , RM.CORP_CD                                            AS corp_cd
+                        , CO.CORP_NM                                            AS corp_nm
+                        , TC.BBANK_CD                                           AS bbank_cd
+                        , GET_CODE_NM('BANK_CD', TC.BBANK_CD)	                AS bbank_nm
+                        , TC.BBANK_ACCOUNT_NO                                   AS bbank_account_no
+                        , TU.USER_NM                                            AS ceo_nm
+                        , RM.REMIT_NO                                           AS remit_no
+                        , RM.REMIT_STATUS                                       AS remit_status    
+                        , GET_CODE_NM('WD_STATUS', RM.REMIT_STATUS)             AS remit_status_nm
+                        , DATE_FORMAT(RM.REMIT_DTTM, '%Y-%m-%d %H:%i:%s')	AS remit_dttm
+                        , RM.CONF_AMT                                           AS conf_amt        
+                        , RM.CARD_FEE_AMT                                       AS card_fee_amt
+                        , RM.CARD_RESV_AMT                                      AS card_resv_amt
+                        , RM.WD_BASE_AMT                                        AS wd_base_amt        
+                        , RM.SVC_FEE_AMT                                        AS svc_fee_amt
+                        , RM.CRD_FEE_AMT                                        AS crd_fee_amt
+                        , RM.WD_REMIT_AMT                                       AS wd_remit_amt
+                        , RM.EXC_REMIT_AMT                                      AS exc_remit_amt
+                        , RM.TOT_REMIT_AMT                                      AS tot_remit_amt
+                        , RM.SUB_AMT                                            AS sub_amt
+                        , RM.REMIT_AMT                                          AS remit_amt
+                        , RM.MEMO                                               AS memo
+                        , DATE_FORMAT(IFNULL(RM.UPT_DTTM, RM.ENT_DTTM), '%Y-%m-%d %H:%i:%s')	AS upt_dttm
+                        , IFNULL(RM.UPT_USER_ID, RM.ENT_USER_ID)		AS upt_user_id
+                  FROM  TB_REMIT_MST RM
+                        JOIN TB_CHAIN TC ON TC.CHAIN_NO = RM.CHAIN_NO                        
+                                        AND TC.SVC_STAT = 'O'
+                                        AND TC.USE_YN   = 'Y'
+                                        AND TC.REMIT_STAT = 'Y'
+                                        <if test="sch_agency_no != ''"> 
+                                                AND  TC.AGENCY_NO = #{sch_agency_no} 
+                                        </if>
+                                        <if test="sch_corp_no != null and sch_corp_no != ''"> 
+                                                AND  TC.CORP_CD = #{sch_corp_no} 
+                                        </if> 
+                                        <if test="sch_chain_val != ''">
+                                                <choose>
+                                                        <when test="sch_chain_gb == 'schgb_biz_no'">
+                                                                AND  TC.BIZ_NO  = #{sch_chain_val}
+                                                        </when> 
+                                                        <when test="sch_chain_gb == 'schgb_chain_nm'">
+                                                                AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_val}, '%')
+                                                        </when>
+                                                </choose>
+                                        </if> 
+                        JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID  
+                        JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
+                                        AND CO.USE_YN = 'Y'
+                 WHERE	RM.REMIT_DTTM BETWEEN CONCAT(#{sch_remit_dt}, ' 00:00:00')
+                                          AND CONCAT(#{sch_remit_dt}, ' 23:59:59')
+                <choose>
+                        <when test="sidx != ''">
+                                ORDER BY ${sidx} ${sord}
+                        </when>
+                        <otherwise>
+                                ORDER BY 1
+                        </otherwise>
+                </choose>                
+                LIMIT  ${start}, ${end}
+        </select>
+
+        <select id="getRemitList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT  SQL_CALC_FOUND_ROWS
+                        WD.WD_NO                AS wd_no
+                        , WD.WD_STATUS          AS wd_status
+                        , GET_CODE_NM('WD_STATUS', WD.WD_STATUS)    AS wd_status_nm
+                        , WD.WORK_DATE          AS work_date
+                        , WD.CHAIN_NO           AS chain_no
+                        , TC.CHAIN_NM           AS chain_nm
+                        , WD.DOCU_SEQ           AS docu_seq
+                        , WD.CARD_ACQ           AS card_acq
+                        , GET_CODE_NM('CARD_ACQ', WD.CARD_ACQ)      AS card_acq_nm
+                        , VD.CARD_NO            AS card_no        
+                        , WD.CARD_REG_NO        AS card_reg_no
+                        , VD.CARD_TYPE          AS card_type
+                        , GET_CODE_NM('CARD_TYPE', VD.CARD_TYPE)    AS card_type_nm
+                        , WD.CONF_NO            AS conf_no
+                        , WD.CONF_GB            AS conf_gb
+                        , CASE WHEN WD.CONF_GB = 'A' THEN '승인' ELSE '취소' END AS conf_gb_nm
+                        , WD.CONF_DTTM          AS conf_dttm
+                        , WD.CONF_AMT           AS conf_amt
+                        , WD.CARD_BUY_FLAG      AS card_buy_flag
+                        , WD.CARD_BUY_DATE      AS card_buy_date
+                        , WD.CARD_FEE_RATE      AS fard_fee_rate
+                        , WD.CARD_FEE_AMT       AS card_fee_amt
+                        , IFNULL(WD.CARD_RESV_AMT, 0)   AS card_resv_amt
+                        , IFNULL(WD.CARD_RESV_DAY, 0)   AS card_resv_day
+                        , IFNULL(WD.CARD_RESV_DATE, '') AS card_resv_date
+                        , IFNULL(WD.SVC_FEE_RATE, 0)    AS svc_fee_rate
+                        , IFNULL(WD.SVC_FEE_AMT, 0)     AS svc_fee_amt
+                        , IFNULL(WD.WD_BASE_AMT, 0)     AS wd_base_amt
+                        , IFNULL(WD.CRD_FEE_RATE, 0)    AS crd_fee_rate
+                        , IFNULL(WD.CRD_FEE_AMT, 0)     AS crd_fee_amt
+                        , IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
+                        , IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
+                        , IFNULL(WD.REMIT_NO, '')       AS remit_seq
+                        , IFNULL( WD.REMIT_DTTM, '')    AS remit_dttm
+                        , IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
+                        , IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
+                        , IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg
+                        , WD.USE_YN                     AS use_yn
+                        , IFNULL(WD.WD_MEMO, '')        AS wd_memo
+                        , WD.CLOSE_YN                   AS close_yn
+                        , DATE_FORMAT(IFNULL(WD.UPT_DTTM, WD.ENT_DTTM), '%Y-%m-%d %H:%i:%s')              AS upt_dttm
+                        , DATE_FORMAT(IFNULL(WD.ENT_USER_ID,  WD.UPT_USER_ID), '%Y-%m-%d %H:%i:%s')       AS upt_user_id
+                  FROM  TB_WITHDRAW WD
+                        JOIN TB_VAN_DOCU VD ON VD.DOCU_SEQ = WD.DOCU_SEQ
+                        JOIN TB_CHAIN   TC ON TC.CHAIN_NO = WD.CHAIN_NO 
+                WHERE  1=1
+                AND  WD.REMIT_NO    = #{sch_list_remit_no}
+                
+                <if test='sch_list_gb_val != ""'> 
+                        <choose>
+                                <when test='sch_list_gb == "sch_list_gb_conf_no"'>
+                                        AND  WD.CONF_NO  = #{sch_list_gb_val}
+                                </when> 
+                                <when test='sch_list_gb == "sch_list_gb_card_no"'>
+                                        AND  WD.CARD_NO  = #{sch_list_gb_val}
+                                </when> 
+                                <when test='sch_list_gb == "sch_list_gb_conf_amt"'>
+                                        AND  WD.CONF_AMT  = #{sch_list_gb_val}
+                                </when>  
+                        </choose>                     
+                </if>  
+                <choose>
+                        <when test='sidx != ""'>
+                                ORDER BY ${sidx} ${sord}
+                        </when>
+                        <otherwise>
+                                ORDER BY 1
+                        </otherwise>
+                </choose>                
+                LIMIT  ${start}, ${end}
+        </select>
+        <select id="getRemitSubRecvList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT  SQL_CALC_FOUND_ROWS
+                        SM.SUB_NO                                       AS sub_no
+                        , SM.SUB_CODE                                   AS sub_code
+                        , GET_CODE_NM ('SUB_CODE', SM.SUB_CODE) 	AS sub_code_nm
+                        , SM.CHAIN_NO                                   AS chain_no
+                        , SM.SUB_STATUS                                 AS sub_status
+                        , GET_CODE_NM ('SUB_STATUS', SM.SUB_STATUS) 	AS sub_status_nm
+                        , SM.OCCUR_AMT                                  AS occur_amt
+                        , SM.OCCUR_BASE_AMT                             AS occur_base_amt
+                        , SM.OCCUR_SVC_AMT                              AS occur_svc_amt
+                        , SM.OCCUR_CRD_AMT                              AS occur_crd_amt
+                        , IFNULL(SR.RECV_AMT, 0)		        AS recv_amt
+                        , IFNULL(SR.RECV_BASE_AMT, 0)			AS recv_base_amt
+                        , IFNULL(SR.RECV_SVC_AMT, 0)			AS recv_svc_amt
+                        , IFNULL(SR.RECV_CRD_AMT, 0)			AS recv_crd_amt
+                        , SM.REMAIN_AMT					AS remain_amt
+                        , SM.REMAIN_BASE_AMT 				AS remain_base_amt
+                        , SM.REMAIN_SVC_AMT				AS remain_svc_amt
+                        , SM.REMAIN_CRD_AMT				AS remain_crd_amt
+                        , SM.SUB_MEMO                                   AS sub_memo
+                  FROM  TB_SUB_MST SM 
+                        JOIN (
+                                SELECT SUB_NO, REMIT_NO
+                                                , SUM(RECV_AMT) 	AS RECV_AMT
+                                                , SUM(RECV_BASE_AMT) AS RECV_BASE_AMT 
+                                                , SUM(RECV_SVC_AMT)		AS RECV_SVC_AMT 
+                                                , SUM(RECV_CRD_AMT)		AS RECV_CRD_AMT   
+                                FROM 	TB_SUB_RECEIVE
+                                WHERE 	REMIT_NO = #{sch_sub_recv_remit_no}
+                                GROUP 	BY SUB_NO, REMIT_NO 
+                        ) SR ON SR.SUB_NO = SM.SUB_NO 
+                <choose>
+                        <when test='sidx != ""'>
+                                ORDER BY ${sidx} ${sord}
+                        </when>
+                        <otherwise>
+                                ORDER BY 1
+                        </otherwise>
+                </choose>                
+                LIMIT  ${start}, ${end}
+        </select>       
+        <update id="callProcRemitCancel" parameterType="com.web.manage.withdraw.domain.ProcRemitVO" statementType="CALLABLE">
+                { 
+                        CALL PRC_REMIT_CANCEL(
+                                #{remitNo, mode=IN, jdbcType=VARCHAR} 
+                                , #{userId, mode=IN, jdbcType=VARCHAR}
+                                , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                                , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+                        ) 
+                }
+        </update>
+
+        <update id="callProcRemitChain" parameterType="com.web.manage.withdraw.domain.ProcRemitVO" statementType="CALLABLE">
+                { 
+                        CALL PRC_REMIT_CHAIN(
+                                #{remitNo, mode=IN, jdbcType=VARCHAR}
+                                , #{userId, mode=IN, jdbcType=VARCHAR}
+                                , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                                , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+                        ) 
+                }
+        </update>
 </mapper>

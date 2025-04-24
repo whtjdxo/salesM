@@ -6,6 +6,7 @@ import lombok.Data;
 public class ProcRemitVO {
     private String chainNo;
     private String wdNo;
+    private String remitNo;
     private String workDate;
     private String wdStatus;
     private String userId;

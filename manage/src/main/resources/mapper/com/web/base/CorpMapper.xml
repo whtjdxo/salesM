@@ -18,6 +18,7 @@
 				, ACCOUNT_PWD 	AS account_pwd
 				, WEB_ID 		AS web_id
 				, WEB_PWD 		AS web_pwd
+				, DEPOSITOR		AS depositor
 				, API_URL 		AS api_url
 				, MEMO 			AS memo
 				, USE_YN 		AS use_yn
@@ -58,12 +59,12 @@
 		INSERT INTO TB_CORP (  
 			CORP_CD			, CORP_NM		, BIZ_NO		, CORP_TYPE	
 			, BANK_CD		, ACCOUNT_NO	, ACCOUNT_PWD	
-			, WEB_ID		, WEB_PWD		, API_URL		, MEMO	
+			, WEB_ID		, WEB_PWD		, DEPOSITOR		, API_URL		, MEMO	
 			, USE_YN		, ENT_USER_ID	, ENT_DTTM
 		) VALUES (  
 			#{corp_cd}		, #{corp_nm}, #{biz_no} 		, #{corp_type}
 			, #{bank_cd}	, #{account_no}	, #{account_pwd}
-			, #{web_id}		, #{web_pwd}	, #{api_url}	, #{memo}
+			, #{web_id}		, #{web_pwd}	, #{depositor}	, #{api_url}	, #{memo}
 			, 'Y'			, #{ent_user_id}, NOW() 
 		)
 	</insert>
@@ -77,6 +78,7 @@
 				, ACCOUNT_PWD	= #{account_pwd}	
 				, WEB_ID		= #{web_id}
 				, WEB_PWD		= #{web_pwd}
+				, DEPOSITOR		= #{depositor}
 				, API_URL		= #{api_url}
 				, MEMO			= #{memo}
 				, USE_YN		= #{use_yn}

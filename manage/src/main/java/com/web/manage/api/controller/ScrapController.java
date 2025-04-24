@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.ResponseEntity;
 
 @Controller
 @RestController
@@ -39,7 +40,7 @@ public class ScrapController {
     // @RequestMapping("/scrapLogin")    
     // public @ResponseBody String scrapLogin(@RequestBody HashMap<String, Object> hashmapParam) {  
     @RequestMapping(value = "/scrapLogin.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public @ResponseBody String scrapLogin( @RequestParam("userId") String userId
+    public @ResponseBody ResponseEntity<String> scrapLogin( @RequestParam("userId") String userId
                                             , @RequestParam("userPwd") String userPwd
                                             , @RequestParam("authKey") String authKey) {        
         
@@ -71,11 +72,14 @@ public class ScrapController {
         }       
 
         System.out.println(jString);
-        return jString;  
+        return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);
     }
 
     @RequestMapping(value = "/getScrapVanCompList.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public @ResponseBody String getVanChainList(@RequestParam("vanCd") String vanCd
+    public @ResponseBody ResponseEntity<String> getVanChainList(@RequestParam("vanCd") String vanCd
                                                 , @RequestParam("chainNo") String chainNo
                                                 , @RequestParam("userId") String userId
                                                 , @RequestParam("apiAuthKey") String apiAuthKey
@@ -97,7 +101,10 @@ public class ScrapController {
             hashmapResult.put("repMsg", "User AuthKey Check Fail~");
             hashmapResult.put("apiAuthKey", ""); 
             jString = gson.toJson(hashmapResult);
-            return jString;                       
+            return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);                  
         } 
 
         scrapCompVO.setVanCd(vanCd);
@@ -122,12 +129,72 @@ public class ScrapController {
         }
 
         jString = gson.toJson(hashmapResult);
-        return jString;  
+        return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);
+    }
+
+    @RequestMapping(value = "/getScrapBankList.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public @ResponseBody ResponseEntity<String> getScrapBankCompList(@RequestParam("bankCd") String bankCd
+                                                , @RequestParam("chainNo") String chainNo
+                                                , @RequestParam("userId") String userId
+                                                , @RequestParam("apiAuthKey") String apiAuthKey
+                                                , @RequestParam("authKey") String authKey
+                                                ) {         		
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>(); 
+        ScrapUserVO scrapUserVo = new ScrapUserVO();
+        ScrapCompVO scrapCompVO = new ScrapCompVO(); 
+		List<HashMap<String, Object>> resultList = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        String jString = null;
+        // -- 사용자 인증키 체크
+
+        scrapUserVo.setUserId(userId);
+        scrapUserVo.setUserAuthKey(apiAuthKey); 
+
+		if (scrapService.getUserAuthKeyCheck(scrapUserVo) <= 0){
+            hashmapResult.put("repCd", "9001");
+            hashmapResult.put("repMsg", "User AuthKey Check Fail~");
+            hashmapResult.put("apiAuthKey", ""); 
+            jString = gson.toJson(hashmapResult);
+            return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);                      
+        } 
+
+        scrapCompVO.setBankCd(bankCd);
+        scrapCompVO.setChainNo(chainNo);
+        scrapCompVO.setUserId(userId);
+        scrapCompVO.setApiAuthKey(apiAuthKey);
+        scrapCompVO.setAuthKey(authKey); 
+        
+        try {
+            resultList = scrapService.getBankChainList(scrapCompVO);
+            
+            hashmapResult.put("repCd", "0000");
+            hashmapResult.put("repMsg", "Get Data List"); 
+            hashmapResult.put("repData", resultList);
+            System.out.println("resultList : " + resultList);
+            // hashmapResult.put("repData", gson.toJson(list));            
+        } catch (Exception e) {
+            e.printStackTrace();
+            hashmapResult.put("repCd", "9100");
+            hashmapResult.put("repMsg", "Get Data List Fail"); 
+            hashmapResult.put("repData", null);
+        }
+
+        jString = gson.toJson(hashmapResult);
+        return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);
     }
 
 
     @RequestMapping(value = "/scrapApiUploadVanData.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public @ResponseBody String scrapUploadVanData(@RequestParam("vanCd") String vanCd
+    public @ResponseBody ResponseEntity<String> scrapUploadVanData(@RequestParam("vanCd") String vanCd
                                                     , @RequestParam("chainNo") String chainNo
                                                     , @RequestParam("userId") String userId
                                                     , @RequestParam("apiAuthKey") String apiAuthKey
@@ -153,7 +220,10 @@ public class ScrapController {
             hashmapResult.put("repMsg", "User AuthKey Check Fail~");
             hashmapResult.put("apiAuthKey", ""); 
             jString = gson.toJson(hashmapResult);
-            return jString;                       
+            return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);                
         }  
         try {
             logVo.setChain_no(chainNo);
@@ -178,12 +248,15 @@ public class ScrapController {
         }
 
         jString = gson.toJson(hashmapResult);
-        return jString;  
+        return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);
     }
 
 
     @RequestMapping(value = "/scrapApiUploadDeliveryData.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public @ResponseBody String scrapUploadDeliveryData(@RequestParam("vanCd") String vanCd
+    public @ResponseBody ResponseEntity<String> scrapUploadDeliveryData(@RequestParam("vanCd") String vanCd
                                                     , @RequestParam("chainNo") String chainNo
                                                     , @RequestParam("userId") String userId
                                                     , @RequestParam("apiAuthKey") String apiAuthKey
@@ -206,7 +279,10 @@ public class ScrapController {
             hashmapResult.put("repMsg", "User AuthKey Check Fail~");
             hashmapResult.put("apiAuthKey", ""); 
             jString = gson.toJson(hashmapResult);
-            return jString;                       
+            return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);                  
         }  
         try {
             logVo.setChain_no(chainNo);
@@ -231,11 +307,75 @@ public class ScrapController {
         }
 
         jString = gson.toJson(hashmapResult);
-        return jString;  
+        return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);
+
+
+        // return jString;  
+    }
+
+    @RequestMapping(value = "/scrapApiUploadBankData.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public @ResponseBody ResponseEntity<String> scrapApiUploadBankData(@RequestParam("bankCd") String bankCd
+                                                    , @RequestParam("chainNo") String chainNo
+                                                    , @RequestParam("userId") String userId
+                                                    , @RequestParam("apiAuthKey") String apiAuthKey
+                                                    , @RequestParam("authKey") String authKey
+                                                    , @RequestParam("uploadData") String uploadData
+                                                ) {         		
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>(); 
+        ScrapUserVO scrapUserVo = new ScrapUserVO();
+        ScrapLogVO logVo = new ScrapLogVO();
+
+        Gson gson = new Gson();
+        String jString = null;
+        // -- 사용자 인증키 체크
+
+        scrapUserVo.setUserId(userId);
+        scrapUserVo.setUserAuthKey(apiAuthKey);         
+
+		if (scrapService.getUserAuthKeyCheck(scrapUserVo) <= 0){
+            hashmapResult.put("repCd", "9001");
+            hashmapResult.put("repMsg", "User AuthKey Check Fail~");
+            hashmapResult.put("apiAuthKey", ""); 
+            jString = gson.toJson(hashmapResult);
+            return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);                    
+        }  
+        try {
+            logVo.setChain_no(chainNo);
+            logVo.setVan_cd(bankCd);
+            logVo.setScrap_gb("BANK");
+            System.out.println(uploadData);
+
+            if ( scrapService.scrapUploadBankData(uploadData, logVo)) {
+                hashmapResult.put("repCd", "0000");
+                hashmapResult.put("repMsg", "Data Upload Complete"); 
+                hashmapResult.put("repData", "");
+            } else {
+                hashmapResult.put("repCd", "9100");
+                hashmapResult.put("repMsg", "Insert Data Fail"); 
+                hashmapResult.put("repData", "");
+            }            
+        } catch (Exception e) {
+            e.printStackTrace();
+            hashmapResult.put("repCd", "9900");
+            hashmapResult.put("repMsg", "Insert Data Fail"); 
+            hashmapResult.put("repData", null);
+        }
+
+        jString = gson.toJson(hashmapResult);
+        return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);
     }
 
     @RequestMapping(value = "/scrapApiWriteErrorLog.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public @ResponseBody String writeScrapErrorLog(@RequestParam("userId") String userId
+    public @ResponseBody ResponseEntity<String> writeScrapErrorLog(@RequestParam("userId") String userId
                                                     , @RequestParam("apiAuthKey") String apiAuthKey
                                                     , @RequestParam("authKey") String authKey
                                                     , @RequestParam("vanCd") String vanCd
@@ -289,7 +429,10 @@ public class ScrapController {
         }
 
         jString = gson.toJson(hashmapResult);
-        return jString;  
+        return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);
     }
  
 }

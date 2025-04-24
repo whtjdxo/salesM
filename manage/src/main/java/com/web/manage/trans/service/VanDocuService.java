@@ -9,18 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.web.manage.trans.mapper.VanDocuMapper;
-import com.web.manage.user.domain.UserVO;
-import com.web.manage.user.service.UserMngService;
+import com.web.manage.trans.mapper.VanDocuMapper; 
 
 import ch.qos.logback.classic.Logger;
 
-import com.web.config.interceptor.AuthInterceptor;
-import com.web.manage.base.domain.ChainVanVO;
+import com.web.config.interceptor.AuthInterceptor; 
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.trans.domain.MapCodeVO;
-import com.web.manage.trans.domain.TransProcessVO;
-import com.web.manage.trans.domain.VanDocuVO;
+import com.web.manage.trans.domain.TransProcessVO; 
 
 @Service
 public class VanDocuService {

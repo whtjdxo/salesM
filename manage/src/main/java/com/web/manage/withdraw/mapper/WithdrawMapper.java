@@ -15,10 +15,16 @@ public interface WithdrawMapper {
     List<HashMap<String, Object>> getWDCardSummary(HashMap<String, Object> hashmapParam);    
     List<HashMap<String, Object>> getWDResvList(HashMap<String, Object> hashmapParam);
     
-    void callPrcRemitMain(ProcRemitVO procVo);
+    void callProcRemitMain(ProcRemitVO procVo);
 
     boolean changeWorkDate(ProcRemitVO procVo);
     boolean changeWdStatus(ProcRemitVO procVo);
+
+    List<HashMap<String, Object>> getRemitSummary(HashMap<String, Object> hashmapParam);
+    List<HashMap<String, Object>> getRemitList(HashMap<String, Object> hashmapParam);
+    List<HashMap<String, Object>> getRemitSubRecvList(HashMap<String, Object> hashmapParam);
     
+    void callProcRemitCancel(ProcRemitVO procVo);
+    void callProcRemitChain(ProcRemitVO procVo);
 }
 

@@ -58,15 +58,14 @@ public class WithdrawController {
     private WithdrawService withdrawService; 
 
     @RequestMapping("wdMng/view")
-    public String view() {
+    public String wdView() {
         return "pages/withdraw/withdrawMng";
-    }
+    } 
 
-    // @RequestMapping("excel") 
-    // public String excelUpload() {
-    //     return "pages/withdraw/vanDocuUpload";
-    // } 
- 
+    @RequestMapping("remitMng/view")
+    public String remitView() {
+        return "pages/withdraw/remitMng";
+    }
 
     @RequestMapping("wdMng/wdSummary")    
     public @ResponseBody String getWDSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
@@ -282,7 +281,7 @@ public class WithdrawController {
             // Set response headers
             HttpHeaders hHeaders = new HttpHeaders();
             hHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            hHeaders.setContentDispositionFormData("attachment", "subsummary.xlsx");
+            hHeaders.setContentDispositionFormData("attachment", "withdraw.xlsx");
 
             return ResponseEntity.ok()
                     .headers(hHeaders)
@@ -294,14 +293,14 @@ public class WithdrawController {
     }
 
 
-    @RequestMapping(value = "wdMng/callProcRemitMain", method = RequestMethod.POST)
-    public @ResponseBody ReturnDataVO callScrapTransVanDocu(@ModelAttribute("ProcRemitVO") @Valid ProcRemitVO procVo, HttpSession session) {
+    @RequestMapping(value = "wdMng/procRemitMain", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO callProcRemitMain(@ModelAttribute("ProcRemitVO") @Valid ProcRemitVO procVo, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO();
         try {
             System.out.println("procVo : " + procVo);
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
             procVo.setUserId(member.getUserId());            
-            return withdrawService.callPrcRemitMain(procVo);             
+            return withdrawService.callProcRemitMain(procVo);             
         } catch (Exception e) {
             result.setResultCode("F000");
             result.setResultMsg("An error occurred while processing the scrap transaction.");
@@ -340,25 +339,302 @@ public class WithdrawController {
     public @ResponseBody ReturnDataVO changeWorkDate(@ModelAttribute("ProcRemitVO") @Valid ProcRemitVO procVo, BindingResult bindingResult, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO();
         try {
-            // System.out.println("procVo : " + procVo);
+            System.out.println("procVo : " + procVo);
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
             procVo.setUserId(member.getUserId()); 
             if (withdrawService.changeWorkDate(procVo)) {
-                System.out.println("changeWdStatus Update  success");
+                System.out.println("changeWorkDate Update  success");
                 result.setResultCode("S000");
-                result.setResultMsg("changeWdStatus Update successful.");
+                result.setResultMsg("change WorkDate Update successful.");
             } else {
                 System.out.println("Chain Subtract Update  Fail");
                 result.setResultCode("F000");
-                result.setResultMsg("changeWdStatus Update Failed");
+                result.setResultMsg("change WorkDate Update Failed");
             }      
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("An error occurred while processing the changeWdStatus.");
+            result.setResultMsg("An error occurred while processing the change WorkDate.");
             e.printStackTrace();
             return result;
         }
         return result;
+    }
+
+
+    @RequestMapping("remitMng/remitSummary")    
+    public @ResponseBody String getRemitSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            // System.out.println(hashmapParam);
+
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = withdrawService.getRemitSummary(hashmapParam);
+            int records = withdrawService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    } 
+
+    @RequestMapping("remitMng/remitList")    
+    public @ResponseBody String getRemitList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null;         
+
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam); 
+
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = withdrawService.getRemitList(hashmapParam);
+            int records = withdrawService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    } 
+
+    @RequestMapping("remitMng/remitSubRecvList")    
+    public @ResponseBody String getRemitSubRecvList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null;         
+
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam); 
+
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = withdrawService.getRemitSubRecvList(hashmapParam);
+            int records = withdrawService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    }
+
+    
+
+    @RequestMapping(value = "remitMng/remitBankExcel", method = RequestMethod.POST)
+    public ResponseEntity<byte[]> remitBankExcel(@RequestBody HashMap<String, Object> hashmapParam) {
+        try {
+            // Fetch data for the Excel file
+            hashmapParam.put("sidx", "");
+            hashmapParam.put("sord", "");
+            hashmapParam.put("start", "0");
+            hashmapParam.put("end", "9999");
+            List<HashMap<String, Object>> list = withdrawService.getRemitSummary(hashmapParam);
+
+            // Create an Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Docu List");
+
+            // Create header row
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {
+                  "가맹점명"       , "사업자번호"       , "대표자명"          ,  "송금은행"       , "계좌번호"
+                , "송금액"         , "비고"         
+            };
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+            }
+            // Populate data rows
+            int rowIndex = 1;
+            for (HashMap<String, Object> row : list) {
+                Row dataRow = sheet.createRow(rowIndex++);
+                dataRow.createCell(0).setCellValue(String.valueOf(row.get("chain_nm")));
+                dataRow.createCell(1).setCellValue(String.valueOf(row.get("biz_no")));
+                dataRow.createCell(2).setCellValue(String.valueOf(row.get("ceo_nm")));
+                dataRow.createCell(3).setCellValue(String.valueOf(row.get("bbank_nm")));
+                dataRow.createCell(4).setCellValue(String.valueOf(row.get("bbank_account_no")));
+                dataRow.createCell(5).setCellValue(String.valueOf(row.get("remit_amt")));
+                dataRow.createCell(6).setCellValue(String.valueOf(row.get("corp_nm")));            // 송금처:여신사명
+            }
+
+            // Write workbook to a byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            workbook.close();
+
+            // Set response headers
+            HttpHeaders hHeaders = new HttpHeaders();
+            hHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            hHeaders.setContentDispositionFormData("attachment", "remitList.xlsx");
+
+            return ResponseEntity.ok()
+                    .headers(hHeaders)
+                    .body(outputStream.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @RequestMapping(value = "remitMng/remitListExcel", method = RequestMethod.POST)
+    public ResponseEntity<byte[]> remitListExcel(@RequestBody HashMap<String, Object> hashmapParam) {
+        try {
+            // Fetch data for the Excel file
+            hashmapParam.put("sidx", "");
+            hashmapParam.put("sord", "");
+            hashmapParam.put("start", "0");
+            hashmapParam.put("end", "9999");
+            List<HashMap<String, Object>> list = withdrawService.getRemitList(hashmapParam);
+
+            // Create an Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Docu List");
+
+            // Create header row
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {
+                  "정산 번호"       , "정산 상태"       , "매입사"          ,  "카드번호"       , "카드유형"
+                , "구분"           , "승인번호"        , "승인일시"         , "입금예정일"       , "승인금액"
+                , "카드수수료"      , "입금예정액"       , "서비스수수료"      , "정산 원금"       , "여신수수료"
+                , "출금예정액"      , "비고"
+            };
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+            }
+            // Populate data rows
+            int rowIndex = 1;
+            for (HashMap<String, Object> row : list) {
+                Row dataRow = sheet.createRow(rowIndex++);
+                dataRow.createCell(0).setCellValue(String.valueOf(row.get("wd_no")));
+                dataRow.createCell(1).setCellValue(String.valueOf(row.get("wd_status_nm")));
+                dataRow.createCell(2).setCellValue(String.valueOf(row.get("card_acq_nm")));
+                dataRow.createCell(3).setCellValue(String.valueOf(row.get("card_no")));
+                dataRow.createCell(4).setCellValue(String.valueOf(row.get("card_type_nm")));
+                dataRow.createCell(5).setCellValue(String.valueOf(row.get("conf_gb_nm")));
+                dataRow.createCell(6).setCellValue(String.valueOf(row.get("conf_no")));
+                dataRow.createCell(7).setCellValue(String.valueOf(row.get("conf_dttm")));
+                dataRow.createCell(8).setCellValue(String.valueOf(row.get("card_resv_date")));
+                dataRow.createCell(9).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
+                dataRow.createCell(10).setCellValue(Double.parseDouble(String.valueOf(row.get("card_fee_amt"))));
+                dataRow.createCell(11).setCellValue(Double.parseDouble(String.valueOf(row.get("card_resv_amt"))));
+                dataRow.createCell(12).setCellValue(Double.parseDouble(String.valueOf(row.get("svc_fee_amt"))));
+                dataRow.createCell(13).setCellValue(Double.parseDouble(String.valueOf(row.get("wd_base_amt"))));
+                dataRow.createCell(14).setCellValue(Double.parseDouble(String.valueOf(row.get("crd_fee_amt"))));
+                dataRow.createCell(15).setCellValue(Double.parseDouble(String.valueOf(row.get("remit_amt"))));
+                dataRow.createCell(16).setCellValue(String.valueOf(row.get("wd_memo")));
+            }
+
+            // Write workbook to a byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            workbook.close();
+
+            // Set response headers
+            HttpHeaders hHeaders = new HttpHeaders();
+            hHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            hHeaders.setContentDispositionFormData("attachment", "remitList.xlsx");
+
+            return ResponseEntity.ok()
+                    .headers(hHeaders)
+                    .body(outputStream.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+
+    @RequestMapping(value = "remitMng/remitCancel", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO callProcRemitCancel(@ModelAttribute("ProcRemitVO") @Valid ProcRemitVO procVo, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            System.out.println("procVo : " + procVo);
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            procVo.setUserId(member.getUserId());            
+            return withdrawService.callProcRemitCancel(procVo);             
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("An error occurred while processing the scrap transaction.");
+            e.printStackTrace();
+            return result;
+        }
+        // return result;
+    }
+
+    @RequestMapping(value = "remitMng/remitChain", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO callProcRemitChain(@ModelAttribute("ProcRemitVO") @Valid ProcRemitVO procVo, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            System.out.println("procVo : " + procVo);
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            procVo.setUserId(member.getUserId());            
+            return withdrawService.callProcRemitChain(procVo);             
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("An error occurred while processing the scrap transaction.");
+            e.printStackTrace();
+            return result;
+        }
+        // return result;
     }
 
 }

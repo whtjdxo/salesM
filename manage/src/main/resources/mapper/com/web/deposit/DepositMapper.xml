@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.web.manage.deposit.mapper.DepositMapper">
+    <select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select> 
+	
+    <select id="getDepositSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	SQL_CALC_FOUND_ROWS
+				VW.CHAIN_NO						as chain_no
+				, TC.CHAIN_NM					as chain_nm
+				, TC.BIZ_NO 					as biz_no
+				, IFNULL(TOT_CNT, 0) 			as tot_cnt
+				, IFNULL(APRV_CNT, 0) 			as aprv_cnt
+				, IFNULL(CNCL_CNT, 0) 			as cncl_cnt
+				, IFNULL(TOT_AMT, 0) 			as tot_amt
+				, IFNULL(CONF_AMT, 0) 			as conf_amt
+				, IFNULL(CNCL_AMT, 0) 			as cncl_amt
+				, IFNULL(CARD_FEE_AMT, 0) 		as card_fee_amt
+				, IFNULL(CARD_RESV_AMT, 0) 		as card_resv_amt		
+				, IFNULL(DP.IN_AMT, 0)			as depo_amt
+				, IFNULL(DP.IN_AMT, 0) - IFNULL(CARD_RESV_AMT, 0)  as unrecv_amt
+				, IFNULL(REMIT_SVC_AMT, 0) 		as remit_svc_amt
+				, IFNULL(REMIT_AMT, 0) 			as remit_amt
+		FROM	(              
+				SELECT WD.CHAIN_NO 
+						, COUNT(1)			AS TOT_CNT
+						, SUM(CASE WHEN WD.CONF_GB = 'A' THEN 1 ELSE NULL END )					AS APRV_CNT
+						, SUM(CASE WHEN WD.CONF_GB = 'C' THEN 1 ELSE NULL END )					AS CNCL_CNT
+						, SUM(WD.CONF_AMT)														AS TOT_AMT
+						, SUM(CASE WHEN WD.CONF_GB = 'A' THEN WD.CONF_AMT ELSE NULL END )		AS CONF_AMT
+						, SUM(CASE WHEN WD.CONF_GB = 'C' THEN WD.CONF_AMT ELSE NULL END )		AS CNCL_AMT
+						, SUM(WD.CARD_FEE_AMT)													AS CARD_FEE_AMT
+						, SUM(WD.CARD_RESV_AMT) 												AS CARD_RESV_AMT
+						, SUM(CASE WHEN WD.REMIT_NO IS NULL THEN NULL ELSE WD.CONF_AMT END)		AS REMIT_SVC_AMT
+						, SUM(CASE WHEN WD.REMIT_NO IS NULL THEN NULL ELSE WD.REMIT_AMT END)	AS REMIT_AMT
+				  FROM  TB_WITHDRAW WD 
+				 WHERE  WD.DEPOSIT_DTTM IS NULL
+				   AND	WD.DEPOSIT_FLAG = 'N'
+				   AND	WD.CARD_RESV_DATE = #{sch_depo_dt}				
+				   AND  WD.USE_YN = 'Y'
+				 GROUP 	BY WD.CHAIN_NO  
+				) VW 
+				JOIN TB_CHAIN TC ON TC.CHAIN_NO = VW.CHAIN_NO 
+				<if test='sch_corp_cd != null and sch_corp_cd != ""'>
+					AND  TC.CORP_CD = #{sch_corp_cd}
+				</if>
+				<if test='sch_chain_nm != null and sch_chain_nm != ""'>
+					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+				</if>
+				LEFT OUTER JOIN (
+					SELECT 	CHAIN_NO
+							, SUM(IN_AMT)  IN_AMT
+					FROM 	TB_CHAIN_DEPOSIT_LIST
+					WHERE	BANK_IN_DATE  = #{sch_depo_dt}
+					<if test="sch_chain_no != null and sch_chain_no != ''">
+						AND  CHAIN_NO = #{chain_no}
+					</if>
+					GROUP 	BY CHAIN_NO
+				) DP ON DP.CHAIN_NO = VW.CHAIN_NO
+		WHERE  1= 1       
+        <choose>
+                <when test="sidx != ''">
+                        ORDER BY ${sidx} ${sord}
+                </when>
+                <otherwise>
+                        ORDER BY 1
+                </otherwise>
+        </choose>                
+        LIMIT  ${start}, ${end}
+	</select>
+
+	<select id="getDepoCardSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	SQL_CALC_FOUND_ROWS
+				VW.CHAIN_NO						as chain_no
+				, TC.CHAIN_NM					as chain_nm
+				, TC.BIZ_NO 					as biz_no
+				, VW.CARD_ACQ					as card_acq
+				, GET_CODE_NM('CARD_ACQ', VW.CARD_ACQ) as card_acq_nm
+				, IFNULL(TOT_CNT, 0) 			as tot_cnt
+				, IFNULL(APRV_CNT, 0) 			as aprv_cnt
+				, IFNULL(CNCL_CNT, 0) 			as cncl_cnt
+				, IFNULL(TOT_AMT, 0) 			as tot_amt
+				, IFNULL(CONF_AMT, 0) 			as conf_amt
+				, IFNULL(CNCL_AMT, 0) 			as cncl_amt
+				, IFNULL(CARD_FEE_AMT, 0) 		as card_fee_amt
+				, IFNULL(CARD_RESV_AMT, 0) 		as card_resv_amt		
+				, IFNULL(DP.IN_AMT, 0)			as depo_amt
+				, IFNULL(DP.IN_AMT, 0) - IFNULL(CARD_RESV_AMT, 0)  as unrecv_amt
+				, IFNULL(REMIT_SVC_AMT, 0) 		as remit_svc_amt
+				, IFNULL(REMIT_AMT, 0) 			as remit_amt
+		FROM	(              
+				SELECT WD.CHAIN_NO, WD.CARD_ACQ 
+						, COUNT(1)			AS TOT_CNT
+						, SUM(CASE WHEN WD.CONF_GB = 'A' THEN 1 ELSE NULL END )					AS APRV_CNT
+						, SUM(CASE WHEN WD.CONF_GB = 'C' THEN 1 ELSE NULL END )					AS CNCL_CNT
+						, SUM(WD.CONF_AMT)														AS TOT_AMT
+						, SUM(CASE WHEN WD.CONF_GB = 'A' THEN WD.CONF_AMT ELSE NULL END )		AS CONF_AMT
+						, SUM(CASE WHEN WD.CONF_GB = 'C' THEN WD.CONF_AMT ELSE NULL END )		AS CNCL_AMT
+						, SUM(WD.CARD_FEE_AMT)													AS CARD_FEE_AMT
+						, SUM(WD.CARD_RESV_AMT) 												AS CARD_RESV_AMT
+						, SUM(CASE WHEN WD.REMIT_NO IS NULL THEN NULL ELSE WD.CONF_AMT END)		AS REMIT_SVC_AMT
+						, SUM(CASE WHEN WD.REMIT_NO IS NULL THEN NULL ELSE WD.REMIT_AMT END)	AS REMIT_AMT
+				  FROM  TB_WITHDRAW WD 
+				 WHERE  WD.DEPOSIT_DTTM IS NULL
+				   AND	WD.DEPOSIT_FLAG = 'N'
+				   AND	WD.CARD_RESV_DATE = #{sch_depo_dt}
+				<if test="sch_chain_no != null and sch_chain_no != ''">
+					AND  WD.CHAIN_NO = #{chain_no}
+				</if>
+				AND  WD.CHAIN_NO = #{chain_no}
+				AND  WD.USE_YN = 'Y'
+				GROUP 	BY WD.CHAIN_NO, WD.CARD_ACQ  
+				) VW 
+				JOIN TB_CHAIN TC ON TC.CHAIN_NO = VW.CHAIN_NO 
+				LEFT OUTER JOIN (
+					SELECT 	CHAIN_NO, CARD_ACQ
+							, SUM(IN_AMT)  IN_AMT
+					FROM 	TB_CHAIN_DEPOSIT_LIST
+					WHERE	BANK_IN_DATE  = #{sch_depo_dt}
+					<if test="sch_chain_no != null and sch_chain_no != ''">
+						AND  CHAIN_NO = #{chain_no}
+					</if>
+					GROUP 	BY CHAIN_NO, CARD_ACQ
+				) DP ON DP.CHAIN_NO = VW.CHAIN_NO
+					AND DP.CARD_ACQ = VW.CARD_ACQ
+		WHERE  1= 1       
+		<choose>
+				<when test="sidx != ''">
+						ORDER BY ${sidx} ${sord}
+				</when>
+				<otherwise>
+						ORDER BY 1
+				</otherwise>
+		</choose>                
+		LIMIT  ${start}, ${end}
+	</select>
+
+	<select id="getDepositList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT  SQL_CALC_FOUND_ROWS
+				WD.WD_NO                AS wd_no
+				, WD.WD_STATUS          AS wd_status
+				, GET_CODE_NM('WD_STATUS', WD.WD_STATUS)    AS wd_status_nm
+				, WD.WORK_DATE          AS work_date
+				, WD.CHAIN_NO           AS chain_no
+				, TC.CHAIN_NM           AS chain_nm
+				, WD.DOCU_SEQ           AS docu_seq
+				, WD.CARD_ACQ           AS card_acq
+				, GET_CODE_NM('CARD_ACQ', WD.CARD_ACQ)      AS card_acq_nm
+				, VD.CARD_NO            AS card_no        
+				, WD.CARD_REG_NO        AS card_reg_no
+				, VD.CARD_TYPE          AS card_type
+				, GET_CODE_NM('CARD_TYPE', VD.CARD_TYPE)    AS card_type_nm
+				, WD.CONF_NO            AS conf_no
+				, WD.CONF_GB            AS conf_gb
+				, CASE WHEN WD.CONF_GB = 'A' THEN '승인' ELSE '취소' END AS conf_gb_nm
+				, WD.CONF_DTTM          AS conf_dttm
+				, WD.CONF_AMT           AS conf_amt
+				, WD.CARD_BUY_FLAG      AS card_buy_flag
+				, WD.CARD_BUY_DATE      AS card_buy_date
+				, WD.CARD_FEE_RATE      AS fard_fee_rate
+				, WD.CARD_FEE_AMT       AS card_fee_amt
+				, IFNULL(WD.CARD_RESV_AMT, 0)   AS card_resv_amt
+				, IFNULL(WD.CARD_RESV_DAY, 0)   AS card_resv_day
+				, IFNULL(WD.CARD_RESV_DATE, '') AS card_resv_date
+				, IFNULL(WD.SVC_FEE_RATE, 0)    AS svc_fee_rate
+				, IFNULL(WD.SVC_FEE_AMT, 0)     AS svc_fee_amt
+				, IFNULL(WD.WD_BASE_AMT, 0)     AS wd_base_amt
+				, IFNULL(WD.CRD_FEE_RATE, 0)    AS crd_fee_rate
+				, IFNULL(WD.CRD_FEE_AMT, 0)     AS crd_fee_amt
+				, IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
+				, IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
+				, IFNULL(WD.REMIT_NO, '')       AS remit_seq
+				, IFNULL( WD.REMIT_DTTM, '')    AS remit_dttm
+				, IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
+				, IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
+				, IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg
+				, WD.USE_YN                     AS use_yn
+				, IFNULL(WD.WD_MEMO, '')        AS wd_memo
+				, WD.CLOSE_YN                   AS close_yn
+				, DATE_FORMAT(IFNULL(WD.UPT_DTTM, WD.ENT_DTTM), '%Y-%m-%d %H:%i:%s')              AS upt_dttm
+				, DATE_FORMAT(IFNULL(WD.ENT_USER_ID,  WD.UPT_USER_ID), '%Y-%m-%d %H:%i:%s')       AS upt_user_id
+		FROM  TB_WITHDRAW WD
+				JOIN TB_VAN_DOCU VD ON VD.DOCU_SEQ = WD.DOCU_SEQ
+				JOIN TB_CHAIN   TC ON TC.CHAIN_NO = WD.CHAIN_NO 
+		WHERE  WD.DEPOSIT_DTTM IS NULL
+		  AND  WD.DEPOSIT_FLAG = 'N'
+		  AND  WD.CARD_RESV_DATE  = #{sch_list_depo_date} 
+		  AND  WD.CHAIN_NO     	= #{sch_list_chain_no} 
+		  AND  WD.USE_YN     		= 'Y'
+		
+		<if test="sch_list_card_acq != ''"> 
+				AND  FIND_IN_SET(WD.CARD_ACQ, #{sch_list_card_acq})  
+		</if>
+		<if test="sch_list_gb_conf_val != ''">
+				<choose>
+						<when test="sch_list_gb == 'sch_list_gb_conf_no'">
+								AND WD.CONF_NO  = #{sch_list_gb_conf_val}
+						</when>
+						<when test="sch_list_gb == 'sch_list_gb_card_no'">
+								AND WD.CARD_NO  = #{sch_list_gb_conf_val}
+						</when>
+						<when test="sch_list_gb == 'sch_list_gb_conf_amt'">
+								AND WD.CONF_AMT  = #{sch_list_gb_conf_val}
+						</when>
+				</choose>
+		</if>  
+		<choose>
+				<when test="sidx != ''">
+						ORDER BY ${sidx} ${sord}
+				</when>
+				<otherwise>
+						ORDER BY 1
+				</otherwise>
+		</choose>                
+		LIMIT  ${start}, ${end}
+	</select>
+
+</mapper>

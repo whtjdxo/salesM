@@ -47,7 +47,7 @@
                 , IFNULL(TC.ABANK_CD, '')           AS  abank_cd
                 , IFNULL(TC.ABANK_ACCOUNT, '')      AS  abank_account
                 , IFNULL(TC.ABANK_ACCOUNT_NO, '')   AS  abank_account_no
-                , IFNULL(TC.ABANK_SPEED_YN, '')     AS  abank_speed_yn
+                , IFNULL(TC.ABANK_SPEED_YN, 'N')    AS  abank_speed_yn
                 , IFNULL(TC.ABANK_PWD, '')          AS  abank_pwd
                 , IFNULL(TC.ABANK_DEPOSITOR, '')    AS  abank_depositor
                 , IFNULL(TC.ABANK_CHECK_YN, '')     AS  abank_check_yn
@@ -200,7 +200,7 @@
            SET  ABANK_ACCOUNT_TP    = #{abank_account_tp}
                 , ABANK_CD            = #{abank_cd}                
                 , ABANK_ACCOUNT_NO    = #{abank_account_no}
-                , ABANK_SPEED_YN      = 'Y' 
+                , ABANK_SPEED_YN      = #{abank_speed_yn}
                 , ABANK_PWD           = #{abank_pwd}
                 , ABANK_DEPOSITOR     = #{abank_depositor}
                 , ABANK_CHECK_YN      = #{abank_check_yn}

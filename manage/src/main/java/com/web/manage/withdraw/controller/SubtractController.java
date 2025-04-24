@@ -199,7 +199,7 @@ public class SubtractController {
                 result.setResultCode("S000");
                 result.setResultMsg("Subtract creation successful.");
             } else {
-                System.out.println("chainCreate fail");
+                // System.out.println("Subtract Create fail");
                 result.setResultCode("F000");
                 result.setResultMsg("Subtract creation Failed");
             }

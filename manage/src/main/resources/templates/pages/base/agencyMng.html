@@ -145,7 +145,7 @@
             $('#upt_dttm').val(data.upt_dttm);   
 
             $('#btn_update').show();
-            $('#btn_create').hide();
+            $('#btn_save').hide();
             $('#btn_dupchk').hide();
             $('#ceo_pwd').removeAttr("required");
             // $('#ceo_pwd').attr("required", "required");
@@ -160,7 +160,7 @@
           // $('#ceo_pwd').removeAttr("required");
           $('#ceo_pwd').attr("required", "required");
           $('#btn_update').hide();
-          $('#btn_create').show();
+          $('#btn_save').show();
           $('#btn_dupchk').show();
         }); 
 
@@ -183,7 +183,7 @@
           }
         } 
 
-        $('#btn_create').click(function () {
+        $('#btn_save').click(function () {
           $('#crud').val('create');
           var form = $('#frm_agency_info');
           var checked = true;
@@ -237,7 +237,7 @@
             // $('#ceo_pwd').removeAttr("required");
             $('#ceo_pwd').attr("required", "required");
             $('#btn_update').hide();
-            $('#btn_create').show(); 
+            $('#btn_save').show(); 
             
             // $('#tbl_agency').setGridParam({ url: '/base/organ/agencyMng/list', page: 1, datatype: 'json' }).trigger('reloadGrid');            
           } else {
@@ -436,7 +436,7 @@
                       <p class="text-end pb-1 mb-1 pd-1">
                         <button class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
                         <button class="btn btn-primary text-end" id="btn_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
-                        <button class="btn btn-primary text-end" id="btn_create"><i class="fa fa-paste"></i>저장</button>
+                        <button class="btn btn-primary text-end" id="btn_save"><i class="fa fa-paste"></i>저장</button>
                       </p>
                     </div>
                   </div>                 

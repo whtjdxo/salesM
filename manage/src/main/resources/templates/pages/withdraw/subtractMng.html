@@ -99,6 +99,10 @@
           $('#frm_sub_mst')[0].reset();
           $('#tbl_sub_recv_list').DataTable().clear().draw();
         });
+
+        $('#sch_all').change(function () {          
+          $('#btn_search').click();          
+        });
  
         $('#sub_type').change(function () {
           if (isListClick) return; // 리스트 클릭 상태일 때는 무시
@@ -120,8 +124,6 @@
             tbl_sub_summary.$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
           }
-
-          fn_frm_sub_mst_clear();    
           var data = tbl_sub_summary.row(this).data();
           if (data) {            
             $('#frm_sch_sub')[0].reset();
@@ -129,10 +131,10 @@
             $('#sch_reg_sdt').val(data.min_reg_date);
             $('#sch_reg_edt').val(data.max_reg_date);
             $('#sch_chain_no').val(data.chain_no); 
-            $('#chain_no').val(data.chain_no);            
-            
+            $('#chain_no').val(data.chain_no);                        
             tbl_sub_list.ajax.reload();            
-          }  
+          }
+          fn_frm_sub_mst_clear();      
         });      
          
         // --------------------------------------------------------------- frm_sch_sub 정보 처리 ---------------------------------------------------
@@ -379,13 +381,22 @@
 
         function fn_return_result(data) {
           var resultCode = data.resultCode;
-          var resultMsg = data.resultMsg;  
-
-          if (resultCode == 'S000') {            
-            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
-            tbl_sub_summary.ajax.reload();
+          var resultMsg = data.resultMsg;   
+          if (resultCode == 'S000') {                               
+            swal.fire('성공', '작업을 정상적으로 완료하였습니다.', 'success');            
+            var selectedRowData = tbl_sub_summary.row('.selected').data(); // 현재 선택된 데이터 저장            
+            tbl_sub_summary.ajax.reload(function () {
+              if (selectedRowData) {
+                tbl_sub_summary.rows().every(function () {
+                  if (this.data().chain_no === selectedRowData.chain_no) { // 저장된 데이터와 매칭
+                    $(this.node()).addClass('selected'); // 다시 선택
+                  }
+                });
+              }
+            });
             tbl_sub_list.ajax.reload();
             fn_frm_sub_mst_clear();
+            
           } else { 
             swal('실패', resultMsg, 'error');
           }

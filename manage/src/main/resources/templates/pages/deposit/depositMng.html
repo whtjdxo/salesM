@@ -20,40 +20,29 @@
 
         callAjax('/common/getCreditCorpList', "", fn_corp_list_setting);
         function fn_corp_list_setting(data) {
-          codeSetting('CORP_CD', data.data, '#sch_corp_no', '1', '', ''); 
+          codeSetting('CORP_CD', data.data, '#sch_corp_cd', '1', '', ''); 
         }
-
-        callAjax('/common/getAgencyList', "", fn_agency_list_setting);
-        function fn_agency_list_setting(data) {
-          codeSetting('AGENCY_NO', data.data, '#sch_agency_no', '1', '', ''); 
-        }  
-
-        callAjax('/common/totalCodelist', "code_grp_cd=('WD_STATUS') AND CODE LIKE 'W%'", fn_wd_status_setting);      
-        function fn_wd_status_setting(data) {
-          codeSetting('WD_STATUS', data.data, '#change_wd_status', '1', '', '');  
-        }
-
         // Set default values for sch_reg_sdt and sch_reg_edt
         var today = new Date();        
-        $('#sch_work_date').val(today.toISOString().split('T')[0]);
+        $('#sch_depo_dt').val(today.toISOString().split('T')[0]);
         // $('#sch_list_conf_date').val(today.toISOString().split('T')[0]);
-        $('#change_work_date').val(today.toISOString().split('T')[0]);
+        $('#change_deposit_dt').val(today.toISOString().split('T')[0]);
 
         $('#btn_search').click(function () {   
-          tbl_wd_summ.ajax.reload();
+          tbl_depo_resv_summ.ajax.reload();
         });  
 
         $('#btn_list_search').click(function () {   
           tbl_wd_resv_list.ajax.reload();
         }); 
 
-        var tbl_wd_summ = $('#tbl_wd_summ').DataTable({
+        var tbl_depo_resv_summ = $('#tbl_depo_resv_summ').DataTable({
             processing: true,
             serverSide: true,
             select: true, // select 옵션은 DataTables Select 확장이 필요할 수 있습니다. 여기서는 체크박스 동작과 직접 관련은 적습니다.
             responsive: true,
             ajax: {
-                url: '/withdraw/withdraw/wdMng/wdSummary',
+                url: '/deposit/deposit/depoMng/getDepositSummary',
                 contentType: 'application/json',
                 dataType: 'JSON',
                 type: 'POST',
@@ -79,24 +68,21 @@
                     className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
                 }
                 , { data: 'chain_nm' }
-                , { data: 'risk_grade' }
-                , { data: 'conf_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'biz_no' }                
                 , { data: 'conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
-                , { data: 'cncl_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
-                , { data: 'cncl_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
-                , { data: 'remit_conf_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
-                , { data: 'remit_conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'card_resv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'depo_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'unrecv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                
             ],
             columnDefs: [
-                { targets: 0, width: '40px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
-                { targets: 1, width: '120px', className: 'text-left px-1' },
-                { targets: 2, width: '50px', className: 'text-right px-1 dt-body-right' }, // DataTables 권장 클래스
-                { targets: 3, width: '80px', className: 'text-right px-1 dt-body-right' }, // 숫자 데이터는 오른쪽 정렬이 일반적
-                { targets: 4, width: '130px', className: 'text-right px-1 dt-body-right' },
-                { targets: 5, width: '80px', className: 'text-right px-1 dt-body-right' },
-                { targets: 6, width: '130px', className: 'text-right px-1 dt-body-right' },
-                { targets: 7, width: '80px', className: 'text-right px-1 dt-body-right' },
-                { targets: 8, width: '130px', className: 'text-right px-1 dt-body-right' }
+                { targets: 0, width: '40px', className: 'text-center dt-body-center' } // 중앙 정렬 확인
+                , { targets: 1, width: '130px', className: 'text-left px-1' }
+                , { targets: 2, width: '150px', className: 'text-left px-1' } // DataTables 권장 클래스
+                , { targets: 3, width: '130px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 4, width: '130px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 5, width: '130px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 6, width: '130px', className: 'text-right px-1 dt-body-right' }
             ],
             order: [[1, 'desc']], // 기본 정렬 설정
             paging: true,
@@ -123,7 +109,7 @@
                 };
 
                 // 합계를 계산할 컬럼 인덱스 (0부터 시작)
-                var columnsToSum = [3, 4, 5, 6, 7, 8]; // data 기준으로 conf_cnt 부터 remit_conf_amt 까지
+                var columnsToSum = [3, 4, 5, 6]; // data 기준으로 conf_cnt 부터 remit_conf_amt 까지
 
                 columnsToSum.forEach(function(colIdx) {
                     // 현재 페이지 데이터만 합산 (serverSide: true 이므로 전체 데이터 접근 불가)
@@ -165,18 +151,18 @@
         $('#check_all').on('click', function(){
             var isChecked = this.checked;
             // 현재 페이지의 모든 행 체크박스를 찾아서 상태 변경
-            tbl_wd_summ.rows({ page: 'current' }).nodes().to$().find('.row-checkbox').prop('checked', isChecked);
+            tbl_depo_resv_summ.rows({ page: 'current' }).nodes().to$().find('.row-checkbox').prop('checked', isChecked);
         });
 
         // --- 각 행의 체크박스 클릭 이벤트 (이벤트 위임 사용) ---
-        $('#tbl_wd_summ tbody').on('click', '.row-checkbox', function(){
+        $('#tbl_depo_resv_summ tbody').on('click', '.row-checkbox', function(){
             // 개별 체크박스 클릭 시 '전체 선택' 체크박스 상태 업데이트
             updateCheckAllState();
         });
 
         // --- '전체 선택' 체크박스 상태 업데이트 함수 ---
         function updateCheckAllState() {
-            var $rowCheckboxes = tbl_wd_summ.rows({ page: 'current' }).nodes().to$().find('.row-checkbox');
+            var $rowCheckboxes = tbl_depo_resv_summ.rows({ page: 'current' }).nodes().to$().find('.row-checkbox');
             var totalCheckboxes = $rowCheckboxes.length;
             var checkedCheckboxes = $rowCheckboxes.filter(':checked').length;
 
@@ -211,32 +197,25 @@
             };
         } 
  
-        $('#tbl_wd_summ').on('click', 'tr', function (e) {          
+        $('#tbl_depo_resv_summ').on('click', 'tr', function (e) {          
           if ($(this).hasClass('selected')) {
               $(this).removeClass('selected');
           } else {
-              tbl_wd_summ.$('tr.selected').removeClass('selected');
+              tbl_depo_resv_summ.$('tr.selected').removeClass('selected');
               $(this).addClass('selected');
           } 
           // 수정된 부분: 클릭된 셀 정보 가져오기
           var clickedCell = $(e.target).closest('td');
           var clickedColumnIndex = clickedCell.index();
-          if (clickedColumnIndex == 1 && row.risk_grade > 0) {
-              // Show modal_risk              
-              $('#risk_chain_no').val(row.chain_no);              
-              $('#modal_risk').modal('show');   
-              $('#tbl_risk_list').DataTable().ajax.reload(); 
-          }
-          var row = tbl_wd_summ.row(this).data();
+          var row = tbl_depo_resv_summ.row(this).data();
           $('#frm_sch_card')[0].reset();   
           $('#frm_sch_list')[0].reset();
           
           $('#sch_card_chain_no').val(row.chain_no);
           $('#sch_list_chain_no').val(row.chain_no);   // list 검색 조건
-          $('#sch_risk_chain_no').val(row.chain_no);   // risk 검색 조건
-
-          $('#sch_card_work_date').val($('#sch_work_date').val());   // 카드 작업일 설정
-          $('#sch_list_work_date').val($('#sch_work_date').val());   // risk 작업일 설정
+          
+          $('#sch_card_deposit_date').val($('#sch_depo_dt').val());   // 카드 작업일 설정
+          $('#sch_list_deposit_date').val($('#sch_depo_dt').val());   // risk 작업일 설정
            
 
           $('#tot_conf_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.conf_amt));
@@ -245,28 +224,9 @@
           $('#svc_fee_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.svc_fee_amt));      
           $('#crd_fee_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.crd_fee_amt));
           $('#wd_base_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.wd_base_amt));
-
-          if (row.sub_amt > 0) {
-            $('#sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.sub_amt))
-              .css({ 'color': 'red', 'font-weight': 'bold' });
-          } else {
-            $('#sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.sub_amt))
-              .css({ 'color': '', 'font-weight': '' });
-          }
-          
-          $('#exc_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.exc_amt));
-          if (row.remit_amt > 0) {
-            $('#remit_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.remit_amt))
-              .css({ 'color': 'blue', 'font-weight': 'bold' });
-          } else if (row.remit_amt < 0) {
-            $('#remit_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.remit_amt))
-              .css({ 'color': 'red', 'font-weight': 'bold' });
-          } else {
-            $('#remit_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.remit_amt))
-              .css({ 'color': '', 'font-weight': '' });
-          }
+ 
           $('#tbl_card_summ').DataTable().ajax.reload(); 
-          if ($('#sch_list_chain_no').val() && $('#sch_list_work_date').val()) {
+          if ($('#sch_list_chain_no').val() && $('#sch_list_deposit_date').val()) {
             tbl_wd_resv_list.ajax.reload();
           } 
 
@@ -275,7 +235,7 @@
         $('#btn_remit').click(function () {
           var selectedChainNos = [];
           // Iterate through checked checkboxes in the current page
-          tbl_wd_summ.rows({ page: 'current' }).nodes().to$().find('.row-checkbox:checked').each(function () {
+          tbl_depo_resv_summ.rows({ page: 'current' }).nodes().to$().find('.row-checkbox:checked').each(function () {
             selectedChainNos.push($(this).val());
           });
           
@@ -285,8 +245,8 @@
               return;
             }
             dataParam ={
-              workDate : $('#sch_work_date').val(),
-              chainNo : 'ALL',
+              deposit_date : $('#sch_depo_dt').val(),
+              chain_no : 'ALL',
             }
           } else {
             if (selectedChainNos.length === 0) {
@@ -294,12 +254,12 @@
               return;
             }
             dataParam ={              
-              workDate : $('#sch_work_date').val(),
+              workDate : $('#sch_depo_dt').val(),
               chainNo : selectedChainNos.join(','),
             }  
           } 
   
-          ConfirmdialogToAjax("execute","/withdraw/withdraw/wdMng/procRemitMain", dataParam, fn_remit_result); 
+          ConfirmdialogToAjax("execute","/deposit/deposit/depoMng/callProcRemitMain", dataParam, fn_remit_result); 
         });
          
         function fn_remit_result(data){ 
@@ -309,7 +269,7 @@
             icon: 'success'
           });
           fn_default_clear();
-          tbl_wd_summ.ajax.reload();
+          tbl_depo_resv_summ.ajax.reload();
         }
 
         function fn_default_clear(){
@@ -328,7 +288,7 @@
           select: true,
           responsive: true,
           ajax: {
-            url: '/withdraw/withdraw/wdMng/wdCardSummary',
+            url: '/deposit/deposit/depoMng/depoCardSummary',
             contentType: 'application/json',
             dataType: 'JSON',
             type: 'POST',
@@ -382,7 +342,7 @@
           select: true,
           responsive: true,
           ajax: {
-            url: '/withdraw/withdraw/wdMng/wdResvList',
+            url: '/deposit/deposit/depoMng/wdResvList',
             contentType: 'application/json',
             dataType: 'JSON',
             type: 'POST',
@@ -528,7 +488,7 @@
             }
           } 
 
-          if ($('#sch_list_chain_no').val() && $('#sch_list_work_date').val()) {
+          if ($('#sch_list_chain_no').val() && $('#sch_list_deposit_date').val()) {
             tbl_wd_resv_list.ajax.reload();
           } 
         });   
@@ -537,11 +497,11 @@
         // Change event for change_gb dropdown
         $('#change_gb').on('change', function () {
           var selectedValue = $(this).val();
-          if (selectedValue === 'WORK_DATE') {
-            $('#div_work_date').show();
+          if (selectedValue === 'deposit_date') {
+            $('#div_deposit_date').show();
             $('#change_wd_status').hide();
           } else if (selectedValue === 'WD_STATUS') {
-            $('#div_work_date').hide();
+            $('#div_deposit_date').hide();
             $('#change_wd_status').show();
           }
         });
@@ -561,12 +521,12 @@
           var dataParam = {
             wdNo: selectedWdNo.join(','),
             wdStatus: $('#change_wd_status').val(),
-            workDate: $('#change_work_date').val(),
+            workDate: $('#change_deposit_dt').val(),
           };
 
           var changeGb = $('#change_gb').val();
-          if (changeGb === 'WORK_DATE') {
-            var workDate = $('#change_work_date').val();
+          if (changeGb === 'deposit_date') {
+            var workDate = $('#change_deposit_dt').val();
             if (!workDate) {
               alert('변경 작업일을 입력하세요.');
               return;
@@ -576,28 +536,28 @@
               return;
             }
             
-            ConfirmdialogToAjax("execute", "/withdraw/withdraw/wdMng/changeWorkDate", dataParam, fn_change_result);
+            ConfirmdialogToAjax("execute", "/deposit/deposit/depoMng/changeWorkDate", dataParam, fn_change_result);
           } else if (changeGb === 'WD_STATUS') {
             var wdStatus = $('#change_wd_status').val();
             if (!wdStatus) {
               alert('진행 상태를 선택하세요.');
               return;
             }
-            ConfirmdialogToAjax("execute", "/withdraw/withdraw/wdMng/changeWdStatus", dataParam, fn_change_result);
+            ConfirmdialogToAjax("execute", "/deposit/deposit/depoMng/changeWdStatus", dataParam, fn_change_result);
           }   
         });
 
         function fn_change_result(data){
           swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
           fn_default_clear();
-          tbl_wd_summ.ajax.reload();
+          tbl_depo_resv_summ.ajax.reload();
         }
         
         // Excel download button click event
         $('#btn_list_excel').click(function () {
           var formData = $('#frm_sch_list').serializeObject();
           $.ajax({
-            url: '/withdraw/withdraw/wdMng/wdResvListExcel',
+            url: '/deposit/deposit/depoMng/wdResvListExcel',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(formData),
@@ -790,7 +750,7 @@
               select: true,
               responsive: true,
               ajax: {
-                url: '/withdraw/withdraw/wdMng/getRiskList',
+                url: '/deposit/deposit/depoMng/getRiskList',
                 contentType: 'application/json',
                 dataType: 'JSON',
                 type: 'POST',
@@ -842,20 +802,18 @@
             $(triggerElement).focus();
           } 
           return true; // 모달 닫기 허용
-        });
-
-          
+        });          
       });
     </script>
   </head>
   <div class="content">     
     <div class="row g-1 mb-1">
-      <div class="col-lg-7">
+      <div class="col-lg-6">
         <div class="card" style="height: 580px;">
           <div class="card-header">          
             <div class="row flex-between-end">
               <div class="col-lg-2 align-self-center">
-                <h4 class="mb-0">사전 정산</h4>
+                <h4 class="mb-0">입금 정산</h4>
               </div>            
               <div class="col-lg-10">
                 <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
@@ -863,34 +821,29 @@
                     <div class="col-sm-12">
                       <div class="input-group input-group-sm mb-1">
                         <div class="col-sm-3">
-                          <input class="form-control form-control-sm" id="sch_work_date" type="text" name="sch_work_date" istyle="date" maxlength="10" required />
+                          <input class="form-control form-control-sm" id="sch_depo_dt" type="text" name="sch_depo_dt" istyle="date" maxlength="10" required />
                         </div>   
-                        <select class="form-select form-control-sm me-1" id="sch_corp_no" name="sch_corp_no" style="width: 75px">
+                        <select class="form-select form-control-sm me-1" id="sch_corp_cd" name="sch_corp_cd" style="width: 75px">
                           <option value="">여신사</option>
                         </select>
-                        <select class="form-select form-control-sm me-1" id="sch_agency_no" name="sch_agency_no" style="width: 75px">
-                          <option value="">대리점</option>
-                        </select>                      
-                        <!-- <select class="form-select form-control-sm me-1" id="schgb_chain" name="schgb_chain" style="width: 75px">
-                          <option value="">가맹점 정보</option>
-                          <option value="schgb_chain_nm">가맹점 명</option>
-                          <option value="schgb_biz_no">사업자 번호</option>
-                        </select> -->
-                        <input type="text" class="form-control form-control-sm me-1" id="schgb_chain_val" name="schgb_chain_val" style="width:100px" />
+                        <input type="text" class="form-control form-control-sm me-1" id="sch_chain_nm" name="sch_chain_nm" style="width:100px" />
                         <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
                       </div>
                     </div> 
                   </div> 
                   <div class="row mb-1">
-                    <div class="col-sm-8">
-                      
+                    <div class="col-sm-5">                      
+                    </div>
+                    <div class="col-sm-2">
+                      <input type="checkbox" id="sch_remit_chk" class="form-check-input" checked/>
+                      <label for="sch_remit_chk" class="form-check-label">정산가맹점 만</label>
                     </div>
                     <div class="col-sm-2">
                       <input type="checkbox" id="remit_all" class="form-check-input" />
-                      <label for="remit_all" class="form-check-label">모두 출금</label>
+                      <label for="remit_all" class="form-check-label">모두 입금처리</label>
                     </div>
-                    <div class="col-sm-2">
-                      <button type="button" class="btn btn-success btn-sm" id="btn_remit" name="btn_remit">출금 정산 처리</button>                      
+                    <div class="col-sm-3">
+                      <button type="button" class="btn btn-success btn-sm" id="btn_remit" name="btn_remit">입금 처리</button>                      
                     </div>
                   </div>
                 </form>                
@@ -899,31 +852,26 @@
           </div>
           <div class="card-body pt-0 px-0" style="padding-top: 0px">
             <div class="table-responsive scrollbar">
-              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_wd_summ">  
+              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_depo_resv_summ">  
                 <thead>
                   <tr>
                     <th class="text-center">
                         <input type="checkbox" id="check_all" class="form-check-input" />
                     </th>
                     <th class="text-center">가맹점 명</th>
-                    <th class="text-center">Risk</th>
-                    <th class="text-center">승인 건</th>
-                    <th class="text-center">승인 금액</th>
-                    <th class="text-center">취소 건</th>
-                    <th class="text-center">취소 금액</th>                
-                    <th class="text-center">정산 건</th>
-                    <th class="text-center">정산 금액</th> 
+                    <th class="text-center">사업자 번호</th>
+                    <th class="text-center">매출액</th>
+                    <th class="text-center">입금 예정액</th>
+                    <th class="text-center">입  금  액</th>
+                    <th class="text-center">미 입 금 액</th> 
                   </tr>
                 </thead>
                 <tfoot>
                   <tr>
-                    <th colspan="3" class="text-center">총계</th>
+                    <th colspan="4" class="text-center">총계</th>
                     <th class="text-right px-2"></th>
                     <th class="text-right px-2"></th>
-                    <th class="text-right px-2"></th>
-                    <th class="text-right px-2"></th>
-                    <th class="text-right px-2"></th>
-                    <th class="text-right px-2"></th> 
+                    <th class="text-right px-2"></th>                     
                   </tr>
                 </tfoot>
                 <tbody class="list"></tbody>
@@ -932,93 +880,13 @@
           </div>
         </div>      
       </div>
-      <div class="col-lg-5">
+      <div class="col-lg-6">
         <div class="card" style="height: 580px;">    
           <div class="card-header">            
             <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">
               <input class="form-control form-control-sm" id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly" />
-              <input class="form-control form-control-sm" id="sch_card_work_date" type="hidden" name="sch_card_work_date"/>                
-            </form>          
-            <div class="row flex-between-end">
-              <div class="row mb-1">
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="tot_conf_amt">총 정산금액</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="tot_conf_amt" type="text" name="tot_conf_amt" istyle="amount" readonly />
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="card_fee_amt">카드 수수료</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="card_fee_amt" type="text" name="card_fee_amt" istyle="amount" readonly/>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="card_resv_amt">입금 예정액</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="card_resv_amt" type="text" name="card_resv_amt" istyle="amount" readonly/>
-                    </div>
-                  </div>
-                </div>
-              </div>  
-              <div class="row mb-1">
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_fee_amt">운영 수수료</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="svc_fee_amt" type="text" name="svc_fee_amt" istyle="amount" readonly/>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_fee_amt">여신 수수료</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="crd_fee_amt" type="text" name="crd_fee_amt" istyle="amount"  readonly />                           
-                    </div>
-                  </div>
-                </div>              
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="wd_base_amt">원    금</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="wd_base_amt" type="text" name="wd_base_amt" istyle="amount" readonly />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="row mb-1">
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="sub_amt">차 감 액</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="sub_amt" type="text" name="sub_amt" istyle="amount" readonly/>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_amt">과 입 금</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="exc_amt" type="text" name="exc_amt" istyle="amount" readonly/>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="remit_amt">출금 예정액</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="remit_amt" type="text" name="remit_amt" istyle="amount"  readonly />                           
-                    </div>
-                  </div>
-                </div>
-              </div>     
-            </div>
+              <input class="form-control form-control-sm" id="sch_card_deposit_date" type="hidden" name="sch_card_deposit_date"/>                
+            </form>
           </div>
           <div class="card-body pt-0 px-0" style="padding-top: 0px">
             <div class="table-responsive scrollbar">              
@@ -1026,9 +894,9 @@
                 <thead>
                   <tr>  
                     <th class="text-center">카드(매입)사</th>
-                    <th class="text-center">승인 건</th>
-                    <th class="text-center">승인 금액</th>
-                    <th class="text-center">취소 건</th>
+                    <th colspan="2" class="text-center">상환 예정액</th>
+                    <th class="text-center">입금액</th>
+                    <th class="text-center">차액</th>
                     <th class="text-center">취소 금액</th>   
                     <th class="text-center">출금 건</th>
                     <th class="text-center">출금 금액</th>
@@ -1052,7 +920,7 @@
               <form id="frm_sch_list" name="frm_sch_list" onsubmit="return false;" novalidate=""> 
                 <input id="sch_list_chain_no"  type="hidden" name="sch_list_chain_no" />
                 <input id="sch_list_chain_nm"  type="hidden" name="sch_list_chain_nm" />
-                <input id="sch_list_work_date" type="hidden" name="sch_list_work_date"/>
+                <input id="sch_list_deposit_date" type="hidden" name="sch_list_deposit_date"/>
                 <input id="sch_list_card_acq"  type="hidden" name="sch_list_card_acq" />
                 <div class="row mb-1">
                   <div class="col-sm-5">
@@ -1078,12 +946,12 @@
                     <div class="input-group input-group-sm mb-1">
                       <label class="col-sm-2 col-form-label col-form-label-sm" for="change_wd_status">변경 처리</label>                       
                       <select class="form-select form-control-sm me-1" id="change_gb" name="change_gb" style="width: 100px;" >
-                        <option value="WORK_DATE">작업일</option>                          
+                        <option value="deposit_date">작업일</option>                          
                         <option value="WD_STATUS">진행상태</option>                          
                       </select> 
                       <div class="col-sm-4">
-                        <div id="div_work_date">
-                          <input class="form-control form-control-sm" id="change_work_date" type="text" name="change_work_date" istyle="date" maxlength="10" placeholder="변경 작업일" />  
+                        <div id="div_deposit_date">
+                          <input class="form-control form-control-sm" id="change_deposit_dt" type="text" name="change_deposit_dt" istyle="date" maxlength="10" placeholder="변경 작업일" />  
                         </div>                        
                         <select class="form-select form-control-sm me-1" id="change_wd_status" name="change_wd_status" style="width: 120px; display: none;" >
                           <option value="">선택</option>   

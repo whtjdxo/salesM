@@ -76,13 +76,81 @@
                                  WHERE SL.CHAIN_NO  = TC.CHAIN_NO       
                                    AND SL.SCRAP_GB  IN ('VAN', 'DELI')
                                    AND SL.VAN_CD    = #{vanCd}
-                                   AND SL.LAST_SCRAP_DTTM >= DATE_SUB(NOW(), INTERVAL 90 MINUTE)
+                                   AND SL.LAST_SCRAP_DTTM &gt;= DATE_SUB(NOW(), INTERVAL 90 MINUTE)
                         )                                       
                 ORDER 	BY TC.CHAIN_NO  
 	</select> 
+        <select id="getBankChainList" parameterType="com.web.manage.api.domain.ScrapCompVO" resultType="java.util.HashMap">
+                SELECT  CHAIN_NO                AS chainNo
+                        , CHAIN_NM              AS chainNm       
+                        , BANK_CD               AS bankCd
+                        , ACCOUNT_NO            AS accountNo
+                        , ACCOUNT_PWD           AS accountPwd
+                        , ACCOUNT_TP            AS accountTp    
+			, SEARCH_ID             AS searchId
+                        , SEARCH_PWD            AS searchPwd
+                        , BIZ_NO                AS bizNo
+                        , BOSS_REGNO            AS bossRegNo
+                        , ACCOUNT_NM            AS accountNm
+                        , CASE WHEN ACCOUNT_TP = 'PERS' THEN SUBSTR(BOSS_REGNO, 3, 6)
+                                 ELSE SUBSTR(BIZ_NO, 6, 5) END AS authNo                
+                FROM  (                                                                       
+                        SELECT TC.CHAIN_NO              AS CHAIN_NO                                  
+                                , TC.CHAIN_NM     	AS CHAIN_NM                                 
+                                , TC.ABANK_CD           AS BANK_CD                                  
+                                , TC.ABANK_ACCOUNT_NO   AS ACCOUNT_NO                               
+                                , TC.ABANK_PWD   	AS ACCOUNT_PWD                              
+                                , TC.ABANK_SEARCH_ID	AS SEARCH_ID
+                                , TC.ABANK_SEARCH_PWD	AS SEARCH_PWD
+                                , CASE WHEN TC.ABANK_ACCOUNT_TP = 'LAW' THEN 'COMP' ELSE 'PERS' END  AS ACCOUNT_TP
+                                , REPLACE(TC.BIZ_NO, '-', '')       	AS BIZ_NO                               
+                                , REPLACE(TC.CEO_BIRTH_DT, '-', '')     AS BOSS_REGNO                           
+                                , TC.ABANK_DEPOSITOR    AS ACCOUNT_NM                           
+                        FROM    TB_CHAIN TC                                                       
+                        WHERE   TC.SVC_STAT     IN ('O', 'R')  
+                           AND	TC.ABANK_CD	 = #{bankCd}
+                          AND   TC.ABANK_SPEED_YN  = 'Y'
+                          AND   TC.USE_YN 	= 'Y'
+                        <if test='chainNo != null and chainNo != ""'>   
+                            AND 	TC.CHAIN_NO = #{chainNo}
+                        </if>
+                        AND  NOT EXISTS (
+                                        SELECT 1 FROM TB_SCRAP_LOG SL                        
+                                         WHERE SL.CHAIN_NO  = TC.CHAIN_NO                                
+                                           AND SL.SCRAP_GB  = 'BANK'                                       
+                                           AND SL.VAN_CD    = #{bankCd}
+                                           AND SL.LAST_SCRAP_DTTM &gt;= DATE_SUB(NOW(), INTERVAL '90' MINUTE)     
+                                	)
+                         UNION  ALL
+                        SELECT  CORP_CD           	AS CHAIN_CD                                 
+                                , CORP_NM		AS CHAIN_NM                                               
+                                , BANK_CD          	AS BANK_CD                                  
+                                , ACCOUNT_NO      	AS ACCOUNT_NO                               
+                                , ACCOUNT_PWD   	AS ACCOUNT_PWD     
+                                , WEB_ID       		AS SEARCH_ID                               
+                                , WEB_PWD   		AS ACCOUNT_PWD                         
+                                , 'COMP'                AS ACCOUNT_TP                                
+                                , REPLACE(BIZ_NO, '-', '')   AS BIZ_NO                           
+                                , ''                    AS BOSS_REG_NO                              
+                                , DEPOSITOR     	AS ACCOUNT_NM                               
+                          FROM 	TB_CORP CR                                                      
+                         WHERE  USE_YN = 'Y'       
+                           AND 	CORP_TYPE = 'LN'
+                           AND 	BANK_CD 	  = #{bankCd}                                   
+                           AND  NOT EXISTS(                                                     
+                                        SELECT 1 FROM TB_SCRAP_LOG SL                        
+                                         WHERE SL.CHAIN_NO  = CR.CORP_CD                                
+                                           AND SL.SCRAP_GB  = 'BANK'                                       
+                                           AND SL.VAN_CD    = #{bankCd}
+                                           AND SL.LAST_SCRAP_DTTM &gt;= DATE_SUB(NOW(), INTERVAL '90' MINUTE)     
+                                        )                                                     
+                        ) VT                                                                    
+                ORDER  BY VT.CHAIN_NO        
+        </select>
+                 
 
 	<insert id="scrapUploadVanData" parameterType="com.web.manage.api.domain.ScrapVanDataVO">
-                INSERT INTO tb_scrap_van_data(
+                INSERT INTO TB_SCRAP_VAN_DATA(
                         TRADE_NO        , VAN_CD        , CHAIN_NO      , CARD_REG_NO   , MID
                         , CONF_NO       , CONF_GB       , CONF_RSLT     , CONF_DTTM     , CONF_TYPE     , CARD_TYPE
                         , CARD_NO       , CARD_ACQ      , CARD_ISSUE    , CONF_AMT      , INSTALL_MON   , ORG_CONF_DT
@@ -108,6 +176,18 @@
                         , #{stDepositAmt}      , #{stDepositDt}       , #{storeNm}           , #{orderInfo}         , 'Y'                  , NOW()
                 )
         </insert> 
-        
-	 
+
+
+        <insert id="scrapUploadBankData" parameterType="com.web.manage.api.domain.ScrapBankDataVO">
+                INSERT INTO TB_SCRAP_BANK_DATA
+                (
+                        CHAIN_NO		, BANK_CD		, ACCOUNT_NO	        , TRADE_DTTM		, TRADE_GB	
+                        , REMARK		, OUT_AMT		, IN_AMT		, REMAIN_AMT		, CENTER_NM
+                        , ENT_DTTM
+                ) VALUES (
+                        #{chainNo}		, #{bankCd}		, #{accountNo}	        , #{tradeDttm}		, #{tradeGb}				 
+                        , #{remark}		, #{outAmt}		, #{inAmt}		, #{remainAmt}		, #{centerNm}
+                        , NOW()
+                )
+        </insert> 
 </mapper>

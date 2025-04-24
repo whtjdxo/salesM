@@ -19,6 +19,7 @@ public class CorpVO {
     private String account_pwd;
     private String web_id;
     private String web_pwd;
+    private String depositor;
     private String api_url;
     private String memo;
     private String use_yn;

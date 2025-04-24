@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.web.manage.trans.mapper.VanDocuMapper">
-
 	<select id="getQueryTotalCnt" resultType="int">
 		SELECT FOUND_ROWS()
 	</select>
         <select id="getMapPcodeList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-                SELECT  M.CODE			AS map_pcode
+                SELECT  SQL_CALC_FOUND_ROWS
+                        M.CODE			AS map_pcode
                         , M.CODE_NM		AS map_pcode_nm
                         , C.CODE_NO		AS map_code
                         , C.CODE_NM		AS map_code_nm
@@ -18,6 +18,7 @@
                                         , CODE_NM		AS CODE_NM
                                 FROM 	TB_CODE 
                                 WHERE	CODE_GRP_CD  = 'CARD_ACQ'
+                                AND 	CODE != 'CODE'
                                 AND	USE_YN 	= 'Y'
                         </when>
                         <when test="sch_map_pcode == 'ISS'">
@@ -25,6 +26,7 @@
                                         , CODE_NM		AS CODE_NM
                                 FROM 	TB_CODE 
                                 WHERE	CODE_GRP_CD  = 'CARD_ISS'
+                                AND 	CODE != 'CODE'
                                 AND	USE_YN 	= 'Y'
                         </when>
                         <when test="sch_map_pcode == 'BNK'">
@@ -32,6 +34,7 @@
                                         , CODE_NM		AS CODE_NM
                                 FROM 	TB_CODE 
                                 WHERE	CODE_GRP_CD  = 'BANK_CD'
+                                AND 	CODE != 'CODE'
                                 AND	USE_YN 	= 'Y'
                         </when>
                         <when test="sch_map_pcode == 'DEP'">
@@ -46,6 +49,7 @@
                                         , CORP_NM       AS CODE_NM
                                 FROM 	TB_CORP
                                 WHERE 	CORP_TYPE = 'LN'
+                                AND 	CODE != 'CODE'
                                 AND 	USE_YN = 'Y'
                         </when>
                         
@@ -56,7 +60,8 @@
                 </choose>
                         ) C
                  WHERE  M.CODE_GRP_CD  = 'MAP_PCODE'
-                   AND  M.CODE  = #{sch_map_pcode}
+                   AND  M.CODE  != 'CODE'
+                   AND  M.CODE   = #{sch_map_pcode}
                    AND  M.USE_YN = 'Y'
                         
                 <choose>
@@ -71,7 +76,8 @@
         </select>
 
         <select id="getMapCodeList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-                SELECT 	M.MAP_SEQ					AS map_seq 
+                SELECT 	SQL_CALC_FOUND_ROWS
+                        M.MAP_SEQ					AS map_seq 
                         , M.MAP_PCODE					AS map_pcode 
                         , GET_CODE_NM('MAP_PCODE', M.MAP_PCODE) 	AS map_pcode_nm
                         , M.MAP_CODE                                    AS map_code
