@@ -84,6 +84,10 @@ public class SubtractService {
         return subtractMapper.getSubStatSummary(hashmapParam);
     }
 
+    public HashMap<String, Object> getSubStatSummaryTotal(HashMap<String, Object> hashmapParam) {
+        return subtractMapper.getSubStatSummaryTotal(hashmapParam);
+    }
+
     public List<HashMap<String, Object>> getSubStatDetail(HashMap<String, Object> hashmapParam) {
         return subtractMapper.getSubStatDetail(hashmapParam);
     }

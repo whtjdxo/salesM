@@ -69,6 +69,16 @@
               Object.assign(postData, formData);
               return JSON.stringify(postData);
             },
+            dataSrc: function (json) {
+                // totalSummary 저장
+                totalSumm = json.totalSumm || {};
+                return json.data;
+            },
+            // 서버 에러 처리 등 추가 가능
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                // 사용자에게 에러 메시지 표시 등
+            }
           },
             columns: [
             { data: 'chain_nm' }                
@@ -119,21 +129,30 @@
             processing: '처리중...',
           }, 
           footerCallback: function (row, data, start, end, display) {
-            var api = this.api();
-            var intVal = function (i) {
-              return typeof i === 'string' ? i.replace(/[\$,]/g, '') * 1 : typeof i === 'number' ? i : 0;
-            };
-            var totals = [2, 3, 4, 5, 6, 7, 8].map(colIdx =>
-              api.column(colIdx).data().reduce((a, b) => intVal(a) + intVal(b), 0)
-            );
+              var api = this.api();
+              const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+              const colMap = {
+                  2: 'conf_cnt',
+                  3: 'conf_amt',
+                  4: 'cncl_cnt',
+                  5: 'cncl_amt',
+                  6: 'tot_cnt',
+                  7: 'tot_amt',
+              };
 
-            [2, 3, 4, 5, 6, 7, 8].forEach((colIdx, i) => {
-              var footer = api.column(colIdx).footer();
-              if (footer) {  // 🚀 undefined 방지
-                $(footer).html($.fn.dataTable.render.number(',', '.', 0, '').display(totals[i]));
-              }
-            });
-          },          
+              Object.entries(colMap).forEach(([colIdx, key]) => {
+                  const footer = api.column(Number(colIdx)).footer();
+                  if (footer) {
+                      const val = totalSumm[key] || 0;
+                      $(footer).html(renderNumber(val));
+                  }
+              });
+
+              // 기타 푸터 설정
+              $(api.column(0).footer()).html('');
+              $(api.column(1).footer()).html('합계:');
+              $(api.column(2).footer()).html('');
+          },         
         });  
  
         $('#tbl_chain_summ').on('click', 'tr', function (e) {

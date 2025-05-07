@@ -53,6 +53,11 @@
                   Object.assign(postData, formData);
                   return JSON.stringify(postData);
               },
+              dataSrc: function (json) {
+                    // totalSummary 저장
+                    totalSumm = json.totalSumm || {};
+                    return json.data;
+                },
               // 서버 에러 처리 등 추가 가능
               error: function(jqXHR, textStatus, errorThrown) {
                   console.error("DataTables Ajax Error: ", textStatus, errorThrown); 
@@ -131,37 +136,33 @@
               processing: '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">처리중...</span></div>', // 로딩/처리중 시각적 표시 개선
           },          
           footerCallback: function (row, data, start, end, display) {
-              var api = this.api();
-              var intVal = function (i) {
-                  // , 제거 및 숫자 변환 강화
-                  return typeof i === 'string' ? parseFloat(i.replace(/[\$,]/g, '')) || 0 : typeof i === 'number' ? i : 0;
-              };
+                var api = this.api();
+                const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+                const colMap = {
+                  5: 'remit_amt',
+                  6: 'conf_amt', 
+                  7: 'card_fee_amt', 
+                  8: 'card_resv_amt',
+                  9: 'wd_base_amt',
+                  10: 'svc_fee_amt',
+                  11: 'crd_fee_amt',
+                  12: 'wd_remit_amt', 
+                  13: 'exc_remit_amt',
+                  14: 'sub_amt', 
+                };
 
-              // 합계를 계산할 컬럼 인덱스 (0부터 시작)
-              var columnsToSum = [ 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]; // data 기준으로 conf_cnt 부터 remit_conf_amt 까지
+                Object.entries(colMap).forEach(([colIdx, key]) => {
+                    const footer = api.column(Number(colIdx)).footer();
+                    if (footer) {
+                        const val = totalSumm[key] || 0;
+                        $(footer).html(renderNumber(val));
+                    }
+                });
 
-              columnsToSum.forEach(function(colIdx) {
-                  // 현재 페이지 데이터만 합산 (serverSide: true 이므로 전체 데이터 접근 불가)
-                  var pageTotal = api
-                      .column(colIdx, { page: 'current' }) // 현재 보이는 페이지 데이터만
-                      .data()
-                      .reduce(function (a, b) {
-                          return intVal(a) + intVal(b);
-                      }, 0);
-
-                  // Footer 셀 업데이트
-                  var footer = api.column(colIdx).footer();
-                  if (footer) {
-                      // null 또는 undefined가 아닌지 확인
-                      $(footer).html($.fn.dataTable.render.number(',', '.', 0, '').display(pageTotal));
-                  } else {
-                      console.warn("Footer cell for column index " + colIdx + " not found.");
-                  }
-              });
-              // 첫 번째와 두 번째 푸터 셀 내용 지정 (예: 'Total:')
-              $(api.column(0).footer()).html(''); // 체크박스 컬럼 푸터 비우기
-              $(api.column(1).footer()).html('합계'); // '합계' 텍스트 표시         
-          },
+                // // 기타 푸터 설정
+                // $(api.column(0).footer()).html('');
+                // $(api.column(1).footer()).html('합계:'); 
+            },
 
           // =============================================================
           // 중요: 테이블이 다시 그려질 때마다 체크박스 상태를 업데이트
@@ -549,7 +550,7 @@
                   <div class="row mb-1">
                     <div class="col-sm-8">
                       <div class="col-sm-2">
-                        <button type="button" class="btn btn-success btn-sm" id="btn_remit_cancel" name="btn_remit_cancel">출금 취소</button>
+                        <button type="button" class="btn btn-success btn-sm" id="btn_remit_cancel" name="btn_remit_cancel">출금 정산 취소</button>
                       </div>
                     </div>
                     <div class="col-sm-2">
@@ -574,7 +575,7 @@
                     <th rowspan="2" class="text-center">가맹점 명</th>
                     <th rowspan="2" class="text-center">사업자 번호</th>
                     <th rowspan="2" class="text-center">대표자명</th>
-                    <th rowspan="2" class="text-center">송금은행</th> 
+                    <th rowspan="2" class="text-center">송금상태</th> 
                     <th rowspan="2" class="text-center">송금액</th> 
 
                     <th colspan="3" class="text-center">카드사 정산</th> 

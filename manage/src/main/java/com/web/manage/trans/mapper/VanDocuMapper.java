@@ -22,6 +22,9 @@ public interface VanDocuMapper {
     boolean updateMapCode(MapCodeVO mapCodeVo);
 
     List<HashMap<String, Object>> getScrapDataSumm(HashMap<String, Object> hashmapParam);
+
+    HashMap<String, Object> getScrapDataSummTotal(HashMap<String, Object> hashmapParam);
+
     List<HashMap<String, Object>> getVanDocuSumm(HashMap<String, Object> hashmapParam);
 
     List<HashMap<String, Object>> getChainDocuSumm(HashMap<String, Object> hashmapParam);

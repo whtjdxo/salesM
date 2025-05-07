@@ -59,6 +59,16 @@
               Object.assign(postData, formData);
               return JSON.stringify(postData);
             },
+            dataSrc: function (json) {
+                // totalSummary 저장
+                totalSumm = json.totalSumm || {};
+                return json.data;
+            },
+            // 서버 에러 처리 등 추가 가능
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                // 사용자에게 에러 메시지 표시 등
+            }
           },
             columns: [
                     { data: 'chain_nm' },
@@ -142,21 +152,47 @@
             processing: '처리중...',
           }, 
           footerCallback: function (row, data, start, end, display) {
-            var api = this.api();
-            var intVal = function (i) {
-              return typeof i === 'string' ? i.replace(/[\$,]/g, '') * 1 : typeof i === 'number' ? i : 0;
-            };
-            var totals = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25].map(colIdx =>
-              api.column(colIdx).data().reduce((a, b) => intVal(a) + intVal(b), 0)
-            );
+                var api = this.api();
+                const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+                const colMap = {
+                    2: 'count_o',
+                    3: 'occur_amt_o',
+                    4: 'recv_amt_o',
+                    5: 'remain_amt_o',
+                    6: 'count_i', 
+                    7: 'occur_amt_i',
+                    8: 'recv_amt_i',
+                    9: 'remain_amt_i', 
+                    10: 'count_l', 
+                    11: 'occur_amt_l',
+                    12: 'recv_amt_l',
+                    13: 'remain_amt_l',
+                    14: 'count_m',
+                    15: 'occur_amt_m',
+                    16: 'recv_amt_m',
+                    17: 'remain_amt_m', 
+                    18: 'count_etc', 
+                    19: 'occur_amt_etc',
+                    20: 'recv_amt_etc',
+                    21: 'remain_amt_etc',
+                    22: 'tot_cnt',
+                    23: 'occur_amt_tot',
+                    24: 'recv_amt_tot',
+                    25: 'remain_amt_tot',
+                };
 
-            [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25].forEach((colIdx, i) => {
-              var footer = api.column(colIdx).footer();
-              if (footer) {  // 🚀 undefined 방지
-                $(footer).html($.fn.dataTable.render.number(',', '.', 0, '').display(totals[i]));
-              }
-            });
-          },          
+                Object.entries(colMap).forEach(([colIdx, key]) => {
+                    const footer = api.column(Number(colIdx)).footer();
+                    if (footer) {
+                        const val = totalSumm[key] || 0;
+                        $(footer).html(renderNumber(val));
+                    }
+                });
+
+                // 기타 푸터 설정
+                // $(api.column(0).footer()).html('');
+                // $(api.column(1).footer()).html('합계:'); 
+          },      
         });  
  
         $('#tbl_substat_summ').on('click', 'tr', function (e) {

@@ -49,6 +49,10 @@ public class VanDocuService {
         return vanDocuMapper.getScrapDataSumm(hashmapParam);
     }
 
+    public HashMap<String, Object> getScrapDataSummTotal(HashMap<String, Object> hashmapParam) {
+        return vanDocuMapper.getScrapDataSummTotal(hashmapParam);
+    }
+
     public List<HashMap<String, Object>> getVanDocuSumm(HashMap<String, Object> hashmapParam) {
         return vanDocuMapper.getVanDocuSumm(hashmapParam);
     }

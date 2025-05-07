@@ -78,6 +78,51 @@
                 </choose>                
                 LIMIT  ${start}, ${end}
         </select>
+        <select id="getSubSummaryTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
+                SELECT  SQL_CALC_FOUND_ROWS
+                        IFNULL(OCCUR_AMT, 0)  	AS occur_amt
+                        , IFNULL(OCCUR_BASE_AMT, 0) 	AS occur_base_amt
+                        , IFNULL(OCCUR_SVC_AMT, 0) 	AS occur_svc_amt
+                        , IFNULL(OCCUR_CRD_AMT, 0) 	AS occur_crd_amt
+                        , IFNULL(RECV_AMT, 0) 	        AS recv_amt                        
+                        , IFNULL(RECV_BASE_AMT, 0) 	AS recv_base_amt
+                        , IFNULL(RECV_SVC_AMT, 0) 	AS recv_svc_amt
+                        , IFNULL(RECV_CRD_AMT, 0) 	AS recv_crd_amt
+                        , IFNULL(REMAIN_AMT, 0) 	AS remain_amt
+                        , IFNULL(REMAIN_BASE_AMT, 0) 	AS remain_base_amt
+                        , IFNULL(REMAIN_SVC_AMT, 0) 	AS remain_svc_amt
+                        , IFNULL(REMAIN_CRD_AMT, 0) 	AS remain_crd_amt
+                FROM	TB_CHAIN TC  
+                        LEFT OUTER JOIN (        
+                                SELECT	SM.CHAIN_NO
+                                        , MIN(REG_DATE) 	        AS MIN_REG_DATE
+                                        , MAX(REG_DATE) 	        AS MAX_REG_DATE
+                                        , SUM(SM.OCCUR_AMT) 		AS OCCUR_AMT
+                                        , SUM(SM.OCCUR_BASE_AMT) 	AS OCCUR_BASE_AMT
+                                        , SUM(SM.OCCUR_SVC_AMT) 	AS OCCUR_SVC_AMT
+                                        , SUM(SM.OCCUR_CRD_AMT) 	AS OCCUR_CRD_AMT
+                                        , SUM(SM.RECV_AMT) 	        AS RECV_AMT
+                                        , SUM(SM.RECV_BASE_AMT) 	AS RECV_BASE_AMT
+                                        , SUM(SM.RECV_SVC_AMT) 	        AS RECV_SVC_AMT
+                                        , SUM(SM.RECV_CRD_AMT) 	        AS RECV_CRD_AMT
+                                        , SUM(SM.REMAIN_AMT) 	        AS REMAIN_AMT
+                                        , SUM(SM.REMAIN_BASE_AMT) 	AS REMAIN_BASE_AMT
+                                        , SUM(SM.REMAIN_SVC_AMT) 	AS REMAIN_SVC_AMT
+                                        , SUM(SM.REMAIN_CRD_AMT) 	AS REMAIN_CRD_AMT    
+                                  FROM 	TB_SUB_MST SM
+                                 WHERE  SM.USE_YN = 'Y'
+                                 <if test="sch_all == null or sch_all == ''">
+                                        AND	SUB_STATUS IN ('000000', '100000', '900000')
+                                </if>
+                                   
+                                 GROUP 	BY SM.CHAIN_NO
+                        ) SM ON SM.CHAIN_NO = TC.CHAIN_NO
+                 WHERE	TC.USE_YN = 'Y'         
+                   AND  TC.SVC_STAT IN ('O', 'R')
+                   <if test="sch_chain_nm != ''">                   
+                        AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                   </if>
+        </select>
 
         <select id="getChainSubList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
                 SELECT  SQL_CALC_FOUND_ROWS
@@ -292,6 +337,51 @@
                         </otherwise>
                 </choose>                
                 LIMIT  ${start}, ${end}
+        </select>
+
+        <select id="getSubStatSummaryTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
+                SELECT  SQL_CALC_FOUND_ROWS
+                          IFNULL(SUM(CASE WHEN SUB_TYPE = 'O' THEN 1 	ELSE NULL END), 0)     		AS count_o
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'O' THEN OCCUR_AMT 	ELSE NULL END), 0)     	AS occur_amt_o
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'O' THEN RECV_AMT  	ELSE NULL END), 0)     	AS recv_amt_o
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'O' THEN REMAIN_AMT  ELSE NULL END), 0)     	AS remain_amt_o
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'I' THEN 1 	ELSE NULL END), 0)     		AS count_i
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'I' THEN OCCUR_AMT 	ELSE NULL END), 0)     	AS occur_amt_i
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'I' THEN RECV_AMT  	ELSE NULL END), 0)     	AS recv_amt_i
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'I' THEN REMAIN_AMT  ELSE NULL END), 0)     	AS remain_amt_i        
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'L' THEN 1 	ELSE NULL END), 0)     		AS count_l
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'L' THEN (CASE WHEN SUB_STATUS  = '999999'   THEN RECV_AMT ELSE  OCCUR_AMT END ) ELSE NULL END), 0)     	AS occur_amt_l
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'L' THEN RECV_AMT  	ELSE NULL END), 0)     	AS recv_amt_l
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'L' THEN (CASE WHEN SUB_STATUS  = '999999'    THEN NULL ELSE  REMAIN_AMT END )  ELSE NULL END), 0)     	        AS remain_amt_l        
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'M' THEN 1 	ELSE NULL END), 0)     		AS count_m
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'M' THEN OCCUR_AMT 	ELSE NULL END), 0)     	AS occur_amt_m
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'M' THEN RECV_AMT  	ELSE NULL END), 0)     	AS recv_amt_m
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE = 'M' THEN REMAIN_AMT  ELSE NULL END), 0)     	AS remain_amt_m
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE IN ('O', 'I', 'L', 'M') THEN NULL 	ELSE 1 END), 0)     		AS count_etc
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE IN ('O', 'I', 'L', 'M') THEN NULL 	ELSE OCCUR_AMT END), 0)     	AS occur_amt_etc
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE IN ('O', 'I', 'L', 'M') THEN NULL 	ELSE RECV_AMT END), 0)     	AS recv_amt_etc
+                        , IFNULL(SUM(CASE WHEN SUB_TYPE IN ('O', 'I', 'L', 'M') THEN NULL 	ELSE REMAIN_AMT END), 0)     	AS remain_amt_etc
+                        , COUNT(1)						                                                AS tot_cnt
+                        , IFNULL(SUM(CASE WHEN SUB_STATUS  = '999999'   THEN RECV_AMT ELSE  OCCUR_AMT END ), 0)     	        AS occur_amt_tot
+                        , IFNULL(SUM(RECV_AMT  ), 0)     	                                                                AS recv_amt_tot
+                        , IFNULL(SUM(CASE WHEN SUB_STATUS  = '999999'  THEN NULL ELSE  REMAIN_AMT END ), 0)     	        AS remain_amt_tot
+                        , MIN(SM.REG_DATE)                      AS min_reg_dt
+                        , MAX(SM.REG_DATE)                      AS max_reg_dt        
+                  FROM  TB_SUB_MST SM
+                        JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
+                        <if test="sch_chain_nm != ''"> 
+                                AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                        </if>
+                        <if test="sch_agency_no != ''"> 
+                                AND  TC.AGENCY_NO = #{sch_agency_no} 
+                        </if>
+                 WHERE	SM.USE_YN		= 'Y'
+                <if test="sch_reg_sdt != ''">
+                        AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
+                </if>
+                <if test="sch_reg_edt != ''">
+                        AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
+                </if>  
         </select>
 
         <select id="getSubStatDetail" parameterType="java.util.HashMap" resultType="java.util.HashMap">        

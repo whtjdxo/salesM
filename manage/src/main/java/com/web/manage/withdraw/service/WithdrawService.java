@@ -38,6 +38,9 @@ public class WithdrawService {
     public List<HashMap<String, Object>> getWDSummary(HashMap<String, Object> hashmapParam) {
         return withdrawMapper.getWDSummary(hashmapParam);
     }
+    public HashMap<String, Object> getWDSummaryTotal(HashMap<String, Object> hashmapParam) {
+        return withdrawMapper.getWDSummaryTotal(hashmapParam);
+    }
 
     public List<HashMap<String, Object>> getWDChainSummary(HashMap<String, Object> hashmapParam) {
         return withdrawMapper.getWDChainSummary(hashmapParam);
@@ -90,6 +93,10 @@ public class WithdrawService {
         return withdrawMapper.getRemitSummary(hashmapParam);
     } 
 
+    public HashMap<String, Object> getRemitSummaryTotal(HashMap<String, Object> hashmapParam) {
+        return withdrawMapper.getRemitSummaryTotal(hashmapParam);
+    }
+
     public List<HashMap<String, Object>> getRemitList(HashMap<String, Object> hashmapParam) {
         return withdrawMapper.getRemitList(hashmapParam);
     }
@@ -125,12 +132,12 @@ public class WithdrawService {
         return result; 
     }
 
-    public ReturnDataVO callProcRemitChain (ProcRemitVO procVo) {
+    public ReturnDataVO callProcRemitSend (ProcRemitVO procVo) {
         // return withdrawMapper.callProcRemitMain(procVo);
         ReturnDataVO result = new ReturnDataVO();
         try {
             // Van 스크래핑 데이터 이관 프로시저 호출
-            withdrawMapper.callProcRemitChain(procVo);
+            withdrawMapper.callProcRemitSend(procVo);
             
             // 프로시저에서 설정한 OUT 파라미터 확인
             if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)

@@ -20,7 +20,6 @@ import com.web.manage.withdraw.service.WithdrawService;
 
 import ch.qos.logback.classic.Logger;
 
-
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
@@ -36,7 +35,7 @@ import com.web.config.interceptor.AuthInterceptor;
 import com.google.gson.Gson;
 import jakarta.servlet.http.HttpSession;
 
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -45,8 +44,8 @@ import org.springframework.http.ResponseEntity;
 import java.io.ByteArrayOutputStream;
 
 import org.springframework.web.multipart.MultipartFile;
-import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.*; 
 
 @Controller
 @RequestMapping("/withdraw/withdraw/")
@@ -71,6 +70,7 @@ public class WithdrawController {
     public @ResponseBody String getWDSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> totalSumm      = new HashMap<String, Object>();
         Gson gson = new Gson();
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
@@ -80,8 +80,17 @@ public class WithdrawController {
             pageing.setPageingVO(hashmapParam);
 
             // System.out.println(hashmapParam);
+            // // System.out.println("ordCol: " + pageing.getOrder().get(0).get("column"));
+            // int ordCol = 0; // 기본값 설정
+            // if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+            //     ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            // }
 
             int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            System.out.println("ordCol: " + ordCol);
+            System.out.println("ordCol.data : " + pageing.getColumns().get(ordCol).get("data"));
+            System.out.println("ordCol.data : " + pageing.getOrder().get(0).get("dir"));
+            
             hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
             hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
             hashmapParam.put("start", pageing.getStart());
@@ -89,6 +98,8 @@ public class WithdrawController {
 
             list = withdrawService.getWDSummary(hashmapParam);
             int records = withdrawService.getQueryTotalCnt();
+            
+            totalSumm= withdrawService.getWDSummaryTotal(hashmapParam);
 
             pageing.setRecords(records);
             pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
@@ -96,7 +107,8 @@ public class WithdrawController {
             hashmapResult.put("draw", pageing.getDraw());
             hashmapResult.put("recordsTotal", pageing.getRecords());
             hashmapResult.put("recordsFiltered", pageing.getRecords());
-            hashmapResult.put("data", list);
+            hashmapResult.put("data", list);            
+            hashmapResult.put("totalSumm", totalSumm); 
 
             jString = gson.toJson(hashmapResult);
         } catch (Exception e) {
@@ -135,7 +147,7 @@ public class WithdrawController {
             hashmapResult.put("draw", pageing.getDraw());
             hashmapResult.put("recordsTotal", pageing.getRecords());
             hashmapResult.put("recordsFiltered", pageing.getRecords());
-            hashmapResult.put("data", list);
+            hashmapResult.put("data", list); 
 
             jString = gson.toJson(hashmapResult);
         } catch (Exception e) {
@@ -365,6 +377,7 @@ public class WithdrawController {
     public @ResponseBody String getRemitSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> totalSumm      = new HashMap<String, Object>();
         Gson gson = new Gson();
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
@@ -384,6 +397,8 @@ public class WithdrawController {
             list = withdrawService.getRemitSummary(hashmapParam);
             int records = withdrawService.getQueryTotalCnt();
 
+            totalSumm = withdrawService.getRemitSummaryTotal(hashmapParam);    
+
             pageing.setRecords(records);
             pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
 
@@ -391,6 +406,7 @@ public class WithdrawController {
             hashmapResult.put("recordsTotal", pageing.getRecords());
             hashmapResult.put("recordsFiltered", pageing.getRecords());
             hashmapResult.put("data", list);
+            hashmapResult.put("totalSumm", totalSumm);
 
             jString = gson.toJson(hashmapResult);
         } catch (Exception e) {
@@ -441,7 +457,7 @@ public class WithdrawController {
     @RequestMapping("remitMng/remitSubRecvList")    
     public @ResponseBody String getRemitSubRecvList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
-        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        List<HashMap<String, Object>> list  = new ArrayList<HashMap<String, Object>>();        
         Gson gson = new Gson();
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
@@ -459,6 +475,7 @@ public class WithdrawController {
 
             list = withdrawService.getRemitSubRecvList(hashmapParam);
             int records = withdrawService.getQueryTotalCnt();
+            
 
             pageing.setRecords(records);
             pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
@@ -466,7 +483,7 @@ public class WithdrawController {
             hashmapResult.put("draw", pageing.getDraw());
             hashmapResult.put("recordsTotal", pageing.getRecords());
             hashmapResult.put("recordsFiltered", pageing.getRecords());
-            hashmapResult.put("data", list);
+            hashmapResult.put("data", list); 
 
             jString = gson.toJson(hashmapResult);
         } catch (Exception e) {
@@ -620,14 +637,14 @@ public class WithdrawController {
         // return result;
     }
 
-    @RequestMapping(value = "remitMng/remitChain", method = RequestMethod.POST)
-    public @ResponseBody ReturnDataVO callProcRemitChain(@ModelAttribute("ProcRemitVO") @Valid ProcRemitVO procVo, HttpSession session) {
+    @RequestMapping(value = "remitMng/remitSend", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO callProcRemitSend(@ModelAttribute("ProcRemitVO") @Valid ProcRemitVO procVo, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO();
         try {
             System.out.println("procVo : " + procVo);
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
             procVo.setUserId(member.getUserId());            
-            return withdrawService.callProcRemitChain(procVo);             
+            return withdrawService.callProcRemitSend(procVo);             
         } catch (Exception e) {
             result.setResultCode("F000");
             result.setResultMsg("An error occurred while processing the scrap transaction.");
