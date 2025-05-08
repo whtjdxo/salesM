@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>가맹점 관리</title>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script>
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />
+     
+    <!-- DataTables Select CSS 추가 -->
+    <link rel="stylesheet" href="/css/custom-salesm.css" />
+
+    <script th:inline="none">      
+       
+      $(document).ready(function () {             
+        $('#frm_sch_exc').onLoadFunction();  
+        $('#frm_exc_mst').onLoadFunction();  
+        $('#frm_exc_mng').onLoadFunction();  
+        
+        var isListClick = false;
+        callAjax('/common/totalCodelist', "code_grp_cd=('EXC_TYPE')", fn_exc_type_setting);      
+        function fn_exc_type_setting(data) {
+          codeSetting('EXC_TYPE', data.data, '#sch_exc_type', '1', '', ''); 
+          codeSetting('EXC_TYPE', data.data, '#exc_type', '1', '', ''); 
+        }
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('EXC_CODE') AND CHK_CD1 = '" + $('#sch_exc_type').val() + "'", fn_sch_exc_code_setting);      
+        function fn_sch_exc_code_setting(data) {
+          codeSetting('EXC_CODE', data.data, '#sch_exc_code', '1', '', ''); 
+        }
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('EXC_STATUS')", fn_exc_status_setting);      
+        function fn_exc_status_setting(data) {
+          codeSetting('EXC_STATUS', data.data, '#sch_exc_status', '1', '', '');
+          codeSetting('EXC_STATUS', data.data, '#exc_status', '1', '', '');
+        } 
+        // Set default values for sch_exc_sdt and sch_exc_edt
+        var today = new Date();
+        var twoMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+
+        $('#sch_exc_sdt').val(twoMonthsAgo.toISOString().split('T')[0]);
+        $('#sch_exc_edt').val(today.toISOString().split('T')[0]); 
+        $('#reg_date').val(today.toISOString().split('T')[0]); 
+        
+        var tbl_exc_summary = $('#tbl_exc_summary').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          responsive: true,
+          ajax: {
+            url: '/deposit/exceed/excMng/excSummary',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',            
+            data: function (postData) {
+              formData = $('#frm_sch_chain').serializeObject(); 
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
+            },
+          },
+            columns: [
+                { data: 'chain_nm' }
+                , { data: 'biz_no' }
+                , { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'issue_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'remain_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
+              ],
+            columnDefs: [           
+            { targets: 0, width: '150px', className: 'text-center' }
+            , { targets: 1, width: '120px', className: 'text-center' }
+            , { targets: 2, width: '120px', className: 'text-right' }
+            , { targets: 3, width: '120px', className: 'text-right' }
+            , { targets: 4, width: '120px', className: 'text-right' }
+          ],  
+          order: [[1, 'desc']],
+          paging: true,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          autoWidth: false,
+          responsive: true,
+          scrollCollapse: true,
+          pageLength: 20,
+          scrollY: '580px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
+          footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+                const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+                const colMap = {
+                    2: 'occur_amt',
+                    3: 'issue_amt',
+                    4: 'remian_amt',                    
+                };
+                Object.entries(colMap).forEach(([colIdx, key]) => {
+                    const footer = api.column(Number(colIdx)).footer();
+                    if (footer) {
+                        const val = totalSumm[key] || 0;
+                        $(footer).html(renderNumber(val));
+                    }
+                }); 
+            },
+        });
+
+        $('#btn_search').click(function () {
+          tbl_exc_summary.ajax.reload();
+          $('#tbl_exc_list').DataTable().clear().draw();
+          $('#frm_exc_mst')[0].reset();          
+        });
+
+        $('#sch_all').change(function () {          
+          $('#btn_search').click();          
+        });
+
+        $('#sch_exc_type').change(function () {
+          if (isListClick) return; // 리스트 클릭 상태일 때는 무시
+          var exc_type = $('#sch_exc_type').val(); 
+          
+          if (exc_type != '') {
+            callAjax('/common/totalCodelist', "code_grp_cd=('EXC_CODE') AND CHK_CD1 = '" + exc_type + "'", fn_sch_exc_code_setting);      
+          }
+        });  
+
+        function fn_sch_exc_code_setting(data) {
+          codeSetting('EXC_CODE', data.data, '#sch_exc_code', '1', '', ''); 
+        }
+ 
+        $('#exc_type').change(function () {
+          if (isListClick) return; // 리스트 클릭 상태일 때는 무시
+          var exc_type = $('#exc_type').val(); 
+          
+          if (exc_type != '') {
+            callAjax('/common/totalCodelist', "code_grp_cd=('EXC_CODE') AND CHK_CD1 = '" + exc_type + "'", fn_exc_code_setting);      
+          }
+        });  
+
+        function fn_exc_code_setting(data) {
+          codeSetting('EXC_CODE', data.data, '#exc_code', '1', '', ''); 
+        }
+        
+        $('#tbl_exc_summary').on('click', 'tr', function () {
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+          } else {
+            tbl_exc_summary.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }
+          var data = tbl_exc_summary.row(this).data();
+          if (data) {            
+            $('#frm_sch_exc')[0].reset();
+            $('#frm_exc_mst')[0].reset();       
+            $('#sch_exc_sdt').val(data.min_reg_date);
+            $('#sch_exc_edt').val(data.max_reg_date);
+            $('#sch_chain_no').val(data.chain_no); 
+            $('#chain_no').val(data.chain_no);                        
+            tbl_exc_list.ajax.reload();            
+          }
+          fn_frm_exc_mst_clear();      
+        });      
+         
+        // --------------------------------------------------------------- frm_sch_exc 정보 처리 ---------------------------------------------------
+        var tbl_exc_list = $('#tbl_exc_list').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true,
+            responsive: true,
+            ajax: {
+              url: '/deposit/exceed/excMng/chainExcList',
+              contentType: 'application/json',
+              dataType: 'JSON',
+              type: 'POST',
+              data: function (postData) {
+                formData = $('#frm_sch_exc').serializeObject();
+                Object.assign(postData, formData);
+                return JSON.stringify(postData);
+              },
+            },
+              columns: [
+                    {
+                      data: 'exc_no',
+                      render: function(data, type, row) {
+                          // 각 행의 체크박스 생성. 고유 값(여기서는 chain_no)을 value로 사용
+                          return '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '">';
+                      },
+                      orderable: false,
+                      className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
+                    }
+                  , { data: 'exc_code_nm' }
+                  , { data: 'reg_date' }
+                  , { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                  , { data: 'issue_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                  , { data: 'exc_status_nm' }
+                  , { data: 'remit_date' }
+                  , { data: 'exc_memo' }                  
+                ],
+              columnDefs: [
+                    { targets: 0, width: '40px', className: 'text-center dt-body-center' } // 중앙 정렬 확인
+                  , { targets: 1, width: '150px', className: 'text-left' }
+                  , { targets: 2, width: '100px', className: 'text-center' }
+                  , { targets: 3, width: '120px', className: 'text-right' }
+                  , { targets: 4, width: '120px', className: 'text-right' }
+                  , { targets: 5, width: '120px', className: 'text-center' }
+                  , { targets: 6, width: '300px', className: 'text-left' }
+                  , { targets: 7, width: '100px', className: 'align-middle white-space-nowrap text-center pe-0' }
+            ],
+            order: [[1, 'desc']],
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            autoWidth: false,
+            responsive: true,
+            scrollCollapse: true,
+            pageLength: 10,
+            scrollY: '450px',
+            info: false,
+            language: {
+              emptyTable: '데이터가 없습니다.',
+              search: '검색:',
+              zeroRecords: '일치하는 데이터가 없습니다.',
+              loadingRecords: '로딩중...',
+              processing: '처리중...',
+            },
+            footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+                const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+                const colMap = {
+                    3: 'occur_amt',
+                    4: 'remain_amt', 
+                };
+                Object.entries(colMap).forEach(([colIdx, key]) => {
+                    const footer = api.column(Number(colIdx)).footer();
+                    if (footer) {
+                        const val = totalSumm[key] || 0;
+                        $(footer).html(renderNumber(val));
+                    }
+                }); 
+            },
+            // =============================================================
+            // 중요: 테이블이 다시 그려질 때마다 체크박스 상태를 업데이트
+            // =============================================================
+            drawCallback: function( settings ) {
+                // 1. 헤더 체크박스 상태 초기화 (선택 사항: 페이지 넘길 때마다 초기화할지 결정)
+                // $('#check_all').prop('checked', false); // 필요하다면 주석 해제
+
+                // 2. 현재 페이지의 모든 행 체크박스가 선택되었는지 확인하여 헤더 체크박스 상태 업데이트
+                updateCheckAllState();
+            }
+        }); 
+        // --- 전체 선택/해제 체크박스 클릭 이벤트 ---
+        $('#check_all').on('click', function(){
+            var isChecked = this.checked;
+            // 현재 페이지의 모든 행 체크박스를 찾아서 상태 변경
+            tbl_exc_list.rows({ page: 'current' }).nodes().to$().find('.row-checkbox').prop('checked', isChecked);
+        });
+
+        // --- 각 행의 체크박스 클릭 이벤트 (이벤트 위임 사용) ---
+        $('#tbl_exc_list tbody').on('click', '.row-checkbox', function(){
+            // 개별 체크박스 클릭 시 '전체 선택' 체크박스 상태 업데이트
+            updateCheckAllState();
+        });
+
+        // --- '전체 선택' 체크박스 상태 업데이트 함수 ---
+        function updateCheckAllState() {
+            var $rowCheckboxes = tbl_exc_list.rows({ page: 'current' }).nodes().to$().find('.row-checkbox');
+            var totalCheckboxes = $rowCheckboxes.length;
+            var checkedCheckboxes = $rowCheckboxes.filter(':checked').length;
+
+            // 모든 체크박스가 선택되었는지 확인
+            var allChecked = totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes;
+            $('#check_all').prop('checked', allChecked);
+
+            // 하나라도 선택된 경우 vs 모두 선택되지 않은 경우 (선택 사항: indeterminate 상태 구현)
+            if (checkedCheckboxes > 0 && checkedCheckboxes < totalCheckboxes) {
+                $('#check_all').prop('indeterminate', true); // 일부만 선택되었을 때 중간 상태 표시
+            } else {
+                $('#check_all').prop('indeterminate', false);
+            }
+        }
+
+        // serializeObject 함수가 없다면 추가 (간단 버전)
+        if (typeof $.fn.serializeObject !== 'function') {
+          $.fn.serializeObject = function() {
+              var o = {};
+              var a = this.serializeArray();
+              $.each(a, function() {
+                  if (o[this.name]) {
+                      if (!o[this.name].push) {
+                          o[this.name] = [o[this.name]];
+                      }
+                      o[this.name].push(this.value || '');
+                  } else {
+                      o[this.name] = this.value || '';
+                  }
+              });
+              return o;
+          };
+        } 
+
+        $('#tbl_exc_list').on('click', 'tr', function () {
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+          } else {
+            tbl_exc_list.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }
+          var data = tbl_exc_list.row(this).data();
+          isListClick = true;
+          if (data) {
+            $('#frm_exc_mst')[0].reset();             
+            $('#exc_no').val(data.exc_no); 
+            $('#exc_type').val(data.exc_type).prop('selected', true).trigger('change');                 
+            callAjax('/common/totalCodelist', "code_grp_cd=('exc_CODE') AND CHK_CD1 = '" + data.exc_type + "'", fn_exc_code_setting)
+            .then(() => {       
+              $('#exc_code').val(data.exc_code).prop('selected', true);
+            });
+ 
+            $('#exc_status').val(data.exc_status); 
+            $('#reg_date').val(data.reg_date);
+            $('#exc_memo').val(data.exc_memo);
+
+            $('#occur_amt').val(data.occur_amt);           
+            $('#issue_amt').val(data.issue_amt);
+            $('#remain_amt').val(data.remain_amt); 
+
+            if (data.exc_status == '500000'){
+              $('#btn_exceed_process').hide();
+            } else{
+              $('#btn_exceed_process').show();
+            }
+            // 금액을 조금이라도 수납하면. 수정 불가 
+            if (data.issue_amt > '0') {
+              $('#occur_amt').prop('readonly', true);              
+            }else{
+              $('#occur_amt').prop('readonly', false);
+            } 
+            $("input:radio[name='use_yn'][value='" + data.use_yn + "']").prop('checked', true);  
+            $('#upt_user_id').val(data.upt_user_id);
+            $('#upt_dttm').val(data.upt_dttm);   
+
+            $('#crud').val('update');
+            $('#btn_update').show();
+            $('#btn_create').hide();
+            isListClick = false;
+          }  
+        });
+         
+
+        function fn_frm_exc_mst_clear(){
+          var chain_no = $('#chain_no').val();           
+          $('#frm_exc_mst')[0].reset();
+          $('#reg_date').val(today.toISOString().split('T')[0]);
+          $('#exc_type').val('M').prop('selected', true).trigger('change');                      
+          $('#exc_status').val('000000');
+          $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
+          $('#tbl_exc_recv_list').DataTable().clear().draw();
+
+          $('#chain_no').val(chain_no); 
+          $('#crud').val('create');
+          $('#btn_update').hide();
+          $('#btn_create').show();      
+          
+        }
+        
+        $('#btn_create').click(function () {    
+          $('#crud').val('create');      
+          var checked = true;
+          if($('#chain_no').val() == '') {
+            swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          } 
+          var form = $('#frm_exc_mst');          
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          }); 
+          
+          if (checked) {
+            ConfirmdialogToAjax('create', '/deposit/exceed/excMng/insertExcMst', $('#frm_exc_mst').serialize(), fn_return_result);
+          }  
+        });
+
+        $('#btn_update').click(function () {
+          $('#crud').val('update');
+          var form = $('#frm_exc_mst');
+          var checked = true;
+          var exc_no = $('#exc_no').val();
+          if(exc_no == '') {
+            swal('실패', "차감번호를 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          }
+          if ($('#issue_amt').val() > 0 && $("input[name='use_yn']:checked").val() === 'N') {
+            swal('실패', "수납금액이 존재하면 사용여부를 '아니요'로 설정할 수 없습니다.", 'error');
+            checked = false;
+            return;
+          }
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          });          
+          if (checked) {
+            ConfirmdialogToAjax('update', '/deposit/exceed/excMng/updateExcMst', $('#frm_exc_mst').serialize(), fn_return_result);
+          }  
+        });     
+
+        function fn_return_result(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg;   
+          if (resultCode == 'S000') {                               
+            swal.fire('성공', '작업을 정상적으로 완료하였습니다.', 'success');            
+            var selectedRowData = tbl_exc_summary.row('.selected').data(); // 현재 선택된 데이터 저장            
+            tbl_exc_summary.ajax.reload(function () {
+              if (selectedRowData) {
+                tbl_exc_summary.rows().every(function () {
+                  if (this.data().chain_no === selectedRowData.chain_no) { // 저장된 데이터와 매칭
+                    $(this.node()).addClass('selected'); // 다시 선택
+                  }
+                });
+              }
+            });
+            tbl_exc_list.ajax.reload();
+            fn_frm_exc_mst_clear();
+            
+          } else { 
+            swal('실패', resultMsg, 'error');
+          }
+        }  
+
+        $('#btn_exceed_process').click(function () {
+          var selectedRow = tbl_exc_list.row('.selected').data();
+          if (!selectedRow) {
+            swal('실패', '차감 상세 항목을 선택해주세요.', 'error');
+            return;
+          } 
+
+          $('#frm_exc_mng')[0].reset();
+          // Populate modal fields with selected row data
+          $('#mng_remain_amt').val(selectedRow.remain_amt);
+          $('#mng_deposit_amt').val(selectedRow.remain_amt);
+          $('#mng_remain_base_amt').val(selectedRow.remain_base_amt);
+          $('#mng_remain_crd_amt').val(selectedRow.remain_crd_amt);
+          $('#mng_remain_svc_amt').val(selectedRow.remain_svc_amt);
+          $('#mng_exc_no').val(selectedRow.exc_no);            
+
+          // Show the modal
+          $('#modal_exc_mng').modal('show');
+        });
+
+          // 모달 창 표시될때 초기화 처리
+        $('#modal_exc_mng').on('shown.bs.modal', function() {  
+            // 모달 열릴 때 첫 번째 포커스 가능 요소로 이동          
+            $(this).data('trigger-element', document.activeElement);            
+            var chainNo = $('#chain_no').val();
+            if (chainNo != '') {
+              callAjax('/common/getShiftChainList', "chain_no=" + chainNo , fn_link_chain_setting);      
+            } else {
+              swal('실패', '가맹점을 선택해주세요.', 'error');
+              return; 
+            }
+            $(this).find('button:not([disabled]), input:not([disabled])').first().focus();
+            
+          });
+        
+        function fn_link_chain_setting(data) { 
+            codeSetting('LINK_CHAIN', data.data, '#mng_shift_chain_no', '1', '', ''); 
+        }
+
+      // 모달이 닫힐 때 포커스 복원
+        $('#modal_exc_mng').on('hidden.bs.modal', function() {
+            var triggerElement = $(this).data('trigger-element');
+            if (triggerElement) {
+          $(triggerElement).focus();
+            }            
+            tbl_exc_summary.ajax.reload();
+            tbl_exc_list.ajax.reload();
+            fn_frm_exc_mst_clear();
+            return true; // 모달 닫기 허용
+        });
+
+        $('input[name="mng_recv_type"]').on('change', function() {
+          if ($(this).val() === 'M10000') {           // 수가 차감            
+            $('#mng_exc_shift_div').hide();
+          } else {
+            $('#mng_exc_shift_div').show();
+          }
+        });
+
+        $('#btn_exc_mng').click(function () {
+          $('#crud').val('update');
+          var form = $('#frm_exc_mng');
+          var checked = true;
+          var exc_no = $('#mng_exc_no').val();
+          if(exc_no == '') {
+            swal('실패', "차감번호를 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          }
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          }); 
+          // 대체 차감의 경우 체크
+          var selectedRecvType = $('input[name="mng_recv_type"]:checked').val();          
+          if(selectedRecvType == 'O20000') {
+            if($('#mng_shift_chain_no').val() == '') {
+              swal('실패', "대체 가맹점을 먼저 선택해주세요.", 'error');
+              checked = false;
+              return;   
+            }            
+          }           
+          var formData = {
+            subNo         : $('#mng_exc_no').val(),
+            recvType      : selectedRecvType,    
+            shiftChainNo  : $('#mng_shift_chain_no').val(),                 
+            actionNo      : '',    
+            recvAmt       : parseInt($('#mng_deposit_amt').val().replace(/,/g, ''), 10),
+            memo          : $('#mng_exc_memo').val(),                        
+          }
+          if (checked) {
+            ConfirmdialogToAjax('execute', '/deposit/exceed/excMng/callProcSubReceive', formData, fn_return_subReveive_result);            
+          }  
+          // Show the modal
+          $('#modal_exc_mng').modal('hide');
+        });     
+
+        function fn_return_subReveive_result(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg;  
+
+          if (resultCode == 'S000') {            
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+            tbl_exc_summary.ajax.reload();
+            tbl_exc_list.ajax.reload();
+            fn_frm_exc_mst_clear();
+          } else { 
+            swal('실패', resultMsg, 'error');
+          }
+        }
+      });
+    </script>
+  </head>
+  <div class="content">
+    <div class="row g-3 mb-2">  
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-header">
+            <div class="row flex-between-end">
+              <div class="col-auto align-self-center">
+                <h5 class="mb-0">가맹점 목록</h5>
+              </div>              
+              <div class="col-lg-9">
+                <form id="frm_sch_chain" name="frm_sch_chain" onsubmit="return false;" novalidate="">
+                  <div class="row mb-0">
+                    <div class="col-sm-4">
+                      <div class="input-group input-group-sm mb-0">
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="checkbox" id="sch_all" name="sch_all" />
+                          <label class="form-check-label" for="sch_all">완료포함</label>
+                        </div> 
+                      </div>
+                    </div>
+                    <div class="col-sm-8">
+                      <div class="input-group input-group-sm mb-0">
+                        <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_chain_nm">가맹점 명</label>
+                        <input type="text" class="form-control form-control-sm" id="sch_chain_nm" name="sch_chain_nm" />     
+                        <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>          
+          <div class="card-body pt-0 px-0" style="padding-top: 0px">
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_exc_summary">
+                <thead>
+                  <tr>
+                    <th class="text-center">가맹점명</th>
+                    <th class="text-center">사업자번호</th>
+                    <th class="text-center">등록금액</th>
+                    <th class="text-center">차감액</th>
+                    <th class="text-center">미차감액</th>
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <div class="row flex-between-end">
+              <div class="col-auto align-self-center">
+                <h5 class="mb-0">과입 상세</h5>
+              </div>
+              <div class="col-sm-10">
+                <form id="frm_sch_exc" name="frm_sch_exc" onsubmit="return false;" novalidate="">
+                <div class="row mb-1">  
+                  <div class="col-sm-6">
+                    <div class="input-group">
+                      <div class="input-group input-group-sm mb-1 me-1">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_exc_sdt">발생일</label>
+                        <input class="form-control form-control-sm" id="sch_chain_no" type="hidden" name="sch_chain_no" readonly="readonly"/>
+                        <div class="col-sm-4">
+                          <input class="form-control form-control-sm " id="sch_exc_sdt" type="text" name="sch_exc_sdt" istyle="date" maxlength="10" required />
+                        </div>   
+                        <span class="input-group-text">~</span>
+                        <div class="col-sm-4">
+                          <input class="form-control form-control-sm" id="sch_exc_edt" type="text" name="sch_exc_edt" istyle="date" maxlength="10" required />
+                        </div>   
+                      </div>
+                    </div> 
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="input-group input-group-sm px-3">
+                      <!-- <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_reg_sdate">차감유형</label> -->
+                      <select class="form-select form-control-sm" id="sch_exc_type" name="sch_exc_type" style="width: 120px">
+                        <option value="">선 택</option>
+                      </select>                    
+                      <select class="form-select form-control-sm" id="sch_exc_code" name="sch_exc_code" style="width: 150px">
+                        <option value="">선택</option> 
+                      </select>                    
+                      <select class="form-select form-control-sm" id="sch_exc_status" name="sch_exc_status" style="width: 100px">
+                        <option value="">선택</option> 
+                      </select>
+                      <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
+                    </div>
+                  </div>                  
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="card-body pt-0 px-0" style="padding-top: 0px">
+            <div class="min-vh-50">              
+              <div class="table-responsive scrollbar">
+                <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_exc_list">
+                  <thead class="bg-200">
+                    <tr>
+                      <th class="text-center" style="width: 150px;">차감 코드명</th>
+                      <th class="text-center" style="width: 100px;">차감일자</th>
+                      <th class="text-center" style="width: 120px;">등록금액</th>
+                      <th class="text-center" style="width: 120px;">실행금액</th>
+                      <th class="text-center" style="width: 120px;">미차감</th>
+                      <th class="text-center" style="width: 300px;">비고</th>
+                      <th class="text-center" style="width: 100px;">관리</th>
+                    </tr>
+                  </thead>
+                  <tbody class="list"></tbody>
+                </table>
+              </div> 
+              <div class="row flex-between-end">
+                <div class="d-flex justify-content-between align-items-center mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">
+                  <span>상세정보</span>
+                  <div>
+                    <button class="btn btn-success me-2" id="btn_exceed_process">수납처리</button> 
+                  </div>
+                </div>
+                
+                <form class="needs-validation" id="frm_exc_mst" name="frm_exc_mst" onsubmit="return false;" method="post" novalidate=""> 
+                  <div class="row mb-1">
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_no">차감번호</label> 
+                        <input class="form-control form-control-sm" id="chain_no" type="hidden" name="chain_no" readonly="readonly"/>
+                        <input class="form-control form-control-sm bg-light" id="exc_no" type="text" name="exc_no" readonly="readonly"/>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_type">차감유형</label> 
+                        <select class="form-select form-control-sm" id="exc_type" name="exc_type" style="width: 120px" required>
+                          <option value="">선택</option> 
+                        </select>                    
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_code">차감사유</label> 
+                        <select class="form-select form-control-sm" id="exc_code" name="exc_code" style="width: 120px" required>
+                          <option value="">선택</option> 
+                        </select>   
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="reg_date">발생일</label> 
+                        <div class="col-sm-8">
+                          <input class="form-control form-control-sm " id="reg_date" type="text" name="reg_date" istyle="date" maxlength="10" required />
+                        </div>    
+                      </div>
+                    </div>
+                  </div>  
+                  
+                  <div class="row mb-1">
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="occur_amt">등록 이자</label> 
+                        <div class="col-sm-8">
+                          <input class="form-control form-control-sm text-end " id="occur_amt" type="text" name="occur_amt" istyle="amount" value="0" />
+                        </div>  
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="occur_svc_amt">등록 수수료</label> 
+                        <div class="col-sm-8">
+                          <input class="form-control form-control-sm text-end" id="occur_svc_amt" type="text" name="occur_svc_amt" istyle="amount" value="0" />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="occur_base_amt">등록 원금</label> 
+                        <div class="col-sm-8">
+                          <input class="form-control form-control-sm text-end" id="occur_base_amt" type="text" name="occur_base_amt" istyle="amount" value="0" />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="occur_amt">등록 금액</label> 
+                        <div class="col-sm-8">
+                            <input class="form-control form-control-sm text-end bg-light" id="occur_amt" type="text" name="occur_amt" istyle="amount" value="0" readonly />
+                            <script>
+                              document.addEventListener('DOMContentLoaded', function () {
+                                const occurCrdAmt = document.getElementById('occur_amt');
+                                const remainCrdAmt = document.getElementById('remain_crd_amt');
+
+                                occurCrdAmt.addEventListener('input', function () {
+                                  remainCrdAmt.value = occurCrdAmt.value;
+                                });
+                                const occurSvcAmt = document.getElementById('occur_svc_amt');
+                                const remainSvcAmt = document.getElementById('remain_svc_amt');
+
+                                occurSvcAmt.addEventListener('input', function () {
+                                  remainSvcAmt.value = occurSvcAmt.value;
+                                });
+                                const occurBaseAmt = document.getElementById('occur_base_amt');
+                                const remainBaseAmt = document.getElementById('remain_base_amt');
+
+                                occurBaseAmt.addEventListener('input', function () {
+                                  remainBaseAmt.value = occurBaseAmt.value;
+                                });
+
+                                const occurAmt = document.getElementById('occur_amt');
+                                const remainAmt = document.getElementById('remain_amt');
+
+                                function calculateTotal() {
+                                  const crdAmt = parseFloat(occurCrdAmt.value.replace(/,/g, '')) || 0;
+                                  const svcAmt = parseFloat(occurSvcAmt.value.replace(/,/g, '')) || 0;
+                                  const baseAmt = parseFloat(occurBaseAmt.value.replace(/,/g, '')) || 0;
+                                  const total = crdAmt + svcAmt + baseAmt;
+                                  occurAmt.value = total.toLocaleString();
+                                  remainAmt.value = occurAmt.value;
+                                }
+
+                                occurCrdAmt.addEventListener('input', calculateTotal);
+                                occurSvcAmt.addEventListener('input', calculateTotal);
+                                occurBaseAmt.addEventListener('input', calculateTotal);
+                              });
+                            </script>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row mb-1">
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="recv_crd_amt">수납 이자</label> 
+                        <div class="col-sm-8">
+                          <input class="form-control form-control-sm text-end bg-light" id="recv_crd_amt" type="text" name="recv_crd_amt" istyle="amount" value="0" readonly />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="recv_svc_amt">수납 수수료</label> 
+                        <div class="col-sm-8">
+                          <input class="form-control form-control-sm text-end bg-light" id="recv_svc_amt" type="text" name="recv_svc_amt" istyle="amount" value="0" readonly/>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="recv_base_amt">수납 원금</label> 
+                        <div class="col-sm-8">
+                          <input class="form-control form-control-sm text-end bg-light" id="recv_base_amt" type="text" name="recv_base_amt" istyle="amount" value="0" readonly/>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="issue_amt">수납 금액</label> 
+                        <div class="col-sm-8">
+                          <input class="form-control form-control-sm text-end bg-light" id="issue_amt" type="text" name="issue_amt" istyle="amount"  value="0" readonly />                           
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row mb-1">
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_crd_amt">미수 이자</label> 
+                        <div class="col-sm-8">
+                          <input class="form-control form-control-sm text-end bg-light" id="remain_crd_amt" type="text" name="remain_crd_amt" istyle="amount" value="0" readonly />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_svc_amt">미수 수수료</label> 
+                        <div class="col-sm-8">
+                          <input class="form-control form-control-sm text-end bg-light" id="remain_svc_amt" type="text" name="remain_svc_amt" istyle="amount" value="0" readonly />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_base_amt">미수 원금</label> 
+                        <div class="col-sm-8">
+                          <input class="form-control form-control-sm text-end bg-light" id="remain_base_amt" type="text" name="remain_base_amt" istyle="amount" value="0" readonly />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_amt">미수 금액</label> 
+                        <div class="col-sm-8">
+                            <input class="form-control form-control-sm text-end bg-light" id="remain_amt" type="text" name="remain_amt" istyle="amount" value="0" readonly />
+                        </div>
+                      </div>
+                    </div>
+                  </div>                  
+                  <div class="row mb-1">
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_status">진행상태</label> 
+                        <select class="form-select form-control-sm" id="exc_status" name="exc_status" style="width: 120px" required>
+                          <option value="">선택</option> 
+                        </select>   
+                      </div>
+                    </div>
+                    <div class="col-sm-9">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-1 col-form-label col-form-label-sm" for="exc_type">비고</label> 
+                        <input class="form-control form-control-sm" id="exc_memo" type="text" name="exc_memo" maxlength="50" />
+                      </div>
+                    </div>                     
+                  </div>                  
+                  <div class="row mb-1">
+                    <div class="col-sm-6">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="use_yn">사용여부</label>
+                        <div class="col-sm-8">
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" id="use_yn_y" type="radio" name="use_yn" value="Y" required />
+                            <label class="form-check-label" for="use_yn_y">예</label>
+                          </div>
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" id="use_yn_n" type="radio" name="use_yn" value="N" required />
+                            <label class="form-check-label" for="use_yn_n">아니요</label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_memo">최종수정자</label> 
+                        <input type="text" class="form-control form-control-sm" id="upt_user_id" name="upt_user_id" readonly="readonly" disabled />
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="upt_user_id">최종 수정일</label>                         
+                        <input type="text" class="form-control form-control-sm" id="upt_dttm" name="upt_dttm" readonly="readonly" disabled /> 
+                      </div>
+                    </div>
+                  </div>    
+                  <div class="card-footer">
+                    <p class="text-end pb-1 mb-1 pd-1">
+                      <button class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
+                      <button class="btn btn-primary text-end" id="btn_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                      <button class="btn btn-primary text-end" id="btn_create"><i class="fa fa-paste"></i>저장</button>
+                    </p>
+                  </div>
+                </form>
+              </div>
+              <div class="card-body pt-0 px-0" style="padding-top: 0px">
+                <div class="table-responsive scrollbar">
+                  <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_exc_recv_list">
+                    <thead class="bg-200">
+                      <tr>
+                        <th class="text-center" style="width: 120px;">실행일</th>
+                        <th class="text-center" style="width: 150px;">실행유형</th>
+                        <th class="text-center" style="width: 120px;">수납금액</th>
+                        <th class="text-center" style="width: 120px;">원금</th>
+                        <th class="text-center" style="width: 120px;">수수료</th>
+                        <th class="text-center" style="width: 120px;">이자</th>
+                        <th class="text-center" style="width: 300px;">비고</th>
+                        <th class="text-center" style="width: 100px;">관리</th>
+                      </tr>
+                    </thead>
+                    <tbody class="list"></tbody>
+                  </table>
+                </div>
+              </div>
+               
+            </div>  
+          </div>
+        </div>
+      </div>      
+    </div>    
+  </div>
+  <div class="modal fade" id="modal_exc_mng" tabindex="-1" aria-labelledby="exceedmanage" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form class="needs-validation" novalidate="" id="frm_exc_mng" name="frm_exc_mng" onsubmit="return false;">           
+          <input id="mng_exc_no" type="hidden" name="mng_exc_no"/>
+          <div class="modal-header">
+            <h5 class="modal-title">차감관리</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body"> 
+            <div class="row mb-1">
+              <div class="col-sm-6">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-4 col-form-label col-form-label-sm" for="mng_remain_amt">미차감액</label>
+                  <div class="col-sm-8">
+                    <input class="form-control form-control-sm text-end bg-light" id="mng_remain_amt" type="text" name="mng_remain_amt" value="0" readonly />
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_base_amt">원금</label>
+                  <div class="col-sm-8">
+                    <input class="form-control form-control-sm text-end bg-light" id="mng_remain_base_amt" type="text" name="mng_remain_base_amt" value="0" readonly />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-1">
+              <div class="col-sm-6">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-4 col-form-label col-form-label-sm" for="mng_remain_crd_amt">이자</label>
+                  <div class="col-sm-8">
+                    <input class="form-control form-control-sm text-end bg-light" id="mng_remain_crd_amt" type="text" name="mng_remain_crd_amt" value="0" readonly />
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-4 col-form-label col-form-label-sm" for="mng_remain_svc_amt">수수료</label>
+                  <div class="col-sm-8">
+                    <input class="form-control form-control-sm text-end bg-light" id="mng_remain_svc_amt" type="text" name="mng_remain_svc_amt" value="0" readonly />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-1">
+              <div class="col-sm-4">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="mng_recv_type" id="mng_recv_type" value="M10000" checked />
+                  <label class="form-check-label" for="mng_action_deposit">입금</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="mng_recv_type" id="mng_recv_type" value="O20000" />
+                  <label class="form-check-label" for="mng_action_alternative">대체차감</label>
+                </div>
+              </div>
+              <div class="col-sm-8">
+                <div class="input-group input-group-sm mb-1" id="mng_exc_deposit_div">
+                  <label class="col-sm-4 col-form-label col-form-label-sm" for="mng_deposit_amt">입금액</label>
+                  <div class="col-sm-8">
+                    <input class="form-control form-control-sm text-end" id="mng_deposit_amt" type="text" name="mng_deposit_amt" istyle="amount" placeholder="0" />
+                    <script>
+                      document.addEventListener('DOMContentLoaded', function () {
+                      const depositAmtInput = document.getElementById('mng_deposit_amt');
+                      const remainAmtInput = document.getElementById('mng_remain_amt');
+
+                      depositAmtInput.addEventListener('input', function () {
+                          const depositAmt = parseFloat(depositAmtInput.value.replace(/,/g, '')) || 0;
+                          const remainAmt = parseFloat(remainAmtInput.value.replace(/,/g, '')) || 0;
+
+                          if (depositAmt > remainAmt) {
+                            alert('입금액은 미차감액보다 클 수 없습니다.');
+                            depositAmtInput.value = remainAmt.toLocaleString();
+                          }
+                        });
+                      });
+                    </script>
+                  </div>
+                  <div class="input-group input-group-sm mb-1" style="display: none;" id="mng_exc_shift_div">
+                    <label class="col-sm-4 col-form-label col-form-label-sm" for="alternative_chain">대체차감</label>
+                    <select class="form-select form-control-sm" id="mng_shift_chain_no" name="mng_shift_chain_no">
+                      <option value="">-- 선택 --</option>
+                    </select>
+                  </div>
+                </div>
+              </div>  
+            </div>            
+            <div class="row mb-1">
+              <div class="col-sm-12">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-2 col-form-label col-form-label-sm" for="mng_exc_memo">비고</label>
+                  <input class="form-control form-control-sm" id="mng_exc_memo" type="text" name="mng_exc_memo" maxlength="100" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" id="btn_exc_mng" type="submit" aria-label="처리">적용</button>
+            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
+          </div>          
+        </form>
+      </div>
+    </div>
+  </div>  
+</html>
