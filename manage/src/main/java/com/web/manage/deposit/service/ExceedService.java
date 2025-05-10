@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.web.manage.deposit.domain.ExceedMstVO;
 import com.web.manage.deposit.mapper.ExceedMapper;
+import com.web.manage.base.domain.ChainCardVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import ch.qos.logback.classic.Logger;
 
@@ -46,14 +47,13 @@ public class ExceedService {
   
     public String getNewExcNo() {
         return exceedMapper.getNewExcNo();
-    }
+    }    
     
-    public boolean insertExcMst(ExceedMstVO ExcMstVo ) { 
-        return exceedMapper.insertExcMst(ExcMstVo); 
+    public boolean insertExceedMst(ExceedMstVO exceedMstVo ) {
+        return exceedMapper.insertExceedMst(exceedMstVo); 
     }
-    public boolean updateExcMst(ExceedMstVO ExcMstVo) {
-        return exceedMapper.updateExcMst(ExcMstVo); 
+    public boolean updateExceedMst(ExceedMstVO exceedMstVo ) {
+        return exceedMapper.updateExceedMst(exceedMstVo); 
     }
-  
 
 }

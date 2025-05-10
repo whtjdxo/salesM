@@ -7,7 +7,7 @@ public class ExceedMstVO {
     private String exc_no;
     private String exc_status;
     private String chain_no;
-    private String reg_date;
+    private String exc_date;
     private String exc_type;
     private String exc_code;    
     private String exc_memo;    
@@ -16,6 +16,7 @@ public class ExceedMstVO {
     private String remain_amt; 
     private String adjust_no;
     private String remit_no;
+    private String remit_dt;
     private String use_yn;
     private String ent_dttm;
     private String ent_user_id;

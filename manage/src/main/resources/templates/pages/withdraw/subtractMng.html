@@ -383,7 +383,7 @@
           var resultCode = data.resultCode;
           var resultMsg = data.resultMsg;   
           if (resultCode == 'S000') {                               
-            swal.fire('성공', '작업을 정상적으로 완료하였습니다.', 'success');            
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');            
             var selectedRowData = tbl_sub_summary.row('.selected').data(); // 현재 선택된 데이터 저장            
             tbl_sub_summary.ajax.reload(function () {
               if (selectedRowData) {

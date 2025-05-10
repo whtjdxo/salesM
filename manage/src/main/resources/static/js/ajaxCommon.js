@@ -344,8 +344,7 @@ function ConfirmdialogToAjax(text, target, form, callback) {
         location.replace("/login");
       } else if (data.resultCode === "S000") {
         // alert("처리되었습니다.");
-        callback(data);
-      
+        callback(data);      
       } else {
         swal("실패", data.resultMsg, "error");
       }

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+
+import com.web.manage.base.domain.ExceedMstVO;
 // Ensure the correct package path for ExceedMstVO
 import com.web.manage.deposit.domain.ExceedMstVO; // Update this path if the class is located elsewhere
 
@@ -20,7 +22,7 @@ public interface ExceedMapper {
     List<HashMap<String, Object>> getExcReceiveList(HashMap<String, Object> hashmapParam);    
 
     String getNewExcNo();    
-    boolean insertExcMst(ExceedMstVO exceedMstVo);
-    boolean updateExcMst(ExceedMstVO exceedMstVo);  
+    boolean insertExceedMst(ExceedMstVO exceedMstVo);
+    boolean updateExceedMst(ExceedMstVO exceedMstVo);   
 }
 

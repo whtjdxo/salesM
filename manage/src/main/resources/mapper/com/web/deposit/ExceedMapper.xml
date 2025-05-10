@@ -61,24 +61,24 @@
 		AND	EM.USE_YN	= 'Y' 
 	</select>
 
-	<select id="getDepoCardSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	<select id="getChainExcList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
 		SELECT 	SQL_CALC_FOUND_ROWS
-				EM.EXC_NO								AS exc_no
-				, EM.CHAIN_NO 							AS chain_no
-				, EM.EXC_TYPE							AS exc_type
-				, GET_CODE_NM('EXC_TYPE', EM.EXC_TYPE)  AS exc_type_nm
-				, EM.EXC_CODE							AS exc_code
-				, GET_CODE_NM('EXC_CODE', EM.EXC_CODE)  AS exc_code_nm
-				, EM.EXC_STATUS 						AS exc_status
+				EM.EXC_NO									AS exc_no
+				, EM.CHAIN_NO 								AS chain_no
+				, EM.EXC_TYPE								AS exc_type
+				, GET_CODE_NM('EXC_TYPE', EM.EXC_TYPE)  	AS exc_type_nm
+				, EM.EXC_CODE								AS exc_code
+				, GET_CODE_NM('EXC_CODE', EM.EXC_CODE)  	AS exc_code_nm
+				, EM.EXC_STATUS 							AS exc_status
 				, GET_CODE_NM('EXC_STATUS', EM.EXC_STATUS)  AS exc_status_nm
 				, EM.EXC_DATE								AS exc_date
 				, IFNULL(DATE_FORMAT(RM.REMIT_DTTM, '%Y-%m-%d') , '')	AS remit_date
-				, IFNULL(OCCUR_AMT, 0) 		AS occur_amt 
-				, IFNULL(ISSUE_AMT, 0) 		AS issue_amt
-				, IFNULL(REMAIN_AMT, 0) 	AS remain_amt 
-				, EM.EXC_MEMO				AS exc_memo
-				, EM.USE_YN 				AS use_yn
-				, IFNULL(EM.UPT_DTTM, EM.ENT_DTTM)			AS upt_dttm 
+				, IFNULL(OCCUR_AMT, 0) 						AS occur_amt 
+				, IFNULL(ISSUE_AMT, 0) 						AS issue_amt
+				, IFNULL(REMAIN_AMT, 0) 					AS remain_amt 
+				, EM.EXC_MEMO								AS exc_memo
+				, EM.USE_YN 								AS use_yn
+				, DATE_FORMAT(IFNULL(EM.UPT_DTTM, EM.ENT_DTTM), '%Y-%m-%d %H:%i:%s')	AS upt_dttm 
 				, IFNULL(EM.UPT_USER_ID, EM.ENT_USER_ID)	AS upt_user_id
 		  FROM 	TB_EXCEED_MST EM
 				LEFT OUTER JOIN TB_REMIT_MST RM ON RM.REMIT_NO = EM.REMIT_NO  		
@@ -86,13 +86,13 @@
 		   AND  EM.EXC_DATE BETWEEN #{sch_exc_sdt} 
 		  						AND #{sch_exc_edt} 
 		  AND  EM.USE_YN = 'Y'
-		<if test="sch_exc_type != ''"> 
+		<if test="sch_exc_type != null and sch_exc_type != ''"> 
 			AND  EM.EXC_TYPE = #{sch_exc_type}  
 		</if>
-		<if test="sch_exc_code != ''"> 
+		<if test="sch_exc_code != null and sch_exc_code != ''"> 
 			AND  EM.EXC_CODE = #{sch_exc_code}  
 		</if>
-		<if test="sch_status != ''"> 
+		<if test="sch_status != null and sch_status != ''"> 
 			AND  EM.EXC_STATUS = #{sch_status}  
 		</if>
 		
@@ -107,84 +107,27 @@
 		LIMIT  ${start}, ${end}
 	</select>
 
-	<select id="getDepoResvList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-		SELECT  SQL_CALC_FOUND_ROWS
-				WD.WD_NO                AS wd_no
-				, WD.WD_STATUS          AS wd_status
-				, GET_CODE_NM('WD_STATUS', WD.WD_STATUS)    AS wd_status_nm
-				, WD.WORK_DATE          AS work_date
-				, WD.CHAIN_NO           AS chain_no
-				, TC.CHAIN_NM           AS chain_nm
-				, WD.DOCU_SEQ           AS docu_seq
-				, WD.CARD_ACQ           AS card_acq
-				, GET_CODE_NM('CARD_ACQ', WD.CARD_ACQ)      AS card_acq_nm
-				, VD.CARD_NO            AS card_no        
-				, WD.CARD_REG_NO        AS card_reg_no
-				, VD.CARD_TYPE          AS card_type
-				, GET_CODE_NM('CARD_TYPE', VD.CARD_TYPE)    AS card_type_nm
-				, WD.CONF_NO            AS conf_no
-				, WD.CONF_GB            AS conf_gb
-				, CASE WHEN WD.CONF_GB = 'A' THEN '승인' ELSE '취소' END AS conf_gb_nm
-				, WD.CONF_DTTM          AS conf_dttm
-				, WD.CONF_AMT           AS conf_amt
-				, WD.CARD_BUY_FLAG      AS card_buy_flag
-				, WD.CARD_BUY_DATE      AS card_buy_date
-				, WD.CARD_FEE_RATE      AS fard_fee_rate
-				, WD.CARD_FEE_AMT       AS card_fee_amt
-				, IFNULL(WD.CARD_RESV_AMT, 0)   AS card_resv_amt
-				, IFNULL(WD.CARD_RESV_DAY, 0)   AS card_resv_day
-				, IFNULL(WD.CARD_RESV_DATE, '') AS card_resv_date
-				, IFNULL(WD.SVC_FEE_RATE, 0)    AS svc_fee_rate
-				, IFNULL(WD.SVC_FEE_AMT, 0)     AS svc_fee_amt
-				, IFNULL(WD.WD_BASE_AMT, 0)     AS wd_base_amt
-				, IFNULL(WD.CRD_FEE_RATE, 0)    AS crd_fee_rate
-				, IFNULL(WD.CRD_FEE_AMT, 0)     AS crd_fee_amt
-				, IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
-				, IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
-				, IFNULL(WD.REMIT_NO, '')       AS remit_seq
-				, IFNULL( WD.REMIT_DTTM, '')    AS remit_dttm
-				, IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
-				, IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
-				, IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg
-				, WD.USE_YN                     AS use_yn
-				, IFNULL(WD.WD_MEMO, '')        AS wd_memo
-				, WD.CLOSE_YN                   AS close_yn
-				, DATE_FORMAT(IFNULL(WD.UPT_DTTM, WD.ENT_DTTM), '%Y-%m-%d %H:%i:%s')              AS upt_dttm
-				, DATE_FORMAT(IFNULL(WD.ENT_USER_ID,  WD.UPT_USER_ID), '%Y-%m-%d %H:%i:%s')       AS upt_user_id
-		FROM  TB_WITHDRAW WD
-				JOIN TB_VAN_DOCU VD ON VD.DOCU_SEQ = WD.DOCU_SEQ
-				JOIN TB_CHAIN   TC ON TC.CHAIN_NO = WD.CHAIN_NO 
-		WHERE  WD.DEPOSIT_DTTM IS NULL
-		  AND  WD.DEPOSIT_FLAG = 'N'
-		  AND  WD.CARD_RESV_DATE  = #{sch_list_resv_date} 
-		  AND  WD.CHAIN_NO     	= #{sch_list_chain_no} 
-		  AND  WD.USE_YN     		= 'Y'
-		
-		<if test="sch_list_card_acq != ''"> 
-				AND  FIND_IN_SET(WD.CARD_ACQ, #{sch_list_card_acq})  
+	<select id="getChainExcListTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	SQL_CALC_FOUND_ROWS
+				IFNULL(SUM(OCCUR_AMT), 0) 		AS occur_amt 
+				, IFNULL(SUM(ISSUE_AMT), 0) 	AS issue_amt
+				, IFNULL(SUM(REMAIN_AMT), 0) 	AS remain_amt 				
+		  FROM 	TB_EXCEED_MST EM
+				LEFT OUTER JOIN TB_REMIT_MST RM ON RM.REMIT_NO = EM.REMIT_NO  		
+		 WHERE 	EM.CHAIN_NO = #{sch_chain_no} 
+		   AND  EM.EXC_DATE BETWEEN #{sch_exc_sdt} 
+		  						AND #{sch_exc_edt} 
+		  AND  EM.USE_YN = 'Y'
+		<if test="sch_exc_type != null and sch_exc_type != ''"> 
+			AND  EM.EXC_TYPE = #{sch_exc_type}  
 		</if>
-		<if test="sch_list_gb_conf_val != ''">
-				<choose>
-						<when test="sch_list_gb == 'sch_list_gb_conf_no'">
-								AND WD.CONF_NO  = #{sch_list_gb_conf_val}
-						</when>
-						<when test="sch_list_gb == 'sch_list_gb_card_no'">
-								AND WD.CARD_NO  = #{sch_list_gb_conf_val}
-						</when>
-						<when test="sch_list_gb == 'sch_list_gb_conf_amt'">
-								AND WD.CONF_AMT  = #{sch_list_gb_conf_val}
-						</when>
-				</choose>
-		</if>  
-		<choose>
-				<when test="sidx != ''">
-						ORDER BY ${sidx} ${sord}
-				</when>
-				<otherwise>
-						ORDER BY 1
-				</otherwise>
-		</choose>                
-		LIMIT  ${start}, ${end}
+		<if test="sch_exc_code != null and sch_exc_code != ''"> 
+			AND  EM.EXC_CODE = #{sch_exc_code}  
+		</if>
+		<if test="sch_status != null and sch_status != ''"> 
+			AND  EM.EXC_STATUS = #{sch_status}  
+		</if>
+		 
 	</select>
 
 	<update id="callProcChangeResvDate" parameterType="com.web.manage.deposit.domain.ProcDepositVO" statementType="CALLABLE">
@@ -198,239 +141,41 @@
 				) 
 		}
 	</update>
-
-	<update id="callProcDepositAdjust" parameterType="com.web.manage.deposit.domain.ProcDepositVO" statementType="CALLABLE">
-		{ 
-				CALL PRC_DEPOSIT_ADJUST(
-						#{resvDate, mode=IN, jdbcType=VARCHAR} 
-						, #{chainNo, mode=IN, jdbcType=VARCHAR}
-						, #{cardAcq, mode=IN, jdbcType=VARCHAR}
-						, #{userId, mode=IN, jdbcType=VARCHAR}
-						, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-						, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
-				) 
-		}
-	</update>
-
-
-	<select id="getDepoAdjustSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-		SELECT 	SQL_CALC_FOUND_ROWS
-		 		DA.CHAIN_NO							as chain_no
-				, TC.CHAIN_NM						as chain_nm
-				, TC.BIZ_NO 						as biz_no
-				, IFNULL(SUM(TOT_SALES_AMT), 0)		as tot_sales_amt 
-				, IFNULL(SUM(CARD_FEE_AMT), 0)		as card_fee_amt
-				, IFNULL(SUM(ORG_CARD_RESV_AMT), 0)	as org_card_resv_amt 
-				, IFNULL(SUM(NEW_CARD_RESV_AMT), 0)	as new_card_resv_amt
-				, IFNULL(SUM(RESV_BASE_AMT), 0)		as resv_base_amt
-				, IFNULL(SUM(RESV_SVC_AMT), 0)		as resv_svc_amt
-				, IFNULL(SUM(RESV_CRD_AMT), 0)		as resv_crd_amt
-				, IFNULL(SUM(BANK_IN_AMT), 0)		as bank_in_amt 
-				, IFNULL(SUM(DEPO_GAP_AMT), 0)		as depo_gap_amt 
-				, IFNULL(SUM(BANK_IN_BASE_AMT), 0)	as bank_in_base_amt 
-				, IFNULL(SUM(BANK_IN_SVC_AMT), 0)	as bank_in_svc_amt 
-				, IFNULL(SUM(BANK_IN_CRD_AMT), 0)	as bank_in_crd_amt
-				, IFNULL(SUM(EXC_AMT), 0)			as exc_amt
-				, IFNULL(SUM(EXC_CARD_AMT), 0)		as exc_card_amt
-				, IFNULL(SUM(EXC_CRD_AMT), 0)		as exc_crd_amt
-				, IFNULL(SUM(SUB_CARD_AMT), 0)		as sub_card_amt
-				, IFNULL(SUM(SUB_AMT), 0)			as sub_amt
-				, IFNULL(SUM(SUB_BASE_AMT), 0)		as sub_base_amt
-				, IFNULL(SUM(SUB_SVC_AMT), 0)		as sub_svc_amt
-				, IFNULL(SUM(SUB_CRD_AMT), 0)		as sub_crd_amt
-		FROM	TB_DEPOSIT_ADJUST DA
-				JOIN TB_CHAIN TC ON TC.CHAIN_NO = DA.CHAIN_NO 
-				<if test='sch_corp_cd != null and sch_corp_cd != ""'>
-					AND  TC.CORP_CD = #{sch_corp_cd}
-				</if>
-				<if test='sch_chain_nm != null and sch_chain_nm != ""'>
-					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
-				</if> 
-		WHERE	DA.ADJUST_DATE = #{sch_adjust_date} 
-		GROUP 	BY DA.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO
-        <choose>
-                <when test="sidx != ''">
-                        ORDER BY ${sidx} ${sord}
-                </when>
-                <otherwise>
-                        ORDER BY 1
-                </otherwise>
-        </choose>                
-        LIMIT  ${start}, ${end}
+ 	<select id="getNewChainNo" resultType="java.lang.String">
+	    /* ChainMapper.getNewChainNo */
+		SELECT GET_JOB_SEQ('TB_CHAIN', 'CHAIN_NO')
 	</select>
 
-	<select id="getDepoAdjustSummTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-        SELECT 	SQL_CALC_FOUND_ROWS 
-				IFNULL(SUM(TOT_SALES_AMT), 0)		as tot_sales_amt 
-				, IFNULL(SUM(CARD_FEE_AMT), 0)		as card_fee_amt
-				, IFNULL(SUM(ORG_CARD_RESV_AMT), 0)	as org_card_resv_amt 
-				, IFNULL(SUM(NEW_CARD_RESV_AMT), 0)	as new_card_resv_amt
-				, IFNULL(SUM(RESV_BASE_AMT), 0)		as resv_base_amt
-				, IFNULL(SUM(RESV_SVC_AMT), 0)		as resv_svc_amt
-				, IFNULL(SUM(RESV_CRD_AMT), 0)		as resv_crd_amt
-				, IFNULL(SUM(BANK_IN_AMT), 0)		as bank_in_amt 
-				, IFNULL(SUM(DEPO_GAP_AMT), 0)		as depo_gap_amt
-				, IFNULL(SUM(BANK_IN_BASE_AMT), 0)	as bank_in_base_amt 
-				, IFNULL(SUM(BANK_IN_SVC_AMT), 0)	as bank_in_svc_amt 
-				, IFNULL(SUM(BANK_IN_CRD_AMT), 0)	as bank_in_crd_amt
-				, IFNULL(SUM(EXC_AMT), 0)			as exc_amt
-				, IFNULL(SUM(EXC_CARD_AMT), 0)		as exc_card_amt
-				, IFNULL(SUM(EXC_CRD_AMT), 0)		as exc_crd_amt
-				, IFNULL(SUM(SUB_CARD_AMT), 0)		as sub_card_amt
-				, IFNULL(SUM(SUB_AMT), 0)			as sub_amt
-				, IFNULL(SUM(SUB_BASE_AMT), 0)		as sub_base_amt
-				, IFNULL(SUM(SUB_SVC_AMT), 0)		as sub_svc_amt
-				, IFNULL(SUM(SUB_CRD_AMT), 0)		as sub_crd_amt
-		FROM	TB_DEPOSIT_ADJUST DA
-				JOIN TB_CHAIN TC ON TC.CHAIN_NO = DA.CHAIN_NO 
-				<if test='sch_corp_cd != null and sch_corp_cd != ""'>
-					AND  TC.CORP_CD = #{sch_corp_cd}
-				</if>
-				<if test='sch_chain_nm != null and sch_chain_nm != ""'>
-					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
-				</if> 
-		WHERE	ADJUST_DATE = #{sch_adjust_date}  
-         
-	</select>
+	
+    <insert id="insertExceedMst" parameterType="com.web.manage.deposit.domain.ExceedMstVO">
+        INSERT INTO TB_EXCEED_MST (
+            EXC_NO        		, CHAIN_NO       , EXC_TYPE       	, EXC_CODE
+			, EXC_STATUS    	, EXC_DATE       , OCCUR_AMT      	, ISSUE_AMT		, REMAIN_AMT
+			, EXC_MEMO      	, USE_YN    
+            , ENT_DTTM      	, ENT_USER_ID
+        ) VALUES (
+            GET_JOB_SEQ('TB_EXCEED_MST', 'EXC_NO') 
+			, #{chain_no} 		, #{exc_type} 	, #{exc_code}
+			, #{exc_status} 	, #{exc_date} 	, #{occur_amt} 		, #{issue_amt} , #{remain_amt}
+			, #{exc_memo}  		, 'Y'
+            , NOW()         	, #{ent_user_id}
+        ) 
+    </insert>
 
-	<select id="getDepoAdjustCardSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-		SELECT 	SQL_CALC_FOUND_ROWS
-				DA.CHAIN_NO							as chain_no
-			   	, TC.CHAIN_NM						as chain_nm
-			   	, TC.BIZ_NO 						as biz_no
-			   	, DA.CARD_ACQ						as card_acq
-				, GET_CODE_NM('CARD_ACQ', DA.CARD_ACQ) as card_acq_nm
-				, IFNULL(SUM(TOT_SALES_AMT), 0)		as tot_sales_amt 
-				, IFNULL(SUM(CARD_FEE_AMT), 0)		as card_fee_amt
-			   	, IFNULL(SUM(ORG_CARD_RESV_AMT), 0)	as org_card_resv_amt 
-			   	, IFNULL(SUM(NEW_CARD_RESV_AMT), 0)	as new_card_resv_amt
-			   	, IFNULL(SUM(RESV_BASE_AMT), 0)		as resv_base_amt
-			   	, IFNULL(SUM(RESV_SVC_AMT), 0)		as resv_svc_amt
-			   	, IFNULL(SUM(RESV_CRD_AMT), 0)		as resv_crd_amt
-			   	, IFNULL(SUM(BANK_IN_AMT), 0)		as bank_in_amt 
-				, IFNULL(SUM(DEPO_GAP_AMT), 0)		as depo_gap_amt
-			   	, IFNULL(SUM(BANK_IN_BASE_AMT), 0)	as bank_in_base_amt 
-			   	, IFNULL(SUM(BANK_IN_SVC_AMT), 0)	as bank_in_svc_amt 
-			   	, IFNULL(SUM(BANK_IN_CRD_AMT), 0)	as bank_in_crd_amt
-			   	, IFNULL(SUM(EXC_AMT), 0)			as exc_amt
-			   	, IFNULL(SUM(EXC_CARD_AMT), 0)		as exc_card_amt
-			   	, IFNULL(SUM(EXC_CRD_AMT), 0)		as exc_crd_amt
-			   	, IFNULL(SUM(SUB_CARD_AMT), 0)		as sub_card_amt
-			   	, IFNULL(SUM(SUB_AMT), 0)			as sub_amt
-			   	, IFNULL(SUM(SUB_BASE_AMT), 0)		as sub_base_amt
-			   	, IFNULL(SUM(SUB_SVC_AMT), 0)		as sub_svc_amt
-			   	, IFNULL(SUM(SUB_CRD_AMT), 0)		as sub_crd_amt
-	   	  FROM	TB_DEPOSIT_ADJUST DA
-			   	JOIN TB_CHAIN TC ON TC.CHAIN_NO = DA.CHAIN_NO 
-		 WHERE	DA.ADJUST_DATE 	= #{sch_card_adjust_date} 
-		   AND  DA.CHAIN_NO 	= #{sch_card_chain_no}
-		 GROUP	BY DA.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO, DA.CARD_ACQ, GET_CODE_NM('CARD_ACQ', DA.CARD_ACQ)
-		<choose>
-			<when test="sidx != ''">
-					ORDER BY ${sidx} ${sord}
-			</when>
-			<otherwise>
-					ORDER BY 1
-			</otherwise>
-		</choose>                
-		LIMIT  ${start}, ${end}
-	</select>
-
-	<select id="getDepoAdjustList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-		SELECT  SQL_CALC_FOUND_ROWS
-				WD.WD_NO                AS wd_no
-				, WD.WD_STATUS          AS wd_status
-				, GET_CODE_NM('WD_STATUS', WD.WD_STATUS)    AS wd_status_nm
-				, WD.WORK_DATE          AS work_date
-				, WD.CHAIN_NO           AS chain_no
-				, TC.CHAIN_NM           AS chain_nm
-				, WD.DOCU_SEQ           AS docu_seq
-				, WD.CARD_ACQ           AS card_acq
-				, GET_CODE_NM('CARD_ACQ', WD.CARD_ACQ)      AS card_acq_nm
-				, VD.CARD_NO            AS card_no        
-				, WD.CARD_REG_NO        AS card_reg_no
-				, VD.CARD_TYPE          AS card_type
-				, GET_CODE_NM('CARD_TYPE', VD.CARD_TYPE)    AS card_type_nm
-				, WD.CONF_NO            AS conf_no
-				, WD.CONF_GB            AS conf_gb
-				, CASE WHEN WD.CONF_GB = 'A' THEN '승인' ELSE '취소' END AS conf_gb_nm
-				, WD.CONF_DTTM          AS conf_dttm
-				, WD.CONF_AMT           AS conf_amt
-				, WD.CARD_BUY_FLAG      AS card_buy_flag
-				, WD.CARD_BUY_DATE      AS card_buy_date
-				, WD.CARD_FEE_RATE      AS fard_fee_rate
-				, WD.CARD_FEE_AMT       AS card_fee_amt
-				, IFNULL(WD.CARD_RESV_AMT, 0)   AS card_resv_amt
-				, IFNULL(WD.CARD_RESV_DAY, 0)   AS card_resv_day
-				, IFNULL(WD.CARD_RESV_DATE, '') AS card_resv_date
-				, IFNULL(WD.SVC_FEE_RATE, 0)    AS svc_fee_rate
-				, IFNULL(WD.SVC_FEE_AMT, 0)     AS svc_fee_amt
-				, IFNULL(WD.WD_BASE_AMT, 0)     AS wd_base_amt
-				, IFNULL(WD.CRD_FEE_RATE, 0)    AS crd_fee_rate
-				, IFNULL(WD.CRD_FEE_AMT, 0)     AS crd_fee_amt
-				, IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
-				, IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
-				, IFNULL(WD.REMIT_NO, '')       AS remit_seq
-				, IFNULL( WD.REMIT_DTTM, '')    AS remit_dttm
-				, IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
-				, IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
-				, IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg
-				, WD.USE_YN                     AS use_yn
-				, IFNULL(WD.WD_MEMO, '')        AS wd_memo
-				, WD.CLOSE_YN                   AS close_yn
-				, DATE_FORMAT(IFNULL(WD.UPT_DTTM, WD.ENT_DTTM), '%Y-%m-%d %H:%i:%s')              AS upt_dttm
-				, DATE_FORMAT(IFNULL(WD.ENT_USER_ID,  WD.UPT_USER_ID), '%Y-%m-%d %H:%i:%s')       AS upt_user_id
-		FROM  TB_WITHDRAW WD
-				JOIN TB_VAN_DOCU VD ON VD.DOCU_SEQ = WD.DOCU_SEQ
-				JOIN TB_CHAIN   TC ON TC.CHAIN_NO = WD.CHAIN_NO 
-		WHERE  1 = 1
-		  AND  WD.DEPOSIT_DTTM BETWEEN DATE(#{sch_list_adjust_date}) 
-		  						   AND DATE_ADD(DATE(#{sch_list_adjust_date}), INTERVAL 1 DAY)			
-		  AND  WD.DEPOSIT_FLAG = 'Y'
-		  AND  WD.CHAIN_NO     		= #{sch_list_chain_no} 
-		  AND  WD.USE_YN     		= 'Y'		
-		<if test="sch_list_card_acq != ''"> 
-				AND  FIND_IN_SET(WD.CARD_ACQ, #{sch_list_card_acq})  
-		</if>
-		<if test="sch_list_conf_date != ''"> 
-			AND  WD.CONF_DT = #{sch_list_conf_date})  
-		</if>
-		
-		<if test="sch_list_gb_conf_val != ''">
-				<choose>
-						<when test="sch_list_gb == 'sch_list_gb_conf_no'">
-								AND WD.CONF_NO  = #{sch_list_gb_conf_val}
-						</when>
-						<when test="sch_list_gb == 'sch_list_gb_card_no'">
-								AND WD.CARD_NO  = #{sch_list_gb_conf_val}
-						</when>
-						<when test="sch_list_gb == 'sch_list_gb_conf_amt'">
-								AND WD.CONF_AMT  = #{sch_list_gb_conf_val}
-						</when>
-				</choose>
-		</if>  
-		<choose>
-				<when test="sidx != ''">
-						ORDER BY ${sidx} ${sord}
-				</when>
-				<otherwise>
-						ORDER BY 1
-				</otherwise>
-		</choose>                
-		LIMIT  ${start}, ${end}
-	</select>
-
-	<update id="callProcDepoAdjustCancel" parameterType="com.web.manage.deposit.domain.ProcDepositVO" statementType="CALLABLE">
-		{ 
-				CALL PRC_DEPOSIT_ADJUST_CANCEL(
-						#{adjustDate, mode=IN, jdbcType=VARCHAR} 
-						, #{chainNo, mode=IN, jdbcType=VARCHAR}
-						, #{cardAcq, mode=IN, jdbcType=VARCHAR}
-						, #{userId, mode=IN, jdbcType=VARCHAR}
-						, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-						, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
-				) 
-		}
-	</update>
+    <update id="updateExceedMst" parameterType="com.web.manage.deposit.domain.ExceedMstVO">
+        UPDATE TB_EXCEED_MST
+           SET  EXC_TYPE         	= #{exc_type}
+		   		, EXC_CODE         	= #{exc_code}
+				, EXC_STATUS       	= #{exc_status}
+				, EXC_DATE         	= #{exc_date}
+				, OCCUR_AMT        	= #{occur_amt}
+				, ISSUE_AMT        	= #{issue_amt}
+				, REMAIN_AMT       	= #{remain_amt}
+				, EXC_MEMO         	= #{exc_memo}
+				, USE_YN           	= #{use_yn}
+               , UPT_USER_ID       	= #{upt_user_id}
+               , UPT_DTTM         	= NOW()
+         WHERE EXC_NO         		= #{exc_no}
+    </update>
 
 </mapper>
