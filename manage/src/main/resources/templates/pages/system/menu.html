@@ -280,7 +280,7 @@
     });
   </script>
   <div class="content">
-    <div class="card mb-3" style="height: 65px">
+    <!-- <div class="card mb-3" style="height: 65px">
       <div class="bg-holder d-none d-lg-block bg-card"></div>
       <div class="card-body position-relative">
         <div class="row">
@@ -311,7 +311,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
     <div class="row g-3 mb-3">
       <div class="col-lg-8">
         <div class="card">
@@ -342,7 +342,7 @@
             <form class="needs-validation" id="frm_menu_info" name="frm_menu_info" onsubmit="return false;" novalidate="">
               <input type="hidden" name="menu_state" id="menu_state" />
               <input type="hidden" name="menu_prnt_cd" id="menu_prnt_cd" />
-              <input type="hidden" name="site_gb_cd" id="site_gb_cd" value="SG0001"/>
+              <input type="text" name="site_gb_cd" id="site_gb_cd" value="SG0001"/>
               <input type="hidden" name="upt_user_id" id="upt_user_id" th:value="${session.S_USER.userId}" />
               <div class="row mb-3">
                 <label class="col-sm-2 col-form-label col-form-label-sm" for="menu">상위메뉴</label>

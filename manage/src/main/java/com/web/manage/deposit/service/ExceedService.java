@@ -44,6 +44,14 @@ public class ExceedService {
     public HashMap<String, Object> getChainExcListTotal(HashMap<String, Object> hashmapParam) {
         return exceedMapper.getChainExcListTotal(hashmapParam);
     }
+
+    public List<HashMap<String, Object>> getChainExcResvList(HashMap<String, Object> hashmapParam) {
+        return exceedMapper.getChainExcResvList(hashmapParam);
+    }
+
+    public HashMap<String, Object> getChainExcResvListTotal(HashMap<String, Object> hashmapParam) {
+        return exceedMapper.getChainExcResvListTotal(hashmapParam);
+    }
   
     public String getNewExcNo() {
         return exceedMapper.getNewExcNo();

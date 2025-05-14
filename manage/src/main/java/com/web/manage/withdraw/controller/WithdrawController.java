@@ -24,8 +24,6 @@ import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
 import com.web.manage.common.service.CommonService;
-import com.web.manage.trans.domain.MapCodeVO;
-import com.web.manage.trans.domain.TransProcessVO;
 import jakarta.validation.Valid;
 
 import com.web.common.util.DateUtil;

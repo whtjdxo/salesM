@@ -130,6 +130,53 @@
 		 
 	</select>
 
+	<select id="getChainExcResvList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	SQL_CALC_FOUND_ROWS
+				EM.EXC_NO									AS exc_no
+				, EM.CHAIN_NO 								AS chain_no
+				, EM.EXC_TYPE								AS exc_type
+				, GET_CODE_NM('EXC_TYPE', EM.EXC_TYPE)  	AS exc_type_nm
+				, EM.EXC_CODE								AS exc_code
+				, GET_CODE_NM('EXC_CODE', EM.EXC_CODE)  	AS exc_code_nm
+				, EM.EXC_STATUS 							AS exc_status
+				, GET_CODE_NM('EXC_STATUS', EM.EXC_STATUS)  AS exc_status_nm
+				, EM.EXC_DATE								AS exc_date
+				, IFNULL(DATE_FORMAT(RM.REMIT_DTTM, '%Y-%m-%d') , '')	AS remit_date
+				, IFNULL(OCCUR_AMT, 0) 						AS occur_amt 
+				, IFNULL(ISSUE_AMT, 0) 						AS issue_amt
+				, IFNULL(REMAIN_AMT, 0) 					AS remain_amt 
+				, EM.EXC_MEMO								AS exc_memo
+				, EM.USE_YN 								AS use_yn
+				, DATE_FORMAT(IFNULL(EM.UPT_DTTM, EM.ENT_DTTM), '%Y-%m-%d %H:%i:%s')	AS upt_dttm 
+				, IFNULL(EM.UPT_USER_ID, EM.ENT_USER_ID)	AS upt_user_id
+		  FROM 	TB_EXCEED_MST EM
+				LEFT OUTER JOIN TB_REMIT_MST RM ON RM.REMIT_NO = EM.REMIT_NO  		
+		 WHERE 	EM.CHAIN_NO = #{sch_chain_no} 		
+		   AND  EM.USE_YN = 'Y'
+		   AND 	EM.EXC_STATUS = '100000'
+		<choose>
+			<when test="sidx != ''">
+					ORDER BY ${sidx} ${sord}
+			</when>
+			<otherwise>
+					ORDER BY 1
+			</otherwise>
+		</choose>                
+		LIMIT  ${start}, ${end}
+	</select>
+
+	<select id="getChainExcResvListTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	SQL_CALC_FOUND_ROWS
+				IFNULL(SUM(OCCUR_AMT), 0) 		AS occur_amt 
+				, IFNULL(SUM(ISSUE_AMT), 0) 	AS issue_amt
+				, IFNULL(SUM(REMAIN_AMT), 0) 	AS remain_amt 				
+		  FROM 	TB_EXCEED_MST EM
+				LEFT OUTER JOIN TB_REMIT_MST RM ON RM.REMIT_NO = EM.REMIT_NO  		
+		 WHERE 	EM.CHAIN_NO = #{sch_chain_no} 
+		   AND  EM.USE_YN = 'Y'
+		   AND 	EM.EXC_STATUS = '100000'
+	</select>
+
 	<update id="callProcChangeResvDate" parameterType="com.web.manage.deposit.domain.ProcDepositVO" statementType="CALLABLE">
 		{ 
 				CALL PRC_DEPOSIT_CHANGE_RESV_DATE(
@@ -149,13 +196,13 @@
 	
     <insert id="insertExceedMst" parameterType="com.web.manage.deposit.domain.ExceedMstVO">
         INSERT INTO TB_EXCEED_MST (
-            EXC_NO        		, CHAIN_NO       , EXC_TYPE       	, EXC_CODE
+            EXC_NO        		, CHAIN_NO       , EXC_TYPE       	, EXC_CODE		, CARD_ACQ
 			, EXC_STATUS    	, EXC_DATE       , OCCUR_AMT      	, ISSUE_AMT		, REMAIN_AMT
 			, EXC_MEMO      	, USE_YN    
             , ENT_DTTM      	, ENT_USER_ID
         ) VALUES (
             GET_JOB_SEQ('TB_EXCEED_MST', 'EXC_NO') 
-			, #{chain_no} 		, #{exc_type} 	, #{exc_code}
+			, #{chain_no} 		, #{exc_type} 	, #{exc_code}		, '0000'		
 			, #{exc_status} 	, #{exc_date} 	, #{occur_amt} 		, #{issue_amt} , #{remain_amt}
 			, #{exc_memo}  		, 'Y'
             , NOW()         	, #{ent_user_id}

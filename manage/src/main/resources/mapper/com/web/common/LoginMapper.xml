@@ -12,6 +12,8 @@
 
     <select id="getUserRetrieve" parameterType="hashMap" resultType="com.web.manage.common.domain.SessionVO">
         SELECT  TU.user_id      AS  userId
+                , TU.user_nm    AS  userNm
+                , VC.CORP_GB    AS  corpGb 
                 , TU.CORP_CD    AS  corpCd
                 , VC.CORP_NM    AS  corpNm
                 , TU.CORP_TYPE  AS  corpType

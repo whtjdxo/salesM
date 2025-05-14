@@ -20,6 +20,7 @@ public class SessionVO implements Serializable{
 	private List<String> userGroup;
 	private String userGrpCd;
 	private String authGrpCd;
+	private String corpGb;
 	private String corpCd;
 	private String corpNm;
 	private String corpType;

@@ -82,6 +82,7 @@ public class ExceedController {
         return jString;  
     }
 
+    
     @RequestMapping("excMng/chainExcList")    
     public @ResponseBody String getChainExcList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
@@ -120,7 +121,46 @@ public class ExceedController {
         }
         return jString;  
     }
-    
+
+    @RequestMapping("excMng/chainExcResvList")    
+    public @ResponseBody String getChainResvExcList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list  = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> totalSumm     = new HashMap<String, Object>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam); 
+ 
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = exceedService.getChainExcResvList(hashmapParam);
+            int records = exceedService.getQueryTotalCnt();
+            totalSumm = exceedService.getChainExcResvListTotal(hashmapParam);
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+            hashmapResult.put("totalSumm", totalSumm);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jString;  
+    }
+
     @RequestMapping(value = "excMng/insertExceedMst", method = RequestMethod.POST)    
     public @ResponseBody ReturnDataVO insertExceedMst(@ModelAttribute("ExceedMstVO") @Valid ExceedMstVO exceedMstVo, BindingResult bindingResult, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO(); 
