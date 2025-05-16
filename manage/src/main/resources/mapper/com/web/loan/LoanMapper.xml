@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.web.manage.loan.mapper.LoanMapper">
+    <select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select> 
+
+    <select id="getLoanSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	SQL_CALC_FOUND_ROWS
+                TC.CHAIN_NO                         as chain_no         
+                , TC.CHAIN_NM                       AS chain_nm         
+                , TC.BIZ_NO                         as biz_no
+                , TU.USER_NM                        AS ceo_nm
+                , TC.CORP_CD                        as corp_cd
+                , CO.CORP_NM                        as corp_nm
+                , TC.CRD_FEE_RATE                   as int_rate
+                , TC.CRD_DELAY_RATE                 as delay_rate
+                , TC.TOT_LIMIT_AMT                  as tot_limit_amt
+                , TC.TOT_USE_AMT                    as tot_use_amt
+                , IFNULL(LM.MIN_CONT_DT, DATE_FORMAT(NOW(), '%Y-%m-%d')) as min_cont_dt
+                , IFNULL(LM.MAX_CONT_DT, DATE_FORMAT(NOW(), '%Y-%m-%d')) as max_cont_dt
+                , IFNULL(LM.BIZ_LOAN_AMT, 0)        AS biz_loan_amt
+                , IFNULL(LM.SPOT_LOAN_AMT, 0)       AS spot_loan_amt
+                , IFNULL(LM.ETC_LOAN_AMT, 0)        AS etc_loan_amt
+                , IFNULL(LM.TOT_LOAN_AMT, 0)        AS tot_loan_amt
+                , IFNULL(LM.RECV_AMT, 0)        	AS recv_amt
+                , IFNULL(LM.REMAIN_AMT, 0)        	AS remain_amt
+                , TC.SVC_STAT                       as svc_stat
+                , GET_CODE_NM('SVC_STAT', TC.SVC_STAT)		AS svc_stat_nm
+                , TC.REMIT_STAT                     as remit_stat
+                , GET_CODE_NM('REMIT_STAT', TC.REMIT_STAT)	AS remit_stat_nm
+        FROM 	TB_CHAIN TC 
+                LEFT OUTER JOIN (
+                    SELECT	M.CHAIN_NO 
+                            , MIN(M.CONT_DT)      AS MIN_CONT_DT
+                            , MAX(M.CONT_DT)      AS MAX_CONT_DT		
+                            , IFNULL(SUM(CASE WHEN M.LOAN_TYPE = 'L01001' THEN M.TOT_LOAN_AMT ELSE NULL END), 0) 	AS BIZ_LOAN_AMT
+                            , IFNULL(SUM(CASE WHEN M.LOAN_TYPE = 'L01002' THEN M.TOT_LOAN_AMT ELSE NULL END), 0) 	AS SPOT_LOAN_AMT
+                            , IFNULL(SUM(CASE WHEN M.LOAN_TYPE IN('L01001', 'L01002') THEN NULL ELSE M.TOT_LOAN_AMT END), 0) 	AS ETC_LOAN_AMT
+                            , IFNULL(SUM(M.TOT_LOAN_AMT), 0)													AS TOT_LOAN_AMT				
+                            , IFNULL(SUM(SC.RECV_AMT), 0)														AS RECV_AMT
+                            , IFNULL(SUM(SC.REMAIN_AMT), 0)														AS REMAIN_AMT
+                    FROM 	TB_LOAN_MST M
+                    		LEFT OUTER JOIN (
+                    			SELECT	LOAN_NO
+										, SUM(RECV_TOT_AMT)  	AS RECV_AMT 
+										, SUM(REMAIN_TOT_AMT)  	AS REMAIN_AMT
+								  FROM 	TB_LOAN_REPAY_SCHEDULE 
+								 GROUP	BY LOAN_NO  
+                    		) SC ON SC.LOAN_NO = M.LOAN_NO                    
+                    WHERE 	1= 1                    
+                    <if test='sch_all != null and sch_all == ""'>
+                        AND	M.LOAN_STATUS  =   '01'
+                    </if>                    
+                    GROUP BY M.CHAIN_NO
+                ) LM ON TC.CHAIN_NO = LM.CHAIN_NO  
+                JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
+                JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
+                            AND CO.CORP_TYPE = 'LN'
+        WHERE 	TC.USE_YN  = 'Y'
+          AND TC.SVC_STAT IN ('R', 'O')		
+                
+        <if test='sch_chain_nm != null and sch_chain_nm != ""'>
+            AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+        </if>	
+        <if test='sch_corp_cd != null and sch_corp_cd != ""'>
+            AND  TC.CORP_CD = #{sch_corp_cd}
+        </if>			          
+        <choose>
+            <when test="sidx != ''">
+                    ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                    ORDER BY 1
+            </otherwise>
+        </choose>                
+        LIMIT  ${start}, ${end}
+    </select> 
+
+    <select id="getLoanSummTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	  IFNULL(SUM(LM.BIZ_LOAN_AMT), 0)    AS biz_loan_amt
+                , IFNULL(SUM(LM.SPOT_LOAN_AMT), 0)   AS spot_loan_amt
+                , IFNULL(SUM(LM.ETC_LOAN_AMT), 0)    AS etc_loan_amt
+                , IFNULL(SUM(LM.TOT_LOAN_AMT), 0)    AS tot_loan_amt
+                , IFNULL(SUM(LM.RECV_AMT), 0)        AS recv_amt
+                , IFNULL(SUM(LM.REMAIN_AMT), 0)      AS remain_amt
+        FROM 	TB_CHAIN TC 
+                LEFT OUTER JOIN (
+                    SELECT	M.CHAIN_NO 
+                            , MIN(M.CONT_DT)      AS MIN_CONT_DT
+                            , MAX(M.CONT_DT)      AS MAX_CONT_DT		
+                            , IFNULL(SUM(CASE WHEN M.LOAN_TYPE = 'L01001' THEN M.TOT_LOAN_AMT ELSE NULL END), 0) 	AS BIZ_LOAN_AMT
+                            , IFNULL(SUM(CASE WHEN M.LOAN_TYPE = 'L01002' THEN M.TOT_LOAN_AMT ELSE NULL END), 0) 	AS SPOT_LOAN_AMT
+                            , IFNULL(SUM(CASE WHEN M.LOAN_TYPE IN('L01001', 'L01002') THEN NULL ELSE M.TOT_LOAN_AMT END), 0) 	AS ETC_LOAN_AMT
+                            , IFNULL(SUM(M.TOT_LOAN_AMT), 0)													AS TOT_LOAN_AMT				
+                            , IFNULL(SUM(SC.RECV_AMT), 0)														AS RECV_AMT
+                            , IFNULL(SUM(SC.REMAIN_AMT), 0)														AS REMAIN_AMT
+                    FROM 	TB_LOAN_MST M
+                    		LEFT OUTER JOIN (
+                    			SELECT	LOAN_NO
+										, SUM(RECV_TOT_AMT)  	AS RECV_AMT 
+										, SUM(REMAIN_TOT_AMT)  	AS REMAIN_AMT
+								  FROM 	TB_LOAN_REPAY_SCHEDULE 
+								 GROUP	BY LOAN_NO  
+                    		) SC ON SC.LOAN_NO = M.LOAN_NO                    
+                    WHERE 	1= 1                    
+                    <if test='sch_all != null and sch_all == ""'>
+                        AND	M.LOAN_STATUS  =   '01'
+                    </if>                    
+                    GROUP BY M.CHAIN_NO
+                ) LM ON TC.CHAIN_NO = LM.CHAIN_NO  
+                JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
+                JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
+                            AND CO.CORP_TYPE = 'LN'
+         WHERE 	TC.USE_YN  = 'Y'
+           AND  TC.SVC_STAT IN ('R', 'O')	
+        <if test='sch_chain_nm != null and sch_chain_nm != ""'>
+            AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+        </if>
+        <if test='sch_corp_cd != null and sch_corp_cd != ""'>
+            AND  TC.CORP_CD = #{sch_corp_cd}
+        </if>
+    </select>
+
+    <select id="getChainLoanList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	SQL_CALC_FOUND_ROWS
+                LM.CHAIN_NO                         AS chain_no
+                , LM.CORP_CD                        AS corp_cd
+                , CO.CORP_NM                        AS corpNm
+                , TC.BIZ_NO                         AS biz_no
+                , TU.USER_NM                        AS ceo_nm
+                , LM.LOAN_NO                        AS loan_no
+                , LM.LOAN_STATUS                    AS loan_status 
+                , LM.LOAN_TYPE                      AS loan_type
+                , GET_CODE_NM('LOAN_TYPE', LM.LOAN_TYPE)    AS loan_type_nm    
+                , LM.SUB_CODE                       AS sub_code 
+                , LM.CONT_DT                        AS cont_dt
+                , LM.PRINC_AMT                      AS princ_amt
+                , LM.INT_RATE                       AS int_rate
+                , LM.LOAN_SDT                       AS loan_sdt
+                , LM.LOAN_DAY                       AS loan_day
+                , LM.LOAN_EDT                       AS loan_edt
+                , LM.LOAN_EXPR_DT                   AS loan_expr_dt
+                , LM.INT_AMT                        AS int_amt
+                , LM.TOT_LOAN_AMT                   AS tot_loan_amt
+                , IFNULL(SC.RECV_AMT, 0)            AS recv_amt
+                , IFNULL(SC.RECV_AMT, 0)            AS remain_amt
+                , LM.DELAY_RATE                     AS delay_rate 
+                , LM.DELAY_YN                       AS delay_yn
+                , LM.DELAY_CNT                      AS delay_cnt
+                , DATE_FORMAT(IFNULL(LM.UPT_DTTM, LM.ENT_DTTM), '%Y-%m-%d %H:%i:%s')	AS upt_dttm
+				, IFNULL(LM.UPT_USER_ID, LM.ENT_USER_ID ) 			AS upt_user_id
+        FROM 	TB_LOAN_MST LM
+                LEFT OUTER JOIN (
+                    SELECT	LOAN_NO
+                            , SUM(RECV_TOT_AMT)  	AS RECV_AMT 
+                            , SUM(REMAIN_TOT_AMT)  	AS REMAIN_AMT
+                      FROM 	TB_LOAN_REPAY_SCHEDULE 
+                     GROUP	BY LOAN_NO  
+                ) SC ON SC.LOAN_NO = LM.LOAN_NO          
+        		JOIN TB_CHAIN TC ON TC.CHAIN_NO = LM.CHAIN_NO
+			    				AND TC.USE_YN  = 'Y'
+			      				AND TC.SVC_STAT IN ('R', 'O')		
+        		JOIN TB_CORP CO ON CO.CORP_CD = LM.CORP_CD
+                JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID				
+        WHERE 	1=1
+          AND 	LM.CHAIN_NO = #{sch_chain_no}
+        <if test='sch_cont_sdt != null and sch_cont_sdt != ""'>
+            AND  	LM.CONT_DT &gt;=  #{sch_cont_sdt}
+        </if>            
+        <if test='sch_cont_edt != null and sch_cont_edt != ""'>
+            AND  	LM.CONT_DT &lt;=  #{sch_cont_edt}
+        </if>
+        <if test='sch_loan_status != null and sch_loan_status != ""'>
+            AND  	LM.LOAN_STATUS =  #{sch_loan_status}
+        </if>
+        <if test='sch_loan_type != null and sch_loan_type != ""'>
+            AND  	LM.LOAN_TYPE =  #{sch_loan_type}
+        </if>    
+  			          
+        <choose>
+            <when test="sidx != ''">
+                    ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                    ORDER BY 1
+            </otherwise>
+        </choose>                
+        LIMIT  ${start}, ${end}
+    </select> 
+
+
+    <select id="getChainLoanListTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	IFNULL(SUM(LM.PRINC_AMT), 0)            AS princ_amt
+                , IFNULL(SUM(LM.INT_AMT), 0)            AS int_amt
+                , IFNULL(SUM(LM.TOT_LOAN_AMT), 0)       AS tot_loan_amt
+                , IFNULL(SUM(SC.RECV_AMT), 0)           AS recv_amt
+                , IFNULL(SUM(SC.RECV_AMT), 0)           AS remain_amt
+                , IFNULL(SUM(LM.DELAY_CNT), 0)          AS delay_cnt 
+        FROM 	TB_LOAN_MST LM
+                LEFT OUTER JOIN (
+                    SELECT	LOAN_NO
+                            , SUM(RECV_TOT_AMT)  	AS RECV_AMT 
+                            , SUM(REMAIN_TOT_AMT)  	AS REMAIN_AMT
+                      FROM 	TB_LOAN_REPAY_SCHEDULE 
+                     GROUP	BY LOAN_NO  
+                ) SC ON SC.LOAN_NO = LM.LOAN_NO          
+        		JOIN TB_CHAIN TC ON TC.CHAIN_NO = LM.CHAIN_NO
+			    				AND TC.USE_YN  = 'Y'
+			      				AND TC.SVC_STAT IN ('R', 'O')		
+        		JOIN TB_CORP CO ON CO.CORP_CD = LM.CORP_CD
+                JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID				
+        WHERE 	1=1
+          AND 	LM.CHAIN_NO = #{sch_chain_no}
+        <if test='sch_cont_sdt != null and sch_cont_sdt != ""'>
+            AND  	LM.CONT_DT &gt;=  #{sch_cont_sdt}
+        </if>            
+        <if test='sch_cont_edt != null and sch_cont_edt != ""'>
+            AND  	LM.CONT_DT &lt;=  #{sch_cont_edt}
+        </if>
+        <if test='sch_loan_status != null and sch_loan_status != ""'>
+            AND  	LM.LOAN_STATUS =  #{sch_loan_status}
+        </if>
+        <if test='sch_loan_type != null and sch_loan_type != ""'>
+            AND  	LM.LOAN_TYPE =  #{sch_loan_type}
+        </if>   
+  		 
+    </select> 
+
+    <select id="getLoanRepaymentList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	SQL_CALC_FOUND_ROWS
+                LOAN_NO						AS loan_no
+                , SC_SEQ					AS sc_seq
+                , SC_DATE					AS sc_date
+                , REPAY_PRINC_AMT			AS repay_princ_amt
+                , REPAY_INT_AMT				AS repay_int_amt
+                , REPAY_TOT_AMT				AS repay_tot_amt
+                , BALANCE_AMT				AS balance_amt
+                , RECV_PRINC_AMT			AS recv_princ_amt 
+                , RECV_INT_AMT				AS recv_int_amt 
+                , RECV_TOT_AMT				AS recv_tot_amt 
+                , REMAIN_PRINC_AMT			AS remain_princ_amt 
+                , REMAIN_INT_AMT			AS remain_int_amt 
+                , REMAIN_TOT_AMT			AS remain_tot_amt
+                , RECV_YN					AS recv_yn
+                , RECV_DT					AS recv_dt				
+                , SUB_TRANS_YN													AS sub_trans_yn
+                , SUB_TRNAS_NO													AS sub_trans_no
+                , DATE_FORMAT(SUB_TRANS_DTTM, '%Y-%m-%d %H:%i:%s')				AS trans_dttm
+                , DATE_FORMAT(IFNULL(UPT_DTTM, ENT_DTTM), '%Y-%m-%d %H:%i:%s') 	AS upt_dttm
+                , IFNULL(UPT_USER_ID, ENT_USER_ID) 								AS upt_user_id
+        FROM 	TB_LOAN_REPAY_SCHEDULE
+        WHERE	LOAN_NO = #{loan_no}
+        ORDER 	BY SC_SEQ DESC
+    </select> 
+
+</mapper>
