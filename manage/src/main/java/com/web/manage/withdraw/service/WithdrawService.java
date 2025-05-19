@@ -12,17 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.web.manage.withdraw.domain.ProcRemitVO;
 import com.web.manage.withdraw.domain.SubMstVO;
 import com.web.manage.withdraw.mapper.WithdrawMapper; 
-import com.web.manage.user.domain.UserVO;
-import com.web.manage.user.service.UserMngService;
 
 import ch.qos.logback.classic.Logger;
 
 import com.web.config.interceptor.AuthInterceptor;
-import com.web.manage.base.domain.ChainVanVO;
 import com.web.manage.common.domain.ReturnDataVO;
-import com.web.manage.trans.domain.MapCodeVO;
-import com.web.manage.trans.domain.TransProcessVO;
-import com.web.manage.trans.domain.VanDocuVO;
 
 @Service
 public class WithdrawService {

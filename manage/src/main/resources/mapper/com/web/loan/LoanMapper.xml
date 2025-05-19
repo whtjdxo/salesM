@@ -46,9 +46,10 @@
 										, SUM(RECV_TOT_AMT)  	AS RECV_AMT 
 										, SUM(REMAIN_TOT_AMT)  	AS REMAIN_AMT
 								  FROM 	TB_LOAN_REPAY_SCHEDULE 
+                                 WHERE  USE_YN = 'Y'
 								 GROUP	BY LOAN_NO  
                     		) SC ON SC.LOAN_NO = M.LOAN_NO                    
-                    WHERE 	1= 1                    
+                    WHERE 	M.USE_YN = 'Y'                    
                     <if test='sch_all != null and sch_all == ""'>
                         AND	M.LOAN_STATUS  =   '01'
                     </if>                    
@@ -58,7 +59,7 @@
                 JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
                             AND CO.CORP_TYPE = 'LN'
         WHERE 	TC.USE_YN  = 'Y'
-          AND TC.SVC_STAT IN ('R', 'O')		
+          AND TC.SVC_STAT IN ('R', 'O')	
                 
         <if test='sch_chain_nm != null and sch_chain_nm != ""'>
             AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
@@ -101,9 +102,10 @@
 										, SUM(RECV_TOT_AMT)  	AS RECV_AMT 
 										, SUM(REMAIN_TOT_AMT)  	AS REMAIN_AMT
 								  FROM 	TB_LOAN_REPAY_SCHEDULE 
+                                 WHERE  USE_YN = 'Y' 
 								 GROUP	BY LOAN_NO  
                     		) SC ON SC.LOAN_NO = M.LOAN_NO                    
-                    WHERE 	1= 1                    
+                    WHERE 	M.USE_YN = 'Y'                     
                     <if test='sch_all != null and sch_all == ""'>
                         AND	M.LOAN_STATUS  =   '01'
                     </if>                    
@@ -156,6 +158,7 @@
                             , SUM(RECV_TOT_AMT)  	AS RECV_AMT 
                             , SUM(REMAIN_TOT_AMT)  	AS REMAIN_AMT
                       FROM 	TB_LOAN_REPAY_SCHEDULE 
+                     WHERE  USE_YN = 'Y' 
                      GROUP	BY LOAN_NO  
                 ) SC ON SC.LOAN_NO = LM.LOAN_NO          
         		JOIN TB_CHAIN TC ON TC.CHAIN_NO = LM.CHAIN_NO
@@ -163,7 +166,7 @@
 			      				AND TC.SVC_STAT IN ('R', 'O')		
         		JOIN TB_CORP CO ON CO.CORP_CD = LM.CORP_CD
                 JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID				
-        WHERE 	1=1
+        WHERE 	LM.USE_YN = 'Y'   
           AND 	LM.CHAIN_NO = #{sch_chain_no}
         <if test='sch_cont_sdt != null and sch_cont_sdt != ""'>
             AND  	LM.CONT_DT &gt;=  #{sch_cont_sdt}
@@ -195,14 +198,17 @@
                 , IFNULL(SUM(LM.INT_AMT), 0)            AS int_amt
                 , IFNULL(SUM(LM.TOT_LOAN_AMT), 0)       AS tot_loan_amt
                 , IFNULL(SUM(SC.RECV_AMT), 0)           AS recv_amt
-                , IFNULL(SUM(SC.RECV_AMT), 0)           AS remain_amt
-                , IFNULL(SUM(LM.DELAY_CNT), 0)          AS delay_cnt 
+                , IFNULL(SUM(SC.REMAIN_AMT), 0)         AS remain_amt
+                , IFNULL(SUM(SC.TRANS_CNT), 0)          AS trans_cnt 
+                , IFNULL(SUM(LM.DELAY_CNT), 0)          AS delay_cnt                 
         FROM 	TB_LOAN_MST LM
                 LEFT OUTER JOIN (
                     SELECT	LOAN_NO
                             , SUM(RECV_TOT_AMT)  	AS RECV_AMT 
                             , SUM(REMAIN_TOT_AMT)  	AS REMAIN_AMT
+                            , SUM(CASE WHEN SUB_TRANS_YN = 'Y'  THEN '1' ELSE NULL END) AS TRANS_CNT
                       FROM 	TB_LOAN_REPAY_SCHEDULE 
+                     WHERE  USE_YN = 'Y' 
                      GROUP	BY LOAN_NO  
                 ) SC ON SC.LOAN_NO = LM.LOAN_NO          
         		JOIN TB_CHAIN TC ON TC.CHAIN_NO = LM.CHAIN_NO
@@ -210,7 +216,7 @@
 			      				AND TC.SVC_STAT IN ('R', 'O')		
         		JOIN TB_CORP CO ON CO.CORP_CD = LM.CORP_CD
                 JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID				
-        WHERE 	1=1
+        WHERE 	LM.USE_YN = 'Y'   
           AND 	LM.CHAIN_NO = #{sch_chain_no}
         <if test='sch_cont_sdt != null and sch_cont_sdt != ""'>
             AND  	LM.CONT_DT &gt;=  #{sch_cont_sdt}
@@ -248,10 +254,107 @@
                 , SUB_TRNAS_NO													AS sub_trans_no
                 , DATE_FORMAT(SUB_TRANS_DTTM, '%Y-%m-%d %H:%i:%s')				AS trans_dttm
                 , DATE_FORMAT(IFNULL(UPT_DTTM, ENT_DTTM), '%Y-%m-%d %H:%i:%s') 	AS upt_dttm
+                , USE_YN                                                        AS use_yn
                 , IFNULL(UPT_USER_ID, ENT_USER_ID) 								AS upt_user_id
         FROM 	TB_LOAN_REPAY_SCHEDULE
         WHERE	LOAN_NO = #{loan_no}
         ORDER 	BY SC_SEQ DESC
     </select> 
+
+    <select id="getNewLoanNo" resultType="java.lang.String">
+	    /* ChainMapper.getNewChainNo */
+		SELECT GET_JOB_SEQ('TB_LOAN_MST', 'LOAN_NO')
+	</select>
+
+    <insert id="insertLoanMst" parameterType="com.web.manage.loan.domain.LoanMstVO">
+        INSERT INTO TB_LOAN_MST (
+            LOAN_NO             , CORP_CD           , CHAIN_NO      
+            , LOAN_STATUS       , LOAN_TYPE         , SUB_CODE          , CONT_DT
+            , PRINC_AMT         , INT_RATE          , LOAN_SDT          , LOAN_DAY          , LOAN_EDT          
+            , INT_AMT           , TOT_LOAN_AMT      , DELAY_RATE        
+            , USE_YN            , ENT_DTTM      	, ENT_USER_ID
+        ) VALUES (
+            #{loan_no}          , #{corp_cd}        , #{chain_no}
+            , #{loan_status}    , #{loan_type}      , #{loan_type}       , #{cont_dt}
+            , #{princ_amt}      , #{int_rate}       , #{loan_sdt}       , #{loan_day}       , #{loan_edt}       
+            , #{int_amt}        , #{tot_loan_amt}   , #{delay_rate}     
+            , 'Y'               , NOW()         	, #{ent_user_id}
+        ) 
+    </insert> 
+
+    <select id="changeLoanChk" parameterType="com.web.manage.loan.domain.LoanMstVO" resultType="java.util.HashMap">
+        SELECT  CASE WHEN IFNULL(SUM(SC.RECV_AMT), 0)  > 0
+                       OR IFNULL(SUM(SC.TRANS_CNT), 0) > 0 THEN 'N' ELSE 'Y' END AS change_chk
+        FROM 	TB_LOAN_MST LM
+                LEFT OUTER JOIN (
+                    SELECT	LOAN_NO
+                            , SUM(RECV_TOT_AMT)  	AS RECV_AMT 
+                            , SUM(REMAIN_TOT_AMT)  	AS REMAIN_AMT
+                            , SUM(CASE WHEN SUB_TRANS_YN = 'Y'  THEN '1' ELSE NULL END) AS TRANS_CNT
+                      FROM 	TB_LOAN_REPAY_SCHEDULE 
+                     WHERE	LOAN_NO = #{loan_no} 
+                     GROUP	BY LOAN_NO  
+                ) SC ON SC.LOAN_NO = LM.LOAN_NO          
+        		JOIN TB_CHAIN TC ON TC.CHAIN_NO = LM.CHAIN_NO
+			    				AND TC.USE_YN  = 'Y'
+			      				AND TC.SVC_STAT IN ('R', 'O')		
+        		JOIN TB_CORP CO ON CO.CORP_CD = LM.CORP_CD
+                JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID				
+        WHERE 	LM.USE_YN = 'Y'   
+          AND	LM.LOAN_NO = #{loan_no} 
+        LIMIT   1
+    </select> 
+
+    <update id="updateLoanMst" parameterType="com.web.manage.loan.domain.LoanMstVO">
+        UPDATE  TB_LOAN_MST
+           SET  LOAN_STATUS = #{loan_status} 
+                , MEMO      = #{memo}
+                , UPT_DTTM = NOW()
+                , UPT_USER_ID = #{upt_user_id}
+         WHERE  LOAN_NO = #{loan_no}
+    </update>
+
+    <update id="deleteLoanMst" parameterType="com.web.manage.loan.domain.LoanMstVO">
+        UPDATE  TB_LOAN_MST
+           SET  USE_YN = 'N'
+                , UPT_DTTM = NOW()
+                , UPT_USER_ID = #{upt_user_id}
+         WHERE  LOAN_NO = #{loan_no}
+    </update>
+
+    <insert id="insertLoanRepaySchedule" parameterType="com.web.manage.loan.domain.LoanRepayScheduleVO">
+        INSERT INTO TB_LOAN_REPAY_SCHEDULE (
+            LOAN_NO             , SC_SEQ            , SC_DATE       
+            , REPAY_PRINC_AMT   , REPAY_INT_AMT     , REPAY_TOT_AMT     , BALANCE_AMT       
+            , RECV_PRINC_AMT    , RECV_INT_AMT      , RECV_TOT_AMT      
+            , REMAIN_PRINC_AMT  , REMAIN_INT_AMT    , REMAIN_TOT_AMT            
+            , ENT_DTTM      	, ENT_USER_ID
+        ) VALUES (
+            #{loan_no}          , #{sc_seq}         , #{sc_date}
+            , #{repay_princ_amt}, #{repay_int_amt}  , #{repay_tot_amt} , #{balance_amt}
+            , #{recv_princ_amt} , #{recv_int_amt}   , #{recv_tot_amt}
+            , #{remain_princ_amt}, #{remain_int_amt}, #{remain_tot_amt}
+            , NOW()         	, #{ent_user_id}
+        ) 
+    </insert>
+
+    <update id="deleteLoanRepaySchedule" parameterType="com.web.manage.loan.domain.LoanMstVO">
+        DELETE  
+          FROM  TB_LOAN_REPAY_SCHEDULE
+         WHERE  LOAN_NO = #{loan_no}
+    </update>
+
+    <update id="callProcLoanPrepay" parameterType="com.web.manage.loan.domain.ProcPrepayVO" statementType="CALLABLE">
+		{ 
+				CALL PRC_LOAN_PREPAY(
+						#{loanNo, mode=IN, jdbcType=VARCHAR} 
+						, #{recpDate, mode=IN, jdbcType=VARCHAR}
+                        , #{memo, mode=IN, jdbcType=VARCHAR}
+						, #{userId, mode=IN, jdbcType=VARCHAR}
+						, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+						, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+				) 
+		}
+	</update>
 
 </mapper>

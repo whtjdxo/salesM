@@ -13,10 +13,12 @@ import java.util.List;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.web.config.interceptor.AuthInterceptor;
 import com.web.manage.loan.domain.LoanMstVO;
 import com.web.manage.loan.domain.LoanRepayScheduleVO;
+import com.web.manage.loan.domain.ProcPrepayVO;
 import com.web.manage.loan.mapper.LoanMapper;
 
 import ch.qos.logback.classic.Logger;
@@ -88,6 +90,11 @@ public class LoanService {
             if (scSeq == totalPayments) {
                 dailyRepayPrincAmt = dailyRepayPrincAmt.add(balanceAmt);
                 balanceAmt = BigDecimal.ZERO;
+                // 마지막 회차에서 일별 상환액 재계산 (원금+이자)
+                dailyPayment = dailyRepayPrincAmt.add(dailyRepayIntAmt);
+                // System.out.println("dailyRepayPrincAmt : " + dailyRepayPrincAmt + " /  dailyRepayIntAmt : " + dailyRepayIntAmt 
+                //         +  " / dailyPayment : " + dailyPayment
+                // );
             }
 
             // 상환 내역 추가 
@@ -112,7 +119,7 @@ public class LoanService {
             // 다음 날짜로 이동
             scDate = scDate.plusDays(1);
         }
-        printRepaySchdule(schedule, loanPrincAmt, intRate);            
+        // printRepaySchdule(schedule, loanPrincAmt, intRate);            
         return schedule;
     }
 
@@ -134,7 +141,8 @@ public class LoanService {
     }
 
      
-	private static void printRepaySchdule( 
+	@SuppressWarnings("unused")
+    private static void printRepaySchdule( 
                                     List<LoanRepayScheduleVO> schedule,             
 									BigDecimal repayPrincAmt,             
 									BigDecimal intRate) {        
@@ -172,15 +180,58 @@ public class LoanService {
         }
     } 
 
-    public boolean insertLoanMst(LoanMstVO loanMstVo ) {
-        return loanMapper.insertLoanMst(loanMstVo); 
-    }
-    public boolean updateLoanMst(LoanMstVO loanMstVo ) {
-        return loanMapper.updateLoanMst(loanMstVo); 
+    public String getNewLoanNo() {
+        return loanMapper.getNewLoanNo();
     }
 
-    public boolean insertLoanRepaySchedule(LoanRepayScheduleVO repaySchedule ) {
-        return loanMapper.insertLoanRepaySchedule(repaySchedule); 
+    @Transactional
+    public boolean insertLoanMst(LoanMstVO loanMstVo ) {
+        if (loanMapper.insertLoanMst(loanMstVo)){
+            BigDecimal loanPrincAmt = new BigDecimal(loanMstVo.getPrinc_amt());
+            BigDecimal intRate      = new BigDecimal(loanMstVo.getInt_rate());
+            int loanDays            = Integer.parseInt(loanMstVo.getLoan_day());
+            LocalDate loanSDate     = LocalDate.parse(loanMstVo.getLoan_sdt(), DateTimeFormatter.ISO_LOCAL_DATE);
+
+            List<LoanRepayScheduleVO> scheduleList = getLoanRepaymentVOs(loanPrincAmt, intRate, loanDays, loanSDate);
+            for (LoanRepayScheduleVO schedule : scheduleList) {
+                schedule.setLoan_no(loanMstVo.getLoan_no());
+                if (!loanMapper.insertLoanRepaySchedule(schedule)) {
+                    throw new RuntimeException("Loan Repay Schedule creation failed.");                    
+                }
+            }            
+        } else {
+            throw new RuntimeException("Loan Master Data creation failed.");                          
+        } 
+        return true;
+    }
+
+    public boolean updateLoanMst(LoanMstVO loanMstVo ) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        hashmapResult = loanMapper.changeLoanChk(loanMstVo);
+        if("N".equals(hashmapResult.get("change_chk"))){
+            return false;
+        } else{
+            return loanMapper.updateLoanMst(loanMstVo); 
+        }        
+    }
+
+    @Transactional
+    public boolean deleteLoanMst(LoanMstVO loanMstVo ) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        hashmapResult = loanMapper.changeLoanChk(loanMstVo);
+        if("N".equals(hashmapResult.get("change_chk"))){
+            return false;
+        } else{
+            if(loanMapper.deleteLoanRepaySchedule(loanMstVo)){          // 상환 스케줄 먼저 삭제                
+                return loanMapper.deleteLoanMst(loanMstVo);             // LoanMaster 미사용으로 변환        
+            } else{
+                return false;
+            }
+        }        
+    } 
+    
+    public boolean callProcLoanPrepay(ProcPrepayVO procVo ) {                  
+            return loanMapper.callProcLoanPrepay(procVo);            
     }
  
 }
