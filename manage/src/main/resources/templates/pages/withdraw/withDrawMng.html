@@ -25,7 +25,7 @@
 
         callAjax('/common/getAgencyList', "", fn_agency_list_setting);
         function fn_agency_list_setting(data) {
-          codeSetting('AGENCY_NO', data.data, '#sch_agency_no', '1', '', ''); 
+          codeSetting('AGENCY_CD', data.data, '#sch_agency_cd', '1', '', ''); 
         }  
 
         callAjax('/common/totalCodelist', "code_grp_cd=('WD_STATUS') AND CODE LIKE 'W%'", fn_wd_status_setting);      
@@ -884,7 +884,7 @@
                         <select class="form-select form-control-sm me-1" id="sch_corp_no" name="sch_corp_no" style="width: 75px">
                           <option value="">여신사</option>
                         </select>
-                        <select class="form-select form-control-sm me-1" id="sch_agency_no" name="sch_agency_no" style="width: 75px">
+                        <select class="form-select form-control-sm me-1" id="sch_agency_cd" name="sch_agency_cd" style="width: 75px">
                           <option value="">대리점</option>
                         </select>                      
                         <!-- <select class="form-select form-control-sm me-1" id="schgb_chain" name="schgb_chain" style="width: 75px">
@@ -1099,11 +1099,11 @@
                         <option value="WORK_DATE">작업일</option>                          
                         <option value="WD_STATUS">진행상태</option>                          
                       </select> 
-                      <div class="col-sm-4">
+                      <div class="col-sm-5">
                         <div id="div_work_date">
                           <input class="form-control form-control-sm" id="change_work_date" type="text" name="change_work_date" istyle="date" maxlength="10" placeholder="변경 작업일" />  
                         </div>                        
-                        <select class="form-select form-control-sm me-1" id="change_wd_status" name="change_wd_status" style="width: 120px; display: none;" >
+                        <select class="form-select form-control-sm me-1" id="change_wd_status" name="change_wd_status" style="width: 200px; display: none;" >
                           <option value="">선택</option>   
                         </select>
                       </div>

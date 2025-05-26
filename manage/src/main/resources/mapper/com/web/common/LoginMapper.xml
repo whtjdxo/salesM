@@ -10,16 +10,15 @@
            AND use_yn = 'Y' 
     </select>
 
-    <select id="getUserRetrieve" parameterType="hashMap" resultType="com.web.manage.common.domain.SessionVO">
+  <select id="getUserRetrieve" parameterType="hashMap" resultType="com.web.manage.common.domain.SessionVO">
         SELECT  TU.user_id      AS  userId
-                , TU.user_nm    AS  userNm
-                , VC.CORP_GB    AS  corpGb 
-                , TU.CORP_CD    AS  corpCd
-                , VC.CORP_NM    AS  corpNm
-                , TU.CORP_TYPE  AS  corpType
                 , TU.user_nm    AS  userNm
                 , TU.user_pwd   AS  userPwd
                 , TU.user_gb    AS  userGb
+                , VC.CORP_GB    AS  userCorpGb 
+                , TU.CORP_CD    AS  userCorpCd
+                , VC.CORP_NM    AS  userCorpNm
+                , TU.CORP_TYPE  AS  userCorpType                
                 , TU.auth_grp_cd  AS authGrpCd
                 , GET_CODE_NM('AUTH_GRP_CD', TU.auth_grp_cd ) AS authGrpNm
           FROM 	TB_USER TU    

@@ -52,7 +52,7 @@
             },
           },
             columns: [
-                { data: 'agency_no' }
+                { data: 'agency_cd' }
                 , { data: 'agency_nm' }
                 , { data: 'biz_no' }
                 , { data: 'corp_tel_no' }
@@ -107,7 +107,7 @@
           var data = tbl_agency.row(this).data();
           if (data) {
             $('#frm_agency_info')[0].reset();
-            $('#agency_no').val(data.agency_no);            
+            $('#agency_cd').val(data.agency_cd);            
             $('#agency_nm').val(data.agency_nm);
             $('#biz_no').val(data.biz_no);
             $('#upjong').val(data.upjong);            
@@ -213,10 +213,10 @@
 
         $('#btn_cont_update').click(function () {
           $('#crud').val('update');
-          var agency_no = $('#agency_no').val();
+          var agency_cd = $('#agency_cd').val();
           var form = $('#frm_agency_info');
           var checked = true;
-          if(agency_no == '') {
+          if(agency_cd == '') {
             swal('실패', "대리점을 먼저 선택해주세요.", 'error');
             checked = false;
             return;
@@ -262,7 +262,7 @@
                   <div class="input-group input-group-sm px-3">
                     <select class="form-select form-control-sm" id="schgb_agency" name="schgb_agency" style="width: 75px">
                       <option value="">선택</option>
-                      <option value="schgb_agency_no">대리점 번호</option>
+                      <option value="schgb_agency_cd">대리점 번호</option>
                       <option value="schgb_agency_nm">대리점 명</option>
                     </select>
                     <input type="text" class="form-control form-control-sm" id="schgb_agency_val" name="schgb_agency_val" style="width: 43%" />
@@ -319,9 +319,9 @@
                 <div class="tab-content border border-top-2 p-3" id="myTabContent">
                   <div class="tab-pane fade show active" id="tab_agency_info" role="tabpanel" aria-labelledby="tab_agency_info">
                     <div class="input-group input-group-sm mb-2">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="agency_no">대리점 명</label>                  
+                      <label class="col-sm-2 col-form-label col-form-label-sm" for="agency_cd">대리점 명</label>                  
                       <div class="col-sm-4">
-                        <input class="form-control form-control-sm bg-light" id="agency_no" type="text" name="agency_no" readonly="readonly"/>
+                        <input class="form-control form-control-sm bg-light" id="agency_cd" type="text" name="agency_cd" readonly="readonly"/>
                       </div>
                       <div class="col-sm-6">
                         <input class="form-control form-control-sm" id="agency_nm" type="text" name="agency_nm" required />

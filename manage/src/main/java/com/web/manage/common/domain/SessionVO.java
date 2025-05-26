@@ -20,12 +20,11 @@ public class SessionVO implements Serializable{
 	private List<String> userGroup;
 	private String userGrpCd;
 	private String authGrpCd;
-	private String corpGb;
-	private String corpCd;
-	private String corpNm;
-	private String corpType;
-	private String homeUrl;
-	
+	private String userCorpGb;
+	private String userCorpCd;
+	private String userCorpNm;
+	private String userCorpType;
+	private String userHomeUrl;	
 
 	private List<HashMap<String, Object>>  menu;
 	private List<HashMap<String, Object>>  menu2nd;

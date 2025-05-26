@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
+import com.web.manage.common.domain.SessionVO;
 import com.web.manage.common.service.CommonService;
 
 import jakarta.servlet.http.HttpSession;
@@ -47,8 +48,12 @@ public class CommonController {
 	}
 
 	@RequestMapping(value="getCreditCorpList")
-	public @ResponseBody ReturnDataVO getCreditCorpList(@RequestParam HashMap<String, String> hashmapParam){
+	public @ResponseBody ReturnDataVO getCreditCorpList(@RequestParam HashMap<String, String> hashmapParam, HttpSession session){
 		List<HashMap<String, Object>> list = new ArrayList<HashMap<String,Object>>();
+		SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("userCorpGb", member.getUserCorpGb());
+        hashmapParam.put("userCorpCd", member.getUserCorpCd());
+		System.out.println("hashmapParam : " + hashmapParam);
 		ReturnDataVO result = new ReturnDataVO();
 		try {
 			list = commonService.getCreditCorpList(hashmapParam);

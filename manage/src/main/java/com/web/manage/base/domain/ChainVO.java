@@ -12,7 +12,7 @@ public class ChainVO {
     private String chain_nm;
     private String corp_cd;
     private String corp_nm;
-    private String agency_no;
+    private String agency_cd;
     private String agency_nm;
     private String biz_no;
     private String law_no;

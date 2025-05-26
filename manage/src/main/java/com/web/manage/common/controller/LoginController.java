@@ -38,6 +38,9 @@ public class LoginController {
 		HttpSession session = request.getSession(true);
 		SessionVO loginUserVo = new SessionVO();
 		loginUserVo = loginService.getUserRetrieve(loginMap);
+		// System.out.println("loginUserVo ==================================================================================	 ");
+		// System.out.println("loginUserVo : " + loginUserVo);
+		// System.out.println("loginUserVo ==================================================================================	 ");
 		String authGrp = "";
 		if(loginUserVo != null ){
 
@@ -52,12 +55,12 @@ public class LoginController {
 			menu2ndList = loginService.getMenuRetrieve2nd(loginUserVo);
 			loginUserVo.setMenu2nd(menu2ndList);
 			menu3rdList = loginService.getMenuRetrieve3rd(loginUserVo);
-			loginUserVo.setMenu3rd(menu3rdList);
-			
+			loginUserVo.setMenu3rd(menu3rdList);			
 
 			session.setAttribute("userId", loginUserVo.getUserId());
 			session.setAttribute("S_USER", loginUserVo);
-			session.setAttribute("S_LOGIN_YN"	, "Y");
+			session.setAttribute("S_LOGIN_YN"	, "Y");			
+
 			session.setAttribute("theme", "default");
 			result.setResultCode("00");
 			result.setResultMsg("로그인 성공");

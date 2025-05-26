@@ -17,7 +17,7 @@
         $('#frm_sch').onLoadFunction();      
         callAjax('/common/getAgencyList', "", fn_agency_list_setting);
         function fn_agency_list_setting(data) {
-          codeSetting('AGENCY_NO', data.data, '#sch_agency_no', '1', '', ''); 
+          codeSetting('AGENCY_CD', data.data, '#sch_agency_cd', '1', '', ''); 
         }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('CARD_ACQ')", fn_cardAcq_setting);      
@@ -497,7 +497,7 @@
                   </div>
                   <div class="col-sm-8">
                     <div class="input-group input-group-sm mb-1">
-                      <select class="form-select form-control-sm me-1" id="sch_agency_no" name="sch_agency_no" style="width: 75px">
+                      <select class="form-select form-control-sm me-1" id="sch_agency_cd" name="sch_agency_cd" style="width: 75px">
                         <option value="">대리점</option>
                       </select>
                       <select class="form-select form-control-sm me-1" id="sch_card_acq" name="sch_card_acq" style="width: 75px">

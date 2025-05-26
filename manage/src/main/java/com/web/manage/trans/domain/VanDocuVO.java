@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class VanDocuVO {
-    private String agency_no;
+    private String agency_cd;
     private String agency_nm;
     private String biz_no;
     private String law_no;

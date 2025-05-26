@@ -75,8 +75,8 @@
                                         AND TC.SVC_STAT = 'O'
                                         AND TC.USE_YN   = 'Y'
                                         AND TC.REMIT_STAT = 'Y'
-                                        <if test="sch_agency_no != ''"> 
-                                                AND  TC.AGENCY_NO = #{sch_agency_no} 
+                                        <if test="sch_agency_cd != ''"> 
+                                                AND  TC.AGENCY_CD = #{sch_agency_cd} 
                                         </if>
                                         <if test="sch_corp_no != null and sch_corp_no != ''"> 
                                                 AND  TC.CORP_CD = #{sch_corp_no} 
@@ -167,8 +167,8 @@
                                         AND TC.SVC_STAT = 'O'
                                         AND TC.USE_YN   = 'Y'
                                         AND TC.REMIT_STAT = 'Y'
-                                        <if test="sch_agency_no != ''"> 
-                                                AND  TC.AGENCY_NO = #{sch_agency_no} 
+                                        <if test="sch_agency_cd != ''"> 
+                                                AND  TC.AGENCY_CD = #{sch_agency_cd} 
                                         </if>
                                         <if test="sch_corp_no != null and sch_corp_no != ''"> 
                                                 AND  TC.CORP_CD = #{sch_corp_no} 
@@ -414,8 +414,8 @@
                                         AND TC.SVC_STAT = 'O'
                                         AND TC.USE_YN   = 'Y'
                                         AND TC.REMIT_STAT = 'Y'
-                                        <if test="sch_agency_no != ''"> 
-                                                AND  TC.AGENCY_NO = #{sch_agency_no} 
+                                        <if test="sch_agency_cd != ''"> 
+                                                AND  TC.AGENCY_CD = #{sch_agency_cd} 
                                         </if>
                                         <if test="sch_corp_no != null and sch_corp_no != ''"> 
                                                 AND  TC.CORP_CD = #{sch_corp_no} 
@@ -464,8 +464,8 @@
                                 AND TC.SVC_STAT = 'O'
                                 AND TC.USE_YN   = 'Y'
                                 AND TC.REMIT_STAT = 'Y'
-                                <if test="sch_agency_no != ''"> 
-                                        AND  TC.AGENCY_NO = #{sch_agency_no} 
+                                <if test="sch_agency_cd != ''"> 
+                                        AND  TC.AGENCY_CD = #{sch_agency_cd} 
                                 </if>
                                 <if test="sch_corp_no != null and sch_corp_no != ''"> 
                                         AND  TC.CORP_CD = #{sch_corp_no} 

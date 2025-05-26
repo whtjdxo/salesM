@@ -33,6 +33,9 @@ public class LoanService {
     public int getQueryTotalCnt() {
         return loanMapper.getQueryTotalCnt();
     }
+    public List<HashMap<String, Object>> getCorpList(HashMap<String, Object> hashmapParam) {
+        return loanMapper.getCorpList(hashmapParam);
+    }
     public List<HashMap<String, Object>> getLoanSummary(HashMap<String, Object> hashmapParam) {
         return loanMapper.getLoanSummary(hashmapParam);
     }
@@ -52,12 +55,14 @@ public class LoanService {
     }
 
     public List<LoanRepayScheduleVO> getLoanRepaymentVOs(
+                                                    String loanType,
 													BigDecimal loanPrincAmt, 
 													BigDecimal intRate, 
 													int loanDays,
 													LocalDate loanSDate) {
         
         List<LoanRepayScheduleVO> schedule = new ArrayList<>();
+        LocalDate scDate = loanSDate;       // 대출 시작일
 
         // 일일 이자율 계산
         BigDecimal dailyInterestRate = intRate
@@ -65,75 +70,111 @@ public class LoanService {
                 .divide(BigDecimal.valueOf(365), 10, RoundingMode.HALF_UP);
 
         // 총 상환 회차 수 (1일 1회차 기준)
-        int totalPayments = loanDays;
-
-        // 일별 상환액 계산 (원리금 균등 상환)
-        BigDecimal dailyPayment = calcDailyRepayment(loanPrincAmt, dailyInterestRate, totalPayments);
-
-        BigDecimal balanceAmt = loanPrincAmt;
-        LocalDate scDate = loanSDate;
-
-        for (int scSeq = 1; scSeq <= totalPayments; scSeq++) {
-            // 이자 계산
-            BigDecimal dailyRepayIntAmt = balanceAmt.multiply(dailyInterestRate)
-                    .setScale(0, RoundingMode.DOWN);
-
-            // 원금 상환액 계산
-            BigDecimal dailyRepayPrincAmt = dailyPayment.subtract(dailyRepayIntAmt)
-                    .setScale(0, RoundingMode.HALF_UP);
-
-            // 잔액 조정
-            balanceAmt = balanceAmt.subtract(dailyRepayPrincAmt)
-                    .setScale(0, RoundingMode.HALF_UP);
-
-            // 마지막 회차 조정 (잔액이 0이 되도록)
-            if (scSeq == totalPayments) {
-                dailyRepayPrincAmt = dailyRepayPrincAmt.add(balanceAmt);
-                balanceAmt = BigDecimal.ZERO;
-                // 마지막 회차에서 일별 상환액 재계산 (원금+이자)
-                dailyPayment = dailyRepayPrincAmt.add(dailyRepayIntAmt);
-                // System.out.println("dailyRepayPrincAmt : " + dailyRepayPrincAmt + " /  dailyRepayIntAmt : " + dailyRepayIntAmt 
-                //         +  " / dailyPayment : " + dailyPayment
-                // );
-            }
-
+        System.out.println("loanType : " + loanType);
+        System.out.println("loanPrincAmt : " + loanPrincAmt);
+        System.out.println("intRate : " + intRate);
+        System.out.println("loanDays : " + loanDays);
+        System.out.println("loanSDate : " + loanSDate);
+        
+        if ("L02001".equals(loanType)) {            // 스팟 자금 상환일에 스케줄 1개 생성
             // 상환 내역 추가 
             LoanRepayScheduleVO repayVo = new LoanRepayScheduleVO();
-            repayVo.setSc_seq(String.valueOf(scSeq));
+             // 일별 상환액 계산 (원리금 균등 상환)
+            // 이자 계산
+            BigDecimal repayIntAmt = loanPrincAmt
+                    .multiply(dailyInterestRate)
+                    .multiply(BigDecimal.valueOf(loanDays))
+                    .setScale(0, RoundingMode.DOWN);
+            BigDecimal reppayTotAmt = loanPrincAmt.add(repayIntAmt);
+            scDate = scDate.plusDays(loanDays);
+
+            repayVo.setSc_seq(String.valueOf(1));
             repayVo.setSc_date(scDate.format(DateTimeFormatter.ISO_LOCAL_DATE));
-            repayVo.setRepay_tot_amt(dailyPayment.toPlainString());
-            repayVo.setRepay_princ_amt(dailyRepayPrincAmt.toPlainString());
-            repayVo.setRepay_int_amt(dailyRepayIntAmt.toPlainString());
-            repayVo.setBalance_amt(balanceAmt.toPlainString()); 
+            repayVo.setRepay_tot_amt(reppayTotAmt.toPlainString());
+            repayVo.setRepay_princ_amt(loanPrincAmt.toPlainString());
+            repayVo.setRepay_int_amt(repayIntAmt.toPlainString());
+            repayVo.setBalance_amt(loanPrincAmt.toPlainString()); 
             
             repayVo.setRecv_tot_amt("0");
             repayVo.setRecv_princ_amt("0");
             repayVo.setRecv_int_amt("0");
 
-            repayVo.setRemain_tot_amt(dailyPayment.toPlainString());
-            repayVo.setRemain_princ_amt(dailyRepayPrincAmt.toPlainString());
-            repayVo.setRemain_int_amt(dailyRepayIntAmt.toPlainString());
-             
-            schedule.add(repayVo);
+            repayVo.setRemain_tot_amt(reppayTotAmt.toPlainString());
+            repayVo.setRemain_princ_amt(loanPrincAmt.toPlainString());
+            repayVo.setRemain_int_amt(repayIntAmt.toPlainString());
+            
+            schedule.add(repayVo);                
+        } else {
+            int loopDays = loanDays;
 
-            // 다음 날짜로 이동
-            scDate = scDate.plusDays(1);
+            // 일별 상환액 계산 (원리금 균등 상환)
+            BigDecimal dailyPayment = calcDailyRepayment(loanPrincAmt, dailyInterestRate, loopDays);
+
+            BigDecimal balanceAmt = loanPrincAmt;
+            
+
+            for (int scSeq = 1; scSeq <= loopDays; scSeq++) {
+                // 이자 계산
+                BigDecimal dailyRepayIntAmt = balanceAmt.multiply(dailyInterestRate)
+                        .setScale(0, RoundingMode.DOWN);
+
+                // 원금 상환액 계산
+                BigDecimal dailyRepayPrincAmt = dailyPayment.subtract(dailyRepayIntAmt)
+                        .setScale(0, RoundingMode.HALF_UP);
+
+                // 잔액 조정
+                balanceAmt = balanceAmt.subtract(dailyRepayPrincAmt)
+                        .setScale(0, RoundingMode.HALF_UP);
+
+                // 마지막 회차 조정 (잔액이 0이 되도록)
+                if (scSeq == loopDays) {
+                    dailyRepayPrincAmt = dailyRepayPrincAmt.add(balanceAmt);
+                    balanceAmt = BigDecimal.ZERO;
+                    // 마지막 회차에서 일별 상환액 재계산 (원금+이자)
+                    dailyPayment = dailyRepayPrincAmt.add(dailyRepayIntAmt);
+                    // System.out.println("dailyRepayPrincAmt : " + dailyRepayPrincAmt + " /  dailyRepayIntAmt : " + dailyRepayIntAmt 
+                    //         +  " / dailyPayment : " + dailyPayment
+                    // );
+                }
+
+                scDate = scDate.plusDays(1);            // 상환일은 익일로
+
+                // 상환 내역 추가 
+                LoanRepayScheduleVO repayVo = new LoanRepayScheduleVO();
+                repayVo.setSc_seq(String.valueOf(scSeq));                 
+                repayVo.setSc_date(scDate.format(DateTimeFormatter.ISO_LOCAL_DATE));
+                repayVo.setRepay_tot_amt(dailyPayment.toPlainString());
+                repayVo.setRepay_princ_amt(dailyRepayPrincAmt.toPlainString());
+                repayVo.setRepay_int_amt(dailyRepayIntAmt.toPlainString());
+                repayVo.setBalance_amt(balanceAmt.toPlainString()); 
+                
+                repayVo.setRecv_tot_amt("0");
+                repayVo.setRecv_princ_amt("0");
+                repayVo.setRecv_int_amt("0");
+
+                repayVo.setRemain_tot_amt(dailyPayment.toPlainString());
+                repayVo.setRemain_princ_amt(dailyRepayPrincAmt.toPlainString());
+                repayVo.setRemain_int_amt(dailyRepayIntAmt.toPlainString());
+                
+                schedule.add(repayVo); 
+                
+            }
+            // printRepaySchdule(schedule, loanPrincAmt, intRate);                        
         }
-        // printRepaySchdule(schedule, loanPrincAmt, intRate);            
         return schedule;
     }
 
     private static BigDecimal calcDailyRepayment(
 													BigDecimal repayPrincAmt, 
 													BigDecimal dailyInterestRate, 
-													int totalPayments) {
+													int loopDays) {
         
         // 일별 상환액 = P * [r(1+r)^n] / [(1+r)^n - 1]
         BigDecimal numerator = dailyInterestRate
-                .multiply(BigDecimal.ONE.add(dailyInterestRate).pow(totalPayments));
+                .multiply(BigDecimal.ONE.add(dailyInterestRate).pow(loopDays));
         
         BigDecimal denominator = BigDecimal.ONE.add(dailyInterestRate)
-                .pow(totalPayments)
+                .pow(loopDays)
                 .subtract(BigDecimal.ONE);
         
         return repayPrincAmt.multiply(numerator.divide(denominator, 10, RoundingMode.HALF_UP))
@@ -187,12 +228,13 @@ public class LoanService {
     @Transactional
     public boolean insertLoanMst(LoanMstVO loanMstVo ) {
         if (loanMapper.insertLoanMst(loanMstVo)){
+            String loanType = loanMstVo.getLoan_type();
             BigDecimal loanPrincAmt = new BigDecimal(loanMstVo.getPrinc_amt());
             BigDecimal intRate      = new BigDecimal(loanMstVo.getInt_rate());
             int loanDays            = Integer.parseInt(loanMstVo.getLoan_day());
             LocalDate loanSDate     = LocalDate.parse(loanMstVo.getLoan_sdt(), DateTimeFormatter.ISO_LOCAL_DATE);
 
-            List<LoanRepayScheduleVO> scheduleList = getLoanRepaymentVOs(loanPrincAmt, intRate, loanDays, loanSDate);
+            List<LoanRepayScheduleVO> scheduleList = getLoanRepaymentVOs(loanType, loanPrincAmt, intRate, loanDays, loanSDate);
             for (LoanRepayScheduleVO schedule : scheduleList) {
                 schedule.setLoan_no(loanMstVo.getLoan_no());
                 if (!loanMapper.insertLoanRepaySchedule(schedule)) {
@@ -221,17 +263,41 @@ public class LoanService {
         hashmapResult = loanMapper.changeLoanChk(loanMstVo);
         if("N".equals(hashmapResult.get("change_chk"))){
             return false;
-        } else{
-            if(loanMapper.deleteLoanRepaySchedule(loanMstVo)){          // 상환 스케줄 먼저 삭제                
-                return loanMapper.deleteLoanMst(loanMstVo);             // LoanMaster 미사용으로 변환        
-            } else{
-                return false;
-            }
+        } else { 
+            try {
+                loanMapper.deleteLoanRepaySchedule(loanMstVo);
+                loanMapper.deleteLoanMst(loanMstVo);             // LoanMaster 미사용으로 변환       
+                return true; 
+            } catch (Exception e) {
+                // e.printStackTrace();
+                logger.error(" Delete Loan Info [loan_no : " + loanMstVo.getLoan_no() + " ] Fail " + e.getStackTrace());
+                throw new RuntimeException("Loan delete failed", e); // <-- 트랜잭션 롤백 보장
+                // return false;
+            }       
+            //     try {
+            //         int result = loanMapper.deleteLoanRepaySchedule(loanMstVo);
+            //         if (result == 0) {
+            //             // 삭제 대상이 없음. 필요시 로그만.
+            //             System.out.println("Loan Schedule 삭제 할 이터가 없음: loan_no=" + loanMstVo.getLoan_no());
+            //             try {
+            //                 int mRslt = loanMapper.deleteLoanMst(loanMstVo);             // LoanMaster 미사용으로 변환   
+            //                 if(mRslt == 0)  {           
+            //                     return false;
+            //                 }
+            //             } catch (Exception e) {
+            //                 e.printStackTrace();
+            //                 return false;        
+            //             }                                        
+            //         } 
+            //         return true;
+            //     } catch (Exception e) {
+            //         e.printStackTrace();
+            //         return false;
+            //     }       
         }        
     } 
     
     public boolean callProcLoanPrepay(ProcPrepayVO procVo ) {                  
             return loanMapper.callProcLoanPrepay(procVo);            
-    }
- 
+    } 
 }

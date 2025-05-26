@@ -12,6 +12,7 @@ import com.web.manage.loan.domain.ProcPrepayVO;
 @Mapper
 public interface LoanMapper {
     int getQueryTotalCnt(); 
+    List<HashMap<String, Object>> getCorpList(HashMap<String, Object> hashmapParam);    
     List<HashMap<String, Object>> getLoanSummary(HashMap<String, Object> hashmapParam);    
     HashMap<String, Object> getLoanSummTotal(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getChainLoanList(HashMap<String, Object> hashmapParam);

@@ -104,13 +104,13 @@ public class AgencyController {
         UserVO userVO= new UserVO();
         try {
             
-            String agency_no = agencyService.getNewAgencyNo();
-			agencyVO.setAgency_no(agency_no);            
+            String agency_cd = agencyService.getNewAgencyNo();
+			agencyVO.setAgency_cd(agency_cd);            
 
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
     	    agencyVO.setEnt_user_id(member.getUserId());
             
-            userVO.setCorp_cd(agency_no);
+            userVO.setCorp_cd(agency_cd);
             userVO.setCorp_type("AG");
             userVO.setUser_id(agencyVO.getCeo_id());
             userVO.setUser_nm(agencyVO.getCeo_nm());

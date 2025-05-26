@@ -141,8 +141,9 @@
 
         $('#btn_search').click(function () {
           tbl_loan_summary.ajax.reload();
-          $('#tbl_chain_loan_list').DataTable().clear().draw();
-          $('#frm_loan_mst')[0].reset();          
+          $('#frm_chain_list')[0].reset();     
+          $('#frm_loan_mst')[0].reset(); 
+          $('#tbl_chain_loan_list').DataTable().clear().draw();     
         });
 
         $('#sch_all').change(function () {          
@@ -276,6 +277,7 @@
 
             $('#cont_dt').val(data.cont_dt);
             $('#loan_status').val(data.loan_status); 
+            $('#loan_status_nm').val(data.loan_status_nm); 
             $('#princ_amt').val(Number(data.princ_amt).toLocaleString());
             $('#int_amt').val(Number(data.int_amt).toLocaleString());
             $('#tot_loan_amt').val(Number(data.tot_loan_amt).toLocaleString());
@@ -284,13 +286,23 @@
             $('#loan_day').val(data.loan_day);             
             $('#loan_edt').val(data.loan_edt);
 
-            $('#delay_rate').val(data.loan_memo);
-            $('#delay_yn').val(data.loan_memo);
-            $('#delay_cnt').val(data.loan_memo);
+            $('#delay_rate').val(data.delay_rate);
+            $('#delay_yn').val(data.delay_yn);
+            $('#delay_cnt').val(data.delay_cnt);
 
             $('#loan_memo').val(data.loan_memo);
             $('#upt_dttm').val(data.upt_dttm);
             $('#upt_user_id').val(data.upt_user_id);
+
+            
+            $('#cont_dt').prop('readonly', true).addClass('bg-light');
+            $('#princ_amt').prop('readonly', true).addClass('bg-light');
+            $('#int_rate').prop('readonly', true).addClass('bg-light');
+            $('#loan_sdt').prop('readonly', true).addClass('bg-light');
+            $('#loan_edt').prop('readonly', true).addClass('bg-light');
+            $('#loan_day').prop('readonly', true).addClass('bg-light');
+            $('#loan_type').prop('readonly', true).addClass('bg-light');
+            $('#delay_rate').prop('readonly', true).addClass('bg-light');
             
             // // 금액을 조금이라도 수납하면. 수정 불가 
             // if (data.issue_amt > '0') {
@@ -308,23 +320,35 @@
         });         
 
         function fn_frm_loan_mst_clear(){
+          
           var corp_cd   = $('#corp_cd').val();           
           var corp_nm   = $('#corp_nm').val();  
           var chain_no  = $('#chain_no').val();
           var int_rate  = $('#int_rate').val();
           var delay_rate = $('#delay_rate').val();
+
           $('#frm_loan_mst')[0].reset();
           if(chain_no == ''){
             swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
             return;
           }
+          tbl_chain_loan_list.$('tr.selected').removeClass('selected');
           $('#corp_cd').val(corp_cd); 
           $('#corp_nm').val(corp_nm); 
           $('#chain_no').val(chain_no); 
           $('#int_rate').val(int_rate); 
           $('#delay_rate').val(delay_rate);
           $('#cont_dt').val(today.toISOString().split('T')[0]);
-          $('#loan_sdt').val(today.toISOString().split('T')[0]);          
+          $('#loan_sdt').val(today.toISOString().split('T')[0]);      
+
+          $('#cont_dt').prop('readonly', false).removeClass('bg-light');
+          $('#princ_amt').prop('readonly', false).removeClass('bg-light');
+          $('#int_rate').prop('readonly', false).removeClass('bg-light');
+          $('#loan_sdt').prop('readonly', false).removeClass('bg-light');          
+          $('#loan_day').prop('readonly', false).removeClass('bg-light');
+          $('#loan_type').prop('readonly', false).removeClass('bg-light');
+          $('#delay_rate').prop('readonly', false).removeClass('bg-light');
+              
           $('#crud').val('create');
           $('#btn_delete').hide();
           $('#btn_prepay').hide();
@@ -335,6 +359,7 @@
          * 원리금 균등상환 방식으로 이자액, 총액 계산  -- 일수      
          */
         function setIntAmtEqualInstallment() {
+          var loanType = $('#loan_type').val();
           var principal = parseFloat($('#princ_amt').val().replace(/,/g, '')) || 0;
           var annualRate = parseFloat($('#int_rate').val()) || 0;
           var days = parseInt($('#loan_day').val()) || 0;
@@ -344,25 +369,30 @@
 
           if (principal > 0 && annualRate > 0 && days > 0) {
             var dailyRate = annualRate / 365 / 100; // 일 이자율
-            var pow = Math.pow(1 + dailyRate, days);
-            var dailyPayment = principal * dailyRate * pow / (pow - 1); // 원리금 균등 일 납입금
-            dailyPayment = Math.round(dailyPayment); // 일 납입금은 반올림 처리
+            if (loanType == 'L02001') {           //스팟을 제외한 모든대출 원리금 균등       
+              intAmt = Math.floor(principal * dailyRate * days); // 이자에서 소수점 버림
+              totAmt = principal + intAmt;              
+            } else {
+              var pow = Math.pow(1 + dailyRate, days);
+              var dailyPayment = principal * dailyRate * pow / (pow - 1); // 원리금 균등 일 납입금
+              dailyPayment = Math.round(dailyPayment); // 일 납입금은 반올림 처리
 
-            var remainPrincipal = principal;
-            intAmt = 0;
+              var remainPrincipal = principal;
+              intAmt = 0;
 
-            for (var i = 0; i < days; i++) {
-              var interest = Math.floor(remainPrincipal * dailyRate); // 이자에서 소수점 버림
-              var principalPayment = dailyPayment - interest;
-              remainPrincipal -= principalPayment;
-              intAmt += interest;
+              for (var i = 0; i < days; i++) {
+                var interest = Math.floor(remainPrincipal * dailyRate); // 이자에서 소수점 버림
+                var principalPayment = dailyPayment - interest;
+                remainPrincipal -= principalPayment;
+                intAmt += interest;
+              }
+              totAmt = principal + intAmt;
             }
-
-            totAmt = principal + intAmt;
           }
           $('#int_amt').val(intAmt.toLocaleString());
           $('#tot_loan_amt').val(totAmt.toLocaleString());
         } 
+
         $('#princ_amt').on('input', function () {
           setIntAmtEqualInstallment();
         });
@@ -395,6 +425,17 @@
           }  
         });
 
+        // loan_type 변경 시 대출종료일 제어
+        $('#loan_type').on('change', function () {
+          var val = $(this).val();          
+          var $loanEdt = $('#loan_edt');
+          if (val === 'L02001') {
+            $loanEdt.prop('readonly', false).removeClass('bg-light');    //.focus();
+          } else {
+            $loanEdt.prop('readonly', true).addClass('bg-light');
+          }
+        });
+
         $('#loan_sdt').on('change', function () {
           setLoanEdt();
         });
@@ -409,7 +450,7 @@
           if (!isNaN(loanDay) && loanDay > 0 && loanSdt) {
             var sdt = new Date(loanSdt.replace(/-/g, '/'));
             if (!isNaN(sdt.getTime())) {
-              sdt.setDate(sdt.getDate() + loanDay - 1);
+              sdt.setDate(sdt.getDate() + loanDay );
               var yyyy = sdt.getFullYear();
               var mm = ('0' + (sdt.getMonth() + 1)).slice(-2);
               var dd = ('0' + sdt.getDate()).slice(-2);
@@ -421,6 +462,41 @@
             $('#loan_edt').val('');
           }
         }
+
+        $('#loan_edt').on('change', function () {
+          var loanSdt = $('#loan_sdt').val();
+          var loanEdt = formatYmdToHyphen($('#loan_edt').val());
+            
+          if (loanSdt && loanEdt) {            
+            var sdt = new Date(loanSdt.replace(/-/g, '/'));
+            var edt = new Date(loanEdt.replace(/-/g, '/'));
+            if (edt < sdt) {
+              alert('종료일은 시작일보다 빠를 수 없습니다.');
+              $('#loan_day').val('');
+              return;
+            }
+            
+            if (!isNaN(sdt.getTime()) && !isNaN(edt.getTime())) {
+              var diff = Math.floor((edt - sdt) / (1000 * 60 * 60 * 24)) ; 
+              $('#loan_day').val(diff > 0 ? diff : 0);
+            } else {
+              $('#loan_day').val('');
+            }
+          } else {
+            $('#loan_day').val('');
+          }
+        });
+
+        function formatYmdToHyphen(ymd) {
+          if (!/^\d{8}$/.test(ymd)) return ''; // 유효성 검사
+
+          var year = ymd.substring(0, 4);
+          var month = ymd.substring(4, 6);
+          var day = ymd.substring(6, 8);
+
+          return `${year}-${month}-${day}`;
+        }
+
 
         $('#btn_delete').click(function () {
           var selectData = tbl_chain_loan_list.row('.selected').data();
@@ -526,6 +602,7 @@
                 // formData = $('#frm_modal_schedule').serializeObject();
                 var formData = {
                 loan_no : $('#loan_no').val()
+                , loan_type : $('#loan_type').val()
                 , princ_amt : $('#princ_amt').val()
                 , int_rate : $('#int_rate').val()
                 , loan_day : $('#loan_day').val()
@@ -542,9 +619,35 @@
               { data: 'repay_princ_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
               { data: 'repay_int_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
               { data: 'repay_tot_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
-              { data: 'remain_princ_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
-              { data: 'remain_int_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
-              { data: 'remain_tot_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+                           
+              { 
+                data: 'remain_princ_amt', 
+                render: function(data, type, row) {
+                  if (row.recv_yn === 'D') {
+                    return '<span style="color:red;font-weight:bold;">' + $.fn.dataTable.render.number(',', '.', 0, '').display(data) + '</span>';
+                  }
+                  return $.fn.dataTable.render.number(',', '.', 0, '').display(data);
+                }
+              },
+              { 
+                data: 'remain_int_amt', 
+                render: function(data, type, row) {
+                  if (row.recv_yn === 'D') {
+                    return '<span style="color:red;font-weight:bold;">' + $.fn.dataTable.render.number(',', '.', 0, '').display(data) + '</span>';
+                  }
+                  return $.fn.dataTable.render.number(',', '.', 0, '').display(data);
+                }
+              },
+              { 
+                data: 'remain_tot_amt', 
+                render: function(data, type, row) {
+                  if (row.recv_yn === 'D') {
+                    return '<span style="color:red;font-weight:bold;">' + $.fn.dataTable.render.number(',', '.', 0, '').display(data) + '</span>';
+                  }
+                  return $.fn.dataTable.render.number(',', '.', 0, '').display(data);
+                }
+              },
+              { data: 'recv_yn_nm' },
             ],            
             columnDefs: [
               { targets: 0, width: '80px', className: 'text-center' },
@@ -556,6 +659,7 @@
               { targets: 6, width: '120px', className: 'text-end' },
               { targets: 7, width: '120px', className: 'text-end' },
               { targets: 8, width: '120px', className: 'text-end' },
+              { targets: 9, width: '120px', className: 'text-center' },
             ],
             order: [[1, 'desc']],
             paging: false,
@@ -595,6 +699,16 @@
           // 첫 번째 포커스 가능 요소로 이동
           $(this).find('button:not([disabled]), input:not([disabled])').first().focus();           
           // document.querySelector('body > :not(#modal_schedule)').inert = true;
+        });
+
+        // tbl_modal_schedule row click event
+        $('#tbl_modal_schedule').on('click', 'tr', function () {
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+          } else {
+            $('#tbl_modal_schedule').DataTable().$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }           
         });
 
         // 모달이 닫힐 때 포커스 복원
@@ -778,22 +892,22 @@
                     </div>                    
                     <div class="col-sm-4">
                       <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_type">대출구분</label> 
-                        <select class="form-select form-control-sm" id="loan_type" name="loan_type" style="width: 120px" required>
-                          <option value="">선택</option> 
-                        </select>   
-                      </div>
-                    </div>                    
-                  </div>
-                  <div class="row mb-1">
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="cont_dt">계약일</label> 
                         <div class="col-sm-8">
                           <input class="form-control form-control-sm " id="cont_dt" type="text" name="cont_dt" istyle="date" maxlength="10" required />
                         </div>    
                       </div>
-                    </div>
+                    </div>              
+                  </div>
+                  <div class="row mb-1">                    
+                    <div class="col-sm-4">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_type">대출구분</label> 
+                        <select class="form-select form-control-sm" id="loan_type" name="loan_type" style="width: 120px" required>
+                          <option value="">선택</option> 
+                        </select>   
+                      </div>
+                    </div>      
                     <div class="col-sm-4">
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="princ_amt">대출원금</label> 
@@ -832,7 +946,7 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_edt">대출종료일</label> 
                         <div class="col-sm-8">
-                          <input class="form-control form-control-sm bg-light" id="loan_edt" type="text" name="loan_edt"  maxlength="10" readonly />
+                          <input class="form-control form-control-sm bg-light" id="loan_edt" type="text" name="loan_edt"  istyle="date" maxlength="10" required  />
                         </div> 
                       </div>
                     </div>
@@ -857,9 +971,8 @@
                     <div class="col-sm-4">
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_status">진행상태</label> 
-                        <select class="form-select form-control-sm" id="loan_status" name="loan_status" style="width: 120px" required>
-                          <option value="">선택</option> 
-                        </select>   
+                        <input class="form-control form-control-sm" id="loan_status" type="hidden" name="loan_status" value = '01' readonly="readonly"/>
+                        <input class="form-control form-control-sm bg-light" id="loan_status_nm" type="text" name="loan_status_nm" value="거래중" readonly="readonly"/>
                       </div>
                     </div>
                   </div>
@@ -952,6 +1065,7 @@
                   <th class="text-center" style="width: 120px;">미수원금</th>
                   <th class="text-center" style="width: 120px;">미수이자</th>
                   <th class="text-center" style="width: 120px;">미수금액</th> 
+                  <th class="text-center" style="width: 120px;">비고</th> 
                 </tr>
               </thead>
               <tbody class="list"></tbody> 
@@ -963,6 +1077,7 @@
                   <th class="text-right px-2"></th>
                   <th class="text-right px-2"></th> 
                   <th class="text-right px-2"></th>                       
+                  <th class="text-right px-2"></th> 
                   <th class="text-right px-2"></th> 
                 </tr>
               </tfoot>

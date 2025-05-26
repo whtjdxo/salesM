@@ -214,20 +214,20 @@
             $('#reg_date').val(data.reg_date);
             $('#sub_memo').val(data.sub_memo);
 
-            $('#occur_crd_amt').val(data.occur_crd_amt);
-            $('#occur_svc_amt').val(data.occur_svc_amt);
-            $('#occur_base_amt').val(data.occur_base_amt);
-            $('#occur_amt').val(data.occur_amt);
+            $('#occur_crd_amt').val(Number(data.occur_crd_amt).toLocaleString());
+            $('#occur_svc_amt').val(Number(data.occur_svc_amt).toLocaleString());
+            $('#occur_base_amt').val(Number(data.occur_base_amt).toLocaleString());
+            $('#occur_amt').val(Number(data.occur_amt).toLocaleString());
             
-            $('#recv_crd_amt').val(data.recv_crd_amt);
-            $('#recv_svc_amt').val(data.recv_svc_amt);
-            $('#recv_base_amt').val(data.recv_base_amt);
-            $('#recv_amt').val(data.recv_amt);
+            $('#recv_crd_amt').val(Number(data.recv_crd_amt).toLocaleString());
+            $('#recv_svc_amt').val(Number(data.recv_svc_amt).toLocaleString());
+            $('#recv_base_amt').val(Number(data.recv_base_amt).toLocaleString());
+            $('#recv_amt').val(Number(data.recv_amt).toLocaleString());
             
-            $('#remain_crd_amt').val(data.remain_crd_amt);
-            $('#remain_svc_amt').val(data.remain_svc_amt);
-            $('#remain_base_amt').val(data.remain_base_amt);
-            $('#remain_amt').val(data.remain_amt); 
+            $('#remain_crd_amt').val(Number(data.remain_crd_amt).toLocaleString());
+            $('#remain_svc_amt').val(Number(data.remain_svc_amt).toLocaleString());
+            $('#remain_base_amt').val(Number(data.remain_base_amt).toLocaleString());
+            $('#remain_amt').val(Number(data.remain_amt).toLocaleString());
 
             if (data.sub_status == '500000'){
               $('#btn_receipt_process').hide();

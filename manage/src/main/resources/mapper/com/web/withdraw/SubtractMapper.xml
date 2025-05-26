@@ -154,7 +154,7 @@
                         , SM.SHIFT_FLAG                 AS shift_flag
                         , SM.SHIFT_SUB_NO               AS shift_sub_no                         
                         , SM.LOAN_NO                    AS loan_no
-                        , SM.LOAN_SCHD_SEQ              AS loan_schd_seq
+                        , SM.LOAN_SC_SEQ                AS loan_sc_seq
                         , SM.ADJUST_NO                  AS adjust_no
                         , SM.REMIT_NO                   AS remit_no
                         , SM.USE_YN                     AS use_yn
@@ -317,8 +317,8 @@
                         <if test="sch_chain_nm != ''"> 
                                 AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
                         </if>
-                        <if test="sch_agency_no != ''"> 
-                                AND  TC.AGENCY_NO = #{sch_agency_no} 
+                        <if test="sch_agency_cd != ''"> 
+                                AND  TC.AGENCY_CD = #{sch_agency_cd} 
                         </if>
                  WHERE	SM.USE_YN		= 'Y'
                 <if test="sch_reg_sdt != ''">
@@ -372,8 +372,8 @@
                         <if test="sch_chain_nm != ''"> 
                                 AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
                         </if>
-                        <if test="sch_agency_no != ''"> 
-                                AND  TC.AGENCY_NO = #{sch_agency_no} 
+                        <if test="sch_agency_cd != ''"> 
+                                AND  TC.AGENCY_CD = #{sch_agency_cd} 
                         </if>
                  WHERE	SM.USE_YN		= 'Y'
                 <if test="sch_reg_sdt != ''">

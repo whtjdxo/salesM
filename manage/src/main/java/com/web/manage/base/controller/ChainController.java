@@ -58,6 +58,8 @@ public class ChainController {
         Gson gson = new Gson();
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
+        hashmapParam.put("userCorpCd", member.getUserCorpCd());
+        hashmapParam.put("userCorpGb", member.getUserCorpGb());
         String jString = null;
         try {
             PageingVO pageing = new PageingVO();

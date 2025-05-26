@@ -14,7 +14,7 @@
 
 	<select id="getAgencyList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
                 SELECT  SQL_CALC_FOUND_ROWS
-                        TA.agency_no
+                        TA.agency_cd
 		        , TA.agency_nm
                         , TA.biz_no
                         , TA.law_no
@@ -42,7 +42,7 @@
                         , TA.bank_cd
                         , TA.account_no, TA.depositor, TA.yubo_limit, TA.yubo_rate, TA.tot_yubo_amt
                         , TA.use_yn
-                        , IFNULL((SELECT COUNT(1) FROM TB_CHAIN WHERE AGENCY_NO = TA.AGENCY_NO AND USE_YN = 'Y' AND SVC_STAT IN ('R', 'O')), 0) AS chain_cnt
+                        , IFNULL((SELECT COUNT(1) FROM TB_CHAIN WHERE AGENCY_CD = TA.AGENCY_CD AND USE_YN = 'Y' AND SVC_STAT IN ('R', 'O')), 0) AS chain_cnt
                         , IFNULL(TA.upt_user_id, TA.ent_user_id)                                      as upt_user_id
                         , DATE_FORMAT(IFNULL(TA.upt_dttm, TA.ent_dttm), '%Y-%m-%d %H:%i:%s')          as upt_dttm
                   FROM  TB_AGENCY TA	
@@ -50,8 +50,8 @@
                 WHERE  1 = 1 
                 <if test="schgb_agency_val != ''">
 			<choose>
-				<when test="schgb_agency == 'schgb_agency_no'">
-					AND TA.AGENCY_NO = #{schgb_agency_val}
+				<when test="schgb_agency == 'schgb_agency_cd'">
+					AND TA.AGENCY_CD = #{schgb_agency_val}
 				</when>
 				<when test="schgb_agency == 'schgb_agency_nm'">
 					AND TA.AGENCY_NM LIKE CONCAT('%', #{schgb_agency_val}, '%')
@@ -66,7 +66,7 @@
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>
-                                ORDER BY agency_no DESC
+                                ORDER BY agency_cd DESC
                         </otherwise>
                 </choose>
                 LIMIT ${start}, ${end}
@@ -74,18 +74,18 @@
 
 	<select id="getNewAgencyNo" resultType="java.lang.String">
 	/* AgencyMapper.getNewAgencyNo */
-		SELECT GET_JOB_SEQ('TB_AGENCY', 'AGENCY_NO')
+		SELECT GET_JOB_SEQ('TB_AGENCY', 'AGENCY_CD')
 	</select>
 
 	<insert id="InsertAgency" parameterType="com.web.manage.base.domain.AgencyVO">
                 INSERT INTO tb_agency (
-                        agency_no             , agency_nm             , biz_no                , law_no            
+                        agency_cd             , agency_nm             , biz_no                , law_no            
                         , uptae                 , upjong                , email
                         , corp_zip_no           , corp_addr             , corp_addr_dtl         , corp_tel_no                       
                         , ceo_id                , remark                , use_yn                
                         , ent_user_id           , ent_dttm
                 ) VALUES (
-                        #{agency_no}            , #{agency_nm}          , #{biz_no}             , #{law_no}         
+                        #{agency_cd}            , #{agency_nm}          , #{biz_no}             , #{law_no}         
                         , #{uptae}              , #{upjong}             , #{email}
                         , #{corp_zip_no}        , #{corp_addr}          , #{corp_addr_dtl}      , #{corp_tel_no}
                         , #{ceo_id}             , #{remark}             , #{use_yn}  
@@ -123,7 +123,7 @@
                         use_yn          = #{use_yn},
                         upt_user_id     = #{upt_user_id},
                         upt_dttm        = NOW()
-                WHERE  agency_no = #{agency_no}
+                WHERE  agency_cd = #{agency_cd}
         </update> 
 
         <update id="UpdateAgencyCont" parameterType="com.web.manage.base.domain.AgencyVO">
@@ -145,6 +145,6 @@
                         tot_yubo_amt    = #{tot_yubo_amt},
                         upt_user_id     = #{upt_user_id},
                         upt_dttm        = NOW()
-                WHERE  agency_no = #{agency_no}
+                WHERE  agency_cd = #{agency_cd}
         </update> 
 </mapper>

@@ -26,7 +26,7 @@ public class SubMstVO {
     private String shift_flag;
     private String shift_sub_no;
     private String loan_no; 
-    private String loan_schd_seq;
+    private String loan_sc_seq;
     private String remit_no;
     private String adjust_no;
     private String use_yn;

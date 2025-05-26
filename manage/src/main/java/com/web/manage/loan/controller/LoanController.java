@@ -54,6 +54,7 @@ public class LoanController {
         return "pages/loan/loanMng";
     }
  
+ 
     @RequestMapping("loanMng/loanSummary")    
     public @ResponseBody String getLoanSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
@@ -144,6 +145,7 @@ public class LoanController {
 
 			String loan_no = (String) hashmapParam.get("loan_no"); 
 			if ("".equals(loan_no))	{
+                String loanType = (String) hashmapParam.get("loan_type");
                 BigDecimal loanPrincAmt = new BigDecimal(((String) hashmapParam.get("princ_amt")).replace(",", ""));
                 // BigDecimal 처리 방법 1: String인 경우
                 BigDecimal intRate;
@@ -180,7 +182,7 @@ public class LoanController {
                     loanSDate = LocalDate.now(); // 또는 throw new IllegalArgumentException("Invalid loan start date type");
                 }
 				List<LoanRepayScheduleVO> list  = new ArrayList<LoanRepayScheduleVO>();	
-            	list = loanService.getLoanRepaymentVOs(loanPrincAmt, intRate, loanDays, loanSDate);
+            	list = loanService.getLoanRepaymentVOs(loanType, loanPrincAmt, intRate, loanDays, loanSDate);
 				hashmapResult.put("data", list); 
 			} else {
 				List<HashMap<String, Object>> list  = new ArrayList<HashMap<String, Object>>();

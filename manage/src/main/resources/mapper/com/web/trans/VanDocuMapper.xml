@@ -227,8 +227,8 @@
                                         AND TC.USE_YN = 'Y'
                                         AND TC.SVC_STAT IN ('O', 'R')
                  WHERE  1 = 1
-                <if test="sch_agency_no != ''">
-                        AND TC.AGENCY_NO  = #{sch_agency_no}
+                <if test="sch_agency_cd != ''">
+                        AND TC.AGENCY_CD  = #{sch_agency_cd}
                 </if> 
                 <if test="schgb_chain_val != ''">
                         <choose>
@@ -326,8 +326,8 @@
                                         AND TC.USE_YN = 'Y'
                                         AND TC.SVC_STAT IN ('O', 'R')
                  WHERE  1 = 1
-                <if test="sch_agency_no != ''">
-                        AND TC.AGENCY_NO  = #{sch_agency_no}
+                <if test="sch_agency_cd != ''">
+                        AND TC.AGENCY_CD  = #{sch_agency_cd}
                 </if> 
                 <if test="schgb_chain_val != ''">
                         <choose>
@@ -387,7 +387,7 @@
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>
-                                ORDER BY agency_no DESC
+                                ORDER BY agency_cd DESC
                         </otherwise>
                 </choose>
          
