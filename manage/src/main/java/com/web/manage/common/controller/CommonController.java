@@ -51,8 +51,8 @@ public class CommonController {
 	public @ResponseBody ReturnDataVO getCreditCorpList(@RequestParam HashMap<String, String> hashmapParam, HttpSession session){
 		List<HashMap<String, Object>> list = new ArrayList<HashMap<String,Object>>();
 		SessionVO member = (SessionVO) session.getAttribute("S_USER");
-        hashmapParam.put("userCorpGb", member.getUserCorpGb());
         hashmapParam.put("userCorpCd", member.getUserCorpCd());
+        hashmapParam.put("userCorpType", member.getUserCorpType());
 		System.out.println("hashmapParam : " + hashmapParam);
 		ReturnDataVO result = new ReturnDataVO();
 		try {

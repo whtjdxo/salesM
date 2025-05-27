@@ -18,6 +18,8 @@
       $(document).ready(function () {             
         $('#frm_chain_list').onLoadFunction();  
         $('#frm_loan_mst').onLoadFunction(); 
+        $('#frm_sch_counsel').onLoadFunction(); 
+        $('#frm_counsel_mst').onLoadFunction(); 
         
         var isListClick = false;
         callAjax('/common/totalCodelist', "code_grp_cd=('LOAN_TYPE')", fn_loan_type_setting);      
@@ -42,6 +44,12 @@
           // codeSetting('CORP_CD', data.data, '#corp_cd', '1', '', '');
         }
 
+        callAjax('/common/totalCodelist', "code_grp_cd=('COUNSEL_CD') AND CHK_CD1='LOAN'", fn_loan_status_setting);      
+        function fn_loan_status_setting(data) {
+          codeSetting('COUNSEL_CD', data.data, '#sch_counsel_cd', '1', '', '');
+          codeSetting('COUNSEL_CD', data.data, '#counsel_cd', '1', '', '');
+        }
+
         // Set default values for sch_cont_sdt and sch_cont_edt
         var today = new Date();
         var twoMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1);
@@ -50,6 +58,7 @@
         $('#sch_cont_edt').val(today.toISOString().split('T')[0]); 
         $('#cont_dt').val(today.toISOString().split('T')[0]); 
         $('#loan_sdt').val(today.toISOString().split('T')[0]); 
+        $('#counsel_dt').val(today.toISOString().split('T')[0]); 
         
         var tbl_loan_summary = $('#tbl_loan_summary').DataTable({
           processing: true,
@@ -549,6 +558,14 @@
         $('#btn_clear').click(function () {
           fn_frm_loan_mst_clear();
         });
+        
+        $('#btn_counsel').click(function () {
+          if ($('#chain_no').val() == "" )  {
+            swal('확인', "가맹점을 선택 하세요", 'error');
+            return ;
+          }            
+          $('#modal_counsel').modal('show'); // Show the modal        
+        });
 
         $('#btn_schedule').click(function () {          
           var selectData = tbl_chain_loan_list.row('.selected').data();
@@ -579,6 +596,210 @@
           }
           $('#modal_schedule').modal('show'); // Show the modal        
         });
+
+        // 모달 창 표시될때 초기화 처리
+        $('#modal_counsel').on('shown.bs.modal', function() {  
+          // 모달 열릴 때 첫 번째 포커스 가능 요소로 이동          
+          $(this).data('trigger-element', document.activeElement);
+          if ($.fn.DataTable.isDataTable('#tbl_counsel_list')) {
+            $('#tbl_counsel_list').DataTable().destroy();
+          }           
+          $('#tbl_counsel_list').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true,
+            responsive: true,
+            ajax: {
+              url: '/base/organ/chainMng/counselList',
+              contentType: 'application/json',
+              dataType: 'JSON',
+              type: 'POST',
+              data: function (postData) {                                    
+                
+                var formData = {
+                sch_chain_no : $('#chain_no').val()
+                , sch_chain_tp : 'LOAN'
+                , sch_chain_cd : $('#sch_chain_cd').val()
+                , sch_counsel_sdt : $('#sch_counsel_sdt').val()
+                , sch_counsel_edt : $('#sch_counsel_edt').val()                
+                };
+                Object.assign(postData, formData);
+                return JSON.stringify(postData);
+              },
+              },
+            columns: [
+              { data: 'counsel_dt' },
+              { data: 'counsel_cd_nm' },
+              { data: 'counsel_cust_nm' },
+              { data: 'counsel_conts',
+                      render: function(data, type, row) {
+                        if (data && data.length > 30) {
+                          return data.substring(0, 30) + '...';
+                        }
+                        return data;
+                      } 
+              },              
+            ],            
+            columnDefs: [
+              { targets: 0, width: '100px', className: 'text-center' },
+              { targets: 1, width: '150px', className: 'text-center' },
+              { targets: 2, width: '120px', className: 'text-center' },
+              { targets: 3, width: '300px', className: 'text-left' },              
+            ],
+            order: [[1, 'desc']],
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            autoWidth: false,
+            responsive: true,
+            scrollCollapse: true,
+            pageLength: 10, 
+            scrollY: '280px',
+            info: false,
+            language: {
+              emptyTable: '데이터가 없습니다.',
+              zeroRecords: '일치하는 데이터가 없습니다.',
+              loadingRecords: '로딩중...',
+              processing: '처리중...',
+            },            
+          });
+          // 첫 번째 포커스 가능 요소로 이동
+          // $(this).find('button:not([disabled]), input:not([disabled])').first().focus();           
+        });
+ 
+        $('#tbl_counsel_list').on('click', 'tr', function () {
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+          } else {
+            $('#tbl_counsel_list').DataTable().$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }
+          var data = $('#tbl_counsel_list').DataTable().row(this).data();
+          if (data) {
+            $('#counsel_no').val(data.counsel_no);
+            $('#counsel_dt').val(data.counsel_dt);
+            $('#counsel_cd').val(data.counsel_cd);
+            $('#counsel_cust_nm').val(data.counsel_cust_nm);
+            $('#counsel_conts').val(data.counsel_conts); 
+            
+            $('#crud').val('create');
+            $('#btn_counsel_delete').show();
+            $('#btn_counsel_update').show();
+            $('#btn_counsel_create').hide();
+          }           
+        });
+
+        // 모달이 닫힐 때 포커스 복원
+        $('#modal_counsel').on('hidden.bs.modal', function() {
+          var triggerElement = $(this).data('trigger-element');
+          if (triggerElement) {
+            $(triggerElement).focus();
+          } 
+          return true; // 모달 닫기 허용
+        });
+
+        $('#btn_counsel_clear').click(function () {
+          fn_frm_counsel_reset();
+        });
+        
+        $('#btn_counsel_delete').click(function () {
+          var counsel_no = $('#counsel_no').val();
+          if (counsel_no) {           
+            var formData = {
+              counsel_no : $('#counsel_no').val()
+              , chain_no : $('#chain_no').val()
+              , counsel_tp : 'LOAN'
+              , counsel_cd : $('#counsel_cd').val()
+              , counsel_dt : $('#counsel_dt').val()
+              , counsel_cust_nm : $('#counsel_cust_nm').val()                
+              , counsel_conts : $('#counsel_conts').val()                
+            };
+            ConfirmdialogToAjax('delete', '/base/organ/chainMng/deleteCounsel', formData, fn_return_counsel_result); 
+          } else {
+            swal('실패', "상담건을 먼저 선택해주세요.", 'error'); 
+            return;
+          } 
+        });
+
+        $('#btn_counsel_update').click(function () {
+          var form = $('#frm_counsel_mst');       
+          var checked = true;   
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          }); 
+          
+          if (checked) { 
+            var formData = {
+              counsel_no : $('#counsel_no').val()
+              , chain_no : $('#chain_no').val()
+              , counsel_tp : 'LOAN'
+              , counsel_cd : $('#counsel_cd').val()
+              , counsel_dt : $('#counsel_dt').val()
+              , counsel_cust_nm : $('#counsel_cust_nm').val()                
+              , counsel_conts : $('#counsel_conts').val()                
+            };
+            ConfirmdialogToAjax('update', '/base/organ/chainMng/updateCounsel', formData, fn_return_counsel_result); 
+          } 
+        });
+
+        $('#btn_counsel_create').click(function () {           
+          var form = $('#frm_counsel_mst');          
+          var checked = true;
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          }); 
+          
+          if (checked) { 
+            var formData = {
+              chain_no : $('#chain_no').val()
+              , counsel_tp : 'LOAN'
+              , counsel_cd : $('#counsel_cd').val()
+              , counsel_dt : $('#counsel_dt').val()
+              , counsel_cust_nm : $('#counsel_cust_nm').val()                
+              , counsel_conts : $('#counsel_conts').val()                
+            };
+            ConfirmdialogToAjax('create', '/base/organ/chainMng/insertCounsel', formData, fn_return_counsel_result); 
+          }          
+        });
+
+        function fn_return_counsel_result(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg;   
+          
+          alert(resultCode + ' >>>' + resultMsg);
+
+          if (resultCode == 'S000') {                               
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');            
+            var selectedRowData = tbl_counsel_list.row('.selected').data(); // 현재 선택된 데이터 저장            
+            tbl_counsel_list.ajax.reload(function () {
+              if (selectedRowData) {
+                tbl_counsel_list.rows().every(function () {
+                  if (this.data().counsel_no === selectedRowData.counsel_no) { // 저장된 데이터와 매칭
+                    $(this.node()).addClass('selected'); // 다시 선택
+                  }
+                });
+              }
+            });
+            tbl_counsel_list.ajax.reload(); 
+            fn_frm_counsel_reset();
+          } else { 
+            swal('실패', resultMsg, 'error');
+          }
+        }
+        
+        function fn_frm_counsel_reset() {
+          frm_counsel_mst[0].reset();      
+          $('#crud').val('create');
+          $('#btn_counsel_delete').hide();
+          $('#btn_counsel_update').hide();
+          $('#btn_counsel_create').show(); 
+        }
+
 
         // 모달 창 표시될때 초기화 처리
         $('#modal_schedule').on('shown.bs.modal', function() {  
@@ -726,7 +947,7 @@
   <div class="content">
     <div class="row g-3 mb-2">  
       <div class="col-lg-6">
-        <div class="card">
+        <div class="card" style="height: 760px;">
           <div class="card-header">
             <div class="row flex-between-end">
               <div class="col-auto align-self-center">
@@ -798,7 +1019,7 @@
         </div>
       </div>
       <div class="col-lg-6">
-        <div class="card">
+        <div class="card" style="height: 760px;">
           <div class="card-header">
             <div class="row flex-between-end">
               <!-- <div class="col-auto align-self-center">
@@ -837,213 +1058,210 @@
               </form>
             </div>
           </div>
-          <div class="card-body pt-0 px-0" style="padding-top: 0px">
-            <div class="min-vh-50">              
-              <!-- <div class="d-flex justify-content-between align-items-center mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">
-                <div>
-                  <button class="btn btn-success me-2" id="btn_loan_dtl">대출상세</button> 
+          <div class="card-body pt-0 px-0" style="padding-top: 0px">             
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_chain_loan_list">
+                <thead class="bg-200">
+                  <tr>
+                    <th class="text-center" style="width: 150px;">관리번호</th>
+                    <th class="text-center" style="width: 100px;">등록일</th>
+                    <th class="text-center" style="width: 120px;">대출구분</th>
+                    <th class="text-center" style="width: 120px;">원금</th>
+                    <th class="text-center" style="width: 120px;">이자</th>
+                    <th class="text-center" style="width: 120px;">잔액</th>
+                    <th class="text-center" style="width: 100px;">연체</th>
+                    <th class="text-center" style="width: 100px;">종료일</th>
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody>
+                <tfoot>
+                  <tr>
+                    <th colspan="3" class="text-center">총계</th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th> 
+                    <th class="text-right px-2"></th> 
+                    <th colspan="2" class="text-center"></th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div> 
+            <div class="row flex-between-end">
+              <div class="d-flex justify-content-between align-items-center mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">
+                <span>상세정보</span>
+                <div class="input-group input-group-sm mb-1">
+                  <button class="btn btn-info text-end" id="btn_counsel"><i class="fa fa-check"></i>상담 관리</button>
+                </div> 
+              </div>                
+              <form class="needs-validation" id="frm_loan_mst" name="frm_loan_mst" onsubmit="return false;" method="post" novalidate=""> 
+                <div class="row mb-1">
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_no">관리번호</label> 
+                      <input class="form-control form-control-sm" id="chain_no" type="hidden" name="chain_no" readonly="readonly"/>
+                      <input class="form-control form-control-sm bg-light" id="loan_no" type="text" name="loan_no" readonly="readonly"/>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="corp_cd">여신사</label>
+                      <input id="corp_cd" type="hidden" name="corp_cd" />
+                      <input class="form-control form-control-sm bg-light" id="corp_nm" type="text" name="corp_nm" readonly="readonly"/>
+                    </div>
+                  </div>                    
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="cont_dt">계약일</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm " id="cont_dt" type="text" name="cont_dt" istyle="date" maxlength="10" required />
+                      </div>    
+                    </div>
+                  </div>              
                 </div>
-              </div> -->
-              <div class="table-responsive scrollbar">
-                <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_chain_loan_list">
-                  <thead class="bg-200">
-                    <tr>
-                      <th class="text-center" style="width: 150px;">관리번호</th>
-                      <th class="text-center" style="width: 100px;">등록일</th>
-                      <th class="text-center" style="width: 120px;">대출구분</th>
-                      <th class="text-center" style="width: 120px;">원금</th>
-                      <th class="text-center" style="width: 120px;">이자</th>
-                      <th class="text-center" style="width: 120px;">잔액</th>
-                      <th class="text-center" style="width: 100px;">연체</th>
-                      <th class="text-center" style="width: 100px;">종료일</th>
-                    </tr>
-                  </thead>
-                  <tbody class="list"></tbody>
-                  <tfoot>
-                    <tr>
-                      <th colspan="3" class="text-center">총계</th>
-                      <th class="text-right px-2"></th>
-                      <th class="text-right px-2"></th> 
-                      <th class="text-right px-2"></th> 
-                      <th colspan="2" class="text-center"></th>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div> 
-              <div class="row flex-between-end">
-                <div class="d-flex justify-content-between align-items-center mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">
-                  <span>상세정보</span> 
-                </div>                
-                <form class="needs-validation" id="frm_loan_mst" name="frm_loan_mst" onsubmit="return false;" method="post" novalidate=""> 
-                  <div class="row mb-1">
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_no">관리번호</label> 
-                        <input class="form-control form-control-sm" id="chain_no" type="hidden" name="chain_no" readonly="readonly"/>
-                        <input class="form-control form-control-sm bg-light" id="loan_no" type="text" name="loan_no" readonly="readonly"/>
-                      </div>
+                <div class="row mb-1">                    
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_type">대출구분</label> 
+                      <select class="form-select form-control-sm" id="loan_type" name="loan_type" style="width: 120px" required>
+                        <option value="">선택</option> 
+                      </select>   
                     </div>
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="corp_cd">여신사</label>
-                        <input id="corp_cd" type="hidden" name="corp_cd" />
-                        <input class="form-control form-control-sm bg-light" id="corp_nm" type="text" name="corp_nm" readonly="readonly"/>
-                      </div>
-                    </div>                    
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="cont_dt">계약일</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm " id="cont_dt" type="text" name="cont_dt" istyle="date" maxlength="10" required />
-                        </div>    
-                      </div>
-                    </div>              
-                  </div>
-                  <div class="row mb-1">                    
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_type">대출구분</label> 
-                        <select class="form-select form-control-sm" id="loan_type" name="loan_type" style="width: 120px" required>
-                          <option value="">선택</option> 
-                        </select>   
-                      </div>
-                    </div>      
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="princ_amt">대출원금</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end " id="princ_amt" type="text" name="princ_amt" istyle="amount" value="0" maxlength="10" >
-                        </div>  
-                      </div>
-                    </div>     
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="int_rate">이자율</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm " id="int_rate" type="text" name="int_rate" istyle="float" maxlength="5" required />
-                        </div>    
-                      </div>
+                  </div>      
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="princ_amt">대출원금</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end " id="princ_amt" type="text" name="princ_amt" istyle="amount" value="0" maxlength="10" >
+                      </div>  
+                    </div>
+                  </div>     
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="int_rate">이자율</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm " id="int_rate" type="text" name="int_rate" istyle="float" maxlength="5" required />
+                      </div>    
                     </div>
                   </div>
-                  <div class="row mb-1">
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_sdt">대출시작일</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm " id="loan_sdt" type="text" name="loan_sdt" istyle="date" maxlength="10" required />
-                        </div> 
-                      </div>
-                    </div>
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_day">대출일 수</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end " id="loan_day" type="text" name="loan_day" istyle="number" value="0" maxlength="5" >
-                        </div>  
-                      </div>
-                    </div>     
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_edt">대출종료일</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm bg-light" id="loan_edt" type="text" name="loan_edt"  istyle="date" maxlength="10" required  />
-                        </div> 
-                      </div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_sdt">대출시작일</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm " id="loan_sdt" type="text" name="loan_sdt" istyle="date" maxlength="10" required />
+                      </div> 
                     </div>
                   </div>
-                  <div class="row mb-1">
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="int_amt">이자액</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm bg-light" id="int_amt" type="text" name="int_amt" istyle="amount" maxlength="10" readonly />
-                        </div>    
-                      </div>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_day">대출일 수</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end " id="loan_day" type="text" name="loan_day" istyle="number" value="0" maxlength="5" >
+                      </div>  
                     </div>
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="tot_loan_amt">총 액</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end bg-light" id="tot_loan_amt" type="text" name="tot_loan_amt" istyle="number" readonly>
-                        </div>  
-                      </div>
-                    </div>   
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_status">진행상태</label> 
-                        <input class="form-control form-control-sm" id="loan_status" type="hidden" name="loan_status" value = '01' readonly="readonly"/>
-                        <input class="form-control form-control-sm bg-light" id="loan_status_nm" type="text" name="loan_status_nm" value="거래중" readonly="readonly"/>
-                      </div>
+                  </div>     
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_edt">대출종료일</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm bg-light" id="loan_edt" type="text" name="loan_edt"  istyle="date" maxlength="10" required  />
+                      </div> 
                     </div>
                   </div>
-                  <div class="row mb-1">
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="delay_rate">연체 이자율</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm " id="delay_rate" type="text" name="delay_rate" istyle="float" maxlength="5" required />
-                        </div>    
-                      </div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="int_amt">이자액</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm bg-light" id="int_amt" type="text" name="int_amt" istyle="amount" maxlength="10" readonly />
+                      </div>    
                     </div>
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="delay_yn">연체여부</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm bg-light" id="delay_yn" type="text" name="delay_yn" readonly />
-                        </div> 
-                      </div>
-                    </div>
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="delay_cnt">연체횟수</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end bg-light" id="delay_cnt" type="text" name="delay_cnt" istyle="number" readonly>                        </div>  
-                      </div>
-                    </div>     
                   </div>
-                  <div class="row mb-1">                   
-                    <div class="col-sm-12">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-1 col-form-label col-form-label-sm" for="loan_memo">비고</label> 
-                        <input class="form-control form-control-sm" id="loan_memo" type="text" name="loan_memo" maxlength="50" />
-                      </div>
-                    </div>     
-                  </div>
-                  <div class="row mb-1">       
-                    <div class="col-sm-6">
-                      <div class="input-group input-group-sm mb-1">
-                        <button class="btn btn-info text-end" id="btn_schedule"><i class="fa fa-check"></i>상환일정</button>
-                      </div>
-                    </div>                                 
-                    <div class="col-sm-3">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="upt_user_id">최종수정자</label> 
-                        <input type="text" class="form-control form-control-sm" id="upt_user_id" name="upt_user_id" readonly="readonly" disabled />
-                      </div>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="tot_loan_amt">총 액</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="tot_loan_amt" type="text" name="tot_loan_amt" istyle="number" readonly>
+                      </div>  
                     </div>
-                    <div class="col-sm-3">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="upt_dttm">최종 수정일</label>                         
-                        <input type="text" class="form-control form-control-sm" id="upt_dttm" name="upt_dttm" readonly="readonly" disabled /> 
-                      </div>
+                  </div>   
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_status">진행상태</label> 
+                      <input class="form-control form-control-sm" id="loan_status" type="hidden" name="loan_status" value = '01' readonly="readonly"/>
+                      <input class="form-control form-control-sm bg-light" id="loan_status_nm" type="text" name="loan_status_nm" value="거래중" readonly="readonly"/>
                     </div>
-                  </div>    
-                  <div class="card-footer">
-                    <p class="text-end pb-1 mb-1 pd-1">
-                      <button class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
-                      <button class="btn btn-primary text-end" id="btn_delete" style="display: none"><i class="fa fa-paste"></i>삭제</button>
-                      <button class="btn btn-primary text-end" id="btn_prepay" style="display: none"><i class="fa fa-paste"></i>중도 상환</button>
-                      <button class="btn btn-primary text-end" id="btn_create"><i class="fa fa-paste"></i>저장</button>
-                    </p>
                   </div>
-                </form>
-              </div>             
-            </div>  
+                </div>
+                <div class="row mb-1">
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="delay_rate">연체 이자율</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm " id="delay_rate" type="text" name="delay_rate" istyle="float" maxlength="5" required />
+                      </div>    
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="delay_yn">연체여부</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm bg-light" id="delay_yn" type="text" name="delay_yn" readonly />
+                      </div> 
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="delay_cnt">연체횟수</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="delay_cnt" type="text" name="delay_cnt" istyle="number" readonly>                        </div>  
+                    </div>
+                  </div>     
+                </div>
+                <div class="row mb-1">                   
+                  <div class="col-sm-12">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-1 col-form-label col-form-label-sm" for="loan_memo">비고</label> 
+                      <input class="form-control form-control-sm" id="loan_memo" type="text" name="loan_memo" maxlength="50" />
+                    </div>
+                  </div>     
+                </div>
+                <div class="row mb-1">       
+                  <div class="col-sm-6">
+                    <div class="input-group input-group-sm mb-1">
+                      <button class="btn btn-info text-end" id="btn_schedule"><i class="fa fa-check"></i>상환일정</button>
+                    </div>
+                  </div>                                 
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="upt_user_id">최종수정자</label> 
+                      <input type="text" class="form-control form-control-sm" id="upt_user_id" name="upt_user_id" readonly="readonly" disabled />
+                    </div>
+                  </div>
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="upt_dttm">최종 수정일</label>                         
+                      <input type="text" class="form-control form-control-sm" id="upt_dttm" name="upt_dttm" readonly="readonly" disabled /> 
+                    </div>
+                  </div>
+                </div>    
+                <div class="card-footer">
+                  <p class="text-end pb-1 mb-1 pd-1">
+                    <button class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
+                    <button class="btn btn-primary text-end" id="btn_delete" style="display: none"><i class="fa fa-paste"></i>삭제</button>
+                    <button class="btn btn-primary text-end" id="btn_prepay" style="display: none"><i class="fa fa-paste"></i>중도 상환</button>
+                    <button class="btn btn-primary text-end" id="btn_create"><i class="fa fa-paste"></i>저장</button>
+                  </p>
+                </div>
+              </form>
+            </div>   
           </div>
         </div>
       </div>      
-    </div>    
+    </div>
   </div> 
+
   <div class="modal fade" id="modal_schedule" tabindex="-1" >
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
@@ -1087,6 +1305,118 @@
             <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" >닫기</button>
           </div>          
         </div>
+      </div>
+    </div>
+  </div> 
+
+  <div class="modal fade" id="modal_counsel" tabindex="-1" >
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="row mb-1">           
+            <div class="row flex-between-end">              
+              <div class="col-lg-3 align-self-center">
+                <h5 class="mb-0">대출 상담 관리</h5>
+              </div>     
+              <div class="col-lg-9">
+                <form id="frm_sch_counsel" name="frm_sch_counsel" onsubmit="return false;" novalidate=""> 
+                  <div class="row mb-1">
+                    <div class="col-sm-4">
+                      <div class="input-group input-group-sm mb-1 me-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="sch_counsel_cd">상담유형</label>
+                        <select class="form-select form-control-sm me-1" id="sch_counsel_cd" name="sch_counsel_cd">
+                          <option value="">전체</option> 
+                        </select>            
+                      </div>
+                    </div>  
+                    <div class="col-sm-6">
+                      <div class="input-group input-group-sm mb-1 me-1">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_cont_sdt">발생일</label>                        
+                        <div class="col-sm-5">
+                          <input class="form-control form-control-sm " id="sch_counsel_sdt" type="text" name="sch_counsel_sdt" istyle="date" maxlength="10" required />
+                        </div>   
+                        <div class="col-sm-5">
+                          <input class="form-control form-control-sm" id="sch_counsel_edt" type="text" name="sch_counsel_edt" istyle="date" maxlength="10" required />
+                        </div>  
+                      </div>          
+                    </div>
+                    <div class="col-sm-2 text-end"> 
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_counsel_search" name="btn_counsel_search">조회</button> 
+                    </div> 
+                  </div> 
+                </form>
+              </div>     
+            </div>
+          </div>    
+        </div>
+        <div class="modal-body">
+          <div class="table-responsive scrollbar">
+            <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_counsel_list">
+              <thead class="bg-200">
+                <tr>                  
+                  <th class="text-center" style="width: 100px;">상담일</th>
+                  <th class="text-center" style="width: 120px;">상담 구분</th>
+                  <th class="text-center" style="width: 120px;">상담자</th>
+                  <th class="text-center" style="width: 120px;">상담 내용</th>                  
+                </tr>
+              </thead>
+              <tbody class="list"></tbody>               
+            </table>
+          </div>
+          <div class="row flex-between-end">
+            <div class="d-flex justify-content-between align-items-center mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">
+              <span>상세정보</span> 
+            </div>                
+            <form class="needs-validation" id="frm_counsel_mst" name="frm_counsel_mst" onsubmit="return false;" method="post" novalidate=""> 
+              <input id="counsel_no"  type="text" name="counsel_no" /> 
+              <div class="row mb-1">
+                <div class="col-sm-4">
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="col-sm-4 col-form-label col-form-label-sm" for="counsel_cd">상담유형</label>                     
+                    <select class="form-select form-control-sm me-1" id="counsel_cd" name="counsel_cd" style="width: 120px" required>
+                      <option value="">전체</option> 
+                    </select>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="col-sm-4 col-form-label col-form-label-sm" for="counsel_dt">상담일</label>                    
+                    <div class="col-sm-8">                      
+                      <input class="form-control form-control-sm" id="counsel_dt" type="text" name="counsel_dt" istyle="date" required />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="col-sm-4 col-form-label col-form-label-sm" for="counsel_cust_nm">상담대상</label> 
+                    <div class="col-sm-8">
+                      <input class="form-control form-control-sm " id="counsel_cust_nm" type="text" name="counsel_cust_nm"  maxlength="20" required />
+                    </div>    
+                  </div>
+                </div>              
+              </div>
+              <div class="row mb-1">                    
+                <div class="col-sm-12">
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="col-sm-1 col-form-label col-form-label-sm" for="counsel_conts">상담내용</label> 
+                    <textarea class="form-control form-control-sm" id="counsel_conts" name="counsel_conts" rows="3" maxlength="500" required></textarea>
+                  </div>
+                </div>   
+              </div>
+              <div class="card-footer">
+                <p class="text-end pb-1 mb-1 pd-1">
+                  <button class="btn btn-info text-end" id="btn_counsel_clear"><i class="fa fa-check"></i>신규</button>
+                  <button class="btn btn-primary text-end" id="btn_counsel_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                  <button class="btn btn-primary text-end" id="btn_counsel_delete" style="display: none"><i class="fa fa-paste"></i>삭제</button>
+                  <button class="btn btn-primary text-end" id="btn_counsel_create"><i class="fa fa-paste"></i>저장</button>
+                </p>
+              </div>
+            </form>
+          </div>  
+        </div>
+        <div class="modal-footer">            
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" >닫기</button>
+        </div>  
       </div>
     </div>
   </div>

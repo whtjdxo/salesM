@@ -28,6 +28,7 @@ import com.web.manage.user.domain.UserVO;
 import com.google.gson.Gson;
 import com.web.common.util.DateUtil;
 import com.web.manage.base.domain.ChainCardVO;
+import com.web.manage.base.domain.ChainCounselVO;
 import com.web.manage.base.domain.ChainFileVO;
 import com.web.manage.base.domain.ChainVO;
 import com.web.manage.base.domain.ChainVanVO;
@@ -59,7 +60,7 @@ public class ChainController {
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
         hashmapParam.put("userCorpCd", member.getUserCorpCd());
-        hashmapParam.put("userCorpGb", member.getUserCorpGb());
+        hashmapParam.put("userCorpType", member.getUserCorpType());
         String jString = null;
         try {
             PageingVO pageing = new PageingVO();
@@ -752,6 +753,117 @@ public class ChainController {
         } catch (Exception e) {
             result.setResultCode("F000");
             result.setResultMsg("Chain File Delete Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
+    /* -----------------------------------------------------------------------------------------------------------------------------------------
+    * Chain Counsel 관리
+    -----------------------------------------------------------------------------------------------------------------------------------------  */     
+    @RequestMapping("counselList")
+    public @ResponseBody String getChainCounselList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();        
+        String jString = null;
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+            
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = chainService.getChainCounselList(hashmapParam);
+            int records = chainService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    } 
+
+    @RequestMapping(value = "/insertCounsel", method = RequestMethod.POST)    
+    public @ResponseBody ReturnDataVO insertChainCounsel(@ModelAttribute("ChainCounselVO") @Valid ChainCounselVO counselVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+    	    counselVo.setEnt_user_id(member.getUserId());
+
+            if (chainService.insertChainCounsel(counselVo)) {
+                System.out.println("Chain Counsel Create success");
+                result.setResultCode("S000");
+                result.setResultMsg("Chain Counsel creation successful.");
+            } else {
+                System.out.println("chainCreate fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Chain Counsel creation Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Chain Counsel creation Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/updateCounsel", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO updateChainCounsel(@ModelAttribute("ChainCounselVO") @Valid ChainCounselVO counselVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER"); 
+    	    counselVo.setUpt_user_id(member.getUserId()); 
+
+            if (chainService.updateChainCounsel(counselVo)) {
+                System.out.println("Chain Counsel Update  success");
+                result.setResultCode("S000");
+                result.setResultMsg("Chain Counsel Update successful.");
+            } else {
+                System.out.println("Chain Link Update  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Chain Counsel Update Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Chain Counsel Update Failed");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/deleteCounsel", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO deleteChainCounsel(@ModelAttribute("ChainCounselVO") @Valid ChainCounselVO counselVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO();         
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER"); 
+    	    counselVo.setUpt_user_id(member.getUserId());  
+            // System.out.println(chainFileVo.getFile_seq());
+            if (chainService.deleteChainCounsel(counselVo)) {
+                System.out.println("Chain Counsel Delete  success");
+                result.setResultCode("S000");
+                result.setResultMsg("Chain Counsel Delete successful.");
+            } else {
+                System.out.println("Chain Counsel Update  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Chain Counsel Delete Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Chain Counsel Delete Failed");
             e.printStackTrace();
         }
         return result;

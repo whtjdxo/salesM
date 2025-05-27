@@ -319,6 +319,7 @@ public class DepositController {
     public @ResponseBody String getDepoAdjustCardSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> depoStatus = new HashMap<String, Object>();
         Gson gson = new Gson();
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
@@ -337,6 +338,7 @@ public class DepositController {
 
             list = depositService.getDepoAdjustCardSummary(hashmapParam);
             int records = depositService.getQueryTotalCnt();
+            depoStatus = depositService.getChainDepoStatus(hashmapParam);
 
             pageing.setRecords(records);
             pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
@@ -345,6 +347,7 @@ public class DepositController {
             hashmapResult.put("recordsTotal", pageing.getRecords());
             hashmapResult.put("recordsFiltered", pageing.getRecords());
             hashmapResult.put("data", list);
+            hashmapResult.put("depo", depoStatus);
 
             jString = gson.toJson(hashmapResult);
         } catch (Exception e) {

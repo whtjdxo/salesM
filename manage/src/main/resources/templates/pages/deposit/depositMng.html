@@ -864,7 +864,7 @@
   <div class="content">     
     <div class="row g-1 mb-1">
       <div class="col-lg-7">
-        <div class="card" style="height: 580px;">
+        <div class="card" style="height: 600px;">
           <div class="card-header">          
             <div class="row flex-between-end">
               <div class="col-lg-2 align-self-center">
@@ -932,12 +932,12 @@
                 </tfoot>
                 <tbody class="list"></tbody>
               </table>
-            </div>
+            </div>            
           </div>
         </div>      
       </div>
       <div class="col-lg-5">
-        <div class="card" style="height: 580px;">    
+        <div class="card" style="height: 600px;">    
           <div class="card-header">            
             <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">
               <input class="form-control form-control-sm" id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly" />
@@ -972,8 +972,62 @@
                   </tr>
                 </thead>
                 <tbody class="list"></tbody>
-              </table>
+              </table>              
             </div>
+            <div class="row flex-between-end">
+              <div class="row mb-1">
+                <div class="col-sm-4">
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="col-sm-4 col-form-label col-form-label-sm" for="chain_depo_amt">가맹점 입금</label>
+                    <div class="col-sm-8">
+                      <input class="form-control form-control-sm text-end bg-light" id="chain_depo_amt" type="text" name="chain_depo_amt" value="0" readonly />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="col-sm-4 col-form-label col-form-label-sm" for="credit_depo_amt">여신사 입금</label>
+                    <div class="col-sm-8">
+                      <input class="form-control form-control-sm text-end bg-light" id="credit_depo_amt" type="text" name="credit_depo_amt" value="0" readonly />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="col-sm-4 col-form-label col-form-label-sm" for="gap_amt">차액</label>
+                    <div class="col-sm-8">
+                      <input class="form-control form-control-sm text-end bg-light" id="gap_amt" type="text" name="gap_amt" value="0" readonly />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row mb-1">
+                <div class="col-sm-4">
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_remit_fee_amt">송금수수료</label>
+                    <div class="col-sm-8">
+                      <input class="form-control form-control-sm text-end bg-light" id="crd_remit_fee_amt" type="text" name="crd_remit_fee_amt" value="0" readonly />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_unremit_sub_amt">여신사 입금</label>
+                    <div class="col-sm-8">
+                      <input class="form-control form-control-sm text-end bg-light" id="crd_unremit_sub_amt" type="text" name="crd_unremit_sub_amt" value="0" readonly />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="input-group input-group-sm mb-1">
+                    <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_exc_amt">과입금액</label>
+                    <div class="col-sm-8">
+                      <input class="form-control form-control-sm text-end bg-light" id="crd_exc_amt" type="text" name="crd_exc_amt" value="0" readonly />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>  
           </div> 
         </div>      
       </div>        

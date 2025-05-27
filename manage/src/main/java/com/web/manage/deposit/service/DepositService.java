@@ -37,6 +37,10 @@ public class DepositService {
         return depositMapper.getDepoCardSummary(hashmapParam);
     }
 
+    public HashMap<String, Object> getChainDepoStatus(HashMap<String, Object> hashmapParam) {
+        return depositMapper.getChainDepoStatus(hashmapParam);
+    }
+    
     public List<HashMap<String, Object>> getDepoResvList(HashMap<String, Object> hashmapParam) {
         return depositMapper.getDepoResvList(hashmapParam);
     }

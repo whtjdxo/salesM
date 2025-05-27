@@ -10,6 +10,7 @@ import com.web.manage.base.mapper.ChainMapper;
 import com.web.manage.user.domain.UserVO;
 import com.web.manage.user.service.UserMngService;
 import com.web.manage.base.domain.ChainCardVO;
+import com.web.manage.base.domain.ChainCounselVO;
 import com.web.manage.base.domain.ChainFileVO;
 import com.web.manage.base.domain.ChainVO;
 import com.web.manage.base.domain.ChainVanVO;
@@ -120,4 +121,20 @@ public class ChainService {
     public boolean deleteChainFile(ChainFileVO chainFileVo) {
         return chainMapper.deleteChainFile(chainFileVo); 
     }
+
+    public List<HashMap<String, Object>> getChainCounselList(HashMap<String, Object> hashmapParam) {
+        return chainMapper.getChainCounselList(hashmapParam);
+    }
+
+    public boolean insertChainCounsel(ChainCounselVO counselVo) {
+        return chainMapper.insertChainCounsel(counselVo); 
+    }
+    public boolean updateChainCounsel(ChainCounselVO counselVo) {
+        return chainMapper.updateChainCounsel(counselVo); 
+    }
+    public boolean deleteChainCounsel(ChainCounselVO counselVo) {
+        return chainMapper.deleteChainCounsel(counselVo); 
+    }
+
+ 
 }

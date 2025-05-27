@@ -27,10 +27,10 @@
            AND  CORP_TYPE = 'LN'
            AND  USE_YN  = 'Y'
         <choose>
-          <when test='userCorpGb == "CR"'>
+          <when test='userCorpType == "LN"'>
             AND CORP_CD = #{userCorpCd}
           </when>
-          <when test='userCorpGb == "OP"'>
+          <when test='userCorpType == "OP"'>
             AND 1 = 1
           </when>
           <otherwise>

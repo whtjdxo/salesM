@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.web.manage.base.domain.ChainCardVO;
+import com.web.manage.base.domain.ChainCounselVO;
 import com.web.manage.base.domain.ChainFileVO;
 import com.web.manage.base.domain.ChainVO;
 import com.web.manage.base.domain.ChainVanVO;
@@ -50,4 +51,9 @@ public interface ChainMapper {
     boolean insertChainFile(ChainFileVO chainFileVo);
     boolean updateChainFile(ChainFileVO chainFileVo);
     boolean deleteChainFile(ChainFileVO chainFileVo);
+ 
+    List<HashMap<String, Object>> getChainCounselList(HashMap<String, Object> hashmapParam);     
+    boolean insertChainCounsel(ChainCounselVO counselVo);
+    boolean updateChainCounsel(ChainCounselVO counselVo);
+    boolean deleteChainCounsel(ChainCounselVO counselVo);
 }

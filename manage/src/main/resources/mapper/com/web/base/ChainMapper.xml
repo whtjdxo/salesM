@@ -142,10 +142,10 @@
             </when>
         </choose>
         <choose>
-            <when test='userCorpGb == "CR"'>
-                AND TC.CORP_CD = #{userCorpGb}
+            <when test='userCorpType == "LN"'>
+                AND TC.CORP_CD = #{userCorpCd}
             </when>
-            <when test='userCorpGb == "OP"'>
+            <when test='userCorpType == "OP"'>
                 AND 1 = 1
             </when>
             <otherwise>
@@ -527,5 +527,77 @@
                 , UPT_USER_ID       = #{upt_user_id}
                 , UPT_DTTM          = NOW()
          WHERE  FILE_SEQ = #{file_seq}           
+    </update> 
+
+    <select id="getChainCounselList" parameterType="java.util.HashMap" resultType="hashMap">
+        SELECT  SQL_CALC_FOUND_ROWS
+                CC.COUNSEL_NO               AS counsel_no
+                , CC.CHAIN_NO               AS chain_no
+                , TC.CHAIN_NM               AS chain_nm       
+                , CC.COUNSEL_TP             AS counsel_tp
+                , GET_CODE_NM('COUNSEL_TP', CC.COUNSEL_TP) AS counsel_tp_nm
+                , CC.COUNSEL_CD             AS counsel_cd
+                , GET_CODE_NM('COUNSEL_CD', CC.COUNSEL_CD) AS counsel_cd_nm
+                , CC.COUNSEL_DT             AS counsel_dt
+                , CC.COUNSEL_CUST_NM        AS counsel_cust_nm
+                , CC.COUNSEL_CONTS          AS counsel_conts
+                , DATE_FORMAT(IFNULL(CC.UPT_DTTM, CC.ENT_DTTM), '%Y-%m-%d %H:%i:%s')    AS upt_dttm
+                , IFNULL(CC.UPT_USER_ID, CC.ENT_USER_ID)                                AS upt_user_id
+          FROM  TB_CHAIN_COUNSEL     CC
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = CC.CHAIN_NO                    
+         WHERE  CC.USE_YN = 'Y' 
+           AND  CC.CHAIN_NO = #{sch_chain_no}
+		<if test="sch_counsel_tp != null and sch_counsel_tp != ''">			
+			AND CC.COUNSEL_TP = #{sch_counsel_tp}
+		</if>
+        <if test="sch_counsel_cd != null and sch_counsel_cd != ''">			
+			AND CC.COUNSEL_CD = #{sch_counsel_cd}
+		</if>
+        <if test="sch_counsel_sdt != null and sch_counsel_sdt != ''">			
+			AND CC.COUNSEL_SDT &gt;= #{sch_counsel_sdt}
+		</if>
+        <if test="sch_counsel_edt != null and sch_counsel_edt != ''">			
+			AND CC.COUNSEL_SDT &lt;= #{sch_counsel_edt}
+		</if>
+        <choose>
+            <when test="sidx != ''">
+                ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                ORDER BY 1 DESC
+            </otherwise>
+        </choose>
+        LIMIT ${start}, ${end}
+    </select>
+
+    <insert id="insertChainCounsel" parameterType="com.web.manage.base.domain.ChainCounselVO">
+        INSERT INTO TB_CHAIN_COUNSEL (
+            CHAIN_NO        , COUNSEL_TP        , COUNSEL_CD    
+            , COUNSEL_DT    , COUNSEL_CUST_NM   , COUNSEL_CONTS
+            , ENT_DTTM      , ENT_USER_ID
+        ) VALUES (
+            #{chain_no}     , #{counsel_tp}     , #{counsel_cd}
+            , #{counsel_dt} , #{counsel_cust_nm}, #{counsel_conts}  
+            , NOW()         , #{ent_user_id}
+        )  
+    </insert>
+
+    <update id="updateChainCounsel" parameterType="com.web.manage.base.domain.ChainCounselVO">
+        UPDATE  TB_CHAIN_COUNSEL
+           SET  COUNSEL_CD          = #{counsel_cd}
+                , COUNSEL_CUST_NM   = #{counsel_cust_nm}
+                , COUNSEL_CONTS     = #{counsel_conts}
+                , COUNSEL_DT        = #{counsel_dt}
+                , UPT_USER_ID       = #{upt_user_id}
+                , UPT_DTTM          = NOW()
+         WHERE  COUNSEL_NO = #{counsel_no}           
+    </update>
+
+    <update id="deleteChainCounsel" parameterType="com.web.manage.base.domain.ChainCounselVO">
+        UPDATE  TB_CHAIN_COUNSEL
+           SET  USE_YN = 'N'         
+                , UPT_USER_ID       = #{upt_user_id}
+                , UPT_DTTM          = NOW()
+         WHERE  CHAIN_NO = #{chain_no}   
     </update>
 </mapper>

@@ -16,6 +16,8 @@ public interface DepositMapper {
 
     List<HashMap<String, Object>> getDepoCardSummary(HashMap<String, Object> hashmapParam);
 
+    HashMap<String, Object> getChainDepoStatus(HashMap<String, Object> hashmapParam);
+
     List<HashMap<String, Object>> getDepoResvList(HashMap<String, Object> hashmapParam);
     void callProcChangeResvDate(ProcDepositVO procVo);
     void callProcDepositAdjust(ProcDepositVO procVo);

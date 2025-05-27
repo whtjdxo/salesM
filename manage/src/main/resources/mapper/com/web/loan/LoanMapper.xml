@@ -12,10 +12,10 @@
          WHERE  CORP_TYPE = 'LN'
            AND  USE_YN = 'Y'
         <choose>
-            <when test='userCorpGb == "CR"'>
+            <when test='userCorpType == "LN"'>
                 AND CORP_CD = #{userCorpCd}
             </when>
-            <when test='userCorpGb == "OP"'>
+            <when test='userCorpType == "OP"'>
                 AND 1 = 1
             </when>
             <otherwise>
@@ -88,10 +88,10 @@
             AND  TC.CORP_CD = #{sch_corp_cd}
         </if>
         <choose>
-            <when test='userCorpGb == "CR"'>
-                AND TC.CORP_CD = #{userCorpGb}
+            <when test="userCorpType == 'LN'">
+                AND TC.CORP_CD = #{userCorpCd}
             </when>
-            <when test='userCorpGb == "OP"'>
+            <when test="userCorpType == 'OP'">
                 AND 1 = 1
             </when>
             <otherwise>
@@ -154,10 +154,10 @@
             AND  TC.CORP_CD = #{sch_corp_cd}
         </if>
         <choose>
-            <when test='userCorpGb == "CR"'>
-                AND TC.CORP_CD = #{userCorpGb}
+            <when test='userCorpType == "LN"'>
+                AND TC.CORP_CD = #{userCorpCd}
             </when>
-            <when test='userCorpGb == "OP"'>
+            <when test='userCorpType == "OP"'>
                 AND 1 = 1
             </when>
             <otherwise>

@@ -239,9 +239,8 @@
 	</insert>
 
 	<update id="updateSubMst" parameterType="com.web.manage.withdraw.domain.SubMstVO">
-                UPDATE TB_SUB_MST
-                   SET 
-                        REG_DATE        = #{reg_date},
+                UPDATE  TB_SUB_MST
+                   SET  REG_DATE        = #{reg_date},
                         SUB_TYPE        = #{sub_type},                        
                         SUB_CODE        = #{sub_code},
                         SUB_STATUS      = #{sub_status},
@@ -274,8 +273,7 @@
                                 , #{recvAmt     , mode=IN       , jdbcType=INTEGER, javaType=java.lang.Integer}
                                 , #{memo        , mode=IN       , jdbcType=VARCHAR}
                                 , #{userId      , mode=IN       , jdbcType=VARCHAR}
-                                , #{resultCode  , mode=OUT      , jdbcType=INTEGER, javaType=java.lang.Integer}
-                                , #{resultBalanceAmt  , mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                                , #{resultCode  , mode=OUT      , jdbcType=INTEGER, javaType=java.lang.Integer} 
                                 , #{resultMsg   , mode=OUT      , jdbcType=VARCHAR, javaType=java.lang.String}
                         ) 
                 }
