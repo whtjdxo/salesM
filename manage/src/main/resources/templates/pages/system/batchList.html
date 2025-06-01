@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>BATCH 현황</title>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script>
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />    
+    <!-- DataTables Select CSS 추가 -->
+    <link rel="stylesheet" href="/css/custom-salesm.css" />    
+
+    <script th:inline="none"> 
+      $(document).ready(function () {             
+        $('#frm_sch_batch').onLoadFunction();  
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('BATCH')", fn_batch_id_setting);      
+        function fn_batch_id_setting(data) {
+          codeSetting('BATCH', data.data, '#sch_batch_id', '1', '', ''); 
+        }
+
+        var today = new Date();        
+        $('#sch_batch_sdt').val(today.toISOString().split('T')[0]);
+        $('#sch_batch_edt').val(today.toISOString().split('T')[0]); 
+        
+        var tbl_batch_mst = $('#tbl_batch_mst').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          ajax: {
+            url: '/manage/monitor/batch/batchList',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',            
+            data: function (postData) {
+              formData = $('#frm_sch_batch').serializeObject(); 
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
+            },
+          },
+            columns: [
+                { data: 'batch_seq' }
+                , { data: 'batch_id' }
+                , { data: 'batch_nm' }
+                , { data: 'start_dttm' }      
+                , { data: 'end_dttm' }      
+                , { data: 'succ_flag' }      
+              ],
+            columnDefs: [           
+            { targets: 0, width: '110px', className: 'text-center' },
+            { targets: 1, width: '100px', className: 'text-left' },
+            { targets: 2, width: '150px', className: 'text-center' }, 
+            { targets: 3, width: '150px', className: 'text-center' }, 
+            { targets: 4, width: '150px', className: 'text-center' }, 
+            { targets: 5, width: '90px', className: 'text-center' }, 
+            
+          ],  
+          order: [[1, 'desc']],
+          paging: true,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          autoWidth: false,
+          // responsive: true,
+          // scrollCollapse: true,
+          pageLength: 20,
+          scrollY: '580px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
+        });
+
+        $('#btn_search').click(function () {
+          tbl_batch_mst.ajax.reload();          
+        });
+
+        $('#sch_batch_id').change(function () {
+          tbl_batch_mst.ajax.reload();
+          $('#tbl_batch_dtl').DataTable().clear().draw();          
+        });
+        
+        $('#tbl_batch_mst').on('click', 'tr', function () {
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+          } else {
+            tbl_batch_mst.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }
+          var data = tbl_batch_mst.row(this).data();
+          if (data) {
+            
+            $('#batch_seq').val(data.map_pcode);
+            $('#err_msg').val(data.map_pcode_nm);
+            tbl_batch_dtl.ajax.reload();    
+          }  
+        });      
+         
+        var tbl_batch_dtl = $('#tbl_batch_dtl').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true,
+            responsive: true,
+            ajax: {
+              url: '/manage/monitor/batch/batchDetailList',
+              contentType: 'application/json',
+              dataType: 'JSON',
+              type: 'POST',
+              data: function (postData) {
+                formData = $('#frm_sch_list').serializeObject();
+                Object.assign(postData, formData);
+                return JSON.stringify(postData);
+              },
+            },
+              columns: [
+                  { data: 'seq_no' }                  
+                  , { data: 'err_msg' }
+                  , { data: 'ent_dttm' } 
+                ],
+              columnDefs: [
+              { targets: 0, width: '120px', className: 'text-left' },
+              { targets: 1, width: '600px', className: 'text-left' },
+              { targets: 2, width: '150px', className: 'text-center' },
+            ],
+            order: [[1, 'desc']],
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            autoWidth: false,
+            // responsive: true,
+            // scrollCollapse: true,
+            pageLength: 30,
+            scrollY: '540px',
+            info: false,
+            language: {
+              emptyTable: '데이터가 없습니다.',
+              search: '검색:',
+              zeroRecords: '일치하는 데이터가 없습니다.',
+              loadingRecords: '로딩중...',
+              processing: '처리중...',
+            },
+          });  
+      });
+    </script>
+  </head>
+  <div class="content">    
+    <div class="row g-3 mb-2">
+      <div class="card" style="height: 90px;">
+        <div class="card-header">
+          <div class="row flex-between-end">
+            <div class="col-auto align-self-center">
+              <h4 class="mb-0">BATCH 처리현황</h4>
+            </div>
+            <div class="col-lg-10">              
+              <form id="frm_sch_batch" name="frm_sch_batch" onsubmit="return false;" novalidate="">
+                <div class="row mb-1">  
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm px-3">
+                      <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_batch_id">작업명</label>
+                      <select class="form-select form-control-sm" id="sch_batch_id" name="sch_batch_id" style="width: 150px">
+                        <option value="">선 택</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="input-group">
+                      <div class="input-group input-group-sm mb-1 me-1">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_batch_sdt">발생일</label>
+                        <div class="col-sm-4">
+                          <input class="form-control form-control-sm " id="sch_batch_sdt" type="text" name="sch_batch_sdt" istyle="date" maxlength="10" required />
+                        </div>   
+                        <span class="input-group-text">~</span>
+                        <div class="col-sm-4">
+                          <input class="form-control form-control-sm" id="sch_batch_edt" type="text" name="sch_batch_edt" istyle="date" maxlength="10" required />
+                        </div>   
+                      </div> 
+                    </div> 
+                  </div>
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm px-3">
+                      <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_succ_flag">결과</label>
+                      <select class="form-select form-control-sm" id="sch_succ_flag" name="sch_succ_flag" style="width: 100px">
+                        <option value="">선 택</option>
+                        <option value="Y">정상처리</option>
+                        <option value="N">오류</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
+                  </div>  
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>          
+    </div>      
+    <div class="row g-3 mb-2">
+      <div class="col-lg-5">
+        <div class="card" style="height: 700px;">
+          <div class="card-body pt-0 px-0" style="padding-top: 0px">
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_batch_mst">
+                <thead>
+                  <tr>
+                    <th class="text-center">작업번호</th>
+                    <th class="text-center">BATCH ID</th>
+                    <th class="text-center">BATCH 명</th>
+                    <th class="text-center">시작 시간</th>
+                    <th class="text-center">종료 시간</th>
+                    <th class="text-center">처리결과</th>
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="card" style="height: 700px;">
+          <div class="card-header">
+            <div class="row flex-between-end">
+              <div class="col-auto align-self-center">
+                <h5 class="mb-0">상세 결과</h5>
+              </div>
+              <form id="frm_sch_list" name="frm_sch_list" onsubmit="return false;" novalidate="">
+                <input type="hidden" id="batch_seq" name="batch_seq" value="" />
+                <input type="hidden" id="err_msg" name="err_msg" value="" />
+              </form>  
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="min-vh-50">              
+              <div class="table-responsive scrollbar">
+                <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_batch_dtl">
+                  <thead class="bg-200">
+                    <tr>
+                      <th class="text-center" style="width: 120px;">일련번호</th>
+                      <th class="text-center" style="width: 120px;">에러 메세지</th>
+                      <th class="text-center" style="width: 120px;">처리 일시</th>
+                    </tr>
+                  </thead>
+                  <tbody class="list"></tbody>
+                </table>
+              </div>               
+            </div>  
+          </div>
+        </div>
+      </div>      
+    </div>    
+  </div>  
+</html>

@@ -259,7 +259,7 @@
                                 ORDER BY 1
                         </otherwise>
                 </choose>                
-                LIMIT  ${start}, ${end}  
+                <!-- LIMIT  ${start}, ${end}   -->
         </select>
  
         <select id="getWDResvList" parameterType="java.util.HashMap" resultType="java.util.HashMap">

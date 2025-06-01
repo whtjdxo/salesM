@@ -225,10 +225,10 @@
                 , BBANK_CD            = #{bbank_cd}
                 , BBANK_ACCOUNT_NO    = #{bbank_account_no}
                 , BBANK_DEPOSITOR     = #{bbank_depositor}
-                <!-- , BBANK_CHECK_YN      = #{bbank_check_yn}
-                , BBANK_CHECK_ID      = #{bbank_check_id}
-                , BBANK_CHECK_DT      = #{bbank_check_dt}
-                , AUTO_REMIT_YN       = #{auto_remit_yn} -->
+                , BBANK_CHECK_YN      = #{remit_stat}
+                , BBANK_CHECK_ID      = #{upt_user_id}
+                , BBANK_CHECK_DT      = NOW()
+                <!-- , AUTO_REMIT_YN       = #{auto_remit_yn} -->
                 , CONT_DT             = #{cont_dt}
                 , SVC_STAT            = #{svc_stat}
                 , SVC_START_DT        = #{svc_start_dt}
@@ -349,6 +349,7 @@
                 , DATE_FORMAT(IFNULL(CC.UPT_DTTM, CC.ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
           FROM	TB_CHAIN_CARD CC 
          WHERE  CHAIN_NO = #{card_chain_no}
+         
         <if test="sch_card_acq != null and sch_card_acq != ''">			
 			AND CC.CARD_ACQ = #{sch_card_cd}
 		</if>
@@ -357,10 +358,10 @@
                 ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>
-                ORDER BY ent_dttm DESC
+                ORDER BY use_yn DESC
             </otherwise>
         </choose>
-        LIMIT ${start}, ${end}
+        <!-- LIMIT ${start}, ${end} -->
     </select>
     
     

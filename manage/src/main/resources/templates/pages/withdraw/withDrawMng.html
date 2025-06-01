@@ -34,7 +34,7 @@
         }
 
         // Set default values for sch_reg_sdt and sch_reg_edt
-        var today = new Date();        
+        var today = new Date();   
         $('#sch_work_date').val(today.toISOString().split('T')[0]);
         // $('#sch_list_conf_date').val(today.toISOString().split('T')[0]);
         $('#change_work_date').val(today.toISOString().split('T')[0]);
@@ -125,9 +125,9 @@
             info: false, // 필요에 따라 true로 변경
             autoWidth: false,
             // responsive: true, // 이미 위에서 설정됨
-            scrollCollapse: true,
-            scrollY: '400px',
-            pageLength: 100,
+            // scrollCollapse: true,
+            scrollY: '420px',
+            pageLength: 20,
             language: {
                 emptyTable: '데이터가 없습니다.',
                 zeroRecords: '일치하는 데이터가 없습니다.',
@@ -232,13 +232,22 @@
           // 수정된 부분: 클릭된 셀 정보 가져오기
           var clickedCell = $(e.target).closest('td');
           var clickedColumnIndex = clickedCell.index();
-          if (clickedColumnIndex == 1 && row.risk_grade > 0) {
+          
+          var row = tbl_wd_summ.row(this).data();
+          if (clickedColumnIndex == 2 && row.risk_grade > 0) {
               // Show modal_risk              
               $('#risk_chain_no').val(row.chain_no);              
               $('#modal_risk').modal('show');   
               $('#tbl_risk_list').DataTable().ajax.reload(); 
           }
-          var row = tbl_wd_summ.row(this).data();
+
+          if (clickedColumnIndex == 9 && row.error_cnt > 0) {
+            // alert('미확정 건이 있습니다. 확인 후 진행하세요.');
+            $('#sch_list_wd_status').val('Y');
+          } else{
+            $('#sch_list_wd_status').val('A');
+          }
+          
           $('#frm_sch_card')[0].reset();   
           $('#frm_sch_list')[0].reset();
           
@@ -329,8 +338,7 @@
           $('#frm_sch_list')[0].reset();
 
           $('#tbl_card_summ').DataTable().clear().draw();
-          $('#tbl_wd_resv_list').DataTable().clear().draw();          
-
+          $('#tbl_wd_resv_list').DataTable().clear().draw();
         }
         
         var tbl_card_summ = $('#tbl_card_summ').DataTable({
@@ -368,15 +376,15 @@
             { targets: 6, width: '130px', className: 'text-end' },
           ],
           order: [[1, 'asc']],
-          paging: true,
+          paging: false,
           lengthChange: false,
           searching: false,
           ordering: true,
           autoWidth: false,
           responsive: true,
-          scrollCollapse: true,
-          pageLength: 15,
-          scrollY: '350px',
+          // scrollCollapse: true,
+          // pageLength: 15,
+          scrollY: '420px',
           info: false,
           language: {
             emptyTable: '데이터가 없습니다.',
@@ -565,8 +573,8 @@
           });
 
           if (selectedWdNo.length === 0) {
-          alert('변경 건을 선택해주세요');
-          return;
+            alert('변경 건을 선택해주세요');
+            return;
           }
 
           var dataParam = {
@@ -867,7 +875,7 @@
   <div class="content">     
     <div class="row g-1 mb-1">
       <div class="col-lg-7">
-        <div class="card" style="height: 580px;">
+        <div class="card" style="height: 680px;">
           <div class="card-header">          
             <div class="row flex-between-end">
               <div class="col-lg-2 align-self-center">
@@ -875,7 +883,7 @@
               </div>            
               <div class="col-lg-10">
                 <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
-                  <div class="row mb-1">
+                  <div class="row mb-0">
                     <div class="col-sm-12">
                       <div class="input-group input-group-sm mb-1">
                         <div class="col-sm-3">
@@ -886,7 +894,7 @@
                         </select>
                         <select class="form-select form-control-sm me-1" id="sch_agency_cd" name="sch_agency_cd" style="width: 75px">
                           <option value="">대리점</option>
-                        </select>                      
+                        </select>
                         <!-- <select class="form-select form-control-sm me-1" id="schgb_chain" name="schgb_chain" style="width: 75px">
                           <option value="">가맹점 정보</option>
                           <option value="schgb_chain_nm">가맹점 명</option>
@@ -897,7 +905,7 @@
                       </div>
                     </div> 
                   </div> 
-                  <div class="row mb-1">
+                  <div class="row mb-0">
                     <div class="col-sm-8">
                       
                     </div>
@@ -951,7 +959,7 @@
         </div>      
       </div>
       <div class="col-lg-5">
-        <div class="card" style="height: 580px;">    
+        <div class="card" style="height: 680px;">    
           <div class="card-header">            
             <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">
               <input class="form-control form-control-sm" id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly" />

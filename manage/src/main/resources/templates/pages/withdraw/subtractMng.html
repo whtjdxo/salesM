@@ -44,6 +44,7 @@
         $('#sch_reg_sdt').val(twoMonthsAgo.toISOString().split('T')[0]);
         $('#sch_reg_edt').val(today.toISOString().split('T')[0]); 
         $('#reg_date').val(today.toISOString().split('T')[0]); 
+        $('#resv_date').val(today.toISOString().split('T')[0]); 
         
         var tbl_sub_summary = $('#tbl_sub_summary').DataTable({
           processing: true,
@@ -79,8 +80,8 @@
           searching: false,
           ordering: true,
           autoWidth: false,
-          responsive: true,
-          scrollCollapse: true,
+          // responsive: true,
+          // scrollCollapse: true,
           pageLength: 20,
           scrollY: '580px',
           info: false,
@@ -103,6 +104,15 @@
         $('#sch_all').change(function () {          
           $('#btn_search').click();          
         });
+
+        $('#sch_sub_type').change(function () {
+          if (isListClick) return; // 리스트 클릭 상태일 때는 무시
+          var sub_type = $('#sch_sub_type').val(); 
+          
+          if (sub_type != '') {
+            callAjax('/common/totalCodelist', "code_grp_cd=('SUB_CODE') AND CHK_CD1 = '" + sub_type + "'", fn_sch_sub_code_setting);      
+          }
+        });  
  
         $('#sub_type').change(function () {
           if (isListClick) return; // 리스트 클릭 상태일 때는 무시
@@ -113,10 +123,14 @@
           }
         });  
 
+        function fn_sch_sub_code_setting(data) {
+          codeSetting('SUB_CODE', data.data, '#sch_sub_code', '1', '', ''); 
+        }
+
         function fn_sub_code_setting(data) {
           codeSetting('SUB_CODE', data.data, '#sub_code', '1', '', ''); 
         }
-        
+
         $('#tbl_sub_summary').on('click', 'tr', function () {
           if ($(this).hasClass('selected')) {
             $(this).removeClass('selected');
@@ -135,7 +149,13 @@
             tbl_sub_list.ajax.reload();            
           }
           fn_frm_sub_mst_clear();      
-        });      
+        });    
+        
+        $('#btn_list_search').click(function () { 
+          tbl_sub_list.ajax.reload();
+          $('#frm_sub_mst')[0].reset();
+          $('#tbl_sub_recv_list').DataTable().clear().draw();
+        });
          
         // --------------------------------------------------------------- frm_sch_sub 정보 처리 ---------------------------------------------------
         var tbl_sub_list = $('#tbl_sub_list').DataTable({
@@ -157,6 +177,7 @@
               columns: [
                     { data: 'sub_code_nm' }
                   , { data: 'reg_date' }
+                  , { data: 'resv_date' }
                   , { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                   , { data: 'recv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                   , { data: 'remain_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
@@ -166,11 +187,12 @@
               columnDefs: [
                 { targets: 0, width: '150px', className: 'text-left' }
               , { targets: 1, width: '100px', className: 'text-center' }
-              , { targets: 2, width: '120px', className: 'text-right' }
+              , { targets: 2, width: '100px', className: 'text-center' }
               , { targets: 3, width: '120px', className: 'text-right' }
               , { targets: 4, width: '120px', className: 'text-right' }
-              , { targets: 5, width: '300px', className: 'text-left' }
-              , { targets: 6, width: '100px', className: 'align-middle white-space-nowrap text-center pe-0' }
+              , { targets: 5, width: '120px', className: 'text-right' }
+              , { targets: 6, width: '300px', className: 'text-left' }
+              , { targets: 7, width: '100px', className: 'align-middle white-space-nowrap text-center pe-0' }
             ],
             order: [[1, 'desc']],
             paging: true,
@@ -178,10 +200,10 @@
             searching: false,
             ordering: true,
             autoWidth: false,
-            responsive: true,
-            scrollCollapse: true,
+            // responsive: true,
+            // scrollCollapse: true,
             pageLength: 10,
-            scrollY: '450px',
+            scrollY: '290px',
             info: false,
             language: {
               emptyTable: '데이터가 없습니다.',
@@ -210,8 +232,9 @@
               $('#sub_code').val(data.sub_code).prop('selected', true);
             });
  
-            $('#sub_status').val(data.sub_status); 
-            $('#reg_date').val(data.reg_date);
+            $('#sub_status').val(data.sub_status);
+            $('#reg_date').val(data.reg_date); 
+            $('#resv_date').val(data.resv_date); 
             $('#sub_memo').val(data.sub_memo);
 
             $('#occur_crd_amt').val(Number(data.occur_crd_amt).toLocaleString());
@@ -290,9 +313,9 @@
               , { targets: 2, width: '120px', className: 'text-right' }
               , { targets: 3, width: '120px', className: 'text-right' }
               , { targets: 4, width: '120px', className: 'text-right' }
-              , { targets: 4, width: '120px', className: 'text-right' }
-              , { targets: 5, width: '300px', className: 'text-left' }
-              , { targets: 6, width: '100px', className: 'align-middle white-space-nowrap text-center pe-0' }
+              , { targets: 5, width: '120px', className: 'text-right' }
+              , { targets: 6, width: '300px', className: 'text-left' }
+              , { targets: 7, width: '100px', className: 'align-middle white-space-nowrap text-center pe-0' }
             ],
             order: [[1, 'desc']],
             paging: true,
@@ -519,7 +542,7 @@
   <div class="content">
     <div class="row g-3 mb-2">  
       <div class="col-lg-4">
-        <div class="card">
+        <div class="card" style="height:800px;">
           <div class="card-header">
             <div class="row flex-between-end">
               <div class="col-auto align-self-center">
@@ -602,7 +625,7 @@
                       <select class="form-select form-control-sm" id="sch_sub_status" name="sch_sub_status" style="width: 100px">
                         <option value="">선택</option> 
                       </select>
-                      <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
+                      <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_list_search" name="btn_list_search">조회</button></span> 
                     </div>
                   </div>                  
                 </div>
@@ -616,7 +639,8 @@
                   <thead class="bg-200">
                     <tr>
                       <th class="text-center" style="width: 150px;">차감 코드명</th>
-                      <th class="text-center" style="width: 100px;">차감일자</th>
+                      <th class="text-center" style="width: 100px;">등록일</th>
+                      <th class="text-center" style="width: 100px;">차감예정</th>
                       <th class="text-center" style="width: 120px;">등록금액</th>
                       <th class="text-center" style="width: 120px;">실행금액</th>
                       <th class="text-center" style="width: 120px;">미차감</th>
@@ -669,7 +693,22 @@
                       </div>
                     </div>
                   </div>  
-                  
+                  <div class="row mb-1">
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-4 col-form-label col-form-label-sm" for="resv_date">차감예정일</label> 
+                        <div class="col-sm-8">
+                          <input class="form-control form-control-sm " id="resv_date" type="text" name="resv_date" istyle="date" maxlength="10" required />
+                        </div>                        
+                      </div>
+                    </div>
+                    <div class="col-sm-9">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-1 col-form-label col-form-label-sm" for="sub_type">비고</label> 
+                        <input class="form-control form-control-sm" id="sub_memo" type="text" name="sub_memo" maxlength="50" />
+                      </div>
+                    </div>                     
+                  </div>
                   <div class="row mb-1">
                     <div class="col-sm-3">
                       <div class="input-group input-group-sm mb-1">
@@ -812,6 +851,7 @@
                       </div>
                     </div>
                   </div>                  
+                                    
                   <div class="row mb-1">
                     <div class="col-sm-3">
                       <div class="input-group input-group-sm mb-1">
@@ -821,15 +861,7 @@
                         </select>   
                       </div>
                     </div>
-                    <div class="col-sm-9">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-1 col-form-label col-form-label-sm" for="sub_type">비고</label> 
-                        <input class="form-control form-control-sm" id="sub_memo" type="text" name="sub_memo" maxlength="50" />
-                      </div>
-                    </div>                     
-                  </div>                  
-                  <div class="row mb-1">
-                    <div class="col-sm-6">
+                    <div class="col-sm-3">
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-2 col-form-label col-form-label-sm" for="use_yn">사용여부</label>
                         <div class="col-sm-8">

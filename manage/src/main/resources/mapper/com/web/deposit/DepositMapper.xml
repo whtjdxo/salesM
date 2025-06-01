@@ -159,7 +159,7 @@
 					ORDER BY 1
 			</otherwise>
 		</choose>                
-		LIMIT  ${start}, ${end}
+		<!-- LIMIT  ${start}, ${end} -->
 	</select>
 
 	<select id="getDepoResvList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
@@ -388,7 +388,7 @@
 					ORDER BY 1
 			</otherwise>
 		</choose>                
-		LIMIT  ${start}, ${end}
+		<!-- LIMIT  ${start}, ${end} -->
 	</select>
 
 	<select id="getChainDepoStatus" parameterType="java.util.HashMap" resultType="java.util.HashMap">
@@ -398,7 +398,7 @@
 				, T1.ABANK_CD			AS abank_cd
 				, IFNULL(T2.CHAIN_AMT, 0)									AS chain_depo_amt
 				, IFNULL(T3.CREDIT_AMT, 0)									AS credit_depo_amt
-				, CASE WHEN T1.BANK_CD = '039' THEN 0
+				, CASE WHEN T1.ABANK_CD = '039' THEN 0
 						ELSE IFNULL(T2.CHAIN_AMT, 0) - IFNULL(T3.CREDIT_AMT, 0) END 	AS gap_amt			
 				, IFNULL(T4.CRD_REMIT_FEE_AMT, 0)							AS crd_remit_fee_amt
 				, IFNULL(T4.CRD_UNREMIT_SUB_AMT, 0)							AS crd_unremit_sub_amt
@@ -412,7 +412,7 @@
 		  		JOIN (
 					SELECT 	CHAIN_NO , BANK_IN_DATE, SUM(IN_AMT) CHAIN_AMT
 					  FROM 	TB_CHAIN_DEPOSIT_LIST
-					 WHERE	BANK_IN_DATE = #{sch_card_adjust_date}					   
+					 WHERE	BANK_IN_DATE = #{sch_card_resv_date}					   
 					 GROUP 	BY CHAIN_NO , BANK_IN_DATE
 		        ) T2 ON T2.CHAIN_NO = T1.CHAIN_NO 
 		        LEFT OUTER JOIN (
@@ -420,10 +420,10 @@
 							, BANK_IN_DATE
 							, SUM(IN_AMT)       CREDIT_AMT
 					  FROM 	TB_CREDIT_DEPOSIT_LIST
-					 WHERE	BANK_IN_DATE = #{sch_card_adjust_date}
+					 WHERE	BANK_IN_DATE = #{sch_card_resv_date}
 					 GROUP 	BY TRANS_COMP, BANK_IN_DATE
 				) T3 ON T3.CHAIN_NO 	= T2.CHAIN_NO
-					AND T3.BANK_IN_DATE = T2.CHAIN_NO
+					AND T3.BANK_IN_DATE = T2.BANK_IN_DATE
 				LEFT OUTER JOIN (
 					SELECT 	CHAIN_NO, REG_DATE
 							, SUM(CASE WHEN SUB_CODE = 'I06001' THEN OCCUR_AMT ELSE NULL END)  CRD_REMIT_FEE_AMT				
@@ -444,7 +444,7 @@
 				) T5 ON T5.CHAIN_NO = T2.CHAIN_NO
 					AND T5.EXC_DATE = T2.BANK_IN_DATE
 		 WHERE  T2.CHAIN_NO		= #{sch_card_chain_no}
-		   AND  T2.BANK_IN_DATE = #{sch_card_adjust_date} 
+		   AND  T2.BANK_IN_DATE = #{sch_card_resv_date} 
 	</select>
 
 	<select id="getDepoAdjustList" parameterType="java.util.HashMap" resultType="java.util.HashMap">

@@ -102,6 +102,8 @@ public class LoanService {
             repayVo.setRemain_tot_amt(reppayTotAmt.toPlainString());
             repayVo.setRemain_princ_amt(loanPrincAmt.toPlainString());
             repayVo.setRemain_int_amt(repayIntAmt.toPlainString());
+            repayVo.setRecv_yn("N");
+            repayVo.setRecv_yn_nm("");
             
             schedule.add(repayVo);                
         } else {
@@ -155,6 +157,8 @@ public class LoanService {
                 repayVo.setRemain_tot_amt(dailyPayment.toPlainString());
                 repayVo.setRemain_princ_amt(dailyRepayPrincAmt.toPlainString());
                 repayVo.setRemain_int_amt(dailyRepayIntAmt.toPlainString());
+                repayVo.setRecv_yn("N");
+                repayVo.setRecv_yn_nm("");
                 
                 schedule.add(repayVo); 
                 

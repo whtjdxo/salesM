@@ -429,7 +429,7 @@
                                 ORDER BY T1.CARD_ACQ DESC
                         </otherwise>
                 </choose>                
-                LIMIT  ${start}, ${end}
+                <!-- LIMIT  ${start}, ${end} -->
 	</select> 
 
         <select id="getChainVanDocuList" parameterType="java.util.HashMap" resultType="java.util.HashMap">

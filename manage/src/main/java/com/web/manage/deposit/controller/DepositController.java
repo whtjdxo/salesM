@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.web.manage.deposit.domain.ProcDepositVO;
@@ -98,6 +99,7 @@ public class DepositController {
     public @ResponseBody String getDepoCardSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> depoStatus = new HashMap<String, Object>();
         Gson gson = new Gson();
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
@@ -116,6 +118,7 @@ public class DepositController {
 
             list = depositService.getDepoCardSummary(hashmapParam);
             int records = depositService.getQueryTotalCnt();
+            depoStatus = depositService.getChainDepoStatus(hashmapParam);
 
             pageing.setRecords(records);
             pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
@@ -124,11 +127,48 @@ public class DepositController {
             hashmapResult.put("recordsTotal", pageing.getRecords());
             hashmapResult.put("recordsFiltered", pageing.getRecords());
             hashmapResult.put("data", list);
+            hashmapResult.put("depoStatus", depoStatus); 
 
             jString = gson.toJson(hashmapResult);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return jString;  
+    }
+
+    @RequestMapping(value="depoMng/chainDepositStatus", method = RequestMethod.POST)
+	public @ResponseBody ReturnDataVO totalCodelist(@RequestBody HashMap<String, Object> hashmapParam){
+		HashMap<String, Object> depoStatus = new HashMap<String, Object>();
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+			depoStatus = depositService.getChainDepoStatus(hashmapParam); 
+			result.setResultCode("S000");
+			result.setData(depoStatus);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+    @RequestMapping(value = "depoMng/chainDepositStatus2", method = RequestMethod.POST)
+    public @ResponseBody String getChainDepositStatus(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();         
+        HashMap<String, Object> depoStatus = new HashMap<String, Object>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {            
+            depoStatus = depositService.getChainDepoStatus(hashmapParam);   
+            hashmapResult.put("depoStatus", depoStatus); 
+            jString = gson.toJson(hashmapResult);
+            System.out.println("depoStatus : " + depoStatus);
+        } catch (Exception e) {
+            e.printStackTrace();
+       }
 
         return jString;  
     }

@@ -24,6 +24,7 @@ public class LoanRepayScheduleVO {
     private String  remain_int_amt;
 
     private String  recv_yn;
+    private String  recv_yn_nm;
     private String  recv_dt;
     private String  sub_trans_yn;
     private String  sub_strans_dttm;

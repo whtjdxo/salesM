@@ -97,9 +97,9 @@
             info: false, // 필요에 따라 true로 변경
             autoWidth: false,
             // responsive: true, // 이미 위에서 설정됨
-            scrollCollapse: true,
-            scrollY: '400px',
-            pageLength: 100,
+            // scrollCollapse: true,
+            scrollY: '360px',
+            pageLength: 20,
             language: {
                 emptyTable: '데이터가 없습니다.',
                 zeroRecords: '일치하는 데이터가 없습니다.',
@@ -299,7 +299,7 @@
           processing: true,
           serverSide: true,
           select: true,
-          responsive: true,
+          // responsive: true,
           ajax: {
             url: '/deposit/deposit/depoList/depoAdjustCardSummary',
             contentType: 'application/json',
@@ -350,15 +350,15 @@
             , { targets: 6, width: '130px', className: 'text-right px-1 dt-body-right' }
           ],
           order: [[1, 'asc']],
-          paging: true,
+          paging: false,
           lengthChange: false,
           searching: false,
           ordering: true,
           autoWidth: false,
-          responsive: true,
-          scrollCollapse: true,
+          // responsive: true,
+          // scrollCollapse: true,
           pageLength: 15,
-          scrollY: '350px',
+          scrollY: '420px',
           info: false,
           language: {
             emptyTable: '데이터가 없습니다.',
@@ -588,8 +588,8 @@
   <div class="content">     
     <div class="row g-1 mb-1">
       <div class="col-lg-7">
-        <div class="card" style="height: 580px;">
-          <div class="card-header">          
+        <div class="card" style="height: 620px;">
+          <div class="card-header" style="height:110px;">          
             <div class="row flex-between-end">
               <div class="col-lg-2 align-self-center">
                 <h4 class="mb-0">입금 결과 조회</h4>
@@ -660,7 +660,7 @@
         </div>      
       </div>
       <div class="col-lg-5">
-        <div class="card" style="height: 580px;">    
+        <div class="card" style="height: 620px;">    
           <div class="card-header">            
             <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">
               <input class="form-control form-control-sm" id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly" />

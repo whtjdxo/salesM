@@ -212,11 +212,11 @@ public class VanDocuController {
         try {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam);
-            if (hashmapParam.get("sch_conf_sdt") != null) {
+            if (hashmapParam.get("sch_conf_sdt") == null || hashmapParam.get("sch_conf_sdt").toString().isEmpty()) {
                 String sch_conf_sdt = commonService.getPreWorkDay();
                 hashmapParam.put("sch_conf_sdt", sch_conf_sdt);
             }
-            if (hashmapParam.get("sch_conf_edt") != null) {
+            if (hashmapParam.get("sch_conf_edt") == null || hashmapParam.get("sch_conf_edt").toString().isEmpty()) {
                 String sch_conf_edt = commonService.getToDay();
                 hashmapParam.put("sch_conf_edt", sch_conf_edt);
             }

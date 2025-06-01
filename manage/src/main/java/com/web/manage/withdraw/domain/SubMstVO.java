@@ -8,6 +8,7 @@ public class SubMstVO {
     private String sub_status;
     private String chain_no;
     private String reg_date;
+    private String resv_date;
     private String sub_type;
     private String sub_code;    
     private String sub_memo;    

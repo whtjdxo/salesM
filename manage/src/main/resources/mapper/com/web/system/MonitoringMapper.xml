@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.web.manage.system.mapper.MonitoringMapper"> 
+
+    <select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select>     
+
+    <select id="getBatchList" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
+            SELECT  SQL_CALC_FOUND_ROWS
+                    BATCH_SEQ                      AS batch_seq
+                    , BM.BATCH_ID                  AS batch_id
+                    , GET_CODE_NM('BATCH', BM.BATCH_ID) 			    AS batch_nm
+                    , DATE_FORMAT(BM.START_DTTM, '%Y-%m-%d %H:%i')		AS start_dttm
+                    , DATE_FORMAT(BM.END_DTTM, '%Y-%m-%d %H:%i')		AS end_dttm
+                    , BM.SUCC_FLAG                  AS succ_flag
+                    , BM.ERR_MSG                    AS err_msg
+             FROM 	TB_BATCH_MST BM
+            WHERE   BM.START_DTTM &gt;= DATE(#{sch_batch_sdt}) 
+              AND 	BM.START_DTTM &lt;  DATE_ADD(DATE(#{sch_batch_edt}), INTERVAL 1 DAY)
+            <if test="sch_batch_id != ''">                   
+                    AND  BM.BATCH_ID = #{sch_batch_id}
+            </if>                        
+            <if test="sch_succ_flag != ''">                   
+                    AND  BM.SUCC_FLAG = #{sch_succ_flag}
+            </if>
+            <choose>
+                <when test="sidx != ''">
+                    ORDER BY ${sidx} ${sord}
+                </when>
+                <otherwise>
+                    ORDER BY 1
+                </otherwise>
+            </choose>                
+            LIMIT  ${start}, ${end}
+    </select>
+
+    <select id="getBatchDetailList" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
+            SELECT  SQL_CALC_FOUND_ROWS
+                    SEQ_NO          AS seq_no
+                    , ERR_MSG       AS err_msg
+                    , DATE_FORMAT(ENT_DTTM, '%Y-%m-%d %H:%i')		AS ent_dttm
+              FROM  TB_BATCH_LIST
+            WHERE  BATCH_SEQ = #{batch_seq} 
+            
+            <choose>
+                    <when test="sidx != ''">
+                            ORDER BY ${sidx} ${sord}
+                    </when>
+                    <otherwise>
+                            ORDER BY 1
+                    </otherwise>
+            </choose>                
+            LIMIT  ${start}, ${end}
+    </select>
+
+
+
+        <select id="getScrapList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT	SQL_CALC_FOUND_ROWS
+                        TC.CORP_CD 					AS chain_no 
+                        , TC.CORP_NM 					AS chain_nm
+                        , IFNULL(VL.LOGIN_ID, ' ')			AS site_cd
+                        , IFNULL(VL.LOGIN_PWD, ' ')			AS login_pwd
+                        , TML.VAN_CD					AS van_cd
+                        , IFNULL(CASE TML.GUBUN WHEN 'APRV' THEN GET_CODE_NM('VAN_CD', TML.VAN_CD)
+	                                        WHEN 'BANK' THEN  GET_CODE_NM('BANK_CD', TML.VAN_CD)
+	                                        WHEN 'CARD' THEN  '여신협'
+	                                        ELSE TML.VAN_CD END, '')	 	AS van_nm
+                        , CASE 	WHEN IFNULL(VL.VAN_CD, 'X') = 'X' THEN '스크래핑 기록이 없습니다'
+				ELSE CONCAT(IFNULL(VL.SCRAP_GB, 'X') , ' >> ', IFNULL(VL.RSLT_MSG, '')  
+				  	,  CASE	WHEN IFNULL(VL.LOGIN_ID, 'X') = 'X' THEN ''
+				  	        ELSE CONCAT(' (', IFNULL(VL.LOGIN_ID, ' '), ' / ', IFNULL(VL.LOGIN_PWD, ' '),  ')') END 
+				  	)	
+                                END                                                                     AS act_status
+                        , IFNULL(VL.SCRAP_GB, 'N')					                AS act_status_nm
+                        , TML.GUBUN									AS gubun
+                        , IFNULL(CASE TML.GUBUN	WHEN 'APRV' 	THEN '승인전문'
+                                                WHEN 'BANK' 	THEN '입금전문'
+                                                WHEN 'CARD' 	THEN '여신협'
+                                                                        ELSE TML.GUBUN	END, '')	AS gubun_nm
+                        , IFNULL(DATE_FORMAT(VL.LAST_SCRAP_DTTM, '%Y-%m-%d %H:%i:%s'), '')	 	AS scrap_dttm
+                        , IFNULL(DATE_FORMAT(VL.LAST_SCRAP_DTTM, '%Y-%m-%d %H:%i:%s'), '')	 	AS last_scrap_dttm
+                FROM 	VW_CORP TC
+                        JOIN (
+                                SELECT 	'APRV'	AS GUBUN, CHAIN_NO, VAN_CD AS VAN_CD, COUNT(1) AS CNT
+                                  FROM 	TB_CHAIN_VAN
+                                 WHERE 	USE_YN = 'Y'  
+                                 GROUP 	BY CHAIN_NO, VAN_CD 
+                                 UNION 	ALL 
+                                SELECT  'BANK'	AS GUBUN, CHAIN_NO, ABANK_CD	AS VAN_CD, 1 AS CNT
+                                  FROM 	(
+                                        SELECT  CHAIN_NO, ABANK_CD 
+                                          FROM 	TB_CHAIN 
+                                         WHERE 	SVC_STAT IN ('O', 'R')
+                                           AND  USE_YN = 'Y'
+                                           AND 	ABANK_SPEED_YN = 'Y'
+                                         UNION	ALL
+                                        SELECT 	CORP_CD,  BANK_CD
+                                          FROM 	TB_CORP
+                                         WHERE	USE_YN = 'Y'
+                                           AND  CORP_TYPE  = 'LN'
+                                        ) VC
+                                 UNION 	ALL 
+                                SELECT  'CARD'	AS GUBUN, CHAIN_NO, 'CARDSALES' AS VAN_CD, 1 AS CNT
+                                  FROM 	TB_CHAIN 
+                                 WHERE 	SVC_STAT IN ('O', 'R')
+                                   AND  USE_YN = 'Y'
+                                   AND 	LENGTH(CARDSALES_ID) > 5 
+                                   AND  LENGTH(CARDSALES_PWD) > 5 
+                        ) TML ON TML.CHAIN_NO = TC.CORP_CD
+                        LEFT OUTER JOIN (
+                                SELECT 	ROW_NUMBER() OVER (PARTITION BY CHAIN_NO, VAN_CD ORDER BY LAST_SCRAP_DTTM DESC) AS CHAIN_RNO
+                                        , SCRAP_GB	, CHAIN_NO	
+                                        , VAN_CD	, LOGIN_ID	, LOGIN_PWD	
+                                        , RSLT_MSG	, LAST_SCRAP_DTTM
+                                  FROM  VW_SCRAP_LOG
+                        ) VL ON VL.CHAIN_NO     = TML.CHAIN_NO 
+                        AND VL.VAN_CD 		= TML.VAN_CD
+                        AND VL.CHAIN_RNO 	= 1
+                WHERE	1 = 1         
+                  AND  TC.SVC_STAT IN ('O', 'R')       
+                <if test="sch_gubun != null and sch_gubun != ''">                   
+                        AND  TML.GUBUN = #{sch_gubun}
+                </if>
+                <if test="sch_chain_nm != null and sch_chain_nm != ''">                   
+                        AND TC.CORP_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                </if>
+                <if test="sch_van_cd != null and sch_van_cd != ''">                   
+                        AND  TML.VAN_CD = #{sch_van_cd} 
+                </if>
+                <choose>
+                    <when test="sidx != ''">
+                            ORDER BY ${sidx} ${sord}
+                    </when>
+                    <otherwise>
+                            ORDER BY 1
+                    </otherwise>
+                </choose>                
+                LIMIT  ${start}, ${end}
+        </select>
+</mapper>           
