@@ -11,7 +11,6 @@ import com.web.config.interceptor.AuthInterceptor;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.deposit.domain.ProcDepositVO;
 import com.web.manage.deposit.mapper.DepositMapper;
-import com.web.manage.withdraw.domain.ProcRemitVO;
 
 import ch.qos.logback.classic.Logger;
 

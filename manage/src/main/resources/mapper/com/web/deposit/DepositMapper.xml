@@ -197,7 +197,7 @@
 				, IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
 				, IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
 				, IFNULL(WD.REMIT_NO, '')       AS remit_seq
-				, IFNULL( WD.REMIT_DTTM, '')    AS remit_dttm
+				, IFNULL(WD.REMIT_DATE, '')    	AS remit_date
 				, IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
 				, IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
 				, IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg
@@ -482,7 +482,7 @@
 				, IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
 				, IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
 				, IFNULL(WD.REMIT_NO, '')       AS remit_seq
-				, IFNULL( WD.REMIT_DTTM, '')    AS remit_dttm
+				, IFNULL(WD.REMIT_DATE, '')    	AS remit_date
 				, IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
 				, IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
 				, IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg

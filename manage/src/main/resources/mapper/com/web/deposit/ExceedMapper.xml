@@ -25,7 +25,8 @@
 					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
 				</if>				 
 		 WHERE 	1= 1
-		<if test='sch_chkall != null and sch_chkall != "N"'>
+		<if test='sch_all == null'>
+		   AND  EM.EXC_STATUS IN ('100000', '000000')
 		   AND 	EM.REMAIN_AMT  &gt; 0
 		</if>			
 		   AND	EM.USE_YN	= 'Y'
@@ -48,6 +49,7 @@
 				, IFNULL(SUM(REMAIN_AMT), 0) 	AS remain_amt
 		FROM 	TB_EXCEED_MST EM
 				JOIN TB_CHAIN TC ON TC.CHAIN_NO = EM.CHAIN_NO 
+								AND TC.USE_YN = 'Y'
 				<if test='sch_corp_cd != null and sch_corp_cd != ""'>
 					AND  TC.CORP_CD = #{sch_corp_cd}
 				</if>
@@ -55,9 +57,10 @@
 					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
 				</if>				 
 		WHERE 	1= 1
-		<if test='sch_chkall != null and sch_chkall != "N"'>
-			AND 	EM.REMAIN_AMT  &gt; 0
-		</if>	
+		<if test='sch_all == null'>
+		   AND  EM.EXC_STATUS IN ('100000', '000000')
+		   AND 	EM.REMAIN_AMT  &gt; 0
+		</if>
 		AND	EM.USE_YN	= 'Y' 
 	</select>
 
@@ -72,7 +75,7 @@
 				, EM.EXC_STATUS 							AS exc_status
 				, GET_CODE_NM('EXC_STATUS', EM.EXC_STATUS)  AS exc_status_nm
 				, EM.EXC_DATE								AS exc_date
-				, IFNULL(DATE_FORMAT(RM.REMIT_DTTM, '%Y-%m-%d') , '')	AS remit_date
+				, IFNULL(RM.REMIT_DATE, '')					AS remit_date
 				, IFNULL(OCCUR_AMT, 0) 						AS occur_amt 
 				, IFNULL(ISSUE_AMT, 0) 						AS issue_amt
 				, IFNULL(REMAIN_AMT, 0) 					AS remain_amt 
@@ -85,7 +88,7 @@
 		 WHERE 	EM.CHAIN_NO = #{sch_chain_no} 
 		   AND  EM.EXC_DATE BETWEEN #{sch_exc_sdt} 
 		  						AND #{sch_exc_edt} 
-		  AND  EM.USE_YN = 'Y'
+		  AND  EM.USE_YN = 'Y'		
 		<if test="sch_exc_type != null and sch_exc_type != ''"> 
 			AND  EM.EXC_TYPE = #{sch_exc_type}  
 		</if>
@@ -141,7 +144,7 @@
 				, EM.EXC_STATUS 							AS exc_status
 				, GET_CODE_NM('EXC_STATUS', EM.EXC_STATUS)  AS exc_status_nm
 				, EM.EXC_DATE								AS exc_date
-				, IFNULL(DATE_FORMAT(RM.REMIT_DTTM, '%Y-%m-%d') , '')	AS remit_date
+				, IFNULL(RM.REMIT_DATE, '')					AS remit_date
 				, IFNULL(OCCUR_AMT, 0) 						AS occur_amt 
 				, IFNULL(ISSUE_AMT, 0) 						AS issue_amt
 				, IFNULL(REMAIN_AMT, 0) 					AS remain_amt 

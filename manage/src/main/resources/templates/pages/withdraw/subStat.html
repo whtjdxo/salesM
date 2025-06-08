@@ -31,10 +31,10 @@
         } 
 
         // Set default values for sch_reg_sdt and sch_reg_edt
-        var today = new Date();
-        var twoMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-        $('#sch_reg_sdt').val(twoMonthsAgo.toISOString().split('T')[0]);
-        $('#sch_reg_edt').val(today.toISOString().split('T')[0]);  
+        var toDay = returnDate('today');
+        var thirtyDayAgo = returnDate('thirtyDayAgo');
+        $('#sch_reg_sdt').val(thirtyDayAgo);
+        $('#sch_reg_edt').val(toDay);  
 
         $('#btn_search').click(function () {   
           tbl_substat_summ.ajax.reload();

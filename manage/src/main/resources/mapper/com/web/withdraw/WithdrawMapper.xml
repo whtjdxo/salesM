@@ -68,7 +68,7 @@
                                 GROUP	BY CHAIN_NO, WORK_DATE 
                         ) VW  
                         LEFT OUTER JOIN (	SELECT  CHAIN_NO, SUM(SUB_AMT) AS SUB_AMT
-                                                FROM 	VW_SUB_RESV_LIST
+                                                FROM 	VW_WD_SUB_RESV_LIST
                                                 GROUP 	BY CHAIN_NO
                                         ) SR ON SR.CHAIN_NO = VW.CHAIN_NO
                         JOIN TB_CHAIN TC ON TC.CHAIN_NO = VW.CHAIN_NO
@@ -160,7 +160,7 @@
                         ) VW  
                         LEFT OUTER JOIN (	
                                                 SELECT  CHAIN_NO, SUM(SUB_AMT) AS SUB_AMT
-                                                  FROM 	VW_SUB_RESV_LIST
+                                                  FROM 	VW_WD_SUB_RESV_LIST
                                                  GROUP 	BY CHAIN_NO
                                         ) SR ON SR.CHAIN_NO = VW.CHAIN_NO
                         JOIN TB_CHAIN TC ON TC.CHAIN_NO = VW.CHAIN_NO
@@ -217,7 +217,7 @@
                         ) VW  
                         LEFT OUTER JOIN (	
                                 SELECT  CHAIN_NO, SUM(SUB_AMT) AS SUB_AMT
-                                FROM 	VW_SUB_RESV_LIST
+                                FROM 	VW_WD_SUB_RESV_LIST
                                 WHERE  CHAIN_NO = #{sch_card_chain_no} 
                                 GROUP 	BY CHAIN_NO
                         ) SR ON SR.CHAIN_NO = VW.CHAIN_NO
@@ -297,7 +297,7 @@
                         , IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
                         , IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
                         , IFNULL(WD.REMIT_NO, '')       AS remit_seq
-                        , IFNULL( WD.REMIT_DTTM, '')    AS remit_dttm
+                        , IFNULL(WD.REMIT_DATE, '')     AS remit_date
                         , IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
                         , IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
                         , IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg
@@ -394,7 +394,7 @@
                         , RM.REMIT_NO                                           AS remit_no
                         , RM.REMIT_STATUS                                       AS remit_status    
                         , GET_CODE_NM('WD_STATUS', RM.REMIT_STATUS)             AS remit_status_nm
-                        , DATE_FORMAT(RM.REMIT_DTTM, '%Y-%m-%d %H:%i:%s')	AS remit_dttm
+                        , RM.REMIT_DATE	                                        AS remit_date
                         , RM.CONF_AMT                                           AS conf_amt        
                         , RM.CARD_FEE_AMT                                       AS card_fee_amt
                         , RM.CARD_RESV_AMT                                      AS card_resv_amt
@@ -433,8 +433,8 @@
                         JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID  
                         JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
                                         AND CO.USE_YN = 'Y'
-                 WHERE	RM.REMIT_DTTM BETWEEN CONCAT(#{sch_remit_dt}, ' 00:00:00')
-                                          AND CONCAT(#{sch_remit_dt}, ' 23:59:59')
+                 WHERE	RM.REMIT_DATE BETWEEN #{sch_remit_dt}
+                                          AND #{sch_remit_dt}
                 <choose>
                         <when test="sidx != ''">
                                 ORDER BY ${sidx} ${sord}
@@ -483,8 +483,8 @@
                         JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID  
                         JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
                                         AND CO.USE_YN = 'Y'
-                 WHERE	RM.REMIT_DTTM BETWEEN CONCAT(#{sch_remit_dt}, ' 00:00:00')
-                                          AND CONCAT(#{sch_remit_dt}, ' 23:59:59')                
+                 WHERE	RM.REMIT_DATE BETWEEN #{sch_remit_dt}
+                                          AND #{sch_remit_dt}
         </select>
 
         <select id="getRemitList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
@@ -522,7 +522,7 @@
                         , IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
                         , IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
                         , IFNULL(WD.REMIT_NO, '')       AS remit_seq
-                        , IFNULL( WD.REMIT_DTTM, '')    AS remit_dttm
+                        , IFNULL(WD.REMIT_DATE, '')     AS remit_date
                         , IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
                         , IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
                         , IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg

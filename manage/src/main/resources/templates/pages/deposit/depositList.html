@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+)<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
   <head>
     <title>사전정산 관리</title>
@@ -23,10 +23,10 @@
           codeSetting('CORP_CD', data.data, '#sch_corp_cd', '1', '', ''); 
         }
         // Set default values for sch_reg_sdt and sch_reg_edt
-        var today = new Date();        
-        $('#sch_adjust_date').val(today.toISOString().split('T')[0]);
-        // $('#sch_list_conf_date').val(today.toISOString().split('T')[0]);
-        $('#change_resv_date').val(today.toISOString().split('T')[0]);
+        var toDay = returnDate('today');        
+        $('#sch_adjust_date').val(toDay);
+        // $('#sch_list_conf_date').val(toDay);
+        $('#change_resv_date').val(toDay);
 
         $('#btn_search').click(function () {   
           tbl_depo_resv_summ.ajax.reload();

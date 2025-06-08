@@ -196,7 +196,7 @@
                 LIMIT  ${start}, ${end}
         </select>
         
-        <select id="getChainSubResvList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        <select id="getChainWdSubList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
                 SELECT  SQL_CALC_FOUND_ROWS
                         SM.SUB_NO                                       AS sub_no
                         , SM.CHAIN_NO                                   AS chain_no       
@@ -238,25 +238,9 @@
                                         AND TC.USE_YN  = 'Y'
                 WHERE	SM.USE_YN = 'Y'          
                   AND   SM.CHAIN_NO =  #{sch_chain_no}
-                <if test='sch_reg_sdt != null and sch_reg_sdt != ""'>
-                        AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
-                </if>
-                <if test='sch_reg_edt != null and sch_reg_edt != ""'>
-                        AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
-                </if>
-                <if test='sch_sub_code != null and sch_sub_type != ""'>
-                        AND  SM.SUB_TYPE = #{sch_sub_type} 
-                </if>
-                <if test='sch_sub_code != null and sch_sub_code != ""'>
-                        AND  SM.SUB_CODE = #{sch_sub_code} 
-                </if>
-                <if test='sch_sub_status != null and sch_sub_status != ""'>
-                        AND  SM.SUB_STATUS = #{sch_sub_status} 
-                </if>      
-                <if test='sch_unissu != null and sch_unissu == "Y"'>
-                        AND  SM.SUB_STATUS IN ('000000', '100000', '900000')
-                        AND  SM.REMAIN_AMT &gt;= 0
-                </if>          
+                  AND   SM.RESV_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d')   
+                  AND  SM.SUB_STATUS IN ('000000', '100000')
+                  AND  SM.REMAIN_AMT &gt;= 0 
                 <choose>
                         <when test="sidx != ''">
                                 ORDER BY ${sidx} ${sord}

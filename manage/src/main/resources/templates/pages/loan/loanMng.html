@@ -51,14 +51,14 @@
         }
 
         // Set default values for sch_cont_sdt and sch_cont_edt
-        var today = new Date();
-        var twoMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+        var toDay = returnDate('today'); // 오늘 날짜 계산
+        var thirtyDayAgo = returnDate('thirtyDayAgo'); // 1개월 전 날짜 계산
 
-        $('#sch_cont_sdt').val(twoMonthsAgo.toISOString().split('T')[0]);
-        $('#sch_cont_edt').val(today.toISOString().split('T')[0]); 
-        $('#cont_dt').val(today.toISOString().split('T')[0]); 
-        $('#loan_sdt').val(today.toISOString().split('T')[0]); 
-        $('#counsel_dt').val(today.toISOString().split('T')[0]); 
+        $('#sch_cont_sdt').val(thirtyDayAgo);
+        $('#sch_cont_edt').val(toDay); 
+        $('#cont_dt').val(toDay); 
+        $('#loan_sdt').val(toDay); 
+        $('#counsel_dt').val(toDay); 
         
         var tbl_loan_summary = $('#tbl_loan_summary').DataTable({
           processing: true,
@@ -347,8 +347,8 @@
           $('#chain_no').val(chain_no); 
           $('#int_rate').val(int_rate); 
           $('#delay_rate').val(delay_rate);
-          $('#cont_dt').val(today.toISOString().split('T')[0]);
-          $('#loan_sdt').val(today.toISOString().split('T')[0]);      
+          $('#cont_dt').val(toDay);
+          $('#loan_sdt').val(toDay);      
 
           $('#cont_dt').prop('readonly', false).removeClass('bg-light');
           $('#princ_amt').prop('readonly', false).removeClass('bg-light');

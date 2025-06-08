@@ -33,11 +33,11 @@
           codeSetting('WD_STATUS', data.data, '#change_wd_status', '1', '', '');  
         }
 
+
         // Set default values for sch_reg_sdt and sch_reg_edt
-        var today = new Date();   
-        $('#sch_work_date').val(today.toISOString().split('T')[0]);
-        // $('#sch_list_conf_date').val(today.toISOString().split('T')[0]);
-        $('#change_work_date').val(today.toISOString().split('T')[0]);
+        var toDay = returnDate('today');
+        $('#sch_work_date').val(toDay);
+        $('#change_work_date').val(toDay);
 
         $('#btn_search').click(function () {   
           tbl_wd_summ.ajax.reload();
@@ -590,7 +590,7 @@
               alert('변경 작업일을 입력하세요.');
               return;
             }
-            if (workDate <= today ){
+            if (workDate <= toDay ){
               alert('변경일은 익일 이후로 변경 가능합니다.');
               return;
             }
@@ -658,7 +658,7 @@
             select: true,
             responsive: true,
             ajax: {
-              url: '/withdraw/subtract/subMng/chainSubList',
+              url: '/withdraw/subtract/subMng/chainWdSubList',
               contentType: 'application/json',
               dataType: 'JSON',
               type: 'POST',

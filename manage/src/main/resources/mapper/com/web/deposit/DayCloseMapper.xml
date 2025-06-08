@@ -1,0 +1,735 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.web.manage.deposit.mapper.DayCloseMapper">
+    <select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select> 
+
+    <select id="getDayCloseCheck" parameterType="java.util.HashMap" resultType="int">
+		SELECT  COUNT(1)    AS CNT
+          FROM 	TB_DAY_CLOSE_REPORT DC
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO                
+         WHERE  close_date = #{close_date}
+	</select> 
+	
+    <select id="getDayPreCloseList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	SQL_CALC_FOUND_ROWS
+                #{close_date}						AS close_date
+                , TC.CHAIN_NO 						AS chain_no
+                , TC.CHAIN_NM                       AS chain_nm
+                , TC.CORP_CD						AS corp_cd        		
+                , IFNULL(RM.REMIT_CNT		, 0)	AS rm_remit_cnt
+                , IFNULL(RM.CONF_AMT     	, 0)	AS rm_conf_amt
+                , IFNULL(RM.CARD_FEE_AMT 	, 0)	AS rm_card_fee_amt
+                , IFNULL(RM.SVC_FEE_AMT  	, 0)    AS rm_svc_fee_amt
+                , IFNULL(RM.CRD_FEE_AMT  	, 0)    AS rm_crd_fee_amt
+                , IFNULL(RM.WD_BASE_AMT  	, 0)    AS rm_wd_base_amt
+                , IFNULL(RM.SUB_AMT  		, 0)   	AS rm_sub_amt 
+                , IFNULL(RM.REMIT_AMT  	, 0)    	AS rm_remit_amt
+                , IFNULL(RM.EXC_REMIT_AMT	, 0)	AS rm_exc_remit_amt
+                , IFNULL(RM.REMIT_TOT_AMT	, 0)    AS rm_remit_tot_amt
+                , IFNULL(DM.CONF_AMT_SUM, 0)		AS dp_conf_amt_sum
+                , IFNULL(DM.CARD_RESV_AMT	, 0) 	AS dp_card_resv_amt
+                , IFNULL(DM.RESV_BASE_AMT	, 0) 	AS dp_resv_base_amt
+                , IFNULL(DM.RESV_SVC_AMT	, 0) 	AS dp_resv_svc_amt
+                , IFNULL(DM.RESV_CRD_AMT	, 0) 	AS dp_resv_crd_amt
+                , IFNULL(DM.BANK_IN_AMT		, 0) 	AS dp_bank_in_amt
+                , CASE  WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0)
+                        - ( CASE WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0) > IFNULL(DM.BANK_IN_CRD_AMT	, 0) THEN IFNULL(DM.BANK_IN_CRD_AMT	, 0)
+                                ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0), 0)	END
+                            ) >= IFNULL(DM.BANK_IN_BASE_AMT	, 0)
+                    THEN  IFNULL(DM.BANK_IN_BASE_AMT, 0)
+                    ELSE  GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0)
+                        - ( CASE WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0) > IFNULL(DM.BANK_IN_CRD_AMT	, 0) THEN IFNULL(DM.BANK_IN_CRD_AMT	, 0)
+                                ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0), 0)	END
+                            ), 0)
+                    END																					AS dp_bank_in_base_amt
+                , CASE WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0) >= IFNULL(DM.BANK_IN_CRD_AMT	, 0) THEN IFNULL(DM.BANK_IN_CRD_AMT	, 0)
+                    ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0), 0)	END		AS dp_bank_in_crd_amt								
+                , IFNULL(CD.CRD_IN_AMT, 0)			AS op_bank_in_amt
+                , CASE  WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0)
+                        - ( CASE WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0) > IFNULL(DM.RESV_CRD_AMT	, 0) THEN IFNULL(DM.RESV_CRD_AMT	, 0)
+                                ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0), 0)	END
+                            ) >= IFNULL(DM.RESV_BASE_AMT	, 0)
+                    THEN  IFNULL(DM.RESV_BASE_AMT, 0)
+                    ELSE  GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0)
+                        - ( CASE WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0) > IFNULL(DM.RESV_CRD_AMT	, 0) THEN IFNULL(DM.RESV_CRD_AMT	, 0)
+                                ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0), 0)	END
+                            ), 0)
+                    END																					AS op_bank_in_base_amt
+                , IFNULL(DM.RESV_SVC_AMT	, 0) 																AS op_bank_in_svc_amt
+                , CASE WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0) >= IFNULL(DM.RESV_CRD_AMT	, 0) THEN IFNULL(DM.RESV_CRD_AMT	, 0)
+                    ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0), 0)	END		AS op_bank_in_crd_amt
+                , IFNULL(CD.CRD_IN_AMT, 0) - IFNULL(DM.BANK_IN_AMT, 0) 	AS op_send_gap_amt
+                , IFNULL(NS.REMIT_TRANS_FEE, 0) 					AS op_remit_trans_fee
+                , IFNULL(DM.EXC_CRD_OVER_MOVE_AMT , 0) 				AS op_send_exc_amt
+                , IFNULL(DM.SUB_SVC_UNSEND_AMT	, 0) 				AS op_send_sub_amt		
+                , IFNULL(DM.EXC_CARD_OVER_AMT, 0) 					AS exc_card_over_amt
+                , IFNULL(DM.EXC_CARD_GAP_AMT , 0) 					AS exc_card_gap_amt
+                , IFNULL(DM.EXC_DATE_CHANGE_AMT , 0)				AS exc_date_change_amt
+                , IFNULL(DM.EXC_CRD_OVER_MOVE_AMT , 0) 				AS exc_crd_over_send_amt
+                , IFNULL(DM.EXC_ETC_AMT	, 0) 						AS exc_etc_amt		
+                , IFNULL(DM.SUB_CARD_UNRECV_AMT	, 0) 				AS sub_card_unrecv_amt
+                , IFNULL(DM.SUB_CARD_UNRECV_BASE_AMT	, 0)		AS sub_card_unrecv_base_amt
+                , IFNULL(DM.SUB_CARD_UNRECV_CRD_AMT	, 0) 			AS sub_card_unrecv_crd_amt
+                , IFNULL(DM.SUB_CARD_GAP_AMT	, 0) 				AS sub_card_gap_amt
+                , IFNULL(DM.SUB_DATE_CHANGE_AMT	, 0) 				AS sub_date_change_amt
+                , IFNULL(DM.SUB_SVC_UNSEND_BASE_AMT	, 0) 			AS sub_svc_unsend_base_amt
+                , IFNULL(DM.SUB_SVC_UNSEND_CRD_AMT	, 0) 			AS sub_svc_unsend_crd_amt
+                , IFNULL(DM.SUB_ETC_AMT	, 0) 						AS sub_etc_amt		
+                , IFNULL(SM.RECV_AMT, 0) 							AS recv_amt
+                , IFNULL(SM.RECV_BASE_AMT, 0) 						AS recv_base_amt
+                , IFNULL(SM.RECV_SVC_AMT, 0) 						AS recv_svc_amt
+                , IFNULL(SM.RECV_CRD_AMT, 0) 						AS recv_crd_amt
+                , IFNULL(SM.MRECV_AMT, 0) 							AS mrecv_amt
+                , IFNULL(SM.MRECV_BASE_AMT, 0) 						AS mrecv_base_amt
+                , IFNULL(SM.MRECV_SVC_AMT, 0) 						AS mrecv_svc_amt
+                , IFNULL(SM.MRECV_CRD_AMT, 0) 						AS mrecv_crd_amt
+                , IFNULL(SM.RECV_LOAN_AMT, 0) 						AS recv_loan_amt
+                , IFNULL(SM.RECV_LOAN_BASE_AMT, 0) 					AS recv_loan_base_amt		
+                , IFNULL(SM.RECV_LOAN_CRD_AMT, 0) 					AS recv_loan_crd_amt
+                , IFNULL(SM.MRECV_LOAN_AMT, 0) 						AS mrecv_loan_amt
+                , IFNULL(SM.MRECV_LOAN_BASE_AMT, 0) 				AS mrecv_loan_base_amt
+                , IFNULL(SM.MRECV_LOAN_CRD_AMT, 0) 					AS mrecv_loan_crd_amt
+                , IFNULL(SM.RECV_BIZ_BASE_AMT, 0) 					AS recv_biz_base_amt
+                , IFNULL(SM.RECV_BIZ_CRD_AMT, 0) 					AS recv_biz_crd_amt
+                , IFNULL(SM.MRECV_BIZ_BASE_AMT, 0) 					AS mrecv_biz_base_amt		
+                , IFNULL(SM.MRECV_BIZ_CRD_AMT, 0) 					AS mrecv_biz_crd_amt
+                , IFNULL(SM.RECV_SPOT_BASE_AMT, 0) 					AS recv_spot_base_amt
+                , IFNULL(SM.RECV_SPOT_CRD_AMT, 0) 					AS recv_spot_crd_amt		
+                , IFNULL(SM.MRECV_SPOT_BASE_AMT, 0) 				AS mrecv_spot_base_amt
+                , IFNULL(SM.MRECV_SPOT_CRD_AMT, 0) 					AS mrecv_spot_crd_amt		
+                , IFNULL(SM.RECV_BIZ_DELAY_CRD_AMT, 0) 				AS recv_biz_delay_crd_amt
+                , IFNULL(SM.MRECV_BIZ_DELAY_CRD_AMT, 0) 			AS mrecv_biz_delay_crd_amt		
+                , IFNULL(SM.RECV_SPOT_DELAY_CRD_AMT, 0) 			AS recv_spot_delay_crd_amt
+                , IFNULL(SM.MRECV_SPOT_DELAY_CRD_AMT, 0) 			AS mrecv_spot_delay_crd_amt		
+                , IFNULL(SM.RECV_LOAN_ETC_AMT, 0) 					AS recv_loan_etc_amt
+                , IFNULL(TC.TOT_USE_AMT, 0)       					AS tot_use_amt
+                , IFNULL(PR.TOT_USE_AMT, 0)							AS pre_tot_use_amt	 
+                , IFNULL(PR.TOT_USE_AMT, 0) - IFNULL(TC.TOT_USE_AMT, 0)	AS tot_use_amt_gap
+                , TC.AGENCY_CD                                      as agency_cd
+                , TA.SVC_FEE_RATE									AS agency_svc_fee
+                , TA.CRD_FEE_RATE									AS agency_crd_fee
+                , TA.LOAN_FEE_RATE									AS agency_loan_fee 
+        FROM 	TB_CHAIN	TC
+                JOIN TB_AGENCY TA ON TA.AGENCY_CD  = TC.AGENCY_CD  		
+                LEFT OUTER JOIN (
+                    SELECT 	TRANS_COMP			AS CHAIN_NO
+                            , SUM(IN_AMT)		AS CRD_IN_AMT
+                    FROM 	TB_CREDIT_DEPOSIT_LIST
+                    WHERE  BANK_IN_DATE = #{close_date}
+                    GROUP	BY TRANS_COMP
+                ) CD ON CD.CHAIN_NO = TC.CHAIN_NO
+                LEFT OUTER JOIN (
+                    SELECT 	CHAIN_NO
+                            , COUNT(1)															AS WITHDRAW_CNT
+                            , SUM(CONF_AMT) 													AS CONF_AMT
+                            , SUM(REMIT_AMT) 													AS REMIT_AMT
+                            , SUM(CASE WHEN REMIT_NO IS NULL THEN 1 	ELSE NULL END) 			AS EXCEPT_CNT
+                            , SUM(CASE WHEN REMIT_NO IS NULL THEN REMIT_AMT	ELSE NULL END) 		AS EXCEPT_AMT
+                    FROM  TB_WITHDRAW
+                    WHERE  USE_YN = 'Y'
+                    AND	WORK_DATE 	= #{close_date}
+                    GROUP  BY CHAIN_NO
+                ) WD ON WD.CHAIN_NO = TC.CHAIN_NO	   	
+                JOIN (
+                    SELECT 	T1.CHAIN_NO
+                            , IFNULL(SUM(T1.ADJUST_CNT)	, 0)	AS REMIT_CNT
+                            , IFNULL(SUM(T1.CONF_AMT)     	, 0)	AS CONF_AMT
+                            , IFNULL(SUM(T1.CARD_FEE_AMT) 	, 0)	AS CARD_FEE_AMT
+                            , IFNULL(SUM(T1.SVC_FEE_AMT)  	, 0)    AS SVC_FEE_AMT
+                            , IFNULL(SUM(T1.WD_BASE_AMT)  	, 0)    AS WD_BASE_AMT
+                            , IFNULL(SUM(T1.CRD_FEE_AMT)  	, 0)    AS CRD_FEE_AMT
+                            , IFNULL(SUM(T1.SUB_AMT)  	, 0)    	AS SUB_AMT
+                            , IFNULL(SUM(T2.SUB_RECV_AMT) 	, 0)	AS SUB_RECV_AMT
+                            , IFNULL(SUM(T1.SUB_AMT) - IFNULL(SUM(T2.SUB_RECV_AMT), 0), 0)    AS SUB_ERR_CNT
+                            , IFNULL(SUM(T1.REMIT_AMT)  	, 0)    AS REMIT_AMT
+                            , IFNULL(SUM(T1.EXC_REMIT_AMT), 0)		AS EXC_REMIT_AMT
+                            , IFNULL(SUM(T1.REMIT_AMT), 0)    		AS REMIT_TOT_AMT
+                            , 'Y'									AS RSLT
+                    FROM	TB_REMIT_MST T1
+                            LEFT OUTER JOIN (
+                                SELECT 	REMIT_NO
+                                        , SUM(RECV_AMT) AS SUB_RECV_AMT				-- 차감분
+                                FROM 	TB_SUB_RECEIVE
+                                GROUP 	BY REMIT_NO
+                            ) T2 ON T2.REMIT_NO = T1.REMIT_NO
+                    WHERE	T1.REMIT_DATE = #{close_date}
+                    GROUP	BY T1.CHAIN_NO
+                ) RM ON RM.CHAIN_NO = TC.CHAIN_NO
+                LEFT OUTER JOIN (
+                    SELECT	CHAIN_NO
+                            , SUM(CONF_AMT_SUM)		AS CONF_AMT_SUM
+                            , SUM(CARD_RESV_AMT) 	AS CARD_RESV_AMT
+                            , SUM(WD_BASE_AMT)	 	AS RESV_BASE_AMT
+                            , SUM(SVC_FEE_AMT)	 	AS RESV_SVC_AMT
+                            , SUM(CRD_FEE_AMT)	 	AS RESV_CRD_AMT
+                            , SUM(BANK_IN_AMT)   	AS BANK_IN_AMT
+                            , SUM(BANK_IN_BASE_AMT) AS BANK_IN_BASE_AMT
+                            , SUM(BANK_IN_SVC_AMT)  AS BANK_IN_SVC_AMT
+                            , SUM(BANK_IN_CRD_AMT)  AS BANK_IN_CRD_AMT
+                            , SUM(BANK_IN_BASE_AMT) + SUM(BANK_IN_CRD_AMT)  AS ADJUST_BANK_IN_AMT
+                            , SUM(EXC_AMT) 		 			AS EXC_AMT
+                            , SUM(EXC_CRD_AMT)				AS EXC_CRD_AMT
+                            , SUM(EXC_CARD_AMT)				AS EXC_CARD_AMT
+                            , SUM(EXC_CARD_OVER_AMT)		AS EXC_CARD_OVER_AMT
+                            , SUM(EXC_UNREMIT_AMT)			AS EXC_UNREMIT_AMT
+                            , SUM(EXC_DATE_CHANGE_AMT)		AS EXC_DATE_CHANGE_AMT
+                            , SUM(EXC_CARD_GAP_AMT)			AS EXC_CARD_GAP_AMT
+                            , SUM(EXC_CRD_OVER_MOVE_AMT)	AS EXC_CRD_OVER_MOVE_AMT
+                            , SUM(SUB_AMT) 		 			AS SUB_AMT
+                            , SUM(SUB_BASE_AMT)	 			AS SUB_BASE_AMT
+                            , SUM(SUB_SVC_AMT)	 			AS SUB_SVC_AMT
+                            , SUM(SUB_CRD_AMT)	 			AS SUB_CRD_AMT
+                            , SUM(SUB_SUM_AMT) 		 		AS SUB_SUM_AMT
+                            , SUM(SUB_DATE_CHANGE_AMT)	 	AS SUB_DATE_CHANGE_AMT
+                            , SUM(SUB_CARD_GAP_AMT)	 		AS SUB_CARD_GAP_AMT
+                            , SUM(SUB_CARD_UNRECV_AMT)	 	AS SUB_CARD_UNRECV_AMT
+                            , SUM(SUB_CARD_UNRECV_BASE_AMT)	 	AS SUB_CARD_UNRECV_BASE_AMT
+                            , SUM(SUB_CARD_UNRECV_CRD_AMT)	 	AS SUB_CARD_UNRECV_CRD_AMT
+                            , SUM(SUB_SVC_UNSEND_AMT)	 	AS SUB_SVC_UNSEND_AMT
+                            , SUM(SUB_SVC_UNSEND_BASE_AMT)	 	AS SUB_SVC_UNSEND_BASE_AMT
+                            , SUM(SUB_SVC_UNSEND_CRD_AMT)	 	AS SUB_SVC_UNSEND_CRD_AMT
+                            , SUM(SETOFF_AMT) 	 	AS SETOFF_AMT
+                            , CASE IFNULL(SUM(PROC_AMT), 0) WHEN 0 THEN 'Y' ELSE 'N' END AS RSLT
+                            , SUM(EXC_ETC_AMT)	 				AS EXC_ETC_AMT
+                            , SUM(SUB_ETC_AMT)	 				AS SUB_ETC_AMT
+                    FROM 	VW_DEPOSIT_COMPLETE T1
+                    WHERE	CARD_RESV_DATE = #{close_date}
+                    GROUP 	BY CHAIN_NO
+                ) DM  ON DM.CHAIN_NO = TC.CHAIN_NO 	   	
+                LEFT OUTER JOIN (
+                    SELECT 	T1.CHAIN_NO
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.RECV_AMT END) 			AS RECV_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.RECV_BASE_AMT END) 		AS RECV_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.RECV_SVC_AMT END) 		AS RECV_SVC_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.RECV_CRD_AMT END) 		AS RECV_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.MRECV_AMT END) 			AS MRECV_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.MRECV_BASE_AMT END) 		AS MRECV_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.MRECV_SVC_AMT END)  		AS MRECV_SVC_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.MRECV_CRD_AMT END) 		AS MRECV_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN T2.RECV_AMT  		ELSE NULL END) 		AS RECV_LOAN_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN T2.RECV_BASE_AMT 	ELSE NULL END) 		AS RECV_LOAN_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN T2.RECV_CRD_AMT 	ELSE NULL END) 		AS RECV_LOAN_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN T2.MRECV_AMT 		ELSE NULL END) 		AS MRECV_LOAN_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN T2.MRECV_BASE_AMT ELSE NULL END) 		AS MRECV_LOAN_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN T2.MRECV_CRD_AMT 	ELSE NULL END) 		AS MRECV_LOAN_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE = 'L01001' THEN T2.RECV_BASE_AMT  ELSE NULL END)					AS RECV_BIZ_BASE_AMT	  				
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L01001', 'L01004') THEN T2.RECV_CRD_AMT 	ELSE NULL END) 		AS RECV_BIZ_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE = 'L01001' THEN T2.MRECV_BASE_AMT ELSE NULL END)					AS MRECV_BIZ_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L01001', 'L01004') THEN T2.MRECV_CRD_AMT 	ELSE NULL END) 	AS MRECV_BIZ_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02001', 'L06001', 'L07001') THEN T2.RECV_BASE_AMT  ELSE NULL END)									AS RECV_SPOT_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02001', 'L06001', 'L07001', 'L02004', 'L06004', 'L07004' )THEN T2.RECV_CRD_AMT 	ELSE NULL END) 		AS RECV_SPOT_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02001', 'L06001', 'L07001') THEN T2.MRECV_BASE_AMT  ELSE NULL END)									AS MRECV_SPOT_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02001', 'L06001', 'L07001', 'L02004', 'L06004', 'L07004') THEN T2.MRECV_CRD_AMT 	ELSE NULL END) 	AS MRECV_SPOT_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L01002') THEN T2.RECV_CRD_AMT 	ELSE NULL END) 				AS RECV_BIZ_DELAY_CRD_AMT	  				
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L01002') THEN T2.MRECV_CRD_AMT 	ELSE NULL END) 				AS MRECV_BIZ_DELAY_CRD_AMT					
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02002', 'L06002', 'L07002' ) THEN T2.RECV_CRD_AMT 	ELSE NULL END) 	AS RECV_SPOT_DELAY_CRD_AMT	  				
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02002', 'L06002', 'L07002') THEN T2.MRECV_CRD_AMT 	ELSE NULL END) 	AS MRECV_SPOT_DELAY_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L01001', 'L01002', 'L01004',  'L02001', 'L02002', 'L06001', 'L06002', 'L07001', 'L07002', 'L02004', 'L06004', 'L07004') THEN NULL ELSE T2.RECV_AMT END)	AS RECV_LOAN_ETC_AMT
+                    FROM 	TB_SUB_MST T1
+                            JOIN (
+                                SELECT SUB_NO
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN NULL ELSE RECV_AMT END) 			AS RECV_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN NULL ELSE RECV_BASE_AMT END) 	AS RECV_BASE_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN NULL ELSE RECV_SVC_AMT END) 		AS RECV_SVC_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN NULL ELSE RECV_CRD_AMT END) 		AS RECV_CRD_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN RECV_AMT ELSE NULL END) 			AS MRECV_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN RECV_BASE_AMT ELSE NULL END) 	AS MRECV_BASE_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN RECV_SVC_AMT ELSE NULL END)  	AS MRECV_SVC_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN RECV_CRD_AMT ELSE NULL END) 		AS MRECV_CRD_AMT
+                                FROM	TB_SUB_RECEIVE
+                                WHERE	RECV_DATE 		= #{close_date}
+                                GROUP	BY SUB_NO
+                            ) T2 ON T2.SUB_NO = T1.SUB_NO
+                    WHERE	T1.SHIFT_FLAG 	= 'N'
+                    GROUP 	BY T1.CHAIN_NO
+                ) SM ON SM.CHAIN_NO = TC.CHAIN_NO 
+                LEFT OUTER JOIN (
+                    SELECT 	CHAIN_NO
+                            , SUM(OCCUR_BASE_AMT)  AS REMIT_TRANS_FEE
+                    FROM 	TB_SUB_MST
+                    WHERE  REG_DATE =    #{close_date}
+                    AND	SUB_CODE = 'I06001'
+                    GROUP	BY CHAIN_NO
+                ) NS ON NS.CHAIN_NO = TC.CHAIN_NO
+                LEFT OUTER JOIN (
+                    SELECT 	CHAIN_NO, TOT_USE_AMT
+                    FROM 	TB_DAY_CLOSE_REPORT
+                    WHERE  CLOSE_DATE IN (
+                                            SELECT 	MAX(CLOSE_DATE) CLOSE_DATE
+                                            FROM 	TB_DAY_CLOSE_REPORT
+                                            WHERE	CLOSE_DATE =  GET_PRE_WORKDAY(#{close_date})
+                                        )
+                ) PR ON PR.CHAIN_NO = TC.CHAIN_NO 
+        WHERE 	1 = 1
+          AND   (
+                    TC.SVC_STAT IN ('O', 'R')
+                    OR 
+                    ( TC.SVC_STAT = 'C' AND TC.SVC_END_DT >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 10 DAY), '%Y-%m-%d'))
+                )
+          AND  TC.USE_YN = 'Y'
+        <choose>
+                <when test="sidx != ''">
+                        ORDER BY ${sidx} ${sord}
+                </when>
+                <otherwise>
+                        ORDER BY 1
+                </otherwise>
+        </choose>          
+	</select>
+
+    <select id="getDayPreCloseSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	SQL_CALC_FOUND_ROWS 	
+                IFNULL(SUM(RM.REMIT_CNT)		, 0)	AS rm_remit_cnt
+                , IFNULL(SUM(RM.CONF_AMT), 0)           AS rm_conf_amt
+                , IFNULL(SUM(RM.CARD_FEE_AMT), 0)       AS rm_card_fee_amt
+                , IFNULL(SUM(RM.SVC_FEE_AMT), 0)        AS rm_svc_fee_amt
+                , IFNULL(SUM(RM.CRD_FEE_AMT), 0)        AS rm_crd_fee_amt
+                , IFNULL(SUM(RM.WD_BASE_AMT), 0)        AS rm_wd_base_amt
+                , IFNULL(SUM(RM.SUB_AMT), 0)            AS rm_sub_amt
+                , IFNULL(SUM(RM.REMIT_AMT), 0)          AS rm_remit_amt
+                , IFNULL(SUM(RM.EXC_REMIT_AMT), 0)      AS rm_exc_remit_amt
+                , IFNULL(SUM(RM.REMIT_TOT_AMT), 0)      AS rm_remit_tot_amt
+                , IFNULL(SUM(DM.CONF_AMT_SUM), 0)       AS dp_conf_amt_sum
+                , IFNULL(SUM(DM.CARD_RESV_AMT), 0)      AS dp_card_resv_amt
+                , IFNULL(SUM(DM.RESV_BASE_AMT), 0)      AS dp_resv_base_amt
+                , IFNULL(SUM(DM.RESV_SVC_AMT), 0)       AS dp_resv_svc_amt
+                , IFNULL(SUM(DM.RESV_CRD_AMT), 0)       AS dp_resv_crd_amt
+                , IFNULL(SUM(DM.BANK_IN_AMT), 0)        AS dp_bank_in_amt
+                , IFNULL(SUM(
+                    CASE
+                        WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0)
+                            - (CASE WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0) > IFNULL(DM.BANK_IN_CRD_AMT, 0)
+                                THEN IFNULL(DM.BANK_IN_CRD_AMT, 0)
+                                ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0), 0)
+                            END) >= IFNULL(DM.BANK_IN_BASE_AMT, 0)
+                        THEN IFNULL(DM.BANK_IN_BASE_AMT, 0)
+                        ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0)
+                            - (CASE WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0) > IFNULL(DM.BANK_IN_CRD_AMT, 0)
+                                THEN IFNULL(DM.BANK_IN_CRD_AMT, 0)
+                                ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0), 0)
+                            END), 0)
+                    END
+                ), 0)                                   AS dp_bank_in_base_amt
+                , IFNULL(SUM(
+                    CASE
+                        WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0) >= IFNULL(DM.BANK_IN_CRD_AMT, 0)
+                        THEN IFNULL(DM.BANK_IN_CRD_AMT, 0)
+                        ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0), 0)
+                    END
+                ), 0) AS dp_bank_in_crd_amt
+                , IFNULL(SUM(CD.CRD_IN_AMT), 0)         AS op_bank_in_amt
+                , IFNULL(SUM(
+                    CASE
+                        WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0)
+                            - (CASE WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0) > IFNULL(DM.RESV_CRD_AMT, 0)
+                                THEN IFNULL(DM.RESV_CRD_AMT, 0)
+                                ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0), 0)
+                            END) >= IFNULL(DM.RESV_BASE_AMT, 0)
+                        THEN IFNULL(DM.RESV_BASE_AMT, 0)
+                        ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0)
+                            - (CASE WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0) > IFNULL(DM.RESV_CRD_AMT, 0)
+                                THEN IFNULL(DM.RESV_CRD_AMT, 0)
+                                ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0), 0)
+                            END), 0)
+                    END
+                ), 0) AS op_bank_in_base_amt
+                , IFNULL(SUM(DM.RESV_SVC_AMT), 0)       AS op_bank_in_svc_amt
+                , IFNULL(SUM(
+                    CASE
+                        WHEN IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0) >= IFNULL(DM.RESV_CRD_AMT, 0)
+                        THEN IFNULL(DM.RESV_CRD_AMT, 0)
+                        ELSE GREATEST(IFNULL(DM.ADJUST_BANK_IN_AMT, 0) - IFNULL(NS.REMIT_TRANS_FEE, 0), 0)
+                    END
+                ), 0)                                               AS op_bank_in_crd_amt
+                , IFNULL(SUM(CD.CRD_IN_AMT - DM.BANK_IN_AMT), 0)    AS op_send_gap_amt
+                , IFNULL(SUM(NS.REMIT_TRANS_FEE), 0)                AS op_remit_trans_fee
+                , IFNULL(SUM(DM.EXC_CRD_OVER_MOVE_AMT), 0)          AS op_send_exc_amt
+                , IFNULL(SUM(DM.SUB_SVC_UNSEND_AMT), 0)             AS op_send_sub_amt
+                , IFNULL(SUM(DM.EXC_CARD_OVER_AMT), 0)              AS exc_card_over_amt
+                , IFNULL(SUM(DM.EXC_CARD_GAP_AMT), 0)               AS exc_card_gap_amt
+                , IFNULL(SUM(DM.EXC_DATE_CHANGE_AMT), 0)            AS exc_date_change_amt
+                , IFNULL(SUM(DM.EXC_CRD_OVER_MOVE_AMT), 0)          AS exc_crd_over_send_amt
+                , IFNULL(SUM(DM.EXC_ETC_AMT), 0)                    AS exc_etc_amt
+                , IFNULL(SUM(DM.SUB_CARD_UNRECV_AMT), 0)            AS sub_card_unrecv_amt
+                , IFNULL(SUM(DM.SUB_CARD_UNRECV_BASE_AMT), 0)       AS sub_card_unrecv_base_amt
+                , IFNULL(SUM(DM.SUB_CARD_UNRECV_CRD_AMT), 0)        AS sub_card_unrecv_crd_amt
+                , IFNULL(SUM(DM.SUB_CARD_GAP_AMT), 0)               AS sub_card_gap_amt
+                , IFNULL(SUM(DM.SUB_DATE_CHANGE_AMT), 0)            AS sub_date_change_amt
+                , IFNULL(SUM(DM.SUB_SVC_UNSEND_BASE_AMT), 0)        AS sub_svc_unsend_base_amt
+                , IFNULL(SUM(DM.SUB_SVC_UNSEND_CRD_AMT), 0)         AS sub_svc_unsend_crd_amt
+                , IFNULL(SUM(DM.SUB_ETC_AMT), 0)                    AS sub_etc_amt
+                , IFNULL(SUM(SM.RECV_AMT), 0)                       AS recv_amt
+                , IFNULL(SUM(SM.RECV_BASE_AMT), 0)                  AS recv_base_amt
+                , IFNULL(SUM(SM.RECV_SVC_AMT), 0)                   AS recv_svc_amt
+                , IFNULL(SUM(SM.RECV_CRD_AMT), 0)                   AS recv_crd_amt
+                , IFNULL(SUM(SM.MRECV_AMT), 0)                      AS mrecv_amt
+                , IFNULL(SUM(SM.MRECV_BASE_AMT), 0)                 AS mrecv_base_amt
+                , IFNULL(SUM(SM.MRECV_SVC_AMT), 0)                  AS mrecv_svc_amt
+                , IFNULL(SUM(SM.MRECV_CRD_AMT), 0)                  AS mrecv_crd_amt
+                , IFNULL(SUM(SM.RECV_LOAN_AMT), 0)                  AS recv_loan_amt
+                , IFNULL(SUM(SM.RECV_LOAN_BASE_AMT), 0)             AS recv_loan_base_amt
+                , IFNULL(SUM(SM.RECV_LOAN_CRD_AMT), 0)              AS recv_loan_crd_amt
+                , IFNULL(SUM(SM.MRECV_LOAN_AMT), 0)                 AS mrecv_loan_amt
+                , IFNULL(SUM(SM.MRECV_LOAN_BASE_AMT), 0)            AS mrecv_loan_base_amt
+                , IFNULL(SUM(SM.MRECV_LOAN_CRD_AMT), 0)             AS mrecv_loan_crd_amt
+                , IFNULL(SUM(SM.RECV_BIZ_BASE_AMT), 0)              AS recv_biz_base_amt
+                , IFNULL(SUM(SM.RECV_BIZ_CRD_AMT), 0)               AS recv_biz_crd_amt
+                , IFNULL(SUM(SM.MRECV_BIZ_BASE_AMT), 0)             AS mrecv_biz_base_amt
+                , IFNULL(SUM(SM.MRECV_BIZ_CRD_AMT), 0)              AS mrecv_biz_crd_amt
+                , IFNULL(SUM(SM.RECV_SPOT_BASE_AMT), 0)             AS recv_spot_base_amt
+                , IFNULL(SUM(SM.RECV_SPOT_CRD_AMT), 0)              AS recv_spot_crd_amt
+                , IFNULL(SUM(SM.MRECV_SPOT_BASE_AMT), 0)            AS mrecv_spot_base_amt
+                , IFNULL(SUM(SM.MRECV_SPOT_CRD_AMT), 0)             AS mrecv_spot_crd_amt
+                , IFNULL(SUM(SM.RECV_BIZ_DELAY_CRD_AMT), 0)         AS recv_biz_delay_crd_amt
+                , IFNULL(SUM(SM.MRECV_BIZ_DELAY_CRD_AMT), 0)        AS mrecv_biz_delay_crd_amt
+                , IFNULL(SUM(SM.RECV_SPOT_DELAY_CRD_AMT), 0)        AS recv_spot_delay_crd_amt
+                , IFNULL(SUM(SM.MRECV_SPOT_DELAY_CRD_AMT), 0)       AS mrecv_spot_delay_crd_amt
+                , IFNULL(SUM(SM.RECV_LOAN_ETC_AMT), 0)              AS recv_loan_etc_amt
+                , IFNULL(SUM(TC.TOT_USE_AMT), 0)                    AS tot_use_amt
+                , IFNULL(SUM(PR.TOT_USE_AMT), 0)                    AS pre_tot_use_amt
+                , IFNULL(SUM(TC.TOT_USE_AMT), 0) - IFNULL(SUM(PR.TOT_USE_AMT), 0)	AS tot_use_amt_gap
+        FROM 	TB_CHAIN	TC
+                JOIN TB_AGENCY TA ON TA.AGENCY_CD  = TC.AGENCY_CD  		
+                LEFT OUTER JOIN (
+                    SELECT 	TRANS_COMP			AS CHAIN_NO
+                            , SUM(IN_AMT)		AS CRD_IN_AMT
+                    FROM 	TB_CREDIT_DEPOSIT_LIST
+                    WHERE  BANK_IN_DATE = #{close_date}
+                    GROUP	BY TRANS_COMP
+                ) CD ON CD.CHAIN_NO = TC.CHAIN_NO
+                LEFT OUTER JOIN (
+                    SELECT 	CHAIN_NO
+                            , COUNT(1)															AS WITHDRAW_CNT
+                            , SUM(CONF_AMT) 													AS CONF_AMT
+                            , SUM(REMIT_AMT) 													AS REMIT_AMT
+                            , SUM(CASE WHEN REMIT_NO IS NULL THEN 1 	ELSE NULL END) 			AS EXCEPT_CNT
+                            , SUM(CASE WHEN REMIT_NO IS NULL THEN REMIT_AMT	ELSE NULL END) 		AS EXCEPT_AMT
+                    FROM  TB_WITHDRAW
+                    WHERE  USE_YN = 'Y'
+                    AND	WORK_DATE 	= #{close_date}
+                    GROUP  BY CHAIN_NO
+                ) WD ON WD.CHAIN_NO = TC.CHAIN_NO	   	
+                LEFT OUTER JOIN (
+                    SELECT 	T1.CHAIN_NO
+                            , IFNULL(SUM(T1.ADJUST_CNT)	, 0)	AS REMIT_CNT
+                            , IFNULL(SUM(T1.CONF_AMT)     	, 0)	AS CONF_AMT
+                            , IFNULL(SUM(T1.CARD_FEE_AMT) 	, 0)	AS CARD_FEE_AMT
+                            , IFNULL(SUM(T1.SVC_FEE_AMT)  	, 0)    AS SVC_FEE_AMT
+                            , IFNULL(SUM(T1.WD_BASE_AMT)  	, 0)    AS WD_BASE_AMT
+                            , IFNULL(SUM(T1.CRD_FEE_AMT)  	, 0)    AS CRD_FEE_AMT
+                            , IFNULL(SUM(T1.SUB_AMT)  	, 0)    	AS SUB_AMT
+                            , IFNULL(SUM(T2.SUB_RECV_AMT) 	, 0)	AS SUB_RECV_AMT
+                            , IFNULL(SUM(T1.SUB_AMT) - IFNULL(SUM(T2.SUB_RECV_AMT), 0), 0)    AS SUB_ERR_CNT
+                            , IFNULL(SUM(T1.REMIT_AMT)  	, 0)    AS REMIT_AMT
+                            , IFNULL(SUM(T1.EXC_REMIT_AMT), 0)		AS EXC_REMIT_AMT
+                            , IFNULL(SUM(T1.REMIT_AMT), 0)    		AS REMIT_TOT_AMT
+                            , 'Y'									AS RSLT
+                    FROM	TB_REMIT_MST T1
+                            LEFT OUTER JOIN (
+                                SELECT 	REMIT_NO
+                                        , SUM(RECV_AMT) AS SUB_RECV_AMT				-- 차감분
+                                FROM 	TB_SUB_RECEIVE
+                                GROUP 	BY REMIT_NO
+                            ) T2 ON T2.REMIT_NO = T1.REMIT_NO
+                    WHERE	T1.REMIT_DATE = #{close_date}
+                    GROUP	BY T1.CHAIN_NO
+                ) RM ON RM.CHAIN_NO = TC.CHAIN_NO
+                LEFT OUTER JOIN (
+                    SELECT	CHAIN_NO
+                            , SUM(CONF_AMT_SUM)		AS CONF_AMT_SUM
+                            , SUM(CARD_RESV_AMT) 	AS CARD_RESV_AMT
+                            , SUM(WD_BASE_AMT)	 	AS RESV_BASE_AMT
+                            , SUM(SVC_FEE_AMT)	 	AS RESV_SVC_AMT
+                            , SUM(CRD_FEE_AMT)	 	AS RESV_CRD_AMT
+                            , SUM(BANK_IN_AMT)   	AS BANK_IN_AMT
+                            , SUM(BANK_IN_BASE_AMT) AS BANK_IN_BASE_AMT
+                            , SUM(BANK_IN_SVC_AMT)  AS BANK_IN_SVC_AMT
+                            , SUM(BANK_IN_CRD_AMT)  AS BANK_IN_CRD_AMT
+                            , SUM(BANK_IN_BASE_AMT) + SUM(BANK_IN_CRD_AMT)  AS ADJUST_BANK_IN_AMT
+                            , SUM(EXC_AMT) 		 			AS EXC_AMT
+                            , SUM(EXC_CRD_AMT)				AS EXC_CRD_AMT
+                            , SUM(EXC_CARD_AMT)				AS EXC_CARD_AMT
+                            , SUM(EXC_CARD_OVER_AMT)		AS EXC_CARD_OVER_AMT
+                            , SUM(EXC_UNREMIT_AMT)			AS EXC_UNREMIT_AMT
+                            , SUM(EXC_DATE_CHANGE_AMT)		AS EXC_DATE_CHANGE_AMT
+                            , SUM(EXC_CARD_GAP_AMT)			AS EXC_CARD_GAP_AMT
+                            , SUM(EXC_CRD_OVER_MOVE_AMT)	AS EXC_CRD_OVER_MOVE_AMT
+                            , SUM(SUB_AMT) 		 			AS SUB_AMT
+                            , SUM(SUB_BASE_AMT)	 			AS SUB_BASE_AMT
+                            , SUM(SUB_SVC_AMT)	 			AS SUB_SVC_AMT
+                            , SUM(SUB_CRD_AMT)	 			AS SUB_CRD_AMT
+                            , SUM(SUB_SUM_AMT) 		 		AS SUB_SUM_AMT
+                            , SUM(SUB_DATE_CHANGE_AMT)	 	AS SUB_DATE_CHANGE_AMT
+                            , SUM(SUB_CARD_GAP_AMT)	 		AS SUB_CARD_GAP_AMT
+                            , SUM(SUB_CARD_UNRECV_AMT)	 	AS SUB_CARD_UNRECV_AMT
+                            , SUM(SUB_CARD_UNRECV_BASE_AMT)	 	AS SUB_CARD_UNRECV_BASE_AMT
+                            , SUM(SUB_CARD_UNRECV_CRD_AMT)	 	AS SUB_CARD_UNRECV_CRD_AMT
+                            , SUM(SUB_SVC_UNSEND_AMT)	 	AS SUB_SVC_UNSEND_AMT
+                            , SUM(SUB_SVC_UNSEND_BASE_AMT)	 	AS SUB_SVC_UNSEND_BASE_AMT
+                            , SUM(SUB_SVC_UNSEND_CRD_AMT)	 	AS SUB_SVC_UNSEND_CRD_AMT
+                            , SUM(SETOFF_AMT) 	 	AS SETOFF_AMT
+                            , CASE IFNULL(SUM(PROC_AMT), 0) WHEN 0 THEN 'Y' ELSE 'N' END AS RSLT
+                            , SUM(EXC_ETC_AMT)	 				AS EXC_ETC_AMT
+                            , SUM(SUB_ETC_AMT)	 				AS SUB_ETC_AMT
+                    FROM 	VW_DEPOSIT_COMPLETE T1
+                    WHERE	CARD_RESV_DATE = #{close_date}
+                    GROUP 	BY CHAIN_NO
+                ) DM  ON DM.CHAIN_NO = TC.CHAIN_NO 	   	
+                LEFT OUTER JOIN (
+                    SELECT 	T1.CHAIN_NO
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.RECV_AMT END) 			AS RECV_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.RECV_BASE_AMT END) 		AS RECV_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.RECV_SVC_AMT END) 		AS RECV_SVC_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.RECV_CRD_AMT END) 		AS RECV_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.MRECV_AMT END) 			AS MRECV_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.MRECV_BASE_AMT END) 		AS MRECV_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.MRECV_SVC_AMT END)  		AS MRECV_SVC_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN NULL ELSE T2.MRECV_CRD_AMT END) 		AS MRECV_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN T2.RECV_AMT  		ELSE NULL END) 		AS RECV_LOAN_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN T2.RECV_BASE_AMT 	ELSE NULL END) 		AS RECV_LOAN_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN T2.RECV_CRD_AMT 	ELSE NULL END) 		AS RECV_LOAN_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN T2.MRECV_AMT 		ELSE NULL END) 		AS MRECV_LOAN_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN T2.MRECV_BASE_AMT ELSE NULL END) 		AS MRECV_LOAN_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' THEN T2.MRECV_CRD_AMT 	ELSE NULL END) 		AS MRECV_LOAN_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE = 'L01001' THEN T2.RECV_BASE_AMT  ELSE NULL END)					AS RECV_BIZ_BASE_AMT	  				
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L01001', 'L01004') THEN T2.RECV_CRD_AMT 	ELSE NULL END) 		AS RECV_BIZ_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE = 'L01001' THEN T2.MRECV_BASE_AMT ELSE NULL END)					AS MRECV_BIZ_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L01001', 'L01004') THEN T2.MRECV_CRD_AMT 	ELSE NULL END) 	AS MRECV_BIZ_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02001', 'L06001', 'L07001') THEN T2.RECV_BASE_AMT  ELSE NULL END)									AS RECV_SPOT_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02001', 'L06001', 'L07001', 'L02004', 'L06004', 'L07004' )THEN T2.RECV_CRD_AMT 	ELSE NULL END) 		AS RECV_SPOT_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02001', 'L06001', 'L07001') THEN T2.MRECV_BASE_AMT  ELSE NULL END)									AS MRECV_SPOT_BASE_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02001', 'L06001', 'L07001', 'L02004', 'L06004', 'L07004') THEN T2.MRECV_CRD_AMT 	ELSE NULL END) 	AS MRECV_SPOT_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L01002') THEN T2.RECV_CRD_AMT 	ELSE NULL END) 				AS RECV_BIZ_DELAY_CRD_AMT	  				
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L01002') THEN T2.MRECV_CRD_AMT 	ELSE NULL END) 				AS MRECV_BIZ_DELAY_CRD_AMT					
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02002', 'L06002', 'L07002' ) THEN T2.RECV_CRD_AMT 	ELSE NULL END) 	AS RECV_SPOT_DELAY_CRD_AMT	  				
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02002', 'L06002', 'L07002') THEN T2.MRECV_CRD_AMT 	ELSE NULL END) 	AS MRECV_SPOT_DELAY_CRD_AMT
+                            , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L01001', 'L01002', 'L01004',  'L02001', 'L02002', 'L06001', 'L06002', 'L07001', 'L07002', 'L02004', 'L06004', 'L07004') THEN NULL ELSE T2.RECV_AMT END)	AS RECV_LOAN_ETC_AMT
+                    FROM 	TB_SUB_MST T1
+                            JOIN (
+                                SELECT SUB_NO
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN NULL ELSE RECV_AMT END) 			AS RECV_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN NULL ELSE RECV_BASE_AMT END) 	AS RECV_BASE_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN NULL ELSE RECV_SVC_AMT END) 		AS RECV_SVC_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN NULL ELSE RECV_CRD_AMT END) 		AS RECV_CRD_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN RECV_AMT ELSE NULL END) 			AS MRECV_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN RECV_BASE_AMT ELSE NULL END) 	AS MRECV_BASE_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN RECV_SVC_AMT ELSE NULL END)  	AS MRECV_SVC_AMT
+                                        , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN RECV_CRD_AMT ELSE NULL END) 		AS MRECV_CRD_AMT
+                                FROM	TB_SUB_RECEIVE
+                                WHERE	RECV_DATE 		= #{close_date}
+                                GROUP	BY SUB_NO
+                            ) T2 ON T2.SUB_NO = T1.SUB_NO
+                    WHERE	T1.SHIFT_FLAG 	= 'N'
+                    GROUP 	BY T1.CHAIN_NO
+                ) SM ON SM.CHAIN_NO = TC.CHAIN_NO 
+                LEFT OUTER JOIN (
+                    SELECT 	CHAIN_NO
+                            , SUM(OCCUR_BASE_AMT)  AS REMIT_TRANS_FEE
+                      FROM 	TB_SUB_MST
+                     WHERE   REG_DATE =    #{close_date}
+                       AND	SUB_CODE = 'I06001'
+                     GROUP	BY CHAIN_NO
+                ) NS ON NS.CHAIN_NO = TC.CHAIN_NO
+                LEFT OUTER JOIN (
+                    SELECT 	CHAIN_NO, TOT_USE_AMT
+                      FROM 	TB_DAY_CLOSE_REPORT
+                     WHERE  CLOSE_DATE IN (
+                                            SELECT 	MAX(CLOSE_DATE) CLOSE_DATE
+                                            FROM 	TB_DAY_CLOSE_REPORT
+                                            WHERE	CLOSE_DATE =  GET_PRE_WORKDAY(#{close_date})
+                                        )
+                ) PR ON PR.CHAIN_NO = TC.CHAIN_NO 
+        WHERE 	1 = 1
+          AND   TC.USE_YN = 'Y'
+          AND   (
+                    TC.SVC_STAT IN ('O', 'R')
+                    OR 
+                    ( TC.SVC_STAT = 'C' AND TC.SVC_END_DT >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 10 DAY), '%Y-%m-%d'))
+                )
+          AND  TC.USE_YN = 'Y'
+	</select>
+
+    <select id="getDayCloseList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	SQL_CALC_FOUND_ROWS
+                close_date				, dc.chain_no			, tc.chain_nm	        , dc.corp_cd			
+                , IFNULL(rm_remit_cnt, 0)              AS rm_remit_cnt
+                , IFNULL(rm_conf_amt, 0)               AS rm_conf_amt
+                , IFNULL(rm_card_fee_amt, 0)           AS rm_card_fee_amt
+                , IFNULL(rm_svc_fee_amt, 0)            AS rm_svc_fee_amt
+                , IFNULL(rm_crd_fee_amt, 0)            AS rm_crd_fee_amt
+                , IFNULL(rm_wd_base_amt, 0)            AS rm_wd_base_amt
+                , IFNULL(rm_sub_amt, 0)                AS rm_sub_amt
+                , IFNULL(rm_remit_amt, 0)              AS rm_remit_amt
+                , IFNULL(rm_exc_remit_amt, 0)          AS rm_exc_remit_amt
+                , IFNULL(rm_remit_tot_amt, 0)          AS rm_remit_tot_amt
+                , IFNULL(dp_conf_amt_sum, 0)           AS dp_conf_amt_sum
+                , IFNULL(dp_card_resv_amt, 0)          AS dp_card_resv_amt
+                , IFNULL(dp_resv_base_amt, 0)          AS dp_resv_base_amt
+                , IFNULL(dp_resv_svc_amt, 0)           AS dp_resv_svc_amt
+                , IFNULL(dp_resv_crd_amt, 0)           AS dp_resv_crd_amt
+                , IFNULL(dp_bank_in_amt, 0)            AS dp_bank_in_amt
+                , IFNULL(dp_bank_in_base_amt, 0)       AS dp_bank_in_base_amt
+                , IFNULL(dp_bank_in_crd_amt, 0)        AS dp_bank_in_crd_amt
+                , IFNULL(op_bank_in_amt, 0)            AS op_bank_in_amt
+                , IFNULL(op_bank_in_base_amt, 0)       AS op_bank_in_base_amt
+                , IFNULL(op_bank_in_svc_amt, 0)        AS op_bank_in_svc_amt
+                , IFNULL(op_bank_in_crd_amt, 0)        AS op_bank_in_crd_amt
+                , IFNULL(op_send_gap_amt, 0)           AS op_send_gap_amt
+                , IFNULL(op_remit_trans_fee, 0)        AS op_remit_trans_fee
+                , IFNULL(op_send_exc_amt, 0)           AS op_send_exc_amt
+                , IFNULL(op_send_sub_amt, 0)           AS op_send_sub_amt
+                , IFNULL(exc_card_over_amt, 0)         AS exc_card_over_amt
+                , IFNULL(exc_card_gap_amt, 0)          AS exc_card_gap_amt
+                , IFNULL(exc_date_change_amt, 0)       AS exc_date_change_amt
+                , IFNULL(exc_crd_over_send_amt, 0)     AS exc_crd_over_send_amt
+                , IFNULL(exc_etc_amt, 0)               AS exc_etc_amt
+                , IFNULL(sub_card_unrecv_amt, 0)       AS sub_card_unrecv_amt
+                , IFNULL(sub_card_unrecv_base_amt, 0)  AS sub_card_unrecv_base_amt
+                , IFNULL(sub_card_unrecv_crd_amt, 0)   AS sub_card_unrecv_crd_amt
+                , IFNULL(sub_card_gap_amt, 0)          AS sub_card_gap_amt
+                , IFNULL(sub_date_change_amt, 0)       AS sub_date_change_amt
+                , IFNULL(sub_svc_unsend_base_amt, 0)   AS sub_svc_unsend_base_amt
+                , IFNULL(sub_svc_unsend_crd_amt, 0)    AS sub_svc_unsend_crd_amt
+                , IFNULL(sub_etc_amt, 0)               AS sub_etc_amt
+                , IFNULL(recv_amt, 0)                  AS recv_amt
+                , IFNULL(recv_base_amt, 0)             AS recv_base_amt
+                , IFNULL(recv_svc_amt, 0)              AS recv_svc_amt
+                , IFNULL(recv_crd_amt, 0)              AS recv_crd_amt
+                , IFNULL(mrecv_amt, 0)                 AS mrecv_amt
+                , IFNULL(mrecv_base_amt, 0)            AS mrecv_base_amt
+                , IFNULL(mrecv_svc_amt, 0)             AS mrecv_svc_amt
+                , IFNULL(mrecv_crd_amt, 0)             AS mrecv_crd_amt
+                , IFNULL(recv_loan_amt, 0)             AS recv_loan_amt
+                , IFNULL(recv_loan_base_amt, 0)        AS recv_loan_base_amt
+                , IFNULL(recv_loan_crd_amt, 0)         AS recv_loan_crd_amt
+                , IFNULL(mrecv_loan_amt, 0)            AS mrecv_loan_amt
+                , IFNULL(mrecv_loan_base_amt, 0)       AS mrecv_loan_base_amt
+                , IFNULL(mrecv_loan_crd_amt, 0)        AS mrecv_loan_crd_amt
+                , IFNULL(recv_biz_base_amt, 0)         AS recv_biz_base_amt
+                , IFNULL(recv_biz_crd_amt, 0)          AS recv_biz_crd_amt
+                , IFNULL(mrecv_biz_base_amt, 0)        AS mrecv_biz_base_amt
+                , IFNULL(mrecv_biz_crd_amt, 0)         AS mrecv_biz_crd_amt
+                , IFNULL(recv_spot_base_amt, 0)        AS recv_spot_base_amt
+                , IFNULL(recv_spot_crd_amt, 0)         AS recv_spot_crd_amt
+                , IFNULL(mrecv_spot_base_amt, 0)       AS mrecv_spot_base_amt
+                , IFNULL(mrecv_spot_crd_amt, 0)        AS mrecv_spot_crd_amt
+                , IFNULL(recv_biz_delay_crd_amt, 0)    AS recv_biz_delay_crd_amt
+                , IFNULL(mrecv_biz_delay_crd_amt, 0)   AS mrecv_biz_delay_crd_amt
+                , IFNULL(recv_spot_delay_crd_amt, 0)   AS recv_spot_delay_crd_amt
+                , IFNULL(mrecv_spot_delay_crd_amt, 0)  AS mrecv_spot_delay_crd_amt
+                , IFNULL(recv_loan_etc_amt, 0)         AS recv_loan_etc_amt
+                , IFNULL(DC.tot_use_amt, 0)            AS tot_use_amt
+                , IFNULL(pre_tot_use_amt, 0)           AS pre_tot_use_amt                
+                , IFNULL(pre_tot_use_amt, 0) - IFNULL(DC.tot_use_amt, 0)               AS tot_use_amt_gap
+                , DC.agency_cd		                    AS agency_cd		
+                , DC.agency_svc_fee		                AS agency_svc_fee
+                , DC.agency_crd_fee		                AS agency_crd_fee
+                , DC.agency_loan_fee                    AS agency_loan_fee
+          FROM 	TB_DAY_CLOSE_REPORT DC
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO                
+         WHERE  close_date = #{close_date}
+        <choose>
+            <when test="sidx != ''">
+                    ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                    ORDER BY 1
+            </otherwise>
+        </choose> 
+	</select>
+
+    <select id="getDayCloseSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT  IFNULL(SUM(rm_remit_cnt), 0)                AS rm_remit_cnt
+                , IFNULL(SUM(rm_conf_amt), 0)               AS rm_conf_amt
+                , IFNULL(SUM(rm_card_fee_amt), 0)           AS rm_card_fee_amt
+                , IFNULL(SUM(rm_svc_fee_amt), 0)            AS rm_svc_fee_amt
+                , IFNULL(SUM(rm_crd_fee_amt), 0)            AS rm_crd_fee_amt
+                , IFNULL(SUM(rm_wd_base_amt), 0)            AS rm_wd_base_amt
+                , IFNULL(SUM(rm_sub_amt), 0)                AS rm_sub_amt
+                , IFNULL(SUM(rm_remit_amt), 0)              AS rm_remit_amt
+                , IFNULL(SUM(rm_exc_remit_amt), 0)          AS rm_exc_remit_amt
+                , IFNULL(SUM(rm_remit_tot_amt), 0)          AS rm_remit_tot_amt
+                , IFNULL(SUM(dp_conf_amt_sum), 0)           AS dp_conf_amt_sum
+                , IFNULL(SUM(dp_card_resv_amt), 0)          AS dp_card_resv_amt
+                , IFNULL(SUM(dp_resv_base_amt), 0)          AS dp_resv_base_amt
+                , IFNULL(SUM(dp_resv_svc_amt), 0)           AS dp_resv_svc_amt
+                , IFNULL(SUM(dp_resv_crd_amt), 0)           AS dp_resv_crd_amt
+                , IFNULL(SUM(dp_bank_in_amt), 0)            AS dp_bank_in_amt
+                , IFNULL(SUM(dp_bank_in_base_amt), 0)       AS dp_bank_in_base_amt
+                , IFNULL(SUM(dp_bank_in_crd_amt), 0)        AS dp_bank_in_crd_amt
+                , IFNULL(SUM(op_bank_in_amt), 0)            AS op_bank_in_amt
+                , IFNULL(SUM(op_bank_in_base_amt), 0)       AS op_bank_in_base_amt
+                , IFNULL(SUM(op_bank_in_svc_amt), 0)        AS op_bank_in_svc_amt
+                , IFNULL(SUM(op_bank_in_crd_amt), 0)        AS op_bank_in_crd_amt
+                , IFNULL(SUM(op_send_gap_amt), 0)           AS op_send_gap_amt
+                , IFNULL(SUM(op_remit_trans_fee), 0)        AS op_remit_trans_fee
+                , IFNULL(SUM(op_send_exc_amt), 0)           AS op_send_exc_amt
+                , IFNULL(SUM(op_send_sub_amt), 0)           AS op_send_sub_amt
+                , IFNULL(SUM(exc_card_over_amt), 0)         AS exc_card_over_amt
+                , IFNULL(SUM(exc_card_gap_amt), 0)          AS exc_card_gap_amt
+                , IFNULL(SUM(exc_date_change_amt), 0)       AS exc_date_change_amt
+                , IFNULL(SUM(exc_crd_over_send_amt), 0)     AS exc_crd_over_send_amt
+                , IFNULL(SUM(exc_etc_amt), 0)               AS exc_etc_amt
+                , IFNULL(SUM(sub_card_unrecv_amt), 0)       AS sub_card_unrecv_amt
+                , IFNULL(SUM(sub_card_unrecv_base_amt), 0)  AS sub_card_unrecv_base_amt
+                , IFNULL(SUM(sub_card_unrecv_crd_amt), 0)   AS sub_card_unrecv_crd_amt
+                , IFNULL(SUM(sub_card_gap_amt), 0)          AS sub_card_gap_amt
+                , IFNULL(SUM(sub_date_change_amt), 0)       AS sub_date_change_amt
+                , IFNULL(SUM(sub_svc_unsend_base_amt), 0)   AS sub_svc_unsend_base_amt
+                , IFNULL(SUM(sub_svc_unsend_crd_amt), 0)    AS sub_svc_unsend_crd_amt
+                , IFNULL(SUM(sub_etc_amt), 0)               AS sub_etc_amt
+                , IFNULL(SUM(recv_amt), 0)                  AS recv_amt
+                , IFNULL(SUM(recv_base_amt), 0)             AS recv_base_amt
+                , IFNULL(SUM(recv_svc_amt), 0)              AS recv_svc_amt
+                , IFNULL(SUM(recv_crd_amt), 0)              AS recv_crd_amt
+                , IFNULL(SUM(mrecv_amt), 0)                 AS mrecv_amt
+                , IFNULL(SUM(mrecv_base_amt), 0)            AS mrecv_base_amt
+                , IFNULL(SUM(mrecv_svc_amt), 0)             AS mrecv_svc_amt
+                , IFNULL(SUM(mrecv_crd_amt), 0)             AS mrecv_crd_amt
+                , IFNULL(SUM(recv_loan_amt), 0)             AS recv_loan_amt
+                , IFNULL(SUM(recv_loan_base_amt), 0)        AS recv_loan_base_amt
+                , IFNULL(SUM(recv_loan_crd_amt), 0)         AS recv_loan_crd_amt
+                , IFNULL(SUM(mrecv_loan_amt), 0)            AS mrecv_loan_amt
+                , IFNULL(SUM(mrecv_loan_base_amt), 0)       AS mrecv_loan_base_amt
+                , IFNULL(SUM(mrecv_loan_crd_amt), 0)        AS mrecv_loan_crd_amt
+                , IFNULL(SUM(recv_biz_base_amt), 0)         AS recv_biz_base_amt
+                , IFNULL(SUM(recv_biz_crd_amt), 0)          AS recv_biz_crd_amt
+                , IFNULL(SUM(mrecv_biz_base_amt), 0)        AS mrecv_biz_base_amt
+                , IFNULL(SUM(mrecv_biz_crd_amt), 0)         AS mrecv_biz_crd_amt
+                , IFNULL(SUM(recv_spot_base_amt), 0)        AS recv_spot_base_amt
+                , IFNULL(SUM(recv_spot_crd_amt), 0)         AS recv_spot_crd_amt
+                , IFNULL(SUM(mrecv_spot_base_amt), 0)       AS mrecv_spot_base_amt
+                , IFNULL(SUM(mrecv_spot_crd_amt), 0)        AS mrecv_spot_crd_amt
+                , IFNULL(SUM(recv_biz_delay_crd_amt), 0)    AS recv_biz_delay_crd_amt
+                , IFNULL(SUM(mrecv_biz_delay_crd_amt), 0)   AS mrecv_biz_delay_crd_amt
+                , IFNULL(SUM(recv_spot_delay_crd_amt), 0)   AS recv_spot_delay_crd_amt
+                , IFNULL(SUM(mrecv_spot_delay_crd_amt), 0)  AS mrecv_spot_delay_crd_amt
+                , IFNULL(SUM(recv_loan_etc_amt), 0)         AS recv_loan_etc_amt
+                , IFNULL(SUM(DC.tot_use_amt), 0)               AS tot_use_amt
+                , IFNULL(SUM(pre_tot_use_amt), 0)           AS pre_tot_use_amt 
+                , IFNULL(SUM(pre_tot_use_amt), 0) - IFNULL(SUM(DC.tot_use_amt), 0)     AS tot_use_amt_gap 
+          FROM  TB_DAY_CLOSE_REPORT DC
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO                
+         WHERE  CLOSE_DATE = #{close_date}
+        <choose>
+            <when test="sidx != ''">
+                    ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                    ORDER BY 1
+            </otherwise>
+        </choose> 
+	</select>
+    <update id="callProcDayClose" parameterType="com.web.manage.deposit.domain.ProcDayCloseVO" statementType="CALLABLE">
+		{ 
+				CALL PRC_CLOSE_DAILY_ADJUST(
+						#{closeDate, mode=IN, jdbcType=VARCHAR} 
+						, #{userId, mode=IN, jdbcType=VARCHAR}
+						, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+						, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+				) 
+		}
+	</update>
+</mapper>       

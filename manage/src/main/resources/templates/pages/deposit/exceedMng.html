@@ -38,12 +38,12 @@
           codeSetting('EXC_STATUS', data.data, '#exc_status', '1', '', '');
         } 
         // Set default values for sch_exc_sdt and sch_exc_edt
-        var today = new Date();
-        var twoMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+        var toDay = returnDate('today');  
+        var thirtyDayAgo = returnDate('thirtyDayAgo');
 
-        $('#sch_exc_sdt').val(twoMonthsAgo.toISOString().split('T')[0]);
-        $('#sch_exc_edt').val(today.toISOString().split('T')[0]); 
-        $('#exc_date').val(today.toISOString().split('T')[0]); 
+        $('#sch_exc_sdt').val(thirtyDayAgo);
+        $('#sch_exc_edt').val(toDay); 
+        $('#exc_date').val(toDay); 
         
         var tbl_exc_summary = $('#tbl_exc_summary').DataTable({
           processing: true,
@@ -109,7 +109,7 @@
                 const colMap = {
                     1: 'occur_amt',
                     2: 'issue_amt',
-                    3: 'remian_amt',                    
+                    3: 'remain_amt',                    
                 };
                 Object.entries(colMap).forEach(([colIdx, key]) => {
                     const footer = api.column(Number(colIdx)).footer();

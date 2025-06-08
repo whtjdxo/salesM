@@ -15,6 +15,7 @@ public interface SubtractMapper {
     List<HashMap<String, Object>> getSubSummary(HashMap<String, Object> hashmapParam);    
     
     List<HashMap<String, Object>> getChainSubList(HashMap<String, Object> hashmapParam);
+    List<HashMap<String, Object>> getChainWdSubList(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getSubReceiveList(HashMap<String, Object> hashmapParam);    
 
     String getNewSubNo();    

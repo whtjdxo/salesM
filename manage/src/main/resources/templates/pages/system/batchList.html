@@ -21,9 +21,10 @@
           codeSetting('BATCH', data.data, '#sch_batch_id', '1', '', ''); 
         }
 
-        var today = new Date();        
-        $('#sch_batch_sdt').val(today.toISOString().split('T')[0]);
-        $('#sch_batch_edt').val(today.toISOString().split('T')[0]); 
+        var toDay = returnDate('today'); // 오늘 날짜 계산
+       
+        $('#sch_batch_sdt').val(toDay);
+        $('#sch_batch_edt').val(toDay); 
         
         var tbl_batch_mst = $('#tbl_batch_mst').DataTable({
           processing: true,

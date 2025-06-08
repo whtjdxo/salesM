@@ -37,6 +37,10 @@ public class SubtractService {
         return subtractMapper.getChainSubList(hashmapParam);
     }
 
+    public List<HashMap<String, Object>> getChainWdSubList(HashMap<String, Object> hashmapParam) {
+        return subtractMapper.getChainWdSubList(hashmapParam);
+    }
+
     public List<HashMap<String, Object>> getSubReceiveList(HashMap<String, Object> hashmapParam) {
         return subtractMapper.getSubReceiveList(hashmapParam);
     } 

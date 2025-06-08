@@ -38,13 +38,15 @@
           codeSetting('SUB_STATUS', data.data, '#sub_status', '1', '', '');
         } 
         // Set default values for sch_reg_sdt and sch_reg_edt
-        var today = new Date();
-        var twoMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+        
+        
+        var toDay = returnDate('today'); // 오늘 날짜 계산
+        var thirtyDayAgo = returnDate('thirtyDayAgo'); // 1 달 전 날짜 계산
 
-        $('#sch_reg_sdt').val(twoMonthsAgo.toISOString().split('T')[0]);
-        $('#sch_reg_edt').val(today.toISOString().split('T')[0]); 
-        $('#reg_date').val(today.toISOString().split('T')[0]); 
-        $('#resv_date').val(today.toISOString().split('T')[0]); 
+        $('#sch_reg_sdt').val(thirtyDayAgo);
+        $('#sch_reg_edt').val(toDay); 
+        $('#reg_date').val(toDay); 
+        $('#resv_date').val(toDay); 
         
         var tbl_sub_summary = $('#tbl_sub_summary').DataTable({
           processing: true,
@@ -344,7 +346,7 @@
         function fn_frm_sub_mst_clear(){
           var chain_no = $('#chain_no').val();           
           $('#frm_sub_mst')[0].reset();
-          $('#reg_date').val(today.toISOString().split('T')[0]);
+          $('#reg_date').val(toDay);
           $('#sub_type').val('M').prop('selected', true).trigger('change');                      
           $('#sub_status').val('000000');
           $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
