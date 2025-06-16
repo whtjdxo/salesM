@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.web.manage.statis.mapper.DailyReportMapper">
+
+    <select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select> 
+
+    <select id="getDailySummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	SQL_CALC_FOUND_ROWS
+                DC.CLOSE_DATE                               AS close_date				
+                , IFNULL(SUM(rm_remit_cnt), 0)              AS rm_remit_cnt
+                , IFNULL(SUM(rm_conf_amt), 0)               AS rm_conf_amt
+                , IFNULL(SUM(rm_card_fee_amt), 0)           AS rm_card_fee_amt
+                , IFNULL(SUM(rm_svc_fee_amt), 0)            AS rm_svc_fee_amt
+                , IFNULL(SUM(rm_crd_fee_amt), 0)            AS rm_crd_fee_amt
+                , IFNULL(SUM(rm_wd_base_amt), 0)            AS rm_wd_base_amt
+                , IFNULL(SUM(rm_sub_amt), 0)                AS rm_sub_amt
+                , IFNULL(SUM(rm_remit_amt), 0)              AS rm_remit_amt
+                , IFNULL(SUM(rm_exc_remit_amt), 0)          AS rm_exc_remit_amt
+                , IFNULL(SUM(rm_remit_tot_amt), 0)          AS rm_remit_tot_amt
+                , IFNULL(SUM(dp_conf_amt_sum), 0)           AS dp_conf_amt_sum
+                , IFNULL(SUM(dp_card_resv_amt), 0)          AS dp_card_resv_amt
+                , IFNULL(SUM(dp_resv_base_amt), 0)          AS dp_resv_base_amt
+                , IFNULL(SUM(dp_resv_svc_amt), 0)           AS dp_resv_svc_amt
+                , IFNULL(SUM(dp_resv_crd_amt), 0)           AS dp_resv_crd_amt
+                , IFNULL(SUM(dp_bank_in_amt), 0)            AS dp_bank_in_amt
+                , IFNULL(SUM(dp_bank_in_base_amt), 0)       AS dp_bank_in_base_amt
+                , IFNULL(SUM(dp_bank_in_crd_amt), 0)        AS dp_bank_in_crd_amt
+                , IFNULL(SUM(op_bank_in_amt), 0)            AS op_bank_in_amt
+                , IFNULL(SUM(op_bank_in_base_amt), 0)       AS op_bank_in_base_amt
+                , IFNULL(SUM(op_bank_in_svc_amt), 0)        AS op_bank_in_svc_amt
+                , IFNULL(SUM(op_bank_in_crd_amt), 0)        AS op_bank_in_crd_amt
+                , IFNULL(SUM(op_send_gap_amt), 0)           AS op_send_gap_amt
+                , IFNULL(SUM(op_remit_trans_fee), 0)        AS op_remit_trans_fee
+                , IFNULL(SUM(op_send_exc_amt), 0)           AS op_send_exc_amt
+                , IFNULL(SUM(op_send_sub_amt), 0)           AS op_send_sub_amt
+                , IFNULL(SUM(exc_card_over_amt), 0)         AS exc_card_over_amt
+                , IFNULL(SUM(exc_card_gap_amt), 0)          AS exc_card_gap_amt
+                , IFNULL(SUM(exc_date_change_amt), 0)       AS exc_date_change_amt
+                , IFNULL(SUM(exc_crd_over_send_amt), 0)     AS exc_crd_over_send_amt
+                , IFNULL(SUM(exc_etc_amt), 0)               AS exc_etc_amt
+                , IFNULL(SUM(sub_card_unrecv_amt), 0)       AS sub_card_unrecv_amt
+                , IFNULL(SUM(sub_card_unrecv_base_amt), 0)  AS sub_card_unrecv_base_amt
+                , IFNULL(SUM(sub_card_unrecv_crd_amt), 0)   AS sub_card_unrecv_crd_amt
+                , IFNULL(SUM(sub_card_gap_amt), 0)          AS sub_card_gap_amt
+                , IFNULL(SUM(sub_date_change_amt), 0)       AS sub_date_change_amt
+                , IFNULL(SUM(sub_svc_unsend_base_amt), 0)   AS sub_svc_unsend_base_amt
+                , IFNULL(SUM(sub_svc_unsend_crd_amt), 0)    AS sub_svc_unsend_crd_amt
+                , IFNULL(SUM(sub_etc_amt), 0)               AS sub_etc_amt
+                , IFNULL(SUM(recv_amt), 0)                  AS recv_amt
+                , IFNULL(SUM(recv_base_amt), 0)             AS recv_base_amt
+                , IFNULL(SUM(recv_svc_amt), 0)              AS recv_svc_amt
+                , IFNULL(SUM(recv_crd_amt), 0)              AS recv_crd_amt
+                , IFNULL(SUM(mrecv_amt), 0)                 AS mrecv_amt
+                , IFNULL(SUM(mrecv_base_amt), 0)            AS mrecv_base_amt
+                , IFNULL(SUM(mrecv_svc_amt), 0)             AS mrecv_svc_amt
+                , IFNULL(SUM(mrecv_crd_amt), 0)             AS mrecv_crd_amt
+                , IFNULL(SUM(recv_loan_amt), 0)             AS recv_loan_amt
+                , IFNULL(SUM(recv_loan_base_amt), 0)        AS recv_loan_base_amt
+                , IFNULL(SUM(recv_loan_crd_amt), 0)         AS recv_loan_crd_amt
+                , IFNULL(SUM(mrecv_loan_amt), 0)            AS mrecv_loan_amt
+                , IFNULL(SUM(mrecv_loan_base_amt), 0)       AS mrecv_loan_base_amt
+                , IFNULL(SUM(mrecv_loan_crd_amt), 0)        AS mrecv_loan_crd_amt
+                , IFNULL(SUM(recv_biz_base_amt), 0)         AS recv_biz_base_amt
+                , IFNULL(SUM(recv_biz_crd_amt), 0)          AS recv_biz_crd_amt
+                , IFNULL(SUM(mrecv_biz_base_amt), 0)        AS mrecv_biz_base_amt
+                , IFNULL(SUM(mrecv_biz_crd_amt), 0)         AS mrecv_biz_crd_amt
+                , IFNULL(SUM(recv_spot_base_amt), 0)        AS recv_spot_base_amt
+                , IFNULL(SUM(recv_spot_crd_amt), 0)         AS recv_spot_crd_amt
+                , IFNULL(SUM(mrecv_spot_base_amt), 0)       AS mrecv_spot_base_amt
+                , IFNULL(SUM(mrecv_spot_crd_amt), 0)        AS mrecv_spot_crd_amt
+                , IFNULL(SUM(recv_biz_delay_crd_amt), 0)    AS recv_biz_delay_crd_amt
+                , IFNULL(SUM(mrecv_biz_delay_crd_amt), 0)   AS mrecv_biz_delay_crd_amt
+                , IFNULL(SUM(recv_spot_delay_crd_amt), 0)   AS recv_spot_delay_crd_amt
+                , IFNULL(SUM(mrecv_spot_delay_crd_amt), 0)  AS mrecv_spot_delay_crd_amt
+                , IFNULL(SUM(recv_loan_etc_amt), 0)         AS recv_loan_etc_amt
+                , IFNULL(SUM(DC.tot_use_amt), 0)               AS tot_use_amt
+                , IFNULL(SUM(pre_tot_use_amt), 0)           AS pre_tot_use_amt 
+                , IFNULL(SUM(pre_tot_use_amt), 0) - IFNULL(SUM(DC.tot_use_amt), 0)     AS tot_use_amt_gap 
+          FROM 	TB_DAY_CLOSE_REPORT DC
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO 
+        <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
+				AND  TC.CORP_CD =  #{sch_corp_cd} 
+		</if>                                       
+         WHERE  CLOSE_DATE BETWEEN #{sch_date_from}
+                               AND #{sch_date_to}
+         GROUP  BY DC.CLOSE_DATE
+        <choose>
+            <when test="sidx != ''">
+                    ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                    ORDER BY 1
+            </otherwise>
+        </choose> 
+        LIMIT  ${start}, ${end}
+    </select>
+
+    <select id="getDailySummaryTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT  IFNULL(SUM(rm_remit_cnt), 0)                AS rm_remit_cnt
+                , IFNULL(SUM(rm_conf_amt), 0)               AS rm_conf_amt
+                , IFNULL(SUM(rm_card_fee_amt), 0)           AS rm_card_fee_amt
+                , IFNULL(SUM(rm_svc_fee_amt), 0)            AS rm_svc_fee_amt
+                , IFNULL(SUM(rm_crd_fee_amt), 0)            AS rm_crd_fee_amt
+                , IFNULL(SUM(rm_wd_base_amt), 0)            AS rm_wd_base_amt
+                , IFNULL(SUM(rm_sub_amt), 0)                AS rm_sub_amt
+                , IFNULL(SUM(rm_remit_amt), 0)              AS rm_remit_amt
+                , IFNULL(SUM(rm_exc_remit_amt), 0)          AS rm_exc_remit_amt
+                , IFNULL(SUM(rm_remit_tot_amt), 0)          AS rm_remit_tot_amt
+                , IFNULL(SUM(dp_conf_amt_sum), 0)           AS dp_conf_amt_sum
+                , IFNULL(SUM(dp_card_resv_amt), 0)          AS dp_card_resv_amt
+                , IFNULL(SUM(dp_resv_base_amt), 0)          AS dp_resv_base_amt
+                , IFNULL(SUM(dp_resv_svc_amt), 0)           AS dp_resv_svc_amt
+                , IFNULL(SUM(dp_resv_crd_amt), 0)           AS dp_resv_crd_amt
+                , IFNULL(SUM(dp_bank_in_amt), 0)            AS dp_bank_in_amt
+                , IFNULL(SUM(dp_bank_in_base_amt), 0)       AS dp_bank_in_base_amt
+                , IFNULL(SUM(dp_bank_in_crd_amt), 0)        AS dp_bank_in_crd_amt
+                , IFNULL(SUM(op_bank_in_amt), 0)            AS op_bank_in_amt
+                , IFNULL(SUM(op_bank_in_base_amt), 0)       AS op_bank_in_base_amt
+                , IFNULL(SUM(op_bank_in_svc_amt), 0)        AS op_bank_in_svc_amt
+                , IFNULL(SUM(op_bank_in_crd_amt), 0)        AS op_bank_in_crd_amt
+                , IFNULL(SUM(op_send_gap_amt), 0)           AS op_send_gap_amt
+                , IFNULL(SUM(op_remit_trans_fee), 0)        AS op_remit_trans_fee
+                , IFNULL(SUM(op_send_exc_amt), 0)           AS op_send_exc_amt
+                , IFNULL(SUM(op_send_sub_amt), 0)           AS op_send_sub_amt
+                , IFNULL(SUM(exc_card_over_amt), 0)         AS exc_card_over_amt
+                , IFNULL(SUM(exc_card_gap_amt), 0)          AS exc_card_gap_amt
+                , IFNULL(SUM(exc_date_change_amt), 0)       AS exc_date_change_amt
+                , IFNULL(SUM(exc_crd_over_send_amt), 0)     AS exc_crd_over_send_amt
+                , IFNULL(SUM(exc_etc_amt), 0)               AS exc_etc_amt
+                , IFNULL(SUM(sub_card_unrecv_amt), 0)       AS sub_card_unrecv_amt
+                , IFNULL(SUM(sub_card_unrecv_base_amt), 0)  AS sub_card_unrecv_base_amt
+                , IFNULL(SUM(sub_card_unrecv_crd_amt), 0)   AS sub_card_unrecv_crd_amt
+                , IFNULL(SUM(sub_card_gap_amt), 0)          AS sub_card_gap_amt
+                , IFNULL(SUM(sub_date_change_amt), 0)       AS sub_date_change_amt
+                , IFNULL(SUM(sub_svc_unsend_base_amt), 0)   AS sub_svc_unsend_base_amt
+                , IFNULL(SUM(sub_svc_unsend_crd_amt), 0)    AS sub_svc_unsend_crd_amt
+                , IFNULL(SUM(sub_etc_amt), 0)               AS sub_etc_amt
+                , IFNULL(SUM(recv_amt), 0)                  AS recv_amt
+                , IFNULL(SUM(recv_base_amt), 0)             AS recv_base_amt
+                , IFNULL(SUM(recv_svc_amt), 0)              AS recv_svc_amt
+                , IFNULL(SUM(recv_crd_amt), 0)              AS recv_crd_amt
+                , IFNULL(SUM(mrecv_amt), 0)                 AS mrecv_amt
+                , IFNULL(SUM(mrecv_base_amt), 0)            AS mrecv_base_amt
+                , IFNULL(SUM(mrecv_svc_amt), 0)             AS mrecv_svc_amt
+                , IFNULL(SUM(mrecv_crd_amt), 0)             AS mrecv_crd_amt
+                , IFNULL(SUM(recv_loan_amt), 0)             AS recv_loan_amt
+                , IFNULL(SUM(recv_loan_base_amt), 0)        AS recv_loan_base_amt
+                , IFNULL(SUM(recv_loan_crd_amt), 0)         AS recv_loan_crd_amt
+                , IFNULL(SUM(mrecv_loan_amt), 0)            AS mrecv_loan_amt
+                , IFNULL(SUM(mrecv_loan_base_amt), 0)       AS mrecv_loan_base_amt
+                , IFNULL(SUM(mrecv_loan_crd_amt), 0)        AS mrecv_loan_crd_amt
+                , IFNULL(SUM(recv_biz_base_amt), 0)         AS recv_biz_base_amt
+                , IFNULL(SUM(recv_biz_crd_amt), 0)          AS recv_biz_crd_amt
+                , IFNULL(SUM(mrecv_biz_base_amt), 0)        AS mrecv_biz_base_amt
+                , IFNULL(SUM(mrecv_biz_crd_amt), 0)         AS mrecv_biz_crd_amt
+                , IFNULL(SUM(recv_spot_base_amt), 0)        AS recv_spot_base_amt
+                , IFNULL(SUM(recv_spot_crd_amt), 0)         AS recv_spot_crd_amt
+                , IFNULL(SUM(mrecv_spot_base_amt), 0)       AS mrecv_spot_base_amt
+                , IFNULL(SUM(mrecv_spot_crd_amt), 0)        AS mrecv_spot_crd_amt
+                , IFNULL(SUM(recv_biz_delay_crd_amt), 0)    AS recv_biz_delay_crd_amt
+                , IFNULL(SUM(mrecv_biz_delay_crd_amt), 0)   AS mrecv_biz_delay_crd_amt
+                , IFNULL(SUM(recv_spot_delay_crd_amt), 0)   AS recv_spot_delay_crd_amt
+                , IFNULL(SUM(mrecv_spot_delay_crd_amt), 0)  AS mrecv_spot_delay_crd_amt
+                , IFNULL(SUM(recv_loan_etc_amt), 0)         AS recv_loan_etc_amt
+                , IFNULL(SUM(DC.tot_use_amt), 0)               AS tot_use_amt
+                , IFNULL(SUM(pre_tot_use_amt), 0)           AS pre_tot_use_amt 
+                , IFNULL(SUM(pre_tot_use_amt), 0) - IFNULL(SUM(DC.tot_use_amt), 0)     AS tot_use_amt_gap 
+          FROM  TB_DAY_CLOSE_REPORT DC
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO
+        <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
+				AND  TC.CORP_CD =  #{sch_corp_cd} 
+	</if>                                       
+          WHERE  CLOSE_DATE BETWEEN #{sch_date_from}
+                               AND #{sch_date_to}
+        
+    </select>
+
+    <select id="getDailyList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	SQL_CALC_FOUND_ROWS
+                DC.CHAIN_NO				    AS chain_no
+                , TC.CHAIN_NM				    AS  chain_nm
+                , IFNULL(SUM(rm_remit_cnt), 0)              AS rm_remit_cnt
+                , IFNULL(SUM(rm_conf_amt), 0)               AS rm_conf_amt
+                , IFNULL(SUM(rm_card_fee_amt), 0)           AS rm_card_fee_amt
+                , IFNULL(SUM(rm_svc_fee_amt), 0)            AS rm_svc_fee_amt
+                , IFNULL(SUM(rm_crd_fee_amt), 0)            AS rm_crd_fee_amt
+                , IFNULL(SUM(rm_wd_base_amt), 0)            AS rm_wd_base_amt
+                , IFNULL(SUM(rm_sub_amt), 0)                AS rm_sub_amt
+                , IFNULL(SUM(rm_remit_amt), 0)              AS rm_remit_amt
+                , IFNULL(SUM(rm_exc_remit_amt), 0)          AS rm_exc_remit_amt
+                , IFNULL(SUM(rm_remit_tot_amt), 0)          AS rm_remit_tot_amt
+                , IFNULL(SUM(dp_conf_amt_sum), 0)           AS dp_conf_amt_sum
+                , IFNULL(SUM(dp_card_resv_amt), 0)          AS dp_card_resv_amt
+                , IFNULL(SUM(dp_resv_base_amt), 0)          AS dp_resv_base_amt
+                , IFNULL(SUM(dp_resv_svc_amt), 0)           AS dp_resv_svc_amt
+                , IFNULL(SUM(dp_resv_crd_amt), 0)           AS dp_resv_crd_amt
+                , IFNULL(SUM(dp_bank_in_amt), 0)            AS dp_bank_in_amt
+                , IFNULL(SUM(dp_bank_in_base_amt), 0)       AS dp_bank_in_base_amt
+                , IFNULL(SUM(dp_bank_in_crd_amt), 0)        AS dp_bank_in_crd_amt
+                , IFNULL(SUM(op_bank_in_amt), 0)            AS op_bank_in_amt
+                , IFNULL(SUM(op_bank_in_base_amt), 0)       AS op_bank_in_base_amt
+                , IFNULL(SUM(op_bank_in_svc_amt), 0)        AS op_bank_in_svc_amt
+                , IFNULL(SUM(op_bank_in_crd_amt), 0)        AS op_bank_in_crd_amt
+                , IFNULL(SUM(op_send_gap_amt), 0)           AS op_send_gap_amt
+                , IFNULL(SUM(op_remit_trans_fee), 0)        AS op_remit_trans_fee
+                , IFNULL(SUM(op_send_exc_amt), 0)           AS op_send_exc_amt
+                , IFNULL(SUM(op_send_sub_amt), 0)           AS op_send_sub_amt
+                , IFNULL(SUM(exc_card_over_amt), 0)         AS exc_card_over_amt
+                , IFNULL(SUM(exc_card_gap_amt), 0)          AS exc_card_gap_amt
+                , IFNULL(SUM(exc_date_change_amt), 0)       AS exc_date_change_amt
+                , IFNULL(SUM(exc_crd_over_send_amt), 0)     AS exc_crd_over_send_amt
+                , IFNULL(SUM(exc_etc_amt), 0)               AS exc_etc_amt
+                , IFNULL(SUM(sub_card_unrecv_amt), 0)       AS sub_card_unrecv_amt
+                , IFNULL(SUM(sub_card_unrecv_base_amt), 0)  AS sub_card_unrecv_base_amt
+                , IFNULL(SUM(sub_card_unrecv_crd_amt), 0)   AS sub_card_unrecv_crd_amt
+                , IFNULL(SUM(sub_card_gap_amt), 0)          AS sub_card_gap_amt
+                , IFNULL(SUM(sub_date_change_amt), 0)       AS sub_date_change_amt
+                , IFNULL(SUM(sub_svc_unsend_base_amt), 0)   AS sub_svc_unsend_base_amt
+                , IFNULL(SUM(sub_svc_unsend_crd_amt), 0)    AS sub_svc_unsend_crd_amt
+                , IFNULL(SUM(sub_etc_amt), 0)               AS sub_etc_amt
+                , IFNULL(SUM(recv_amt), 0)                  AS recv_amt
+                , IFNULL(SUM(recv_base_amt), 0)             AS recv_base_amt
+                , IFNULL(SUM(recv_svc_amt), 0)              AS recv_svc_amt
+                , IFNULL(SUM(recv_crd_amt), 0)              AS recv_crd_amt
+                , IFNULL(SUM(mrecv_amt), 0)                 AS mrecv_amt
+                , IFNULL(SUM(mrecv_base_amt), 0)            AS mrecv_base_amt
+                , IFNULL(SUM(mrecv_svc_amt), 0)             AS mrecv_svc_amt
+                , IFNULL(SUM(mrecv_crd_amt), 0)             AS mrecv_crd_amt
+                , IFNULL(SUM(recv_loan_amt), 0)             AS recv_loan_amt
+                , IFNULL(SUM(recv_loan_base_amt), 0)        AS recv_loan_base_amt
+                , IFNULL(SUM(recv_loan_crd_amt), 0)         AS recv_loan_crd_amt
+                , IFNULL(SUM(mrecv_loan_amt), 0)            AS mrecv_loan_amt
+                , IFNULL(SUM(mrecv_loan_base_amt), 0)       AS mrecv_loan_base_amt
+                , IFNULL(SUM(mrecv_loan_crd_amt), 0)        AS mrecv_loan_crd_amt
+                , IFNULL(SUM(recv_biz_base_amt), 0)         AS recv_biz_base_amt
+                , IFNULL(SUM(recv_biz_crd_amt), 0)          AS recv_biz_crd_amt
+                , IFNULL(SUM(mrecv_biz_base_amt), 0)        AS mrecv_biz_base_amt
+                , IFNULL(SUM(mrecv_biz_crd_amt), 0)         AS mrecv_biz_crd_amt
+                , IFNULL(SUM(recv_spot_base_amt), 0)        AS recv_spot_base_amt
+                , IFNULL(SUM(recv_spot_crd_amt), 0)         AS recv_spot_crd_amt
+                , IFNULL(SUM(mrecv_spot_base_amt), 0)       AS mrecv_spot_base_amt
+                , IFNULL(SUM(mrecv_spot_crd_amt), 0)        AS mrecv_spot_crd_amt
+                , IFNULL(SUM(recv_biz_delay_crd_amt), 0)    AS recv_biz_delay_crd_amt
+                , IFNULL(SUM(mrecv_biz_delay_crd_amt), 0)   AS mrecv_biz_delay_crd_amt
+                , IFNULL(SUM(recv_spot_delay_crd_amt), 0)   AS recv_spot_delay_crd_amt
+                , IFNULL(SUM(mrecv_spot_delay_crd_amt), 0)  AS mrecv_spot_delay_crd_amt
+                , IFNULL(SUM(recv_loan_etc_amt), 0)         AS recv_loan_etc_amt
+                , IFNULL(SUM(DC.tot_use_amt), 0)               AS tot_use_amt
+                , IFNULL(SUM(pre_tot_use_amt), 0)           AS pre_tot_use_amt 
+                , IFNULL(SUM(pre_tot_use_amt), 0) - IFNULL(SUM(DC.tot_use_amt), 0)     AS tot_use_amt_gap 
+          FROM 	TB_DAY_CLOSE_REPORT DC
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO 
+        <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
+				AND  TC.CORP_CD =  #{sch_corp_cd} 
+	</if>                                       
+         WHERE  CLOSE_DATE = #{sch_close_date}
+         GROUP  BY DC.CHAIN_NO, TC.CHAIN_NM
+        <choose>
+            <when test="sidx != ''">
+                    ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                    ORDER BY 1
+            </otherwise>
+        </choose> 
+        LIMIT  ${start}, ${end}
+    </select>
+
+    <select id="getDailyListTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT  IFNULL(SUM(rm_remit_cnt), 0)                AS rm_remit_cnt
+                , IFNULL(SUM(rm_conf_amt), 0)               AS rm_conf_amt
+                , IFNULL(SUM(rm_card_fee_amt), 0)           AS rm_card_fee_amt
+                , IFNULL(SUM(rm_svc_fee_amt), 0)            AS rm_svc_fee_amt
+                , IFNULL(SUM(rm_crd_fee_amt), 0)            AS rm_crd_fee_amt
+                , IFNULL(SUM(rm_wd_base_amt), 0)            AS rm_wd_base_amt
+                , IFNULL(SUM(rm_sub_amt), 0)                AS rm_sub_amt
+                , IFNULL(SUM(rm_remit_amt), 0)              AS rm_remit_amt
+                , IFNULL(SUM(rm_exc_remit_amt), 0)          AS rm_exc_remit_amt
+                , IFNULL(SUM(rm_remit_tot_amt), 0)          AS rm_remit_tot_amt
+                , IFNULL(SUM(dp_conf_amt_sum), 0)           AS dp_conf_amt_sum
+                , IFNULL(SUM(dp_card_resv_amt), 0)          AS dp_card_resv_amt
+                , IFNULL(SUM(dp_resv_base_amt), 0)          AS dp_resv_base_amt
+                , IFNULL(SUM(dp_resv_svc_amt), 0)           AS dp_resv_svc_amt
+                , IFNULL(SUM(dp_resv_crd_amt), 0)           AS dp_resv_crd_amt
+                , IFNULL(SUM(dp_bank_in_amt), 0)            AS dp_bank_in_amt
+                , IFNULL(SUM(dp_bank_in_base_amt), 0)       AS dp_bank_in_base_amt
+                , IFNULL(SUM(dp_bank_in_crd_amt), 0)        AS dp_bank_in_crd_amt
+                , IFNULL(SUM(op_bank_in_amt), 0)            AS op_bank_in_amt
+                , IFNULL(SUM(op_bank_in_base_amt), 0)       AS op_bank_in_base_amt
+                , IFNULL(SUM(op_bank_in_svc_amt), 0)        AS op_bank_in_svc_amt
+                , IFNULL(SUM(op_bank_in_crd_amt), 0)        AS op_bank_in_crd_amt
+                , IFNULL(SUM(op_send_gap_amt), 0)           AS op_send_gap_amt
+                , IFNULL(SUM(op_remit_trans_fee), 0)        AS op_remit_trans_fee
+                , IFNULL(SUM(op_send_exc_amt), 0)           AS op_send_exc_amt
+                , IFNULL(SUM(op_send_sub_amt), 0)           AS op_send_sub_amt
+                , IFNULL(SUM(exc_card_over_amt), 0)         AS exc_card_over_amt
+                , IFNULL(SUM(exc_card_gap_amt), 0)          AS exc_card_gap_amt
+                , IFNULL(SUM(exc_date_change_amt), 0)       AS exc_date_change_amt
+                , IFNULL(SUM(exc_crd_over_send_amt), 0)     AS exc_crd_over_send_amt
+                , IFNULL(SUM(exc_etc_amt), 0)               AS exc_etc_amt
+                , IFNULL(SUM(sub_card_unrecv_amt), 0)       AS sub_card_unrecv_amt
+                , IFNULL(SUM(sub_card_unrecv_base_amt), 0)  AS sub_card_unrecv_base_amt
+                , IFNULL(SUM(sub_card_unrecv_crd_amt), 0)   AS sub_card_unrecv_crd_amt
+                , IFNULL(SUM(sub_card_gap_amt), 0)          AS sub_card_gap_amt
+                , IFNULL(SUM(sub_date_change_amt), 0)       AS sub_date_change_amt
+                , IFNULL(SUM(sub_svc_unsend_base_amt), 0)   AS sub_svc_unsend_base_amt
+                , IFNULL(SUM(sub_svc_unsend_crd_amt), 0)    AS sub_svc_unsend_crd_amt
+                , IFNULL(SUM(sub_etc_amt), 0)               AS sub_etc_amt
+                , IFNULL(SUM(recv_amt), 0)                  AS recv_amt
+                , IFNULL(SUM(recv_base_amt), 0)             AS recv_base_amt
+                , IFNULL(SUM(recv_svc_amt), 0)              AS recv_svc_amt
+                , IFNULL(SUM(recv_crd_amt), 0)              AS recv_crd_amt
+                , IFNULL(SUM(mrecv_amt), 0)                 AS mrecv_amt
+                , IFNULL(SUM(mrecv_base_amt), 0)            AS mrecv_base_amt
+                , IFNULL(SUM(mrecv_svc_amt), 0)             AS mrecv_svc_amt
+                , IFNULL(SUM(mrecv_crd_amt), 0)             AS mrecv_crd_amt
+                , IFNULL(SUM(recv_loan_amt), 0)             AS recv_loan_amt
+                , IFNULL(SUM(recv_loan_base_amt), 0)        AS recv_loan_base_amt
+                , IFNULL(SUM(recv_loan_crd_amt), 0)         AS recv_loan_crd_amt
+                , IFNULL(SUM(mrecv_loan_amt), 0)            AS mrecv_loan_amt
+                , IFNULL(SUM(mrecv_loan_base_amt), 0)       AS mrecv_loan_base_amt
+                , IFNULL(SUM(mrecv_loan_crd_amt), 0)        AS mrecv_loan_crd_amt
+                , IFNULL(SUM(recv_biz_base_amt), 0)         AS recv_biz_base_amt
+                , IFNULL(SUM(recv_biz_crd_amt), 0)          AS recv_biz_crd_amt
+                , IFNULL(SUM(mrecv_biz_base_amt), 0)        AS mrecv_biz_base_amt
+                , IFNULL(SUM(mrecv_biz_crd_amt), 0)         AS mrecv_biz_crd_amt
+                , IFNULL(SUM(recv_spot_base_amt), 0)        AS recv_spot_base_amt
+                , IFNULL(SUM(recv_spot_crd_amt), 0)         AS recv_spot_crd_amt
+                , IFNULL(SUM(mrecv_spot_base_amt), 0)       AS mrecv_spot_base_amt
+                , IFNULL(SUM(mrecv_spot_crd_amt), 0)        AS mrecv_spot_crd_amt
+                , IFNULL(SUM(recv_biz_delay_crd_amt), 0)    AS recv_biz_delay_crd_amt
+                , IFNULL(SUM(mrecv_biz_delay_crd_amt), 0)   AS mrecv_biz_delay_crd_amt
+                , IFNULL(SUM(recv_spot_delay_crd_amt), 0)   AS recv_spot_delay_crd_amt
+                , IFNULL(SUM(mrecv_spot_delay_crd_amt), 0)  AS mrecv_spot_delay_crd_amt
+                , IFNULL(SUM(recv_loan_etc_amt), 0)         AS recv_loan_etc_amt
+                , IFNULL(SUM(DC.tot_use_amt), 0)               AS tot_use_amt
+                , IFNULL(SUM(pre_tot_use_amt), 0)           AS pre_tot_use_amt 
+                , IFNULL(SUM(pre_tot_use_amt), 0) - IFNULL(SUM(DC.tot_use_amt), 0)     AS tot_use_amt_gap 
+          FROM  TB_DAY_CLOSE_REPORT DC
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO
+        <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
+		AND  TC.CORP_CD =  #{sch_corp_cd} 
+	</if>                                       
+         WHERE  CLOSE_DATE = #{sch_close_date}
+         
+    </select>
+
+</mapper>

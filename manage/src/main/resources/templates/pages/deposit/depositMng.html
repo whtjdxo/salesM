@@ -217,10 +217,10 @@
         });  
         
         function fn_chainDepoStatus(data){
-          console.log(data.data); 
+          // console.log(data.data); 
           var depoStatus = data.data || {};
-          console.log(depoStatus.chain_depo_amt);
-          console.log(Number(depoStatus.chain_depo_amt).toLocaleString());
+          // console.log(depoStatus.chain_depo_amt);
+          // console.log(Number(depoStatus.chain_depo_amt).toLocaleString());
 
           $('#chain_depo_amt').val(depoStatus.chain_depo_amt ? $.fn.dataTable.render.number(',', '.', 0, '').display(depoStatus.chain_depo_amt) : '0');
           $('#credit_depo_amt').val(depoStatus.credit_depo_amt ? $.fn.dataTable.render.number(',', '.', 0, '').display(depoStatus.credit_depo_amt) : '0');

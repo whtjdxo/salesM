@@ -24,8 +24,15 @@ public class DayCloseService {
     public int getQueryTotalCnt() {
         return dayCloseMapper.getQueryTotalCnt();
     }   
+    public HashMap<String, Object> getDayCloseCheck(HashMap<String, Object> hashmapParam) {
+        return dayCloseMapper.getDayCloseCheck(hashmapParam);
+    }
+
     public List<HashMap<String, Object>> getDayCloseList(HashMap<String, Object> hashmapParam) {
-        if (dayCloseMapper.getDayCloseCheck(hashmapParam) > 0) {
+        HashMap<String, Object> closeChk  = new HashMap<String, Object>();
+        closeChk =  dayCloseMapper.getDayCloseCheck(hashmapParam);
+        // System.out.println(" close_chk >>>>>>>>>> " + closeChk.get("close_chk"));            
+        if ("CLOSE".equals(closeChk.get("close_chk"))) {
             return dayCloseMapper.getDayCloseList(hashmapParam);
         } else {
             return dayCloseMapper.getDayPreCloseList(hashmapParam);
@@ -33,7 +40,10 @@ public class DayCloseService {
     }
      
     public HashMap<String, Object> getDayCloseSumm(HashMap<String, Object> hashmapParam) {
-        if (dayCloseMapper.getDayCloseCheck(hashmapParam) > 0) {
+        HashMap<String, Object> closeChk  = new HashMap<String, Object>();
+        closeChk =  dayCloseMapper.getDayCloseCheck(hashmapParam);
+
+        if ("CLOSE".equals(closeChk.get("close_chk"))) {
             return dayCloseMapper.getDayCloseSumm(hashmapParam);
         } else {
             return dayCloseMapper.getDayPreCloseSumm(hashmapParam);
@@ -58,6 +68,26 @@ public class DayCloseService {
             result.setResultMsg("시스템 오류가 발생했습니다: " + e.getMessage());
             // 로깅 처리
             // logger.error("Scrap transaction processing failed", e);
+        }
+        return result; 
+    }
+
+    public ReturnDataVO callProcDayCloseCancel(ProcDayCloseVO procVo) {
+        // return withdrawMapper.callProcRemitMain(procVo);
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            dayCloseMapper.callProcDayCloseCancel(procVo);            
+            if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
+                result.setResultCode("S000");
+                result.setResultMsg(procVo.getResultMsg());
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg(procVo.getResultMsg());
+                return result;
+            } 
+        } catch (Exception e) {
+            result.setResultCode("F500");
+            result.setResultMsg("시스템 오류가 발생했습니다: " + e.getMessage()); 
         }
         return result; 
     }

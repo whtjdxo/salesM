@@ -5,17 +5,53 @@
 	<select id="getQueryTotalCnt" resultType="int">
 		SELECT FOUND_ROWS()
 	</select>
+        <select id="getMonthDayList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT  WEEK_OF_YEAR            AS      week_of_year
+                        , MAX(CASE WHEN DD = '1' THEN CONCAT(DAY, IFNULL(HOLI_DAY, ''))  ELSE '' END )  AS sun
+                        , MAX(CASE WHEN DD = '2' THEN CONCAT(DAY, IFNULL(HOLI_DAY, ''))   ELSE '' END ) AS mon
+                        , MAX(CASE WHEN DD = '3' THEN CONCAT(DAY, IFNULL(HOLI_DAY, ''))  ELSE '' END )  AS tue
+                        , MAX(CASE WHEN DD = '4' THEN CONCAT(DAY, IFNULL(HOLI_DAY, ''))   ELSE '' END ) AS wed
+                        , MAX(CASE WHEN DD = '5' THEN CONCAT(DAY, IFNULL(HOLI_DAY, ''))   ELSE '' END ) AS thu
+                        , MAX(CASE WHEN DD = '6' THEN CONCAT(DAY, IFNULL(HOLI_DAY, ''))   ELSE '' END ) AS fri
+                        , MAX(CASE WHEN DD = '7' THEN CONCAT(DAY, IFNULL(HOLI_DAY, ''))   ELSE '' END ) AS sat 
+                FROM  (
+                                SELECT  WEEK_OF_YEAR
+                                                , DD
+                                                , SUBSTR(WORK_DATE, 9, 10) AS DAY
+                                                , WORK_DATE
+                                                , WORKING
+                                                , IFNULL(DAY_NM, '') AS DAY_NM
+                                                , CONCAT('/', IFNULL(WORKING, 'Y'), '/', IFNULL(DAY_NM, '')) AS HOLI_DAY
+                                                <!-- , CASE WHEN DAY_NM IS NOT NULL THEN CONCAT('/', DAY_NM, '/', WORKING) ELSE '' END AS HOLI_DAY -->
+                                FROM   TB_WORK_DAY
+                                WHERE  WORK_DATE BETWEEN CONCAT(#{sch_mon}, '-01')
+                                                        AND CONCAT(#{sch_mon}, '-31')
+                        ) VD
+                GROUP	BY WEEK_OF_YEAR 
+        </select>
 	<select id="getWorkDayList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
 		SELECT  SQL_CALC_FOUND_ROWS
-                WORK_DATE       AS work_date
-                , WORKING       AS working
-                , DAY_NM        AS day_nm
-				, IFNULL(UPT_USER_ID, ENT_USER_ID) AS upt_user_id
-				, DATE_FORMAT(IFNULL(UPT_DTTM, ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
-		FROM  TB_WORK_DAY 		
-	   WHERE  WORK_DATE  BETWEEN DATE_FORMAT(#{sch_date}, '%Y-%m-01') 
-                             AND LAST_DAY(#{sch_date})
+                        WORK_DATE       AS work_date
+                        , WORKING       AS working
+                        , DAY_NM        AS day_nm
+                        , IFNULL(UPT_USER_ID, ENT_USER_ID) AS upt_user_id
+                        , DATE_FORMAT(IFNULL(UPT_DTTM, ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
+		  FROM  TB_WORK_DAY 		
+                 WHERE  WORK_DATE  BETWEEN #{startDate}
+                                        AND #{endDate}
+                  AND   DAY_NM IS NOT NULL
 	</select> 
+
+        <select id="getDayInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT  SQL_CALC_FOUND_ROWS
+                        WORK_DATE       AS work_date
+                        , WORKING       AS working
+                        , DAY_NM        AS day_nm
+                        , IFNULL(UPT_USER_ID, ENT_USER_ID) AS upt_user_id
+                        , DATE_FORMAT(IFNULL(UPT_DTTM, ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
+		  FROM  TB_WORK_DAY 		
+                 WHERE  WORK_DATE  = #{work_date}                  
+	</select>
  
 	<insert id="insertWorkDay" parameterType="com.web.manage.base.domain.WorkDayVO">
         INSERT INTO TB_WORK_DAY (
@@ -24,27 +60,27 @@
         SELECT 	VT.*   
         FROM    (    
                     SELECT  WORK_DATE
-                            , #{working}					AS WORKING
-                            , IFNULL(#{day_nm}, '')			AS DAY_NM
-                            , DATE_WORK  							        -- 오늘 날짜
-                            , DATE_FORMAT(DATE_WORK, '%a') 	AS WDAY  	    -- 요일 (월/화/수/목/금/토/일)
-                            , WEEKDAY(DATE_WORK) + 1 		AS DD  	        -- 요일 번호 (월=1, 화=2, ... 일=7)
-                            , QUARTER(DATE_WORK) 			AS QUARTER       -- 분기 (1~4)
+                            , #{working}			AS WORKING
+                            , IFNULL(#{day_nm}, '')		AS DAY_NM
+                            , DATE_WORK  							      
+                            , DATE_FORMAT(DATE_WORK, '%a') 	AS WDAY 
+                            , DAYOFWEEK(DATE_WORK)  		AS DD  	
+                            , QUARTER(DATE_WORK) 		AS QUARTER
                             , WEEK(DATE_WORK, 0) - WEEK(DATE_FORMAT(DATE_WORK, '%Y-%m-01'), 0) + 1 AS WEEK_OF_MONTH
-                            , WEEKOFYEAR(DATE_WORK) 		AS WEEK_OF_YEAR  -- 년중 주차
-                            , NOW() 						AS ENT_DTTM     -- 현재 시간
-                            , #{upt_user_id}				AS ENT_USER_ID  -- 사용자 ID (실제 사용자 ID로 변경)
+                            , WEEKOFYEAR(DATE_WORK) 		AS WEEK_OF_YEAR 
+                            , NOW() 				AS ENT_DTTM    
+                            , #{upt_user_id}			AS ENT_USER_ID 
                     FROM 	(
                                 SELECT 	#{work_date} AS WORK_DATE
-                                        , DATE_FORMAT(#{work_date}, '%Y-%m-%d') AS DATE_WORK
+                                        , DATE(#{work_date}) AS DATE_WORK
                             ) V
                 ) VT
         ON DUPLICATE KEY UPDATE
             WORKING 	    = VT.WORKING
             , DAY_NM 	    = VT.DAY_NM
             , DATE_WORK     = VT.DATE_WORK
-            , WDAY 		    = VT.WDAY
-            , DD 		    = VT.DD
+            , WDAY 	    = VT.WDAY
+            , DD 	    = VT.DD
             , QUARTER 	    = VT.QUARTER
             , WEEK_OF_MONTH = VT.WEEK_OF_MONTH
             , WEEK_OF_YEAR  = VT.WEEK_OF_YEAR

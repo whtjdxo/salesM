@@ -16,19 +16,50 @@
       $(document).ready(function () {           
         $('#frm_sch').onLoadFunction();    
 
-        callAjax('/common/getCreditCorpList', "", fn_corp_list_setting);
-        function fn_corp_list_setting(data) {
-          codeSetting('CORP_CD', data.data, '#sch_corp_cd', '1', '', ''); 
-        }
+        // callAjax('/common/getCreditCorpList', "", fn_corp_list_setting);
+        // function fn_corp_list_setting(data) {
+        //   codeSetting('CORP_CD', data.data, '#sch_corp_cd', '1', '', ''); 
+        // }
+
         // Set default values for sch_reg_sdt and sch_reg_edt
         var toDay = returnDate('today');        
         $('#close_date').val(toDay); 
         $('#change_resv_date').val(toDay);
+        
+        var frmdata = $('#frm_sch').serializeObject();          
+        callAjaxJson('/deposit/close/dayClose/closeChk', frmdata, fn_close_setting);
+        
+        function fn_close_setting(data) {
+          
+          var closeStatus = data.data || {};                       
+          if(closeStatus.lock_chk == 'LOCK')  {
+            $('#btn_close_cancel').hide();
+            $('#btn_day_close').hide();
+          } else {
+            if (closeStatus.close_chk == 'CLOSE') {
+              $('#btn_close_cancel').show();
+              $('#btn_day_close').hide();
+            } else {
+              $('#btn_day_close').show();
+              $('#btn_close_cancel').hide();
+            } 
+          }
+        }
 
         $('#btn_search').click(function () {   
+          var formData = $('#frm_sch').serializeObject();
+          callAjaxJson('/deposit/close/dayClose/closeChk', formData, fn_close_setting);
           tbl_day_close_list.ajax.reload();
+          // tbl_day_close_list.ajax.reload();
         });  
 
+        $('#close_date').on('change', function () {
+          $('#btn_close_cancel').hide();
+          $('#btn_day_close').hide();
+          // var formData = $('#frm_sch').serializeObject();
+          // callAjaxJson('/deposit/close/dayClose/closeChk', formData, fn_close_setting);
+          // tbl_day_close_list.ajax.reload();
+        });
 
         var tbl_day_close_list = $('#tbl_day_close_list').DataTable({
             processing: true,
@@ -351,11 +382,39 @@
           }
           
           var  dataParam = {              
-              closeDate : $('#close_date').val(), 
-              corpCd : $('#sch_corp_cd').val()
+              closeDate : $('#close_date').val() 
           }  
            
           ConfirmdialogToAjax("execute","/deposit/close/dayClose/procDayClose", dataParam, fn_deposit_result); 
+        }); 
+
+        $('#btn_close_cancel').click(function () {
+          var closeDateVal = $('#close_date').val();
+          var todayVal = returnDate('today');
+
+          if (!closeDateVal) {
+              Swal.fire({
+                  title: '오류',
+                  text: '마감일자를 입력해주세요.',
+                  icon: 'error'
+              });
+
+              return false;
+          } else if (closeDateVal > todayVal) {
+              Swal.fire({
+                  title: '오류',
+                  text: '오늘 이후 마감일자는 선택할 수 없습니다.',
+                  icon: 'error'
+              });
+
+              return false;
+          }
+          
+          var  dataParam = {              
+              closeDate : $('#close_date').val() 
+          }  
+           
+          ConfirmdialogToAjax("execute","/deposit/close/dayClose/procDayCloseCancel", dataParam, fn_deposit_result); 
         }); 
          
         function fn_deposit_result(data){ 
@@ -364,8 +423,36 @@
             text: '작업을 정상적으로 완료하였습니다.',
             icon: 'success'
           });
+          var formData = $('#frm_sch').serializeObject();
+          callAjaxJson('/deposit/close/dayClose/closeChk', formData, fn_close_setting);
           tbl_day_close_list.ajax.reload();
         }
+
+        // Excel download button click event
+        $('#btn_excel').click(function () {
+          var formData = $('#frm_sch').serializeObject();
+          $.ajax({
+            url: '/deposit/close/dayClose/downExcel',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            xhrFields: {
+              responseType: 'blob'
+            },
+            success: function (data, status, xhr) {
+              var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+              var link = document.createElement('a');
+              link.href = window.URL.createObjectURL(blob);
+              link.download = '일마감 리스트.xlsx';
+              link.click();
+            },
+            error: function (xhr, status, error) {
+              alert('Excel download failed.');
+            }
+          });
+        });  
+
+         
          
       });
     </script>
@@ -386,9 +473,9 @@
                       <div class="col-sm-3">
                         <input class="form-control form-control-sm" id="close_date" type="text" name="close_date" istyle="date" maxlength="10" required />
                       </div>   
-                      <select class="form-select form-control-sm me-1" id="sch_corp_cd" name="sch_corp_cd" style="width: 120px">
+                      <!-- <select class="form-select form-control-sm me-1" id="sch_corp_cd" name="sch_corp_cd" style="width: 120px">
                         <option value="">여신사</option>
-                      </select>                        
+                      </select>                         -->
                       <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
                     </div>
                   </div>

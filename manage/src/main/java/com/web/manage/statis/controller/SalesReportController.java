@@ -1,0 +1,154 @@
+package com.web.manage.statis.controller;
+
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.google.gson.Gson;
+import com.web.manage.common.domain.PageingVO;
+import com.web.manage.common.domain.SessionVO;
+import com.web.manage.statis.service.SalesReportService;
+
+import jakarta.servlet.http.HttpSession;
+
+@Controller
+@RequestMapping("/statis/report/")
+public class SalesReportController {
+    @Autowired
+    private SalesReportService salesReportService;
+
+    @RequestMapping("salesReport/view")
+    public String view() {
+        return "pages/statis/salesReport";
+    }
+
+    @RequestMapping(value = "salesReport/salesSummary", method = RequestMethod.POST)
+    public @ResponseBody String getSalesSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> totalSumm = new HashMap<String, Object>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            // System.out.println(hashmapParam);
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+            
+            list = salesReportService.getSalesSummary(hashmapParam);
+            int records = salesReportService.getQueryTotalCnt();
+            totalSumm = salesReportService.getSalesSummaryTotal(hashmapParam);
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+            hashmapResult.put("totalSumm", totalSumm);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jString;  
+    } 
+
+    @RequestMapping(value = "salesReport/downExcel", method = RequestMethod.POST)
+    public ResponseEntity<byte[]> getSalesSummaryToExcel(@RequestBody HashMap<String, Object> hashmapParam) {
+        try {
+            // Fetch data for the Excel file
+            hashmapParam.put("sidx", "");
+            hashmapParam.put("sord", "");
+            hashmapParam.put("start", "0");
+            hashmapParam.put("end", "9999");
+            List<HashMap<String, Object>> list = salesReportService.getSalesSummary(hashmapParam);
+
+            // Create an Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Docu List");
+
+            // Create header row
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {
+                "NO", "정산 일자"
+                // 출금마감 - 매출
+                , "출금-총승인금액", "출금 원금","출금-운영사 수수료", "출금-여신사 수수료", "출금-소계"
+                , "입금-총승인금액", "입금 원금","입금-운영사 수수료", "입금-여신사 수수료", "입금-소계"
+                , "즉결잔고"
+            };
+            
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+            }
+             
+            // Populate data rows
+            int rowIndex = 1;
+            for (HashMap<String, Object> row : list) {
+                Row dataRow = sheet.createRow(rowIndex++);
+                int colIndex = 0;
+                // 1. NO (row number)
+                dataRow.createCell(colIndex++).setCellValue(rowIndex - 1);                
+                // 2. 출금
+                dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("close_date", "").toString());
+                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_conf_amt")))); 
+                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_wd_base_amt"))));
+                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_svc_fee_amt"))));
+                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_crd_fee_amt"))));
+                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_sales_total"))));
+
+                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("dp_conf_amt"))));
+                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("db_bank_in_base_amt"))));
+                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("op_bank_in_svc_amt"))));
+                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("op_bank_in_crd_amt"))));
+                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("op_sales_total"))));
+
+                // 12. 총 사용액
+                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("tot_use_amt"))));
+                 
+            }    
+            // Write workbook to a byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            workbook.close();
+
+            // Set response headers
+            HttpHeaders hHeaders = new HttpHeaders();
+            hHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            hHeaders.setContentDispositionFormData("attachment", "remitList.xlsx");
+
+            return ResponseEntity.ok()
+                    .headers(hHeaders)
+                    .body(outputStream.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    } 
+ 
+}

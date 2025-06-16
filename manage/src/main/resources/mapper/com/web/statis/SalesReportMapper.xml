@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.web.manage.statis.mapper.SalesReportMapper">
+
+    <select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select> 
+
+    <select id="getSalesSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	SQL_CALC_FOUND_ROWS
+                DC.CLOSE_DATE                                                   AS close_date				
+                , IFNULL(SUM(DC.RM_CONF_AMT), 0)           	   		AS rm_conf_amt
+                , IFNULL(SUM(DC.RM_WD_BASE_AMT), 0)              		AS rm_wd_base_amt
+                <!-- , IFNULL(SUM(DC.RM_SVC_FEE_AMT), 0)              		AS rm_svc_fee_amt -->
+                , IFNULL(ROUND(SUM(DC.RM_SVC_FEE_AMT) / 1.1), 0) 		AS rm_svc_fee_amt
+                , IFNULL(SUM(DC.RM_CRD_FEE_AMT), 0)              		AS rm_crd_fee_amt
+                , IFNULL(ROUND(SUM(DC.RM_SVC_FEE_AMT) / 1.1), 0)
+                  + IFNULL(SUM(DC.RM_CRD_FEE_AMT), 0)		                AS rm_sales_total
+                , IFNULL(SUM(DC.DP_CONF_AMT_SUM), 0)             		AS dp_conf_amt
+                , IFNULL(SUM(DC.OP_BANK_IN_BASE_AMT), 0)         		AS db_bank_in_base_amt
+                <!-- , IFNULL(SUM(DC.OP_BANK_IN_SVC_AMT), 0)          		AS op_bank_in_svc_amt_vat -->
+                , IFNULL(ROUND(SUM(DC.OP_BANK_IN_SVC_AMT) / 1.1), 0)            AS op_bank_in_svc_amt
+                , IFNULL(SUM(DC.OP_BANK_IN_CRD_AMT), 0)         		AS op_bank_in_crd_amt
+                , IFNULL(ROUND(SUM(DC.OP_BANK_IN_SVC_AMT) / 1.1), 0)    
+                  + IFNULL(SUM(DC.OP_BANK_IN_CRD_AMT), 0)         	        AS op_sales_total
+                , IFNULL(SUM(DC.TOT_USE_AMT), 0)             		        AS tot_use_amt
+          FROM 	TB_DAY_CLOSE_REPORT DC
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO 
+        <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
+				AND  TC.CORP_CD =  #{sch_corp_cd} 
+		</if>                                       
+         WHERE  DC.CLOSE_DATE BETWEEN #{sch_date_from}
+                                  AND #{sch_date_to}
+         GROUP  BY DC.CLOSE_DATE
+        <choose>
+            <when test="sidx != ''">
+                    ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                    ORDER BY 1
+            </otherwise>
+        </choose> 
+        LIMIT  ${start}, ${end}
+    </select>
+
+    <select id="getSalesSummaryTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT  IFNULL(SUM(DC.RM_CONF_AMT), 0)             	   		 AS rm_conf_amt
+                , IFNULL(SUM(DC.RM_WD_BASE_AMT), 0)              		AS rm_wd_base_amt
+                , IFNULL(SUM(DC.RM_SVC_FEE_AMT), 0)              		AS rm_svc_fee_amt
+                , IFNULL(SUM(DC.RM_CRD_FEE_AMT), 0)              		AS rm_crd_fee_amt
+                , IFNULL(ROUND(SUM(DC.RM_SVC_FEE_AMT) / 1.1), 0)
+                            + IFNULL(SUM(DC.RM_CRD_FEE_AMT), 0)		        AS rm_sales_total
+                , IFNULL(SUM(DC.DP_CONF_AMT_SUM), 0)             		AS dp_conf_amt
+                , IFNULL(SUM(DC.OP_BANK_IN_BASE_AMT), 0)         		AS db_bank_in_base_amt
+                , IFNULL(SUM(DC.OP_BANK_IN_SVC_AMT), 0)          		AS op_bank_in_svc_amt
+                , IFNULL(SUM(DC.OP_BANK_IN_CRD_AMT), 0)         		AS op_bank_in_crd_amt
+                , IFNULL(ROUND(SUM(DC.OP_BANK_IN_SVC_AMT) / 1.1), 0)            
+                   + IFNULL(SUM(DC.OP_BANK_IN_CRD_AMT), 0)         	        AS op_sales_total
+                , IFNULL(SUM(DC.TOT_USE_AMT), 0)             		        AS tot_use_amt
+          FROM 	TB_DAY_CLOSE_REPORT DC
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO 
+        <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
+				AND  TC.CORP_CD =  #{sch_corp_cd} 
+		</if>                                       
+         WHERE  DC.CLOSE_DATE BETWEEN #{sch_date_from}
+                                  AND #{sch_date_to}
+        
+    </select>
+</mapper>

@@ -190,4 +190,61 @@
                         , NOW()
                 )
         </insert> 
+
+        <insert id="scrapUploadKsolutionData" parameterType="com.web.manage.api.domain.ScrapKsolutionVO">
+                INSERT INTO TB_SCRAP_KSOLUTION_DATA
+                (
+                        CHAIN_NO	, CHAIN_NM	, BIZ_NO	, DEPO_DT	, DEPO_TM	
+                        , CARD_CORP_NM	, DEPO_AMT	, ENT_DTTM
+                ) VALUES (
+                        #{chainNo}	, #{chainNm}	, #{bizNo}	, #{depoDt}	, #{depoTm}
+                        , #{cardCorpNm}	, #{depoAmt}	, NOW()
+                )
+        </insert>
+
+
+        <update id="callProcTransVanDocu" parameterType="com.web.manage.api.domain.ScrapProcTransVO" statementType="CALLABLE">
+		{ 
+                        CALL PRC_SCRAP_TRANS_VAN_DOCU(
+                                        #{chainNo, mode=IN, jdbcType=VARCHAR}
+                                        , #{userId, mode=IN, jdbcType=VARCHAR}
+                                        , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                                        , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+                        ) 
+		}
+	</update>
+
+        <update id="callProcTransDeliDocu" parameterType="com.web.manage.api.domain.ScrapProcTransVO" statementType="CALLABLE">
+		{ 
+                        CALL PRC_SCRAP_TRANS_DELI_DOCU(
+                                        #{chainNo, mode=IN, jdbcType=VARCHAR}
+                                        , #{userId, mode=IN, jdbcType=VARCHAR}
+                                        , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                                        , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+                        ) 
+		}
+	</update>
+
+        <update id="callProcTransBankDeposit" parameterType="com.web.manage.api.domain.ScrapProcTransVO" statementType="CALLABLE">
+		{ 
+                        CALL PRC_SCRAP_TRANS_BANK_DEPOSIT(
+                                        #{chainNo, mode=IN, jdbcType=VARCHAR}
+                                        , #{userId, mode=IN, jdbcType=VARCHAR}
+                                        , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                                        , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+                        ) 
+		}
+	</update>
+
+        <update id="callProcTransKsolution" parameterType="com.web.manage.api.domain.ScrapProcTransVO" statementType="CALLABLE">
+		{ 
+                        CALL PRC_SCRAP_TRANS_KSOLUTION_DATA(
+                                        #{userId, mode=IN, jdbcType=VARCHAR}
+                                        , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                                        , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+                        ) 
+		}
+	</update>
+
+        	
 </mapper>

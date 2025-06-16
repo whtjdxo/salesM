@@ -12,55 +12,336 @@
     <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />
     
     <!-- DataTables Select CSS 추가 -->
-    <link rel="stylesheet" href="/css/custom-salesm.css" />
-
-    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <link rel="stylesheet" href="/css/custom-salesm.css" /> 
     <script th:inline="none">      
       $(document).ready(function () {
-        $('#frm_workday').onLoadFunction();   
-          
-        $('#tbl_workday').on('click', 'tr', function () {  
-          // if ($(this).hasClass('selected')) {
-          //   $(this).removeClass('selected');
-          // } else {
-          //   tbl_workday.$('tr.selected').removeClass('selected');
-          //   $(this).addClass('selected');
-          // }
+        $('#frm_workday').onLoadFunction();  
+        var toDay = returnDate('today');                  
+        // toDay 값이 'yyyy-mm' 형식이라고 가정
+        var year = toDay.substring(0, 4);
+        var month = toDay.substring(5, 7);
+        $('#sch_mon').val(year + '-' + month);
 
-          // 해당 행의 데이터 로드
-          alert('click');
-          const data = tbl_workday.row(this).data();
-          
+        var tbl_cal = $('#tbl_cal').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          responsive: true,
+          ajax: {
+            url: '/base/organ/workDayMng/monthDay',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',
+            data: function (postData) {
+              formData = {
+                sch_mon : $('#sch_mon').val(),
+              }
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
+            },
+          },
+            columns: [
+                {
+                  data: 'sun',
+                  render: function (data, type, row, meta) {
+                    if (!data) return '';
+                    // '/'로 분리
+                    var parts = data.split('/');
+                    var html = '';
+                    var color = '';                    
+                    // 휴일이면 붉은색 표시
+                    if (parts[1]) {
+                      color = (parts[1] === 'N') ? 'red' : 'inherit';
+                    }
+                    if (parts[0]) {
+                      html += '<div style="font-weight:bold; text-align:left; color:' + color + ';">' + parts[0] + '</div>';
+                    }                    
+                    // 세번째 값(있으면 줄바꿈, 중앙정렬)
+                    if (parts[2]) {
+                      html += '<div style="text-align:center;">' + parts[2] + '</div>';
+                    }
+                    return html;
+                  }
+                },
+                {
+                  data: 'mon',
+                  render: function (data, type, row, meta) {
+                    if (!data) return '';
+                    // '/'로 분리
+                    var parts = data.split('/');
+                    var html = '';
+                    var color = '';                    
+                    // 휴일이면 붉은색 표시
+                    if (parts[1]) {
+                      color = (parts[1] === 'N') ? 'red' : 'inherit';
+                    }
+                    if (parts[0]) {
+                      html += '<div style="font-weight:bold; text-align:left; color:' + color + ';">' + parts[0] + '</div>';
+                    }                    
+                    // 세번째 값(있으면 줄바꿈, 중앙정렬)
+                    if (parts[2]) {
+                      html += '<div style="text-align:center;">' + parts[2] + '</div>';
+                    }
+                    return html;
+                  }
+                },
+                {
+                  data: 'tue',
+                  render: function (data, type, row, meta) {
+                    if (!data) return '';
+                    // '/'로 분리
+                    var parts = data.split('/');
+                    var html = '';
+                    var color = '';                    
+                    // 휴일이면 붉은색 표시
+                    if (parts[1]) {
+                      color = (parts[1] === 'N') ? 'red' : 'inherit';
+                    }
+                    if (parts[0]) {
+                      html += '<div style="font-weight:bold; text-align:left; color:' + color + ';">' + parts[0] + '</div>';
+                    }                    
+                    // 세번째 값(있으면 줄바꿈, 중앙정렬)
+                    if (parts[2]) {
+                      html += '<div style="text-align:center;">' + parts[2] + '</div>';
+                    }
+                    return html;
+                  }
+                },
+                {
+                  data: 'wed',
+                  render: function (data, type, row, meta) {
+                    if (!data) return '';
+                    // '/'로 분리
+                    var parts = data.split('/');
+                    var html = '';
+                    var color = '';                    
+                    // 휴일이면 붉은색 표시
+                    if (parts[1]) {
+                      color = (parts[1] === 'N') ? 'red' : 'inherit';
+                    }
+                    if (parts[0]) {
+                      html += '<div style="font-weight:bold; text-align:left; color:' + color + ';">' + parts[0] + '</div>';
+                    }                    
+                    // 세번째 값(있으면 줄바꿈, 중앙정렬)
+                    if (parts[2]) {
+                      html += '<div style="text-align:center;">' + parts[2] + '</div>';
+                    }
+                    return html;
+                  }
+                },
+                {
+                  data: 'thu',
+                  render: function (data, type, row, meta) {
+                    if (!data) return '';
+                    // '/'로 분리
+                    var parts = data.split('/');
+                    var html = '';
+                    var color = '';                    
+                    // 휴일이면 붉은색 표시
+                    if (parts[1]) {
+                      color = (parts[1] === 'N') ? 'red' : 'inherit';
+                    }
+                    if (parts[0]) {
+                      html += '<div style="font-weight:bold; text-align:left; color:' + color + ';">' + parts[0] + '</div>';
+                    }                    
+                    // 세번째 값(있으면 줄바꿈, 중앙정렬)
+                    if (parts[2]) {
+                      html += '<div style="text-align:center;">' + parts[2] + '</div>';
+                    }
+                    return html;
+                  }
+                },
+                {
+                  data: 'fri',
+                  render: function (data, type, row, meta) {
+                    if (!data) return '';
+                    // '/'로 분리
+                    var parts = data.split('/');
+                    var html = '';
+                    var color = '';                    
+                    // 휴일이면 붉은색 표시
+                    if (parts[1]) {
+                      color = (parts[1] === 'N') ? 'red' : 'inherit';
+                    }
+                    if (parts[0]) {
+                      html += '<div style="font-weight:bold; text-align:left; color:' + color + ';">' + parts[0] + '</div>';
+                    }                    
+                    // 세번째 값(있으면 줄바꿈, 중앙정렬)
+                    if (parts[2]) {
+                      html += '<div style="text-align:center;">' + parts[2] + '</div>';
+                    }
+                    return html;
+                  }
+                },
+                {
+                  data: 'sat',
+                  render: function (data, type, row, meta) {
+                    if (!data) return '';
+                    // '/'로 분리
+                    var parts = data.split('/');
+                    var html = '';
+                    var color = '';                    
+                    // 휴일이면 붉은색 표시
+                    if (parts[1]) {
+                      color = (parts[1] === 'N') ? 'red' : 'inherit';
+                    }
+                    if (parts[0]) {
+                      html += '<div style="font-weight:bold; text-align:left; color:' + color + ';">' + parts[0] + '</div>';
+                    }                    
+                    // 세번째 값(있으면 줄바꿈, 중앙정렬)
+                    if (parts[2]) {
+                      html += '<div style="text-align:center;">' + parts[2] + '</div>';
+                    }
+                    return html;
+                  }
+                }
+              ],
+            columnDefs: [           
+            { targets: 0, width: '12%', className: 'text-left', createdCell: function(td) { $(td).css('height', '100px'); } },
+            { targets: 1, width: '15%', className: 'text-left', createdCell: function(td) { $(td).css('height', '100px'); } },
+            { targets: 2, width: '15%', className: 'text-left', createdCell: function(td) { $(td).css('height', '100px'); } },
+            { targets: 3, width: '15%', className: 'text-left', createdCell: function(td) { $(td).css('height', '100px'); } },
+            { targets: 4, width: '15%', className: 'text-left', createdCell: function(td) { $(td).css('height', '100px'); } },
+            { targets: 5, width: '15%', className: 'text-left', createdCell: function(td) { $(td).css('height', '100px'); } },
+            { targets: 6, width: '13%', className: 'text-left', createdCell: function(td) { $(td).css('height', '100px'); } }, 
+          ],
+          order: [[1, 'desc']],
+          paging: false,
+          lengthChange: false,
+          searching: false,
+          ordering: false,
+          autoWidth: false,
+          responsive: true,
+          // scrollCollapse: true,
+          // pageLength: 20,
+          scrollY: '550px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
+        });    
+
+        // td 클릭 및 선택 기능
+        $(document).on('click', '#tbl_cal tbody td', function() {
+          $('#tbl_cal tbody td').removeClass('selected-td');
+          $(this).addClass('selected-td');
+          // 필요시, 클릭된 셀의 데이터 활용
+          var cellIndex = this.cellIndex;
+          console.log(cellIndex);
+
+          var data = tbl_cal.row(this).data();
+          var cellData = '';
           if (data) {
+            switch (cellIndex) {
+              case 0:
+                cellData = data.sun;
+                break;
+              case 1:
+                cellData = data.mon;
+                break;
+              case 2:
+                cellData = data.tue;
+                break;
+              case 3:
+                cellData = data.wed;
+                break;
+              case 4:
+                cellData = data.thu;
+                break;
+              case 5:
+                cellData = data.fri;
+                break;
+              case 6:
+                cellData = data.sat;
+                break;
+              default:
+                cellData = '';
+            } 
             
-            // $('#frm_workday')[0].reset();
-            // $('#corp_cd').val(data.corp_cd);
-            // $('#corp_type').val(data.corp_type).attr('selected', 'selected');
-            // $('#corp_nm').val(data.corp_nm);
-            // $('#biz_no').val(data.biz_no);
-            // $('#bank_cd').val(data.bank_cd);            
-            // $('#account_no').val(data.account_no);
-            // $('#account_pwd').val(data.account_pwd);
-            // $('#web_id').val(data.web_id);
-            // $('#web_pwd').val(data.web_pwd);            
-            // $('#api_url').val(data.api_url);
-            // $('#memo').val(data.memo);  
-            // $("input:radio[name='working'][value='" + data.working + "']").prop('checked', true);
-            // $('#upt_user_id').val(data.upt_user_id);
-            // $('#upt_dttm').val(data.upt_dttm);   
+            var parts = cellData.split('/');            
+            if (parts[0]) {
+              $('#work_date').val($('#sch_mon').val() + "-" + parts[0]);
+            } 
 
-            $('#btn_update').show();
-            $('#btn_save').hide();
-            $('#crud').val('update'); 
-          }  
-        });      
+            if (parts[1]) {
+              if(parts[1] == "N") {
+                $("input:radio[name='working'][value='Y']").prop('checked', true);
+              } else {
+                $("input:radio[name='working'][value='N']").prop('checked', true);
+              }
+            }else{
+              $("input:radio[name='working'][value='N']").prop('checked', true);
+            }
+            // 세번째 값(있으면 줄바꿈, 중앙정렬)
+            if (parts[2]) {
+              $('#day_nm').val(parts[2]);
+            }else{
+              $('#day_nm').val('');
+            }
+          }
+        });
 
-        $('#btn_clear').click(function () {
+        // 선택된 td 스타일 추가
+        $('<style>')
+          .prop('type', 'text/css')
+          .html('.selected-td { background-color: #ffe082 !important; }')
+          .appendTo('head');
+
+        // 이전 달로 이동
+        $('#btn_prev_mon').click(function () {        
+          $('#frm_workday').clearForm(); 
+          var schMonVal = $('#sch_mon').val().replace(' ', '');
+          var parts = schMonVal.split('-');
+          var year = parseInt(parts[0], 10);
+          var month = parseInt(parts[1], 10);
+
+          // 이전 달 계산
+          if (month === 1) {
+            year -= 1;
+            month = 12;
+          } else {
+            month -= 1;
+          }
+          var prevYear = year;
+          var prevMonthNum = ('0' + month).slice(-2);
+          $('#sch_mon').val(prevYear + '-' + prevMonthNum); 
+          tbl_cal.ajax.reload();   
+        });
+
+        // 오늘로
+        $('#btn_today').click(function () {        
+           var toDay = returnDate('today'); 
+          var year = toDay.substring(0, 4);
+          var month = toDay.substring(5, 7);
+          $('#sch_mon').val(year + '-' + month);
+          tbl_cal.ajax.reload();   
+        });
+
+        // 다음 달로 이동
+        $('#btn_next_mon').click(function () {        
           $('#frm_workday').clearForm();
-          $("input:radio[name='working'][value='Y']").prop('checked', true);
-          $('#btn_update').hide();
-          $('#btn_save').show(); 
-        }); 
+          // sch_mon 값(yyyy-mm) 기준으로 이전달 계산
+          var schMonVal = $('#sch_mon').val().replace(' ', '');
+          var parts = schMonVal.split('-');
+          var year = parseInt(parts[0], 10);
+          var month = parseInt(parts[1], 10);
+
+            // 다음 달 계산
+          if (month === 12) {
+            year += 1;
+            month = 1;
+          } else {
+            month += 1;
+          }
+          var nextYear = year;
+          var nextMonthNum = ('0' + month).slice(-2);
+          $('#sch_mon').val(nextYear + '-' + nextMonthNum);
+          tbl_cal.ajax.reload();   
+        });  
         
         $('#btn_save').click(function () {
           $('#crud').val('create');
@@ -72,10 +353,9 @@
             }
           });
           if (checked) {
-            ConfirmdialogToAjax('create', '/base/organ/corpMng/corpCreate', $('#frm_workday').serialize(), fn_return_result);
+            ConfirmdialogToAjax('create', '/base/organ/workDayMng/insertWorkDay', $('#frm_workday').serialize(), fn_return_result);
           } 
-        });
- 
+        }); 
 
         function fn_return_result(data) {
           var resultCode = data.resultCode;
@@ -83,145 +363,55 @@
           if (resultCode == 'S000') {
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
             $('#frm_workday')[0].reset();    
-            tbl_workday.ajax.reload();        
-            $("input:radio[name='working'][value='Y']").prop('checked', true);
-            $('#btn_update').hide();
-            $('#btn_save').show(); 
-            
-            // $('#tbl_workday').setGridParam({ url: '/base/organ/corpMng/list', page: 1, datatype: 'json' }).trigger('reloadGrid');            
+            tbl_cal.ajax.reload(); 
           } else {
             swal('실패', resultMsg, 'error');
           }
-        }
-        
-      });
+        }        
+      }); 
     </script>
   </head>
   <div class="content">    
     <div class="row g-3 mb-1">
       <div class="col-lg-10">
         <div class="card">
-          <!-- <div class="card-header">
+          <div class="card-header">
             <div class="row flex-between-end">
-              <div class="col-auto align-self-center">
-                <h5 class="mb-2">영업일 관리</h5>
+              <div class="col-lg-2 align-self-center">
+                <h4 class="mb-2">영업일 관리</h4>
               </div>
-            </div>                
-          </div>           -->
-          <div class="card-body pt-1 px-1" style="padding-top: 0px">             
-            <div data-calendar='{"events":[{"title":"Bootcamp","start":"2025-02-02"}]}' class="fc fc-media-screen fc-direction-ltr fc-theme-standard">
-                <div class="fc-header-toolbar fc-toolbar fc-toolbar-ltr">
-                    <div class="fc-toolbar-chunk">
-                        <div class="fc-button-group">
-                            <button type="button" title="Previous Month" aria-pressed="false" class="fc-prev-button fc-button fc-button-primary">
-                                <span class="fc-icon fc-icon-chevron-left" role="img"></span>
-                            </button>
-                            <button type="button" title="Next Month" aria-pressed="false" class="fc-next-button fc-button fc-button-primary">
-                                <span class="fc-icon fc-icon-chevron-right" role="img"></span>
-                            </button>
-                        </div>
-                        <button type="button" title="This Month" disabled="" aria-pressed="false" class="fc-today-button fc-button fc-button-primary">today</button>
-                    </div>
-                    <div class="fc-toolbar-chunk">
-                        <h2 class="fc-toolbar-title" id="fc-dom-1">March 2025</h2>
-                    </div>
-                    <div class="fc-toolbar-chunk">
-                        <div class="fc-button-group">
-                            <button type="button" title="Month view" aria-pressed="true" class="fc-dayGridMonth-button fc-button fc-button-primary fc-button-active">Month</button>
-                            <button type="button" title="Week view" aria-pressed="false" class="fc-timeGridWeek-button fc-button fc-button-primary">Week</button>
-                            <button type="button" title="Day view" aria-pressed="false" class="fc-timeGridDay-button fc-button fc-button-primary">Day</button>
-                        </div>
-                    </div>
-                </div>
-                <div aria-labelledby="fc-dom-1" class="fc-view-harness fc-view-harness-active" style="height: 500px;">
-                  <div class="fc-dayGridMonth-view fc-view fc-daygrid">
-                  <table role="grid" class="fc-scrollgrid fc-scrollgrid-liquid" id="tbl_workday" name="tbl_workday">
-                    <thead role="rowgroup">
-                    <tr role="presentation" class="fc-scrollgrid-section fc-scrollgrid-section-header">
-                      <th role="presentation">
-                      <div class="fc-scroller-harness">
-                        <div class="fc-scroller" style="overflow: hidden;">
-                        <table role="presentation" class="fc-col-header" style="width: 1518px;">
-                          <thead role="presentation">
-                          <tr role="row">
-                            <th role="columnheader" class="fc-col-header-cell fc-day fc-day-mon">
-                            <div class="fc-scrollgrid-sync-inner">
-                              <a aria-label="Monday" class="fc-col-header-cell-cushion">Mon</a>
-                            </div>
-                            </th>
-                            <th role="columnheader" class="fc-col-header-cell fc-day fc-day-tue">
-                            <div class="fc-scrollgrid-sync-inner">
-                              <a aria-label="Tuesday" class="fc-col-header-cell-cushion">Tue</a>
-                            </div>
-                            </th>
-                            <th role="columnheader" class="fc-col-header-cell fc-day fc-day-wed">
-                            <div class="fc-scrollgrid-sync-inner">
-                              <a aria-label="Wednesday" class="fc-col-header-cell-cushion">Wed</a>
-                            </div>
-                            </th>
-                            <th role="columnheader" class="fc-col-header-cell fc-day fc-day-thu">
-                            <div class="fc-scrollgrid-sync-inner">
-                              <a aria-label="Thursday" class="fc-col-header-cell-cushion">Thu</a>
-                            </div>
-                            </th>
-                            <th role="columnheader" class="fc-col-header-cell fc-day fc-day-fri">
-                            <div class="fc-scrollgrid-sync-inner">
-                              <a aria-label="Friday" class="fc-col-header-cell-cushion">Fri</a>
-                            </div>
-                            </th>
-                            <th role="columnheader" class="fc-col-header-cell fc-day fc-day-sat">
-                            <div class="fc-scrollgrid-sync-inner">
-                              <a aria-label="Saturday" class="fc-col-header-cell-cushion">Sat</a>
-                            </div>
-                            </th>
-                            <th role="columnheader" class="fc-col-header-cell fc-day fc-day-sun"></th>
-                            <div class="fc-scrollgrid-sync-inner"></div>
-                              <a aria-label="Sunday" class="fc-col-header-cell-cushion">Sun</a>
-                            </div>
-                            </th>
-                          </tr>
-                          </thead>
-                        </table>
-                        </div>
-                      </div>
-                      </th>
-                    </tr>
-                    </thead>
-                    <tbody role="rowgroup">
-                    <tr role="presentation" class="fc-scrollgrid-section fc-scrollgrid-section-body fc-scrollgrid-section-liquid">
-                      <td role="presentation">
-                      <div class="fc-scroller-harness fc-scroller-harness-liquid">
-                        <div class="fc-scroller fc-scroller-liquid-absolute" style="overflow: hidden auto;">
-                        <div class="fc-daygrid-body fc-daygrid-body-unbalanced" style="width: 1518px;"></div>
-                            <table role="presentation" class="fc-scrollgrid-sync-table" style="width: 1518px; height: 1076px;">
-                            <tbody role="presentation"></tbody>
-                            <tr role="row"></tr>
-                            <td aria-labelledby="fc-dom-2" role="gridcell" data-date="2025-02-24" class="fc-day fc-day-mon fc-day-past fc-day-other fc-daygrid-day">
-                              <div class="fc-daygrid-day-frame fc-scrollgrid-sync-inner">
-                              <div class="fc-daygrid-day-top"></div>
-                              <a aria-label="February 24, 2025" id="fc-dom-2" class="fc-daygrid-day-number">24</a>
-                              </div>
-                              <div class="fc-daygrid-day-events"></div>
-                              <div class="fc-daygrid-day-bottom" style="margin-top: 0px;"></div>
-                              </div>
-                              <div class="fc-daygrid-day-bg"></div>
-                              </div>
-                            </td>
-                            <!-- Additional days omitted for brevity -->
-                            </tr>
-                            </tbody>
-                            </table>
-                        </div>
-                        </div>
-                      </div>
-                      </td>
-                    </tr>
-                    </tbody>
-                  </table>
+              <div class="col-lg-10">
+                <div class="row mb-1">
+                  <div class="col-lg-8 d-flex justify-content-center align-items-center">
+                    <input type="text" class="form-control form-control-sm me-1 fw-bold fs-5 border-0 shadow-none text-center" id="sch_mon" name="sch_mon" style="width:300px; font-weight:bold; font-size:1.25rem; background-color:transparent;" readonly/>                  
                   </div>
-                </div>
-            </div>            
-          </div>
+                  <div class="col-sm-4 justify-content-end">
+                    <div class="input-group input-group-sm mb-2">
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_prev_mon">이전 달</button>
+                      <button type="button" class="btn btn-success btn-sm" id="btn_today">오늘</button>
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_next_mon">다음 달</button>
+                    </div>   
+                  </div>  
+                </div>                
+              </div>              
+            </div>                
+          </div>          
+          <div class="card-body pt-1 px-1" style="padding-top: 0px">
+            <table class="table table-striped table-sm fs-9 mb-1 selectable-table table-hover selectable table-bordered" id="tbl_cal" style="border-collapse: collapse;">  
+              <thead>
+                <tr>                    
+                  <th class="text-center">일</th>
+                  <th class="text-center">월</th>
+                  <th class="text-center">화</th>
+                  <th class="text-center">수</th>
+                  <th class="text-center">목</th>
+                  <th class="text-center">금</th> 
+                  <th class="text-center">토</th> 
+                </tr>
+              </thead>
+              <tbody class="list"></tbody>
+            </table> 
+          </div>  
         </div>
       </div>
       <div class="col-lg-2">
@@ -258,14 +448,14 @@
                 <div class="input-group input-group-sm mb-2">
                   <label class="col-sm-3 col-form-label col-form-label-sm" for="day_nm">휴일명</label>
                   <div class="col-sm-9">
-                    <input class="form-control form-control-sm" id="day_nm" type="text" name="day_nm" disabled/>  
+                    <input class="form-control form-control-sm" id="day_nm" type="text" name="day_nm"/>  
                   </div>                  
                 </div> 
-                <div class="input-group input-group-sm mb-2"> 
+                <!-- <div class="input-group input-group-sm mb-2"> 
                   <label class="col-sm-3 col-form-label col-form-label-sm" for="addr">수정자</label>                     
                   <div class="col-sm-9">
                     <div class="input-group input-group-sm">
-                      <input type="text" class="form-control form-control-sm" id="upt_user_id" name="upt_user_id" readonly="readonly" /> 
+                      <input type="text" class="form-control form-control-sm bg-light" id="upt_user_id" name="upt_user_id" readonly="readonly" /> 
                     </div>                    
                   </div>
                 </div>    
@@ -273,13 +463,11 @@
                   <label class="col-sm-3 col-form-label col-form-label-sm" for="addr">수정일</label>                     
                   <div class="col-sm-9">
                     <div class="input-group input-group-sm">
-                      <input type="text" class="form-control form-control-sm" id="upt_dttm" name="upt_dttm" readonly="readonly" /> 
+                      <input type="text" class="form-control form-control-sm bg-light" id="upt_dttm" name="upt_dttm" readonly="readonly" /> 
                     </div>                    
                   </div>
-                </div>  
-                <p class="text-end pb-0 mb-0 pd-0">
-                  <button class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
-                  <button class="btn btn-primary text-end" id="btn_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                </div>   -->
+                <p class="text-end pb-0 mb-0 pd-0">                  
                   <button class="btn btn-primary text-end" id="btn_save"><i class="fa fa-paste"></i>저장</button>
                 </p>
               </form>

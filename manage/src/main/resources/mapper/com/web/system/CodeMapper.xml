@@ -30,7 +30,7 @@
 				ORDER BY ${sidx} ${sord}
 			</when>
 			<otherwise>
-				ORDER BY ent_dttm DESC
+				ORDER BY ord_no DESC
 			</otherwise>
 		</choose>
 	</select>
@@ -78,6 +78,14 @@
 		<if test="srch_low_useyn_tp != '' and srch_low_useyn_tp != null">
 			AND use_yn = #{srch_low_useyn_tp}
 		</if>
+		<choose>
+			<when test="sidx != ''">
+				ORDER BY ${sidx} ${sord}
+			</when>
+			<otherwise>
+				ORDER BY ord_no ASC
+			</otherwise>
+		</choose>
 	</select>
 
 	<insert id="groupCodeCreate" parameterType="com.web.manage.system.domain.GroupCodeVO">

@@ -104,22 +104,7 @@
                         corp_addr       = #{corp_addr},
                         corp_addr_dtl   = #{corp_addr_dtl}, 
                         corp_tel_no     = #{corp_tel_no},
-                        assure_amt      = #{assure_amt},
-                        insure_amt      = #{insure_amt},
-                        ass_sdate       = #{ass_sdate},
-                        ass_edate       = #{ass_edate},
                         remark          = #{remark},
-                        cont_dt         = #{cont_dt},
-                        svc_stat        = #{svc_stat},
-                        svc_fee_rate    = #{svc_fee_rate},
-                        crd_fee_rate    = #{crd_fee_rate},
-                        loan_fee_rate   = #{loan_fee_rate},
-                        bank_cd         = #{bank_cd},
-                        account_no      = #{account_no},
-                        depositor       = #{depositor},
-                        yubo_limit      = #{yubo_limit},
-                        yubo_rate       = #{yubo_rate},
-                        tot_yubo_amt    = #{tot_yubo_amt},
                         use_yn          = #{use_yn},
                         upt_user_id     = #{upt_user_id},
                         upt_dttm        = NOW()
@@ -129,20 +114,20 @@
         <update id="UpdateAgencyCont" parameterType="com.web.manage.base.domain.AgencyVO">
                 UPDATE  tb_agency
                 SET  cont_dt       = #{cont_dt},
-                        assure_amt      = #{assure_amt},
+                        <!-- assure_amt      = #{assure_amt},
                         insure_amt      = #{insure_amt},
                         ass_sdate       = #{ass_sdate},
                         ass_edate       = #{ass_edate},
-                        svc_stat        = #{svc_stat},
+                        svc_stat        = #{svc_stat}, -->
                         svc_fee_rate    = #{svc_fee_rate},
                         crd_fee_rate    = #{crd_fee_rate},
                         loan_fee_rate   = #{loan_fee_rate},
                         bank_cd         = #{bank_cd},
                         account_no      = #{account_no},
                         depositor       = #{depositor},
-                        yubo_limit      = #{yubo_limit},
+                        <!-- yubo_limit      = #{yubo_limit},
                         yubo_rate       = #{yubo_rate},
-                        tot_yubo_amt    = #{tot_yubo_amt},
+                        tot_yubo_amt    = #{tot_yubo_amt}, -->
                         upt_user_id     = #{upt_user_id},
                         upt_dttm        = NOW()
                 WHERE  agency_cd = #{agency_cd}

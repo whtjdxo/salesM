@@ -1,0 +1,1119 @@
+)<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>사전정산 관리</title>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script> 
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />    
+    <!-- DataTables Select CSS 추가 -->
+    <link rel="stylesheet" href="/css/custom-salesm.css" />
+
+    <script th:inline="none">      
+      $(document).ready(function () {           
+        $('#frm_sch').onLoadFunction();    
+
+        callAjax('/common/getCreditCorpList', "", fn_corp_list_setting);
+        function fn_corp_list_setting(data) {
+          codeSetting('CORP_CD', data.data, '#sch_corp_cd', '1', '', ''); 
+        }
+
+        // Set default values for sch_reg_sdt and sch_reg_edt        
+        var monthStart  = returnDate('monthStart');
+        var toDay = returnDate('today');
+        $('#sch_date_from').val(monthStart); 
+        $('#sch_date_to').val(toDay);
+        
+         
+        $('#btn_search').click(function () {   
+          tbl_day_summary.ajax.reload();
+        });
+         
+        var tbl_day_summary = $('#tbl_day_summary').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true, 
+            ajax: {
+                url: '/statis/report/dayReport/dailySummary',
+                contentType: 'application/json',
+                dataType: 'JSON',
+                type: 'POST',
+                data: function (postData) {
+                    var formData = $('#frm_sch').serializeObject(); // serializeObject는 jQuery 플러그인일 수 있습니다.
+                    Object.assign(postData, formData);
+                    return JSON.stringify(postData);
+                },
+                dataSrc: function (json) {
+                    // totalSummary 저장
+                    totalSumm = json.totalSumm || {};
+                    return json.data;
+                },
+                // 서버 에러 처리 등 추가 가능
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                    // 사용자에게 에러 메시지 표시 등
+                }
+            },
+            columns: [
+                {
+                    data: null,
+                    render: function (data, type, row, meta) {
+                      return meta.row + meta.settings._iDisplayStart + 1;
+                    },                    
+                }
+                , { data: 'close_date' , orderable: true}
+                , { data: 'rm_remit_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') , orderable: false }
+                , { data: 'rm_conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+
+                , { data: 'rm_card_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'rm_svc_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'rm_crd_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+
+                , { data: 'rm_wd_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'rm_sub_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'rm_exc_remit_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }                
+                , { data: 'rm_remit_tot_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+
+                , { data: 'dp_conf_amt_sum', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }    // # 매출금액
+                
+                , { data: 'dp_resv_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }   //원금
+                , { data: 'dp_resv_svc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'dp_resv_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 입금마감 - 운영사 입금정산 
+                , { data: 'dp_bank_in_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }       //가맹점 입금액
+                , { data: 'op_bank_in_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }         //운영사 입금액
+                , { data: 'op_bank_in_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'op_bank_in_svc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'op_bank_in_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'op_send_gap_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'op_remit_trans_fee', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'op_send_exc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'op_send_sub_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 입금마감 - 과입등록
+                , { data: 'exc_card_over_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'exc_card_gap_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'exc_date_change_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'exc_crd_over_send_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // , { data: 'exc_etc_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                //  입금마감 - 차감등록
+                , { data: 'sub_card_unrecv_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sub_card_unrecv_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sub_card_gap_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sub_date_change_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sub_svc_unsend_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sub_svc_unsend_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // , { data: 'sub_etc_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                // 입금마감 - 차감실행                
+                , { data: 'recv_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'recv_svc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'recv_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 입금마감 - 차감수기실행                 
+                , { data: 'mrecv_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'mrecv_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'mrecv_svc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+         
+                // 여신 - 사업자대출 차감실행
+                , { data: 'recv_biz_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'recv_biz_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'recv_biz_delay_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 여신 - 사업자대출 수기실행
+                , { data: 'mrecv_biz_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'mrecv_biz_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'mrecv_biz_delay_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 여신 - 스팟자금 차감실행
+                , { data: 'recv_spot_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'recv_spot_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'recv_spot_delay_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 여신 - 수팟자금 수기실행
+                , { data: 'mrecv_spot_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'mrecv_spot_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'mrecv_spot_delay_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 여신 - 기타
+                , { data: 'recv_loan_etc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 총 사용금액
+                , { data: 'tot_use_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'pre_tot_use_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'tot_use_amt_gap', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }                
+            ],
+            columnDefs: [
+              { targets: 0, width: '80px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
+              { targets: 1, width: '200px', className: 'text-left px-1' },
+
+              { targets: 2, width: '110px', className: 'text-right px-1 dt-body-right' },
+              { targets: 3, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 4, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 5, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 6, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 7, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 8, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 9, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 10, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 11, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 12, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 13, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 14, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 15, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 16, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 17, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 18, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 19, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 20, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 21, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 22, width: '130px', className: 'text-right px-1 dt-body-right' },              
+              { targets: 23, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 24, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 25, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 26, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 27, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 28, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 29, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 30, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 31, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 32, width: '130px', className: 'text-right px-1 dt-body-right' },              
+              { targets: 33, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 34, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 35, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 36, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 37, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 38, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 39, width: '130px', className: 'text-right px-1 dt-body-right' },              
+
+              { targets: 40, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 41, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 42, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 43, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 44, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 45, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 46, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 47, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 48, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 49, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 50, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 51, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 52, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 53, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 54, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 55, width: '130px', className: 'text-right px-1 dt-body-right' }
+            ], 
+            order: [[1, 'desc']], // 기본 정렬 설정
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            scrollX: true,
+            info: false, // 필요에 따라 true로 변경
+            autoWidth: false,
+            responsive: true, // 이미 위에서 설정됨
+            scrollCollapse: true,
+            scrollY: '380px',
+            pageLength: 10,
+            language: {
+                emptyTable: '데이터가 없습니다.',
+                zeroRecords: '일치하는 데이터가 없습니다.',
+                loadingRecords: '로딩중...',
+                processing: '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">처리중...</span></div>', // 로딩/처리중 시각적 표시 개선
+            },
+            footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+                const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+                const colMap = {  
+                      2: 'rm_remit_cnt'
+                    , 3: 'rm_conf_amt' 
+
+                    , 4: 'rm_card_fee_amt'
+                    , 5: 'rm_svc_fee_amt'
+                    , 6: 'rm_crd_fee_amt'
+
+                    , 7: 'rm_wd_base_amt'
+                    , 8: 'rm_sub_amt'
+                    , 9: 'rm_exc_remit_amt'
+                    , 10: 'rm_remit_tot_amt'
+                    // 입금마감 - 매출금액
+                    , 11: 'dp_conf_amt_sum'
+                    // 입금마감 - 입금예정액
+                    , 12: 'dp_resv_base_amt'
+                    , 13: 'dp_resv_svc_amt'
+                    , 14: 'dp_resv_crd_amt'
+                    // 입금마감 - 운영사 입금정산
+                    , 15: 'dp_bank_in_amt'
+                    , 16: 'op_bank_in_amt'
+                    , 17: 'op_bank_in_base_amt'
+                    , 18: 'op_bank_in_svc_amt'
+                    , 19: 'op_bank_in_crd_amt'
+                    , 20: 'op_send_gap_amt'
+                    , 21: 'op_remit_trans_fee'
+                    , 22: 'op_send_exc_amt'
+                    , 23: 'op_send_sub_amt'
+                    // 입금마감 - 과입등록
+                    , 24: 'exc_card_over_amt'
+                    , 25: 'exc_card_gap_amt'
+                    , 26: 'exc_date_change_amt'
+                    , 27: 'exc_crd_over_send_amt'
+                    // , 28: 'exc_etc_amt' // 기타는 주석 처리
+                    // 입금마감 - 차감등록
+                    , 28: 'sub_card_unrecv_base_amt'
+                    , 29: 'sub_card_unrecv_crd_amt'
+                    , 30: 'sub_card_gap_amt'
+                    , 31: 'sub_date_change_amt'
+                    , 32: 'sub_svc_unsend_base_amt'
+                    , 33: 'sub_svc_unsend_crd_amt'
+                    // , 34: 'sub_etc_amt' // 기타는 주석 처리
+                    // 입금마감 - 차감실행    
+                    , 34: 'recv_base_amt'
+                    , 35: 'recv_svc_amt'
+                    , 36: 'recv_crd_amt'
+                    // 입금마감 - 차감수기실행
+                    , 37: 'mrecv_base_amt'
+                    , 38: 'mrecv_crd_amt'
+                    , 39: 'mrecv_crd_amt'
+                    // 여신 - 사업자대출 차감실행
+                    , 40: 'recv_biz_base_amt'
+                    , 41: 'recv_biz_crd_amt'
+                    , 42: 'recv_biz_delay_crd_amt'
+                    // 여신 - 사업자대출 수기실행
+                    , 43: 'mrecv_biz_base_amt'
+                    , 44: 'mrecv_biz_crd_amt'
+                    , 45: 'mrecv_biz_delay_crd_amt'
+                    // 여신 - 스팟자금 차감실행
+                    , 46: 'recv_spot_base_amt'
+                    , 47: 'recv_spot_crd_amt'
+                    , 48: 'recv_spot_delay_crd_amt'
+                    // 여신 - 수팟자금 수기실행 
+                    , 49: 'mrecv_spot_base_amt'
+                    , 50: 'mrecv_spot_crd_amt'
+                    , 51: 'mrecv_spot_delay_crd_amt'
+                    // 여신 - 기타
+                    , 52: 'recv_loan_etc_amt'
+                    // 총 사용금액
+                    , 53: 'tot_use_amt'
+                    , 54: 'pre_tot_use_amt'
+                    , 55: 'tot_use_amt_gap'
+                };
+
+                Object.entries(colMap).forEach(([colIdx, key]) => {
+                    const footer = api.column(Number(colIdx)).footer();
+                    if (footer) {
+                        const val = totalSumm[key] || 0;
+                        $(footer).html(renderNumber(val));
+                    }
+                }); 
+            },
+            fixedColumns: {
+                left: 2, // 왼쪽에 고정할 열의 개수
+                right: 0 // 오른쪽에 고정할 열의 개수
+            } 
+        }); 
+ 
+        $('#tbl_day_summary').on('click', 'tr', function (e) {          
+          if ($(this).hasClass('selected')) {
+              $(this).removeClass('selected');
+          } else {
+              tbl_day_summary.$('tr.selected').removeClass('selected');
+              $(this).addClass('selected');
+          }  
+          var row = tbl_day_summary.row(this).data();
+          
+          $('#sch_close_date').val(row.close_date);
+          tbl_day_list.ajax.reload();
+        });
+    
+
+        // Excel download button click event
+        $('#btn_excel').click(function () {
+          var formData = $('#frm_sch').serializeObject();
+          $.ajax({
+            url: '/statis/report/dayReport/downExcel',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            xhrFields: {
+              responseType: 'blob'
+            },
+            success: function (data, status, xhr) {
+              var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+              var link = document.createElement('a');
+              link.href = window.URL.createObjectURL(blob);
+              link.download = '영업일보.xlsx';
+              link.click();
+            },
+            error: function (xhr, status, error) {
+              alert('Excel download failed.');
+            }
+          });
+        }); 
+        
+        var tbl_day_list = $('#tbl_day_list').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true, 
+            ajax: {
+                url: '/statis/report/dayReport/dailyList',
+                contentType: 'application/json',
+                dataType: 'JSON',
+                type: 'POST',
+                data: function (postData) {
+                    var formData = {
+                      sch_corp_no   : $('#sch_corp_no').val(), 
+                      sch_close_date : $('#sch_close_date').val() 
+                    };
+                    // $('#frm_sch_list').serializeObject(); // serializeObject는 jQuery 플러그인일 수 있습니다.
+                    Object.assign(postData, formData);
+                    return JSON.stringify(postData);
+                },
+                dataSrc: function (json) {
+                    // totalSummary 저장
+                    totalSumm = json.totalSumm || {};
+                    return json.data;
+                },
+                // 서버 에러 처리 등 추가 가능
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                    // 사용자에게 에러 메시지 표시 등
+                }
+            },
+            columns: [
+                {
+                    data: null,
+                    render: function (data, type, row, meta) {
+                      return meta.row + meta.settings._iDisplayStart + 1;
+                    },                    
+                }
+                , { data: 'chain_nm' , orderable: true}
+                , { data: 'rm_remit_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') , orderable: false }
+                , { data: 'rm_conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+
+                , { data: 'rm_card_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'rm_svc_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'rm_crd_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+
+                , { data: 'rm_wd_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'rm_sub_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'rm_exc_remit_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }                
+                , { data: 'rm_remit_tot_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+
+                , { data: 'dp_conf_amt_sum', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }    // # 매출금액
+                
+                , { data: 'dp_resv_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }   //원금
+                , { data: 'dp_resv_svc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'dp_resv_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 입금마감 - 운영사 입금정산 
+                , { data: 'dp_bank_in_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }       //가맹점 입금액
+                , { data: 'op_bank_in_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }         //운영사 입금액
+                , { data: 'op_bank_in_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'op_bank_in_svc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'op_bank_in_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'op_send_gap_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'op_remit_trans_fee', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'op_send_exc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'op_send_sub_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 입금마감 - 과입등록
+                , { data: 'exc_card_over_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'exc_card_gap_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'exc_date_change_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'exc_crd_over_send_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // , { data: 'exc_etc_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                //  입금마감 - 차감등록
+                , { data: 'sub_card_unrecv_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sub_card_unrecv_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sub_card_gap_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sub_date_change_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sub_svc_unsend_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sub_svc_unsend_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // , { data: 'sub_etc_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                // 입금마감 - 차감실행                
+                , { data: 'recv_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'recv_svc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'recv_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 입금마감 - 차감수기실행                 
+                , { data: 'mrecv_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'mrecv_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'mrecv_svc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+         
+                // 여신 - 사업자대출 차감실행
+                , { data: 'recv_biz_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'recv_biz_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'recv_biz_delay_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 여신 - 사업자대출 수기실행
+                , { data: 'mrecv_biz_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'mrecv_biz_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'mrecv_biz_delay_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 여신 - 스팟자금 차감실행
+                , { data: 'recv_spot_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'recv_spot_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'recv_spot_delay_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 여신 - 수팟자금 수기실행
+                , { data: 'mrecv_spot_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'mrecv_spot_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'mrecv_spot_delay_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 여신 - 기타
+                , { data: 'recv_loan_etc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                // 총 사용금액
+                , { data: 'tot_use_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'pre_tot_use_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'tot_use_amt_gap', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }                
+            ],
+            columnDefs: [
+              { targets: 0, width: '80px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
+              { targets: 1, width: '200px', className: 'text-left px-1' },
+
+              { targets: 2, width: '110px', className: 'text-right px-1 dt-body-right' },
+              { targets: 3, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 4, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 5, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 6, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 7, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 8, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 9, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 10, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 11, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 12, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 13, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 14, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 15, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 16, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 17, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 18, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 19, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 20, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 21, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 22, width: '130px', className: 'text-right px-1 dt-body-right' },              
+              { targets: 23, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 24, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 25, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 26, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 27, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 28, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 29, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 30, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 31, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 32, width: '130px', className: 'text-right px-1 dt-body-right' },              
+              { targets: 33, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 34, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 35, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 36, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 37, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 38, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 39, width: '130px', className: 'text-right px-1 dt-body-right' },              
+
+              { targets: 40, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 41, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 42, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 43, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 44, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 45, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 46, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 47, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 48, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 49, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 50, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 51, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 52, width: '130px', className: 'text-right px-1 dt-body-right' },
+
+              { targets: 53, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 54, width: '130px', className: 'text-right px-1 dt-body-right' },
+              { targets: 55, width: '130px', className: 'text-right px-1 dt-body-right' }
+            ], 
+            order: [[1, 'desc']], // 기본 정렬 설정
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            scrollX: true,
+            info: false, // 필요에 따라 true로 변경
+            autoWidth: false,
+            responsive: true, // 이미 위에서 설정됨
+            scrollCollapse: true,
+            scrollY: '380px',
+            pageLength: 10,
+            language: {
+                emptyTable: '데이터가 없습니다.',
+                zeroRecords: '일치하는 데이터가 없습니다.',
+                loadingRecords: '로딩중...',
+                processing: '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">처리중...</span></div>', // 로딩/처리중 시각적 표시 개선
+            },
+            footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+                const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+                const colMap = {  
+                      2: 'rm_remit_cnt'
+                    , 3: 'rm_conf_amt' 
+
+                    , 4: 'rm_card_fee_amt'
+                    , 5: 'rm_svc_fee_amt'
+                    , 6: 'rm_crd_fee_amt'
+
+                    , 7: 'rm_wd_base_amt'
+                    , 8: 'rm_sub_amt'
+                    , 9: 'rm_exc_remit_amt'
+                    , 10: 'rm_remit_tot_amt'
+                    // 입금마감 - 매출금액
+                    , 11: 'dp_conf_amt_sum'
+                    // 입금마감 - 입금예정액
+                    , 12: 'dp_resv_base_amt'
+                    , 13: 'dp_resv_svc_amt'
+                    , 14: 'dp_resv_crd_amt'
+                    // 입금마감 - 운영사 입금정산
+                    , 15: 'dp_bank_in_amt'
+                    , 16: 'op_bank_in_amt'
+                    , 17: 'op_bank_in_base_amt'
+                    , 18: 'op_bank_in_svc_amt'
+                    , 19: 'op_bank_in_crd_amt'
+                    , 20: 'op_send_gap_amt'
+                    , 21: 'op_remit_trans_fee'
+                    , 22: 'op_send_exc_amt'
+                    , 23: 'op_send_sub_amt'
+                    // 입금마감 - 과입등록
+                    , 24: 'exc_card_over_amt'
+                    , 25: 'exc_card_gap_amt'
+                    , 26: 'exc_date_change_amt'
+                    , 27: 'exc_crd_over_send_amt'
+                    // , 28: 'exc_etc_amt' // 기타는 주석 처리
+                    // 입금마감 - 차감등록
+                    , 28: 'sub_card_unrecv_base_amt'
+                    , 29: 'sub_card_unrecv_crd_amt'
+                    , 30: 'sub_card_gap_amt'
+                    , 31: 'sub_date_change_amt'
+                    , 32: 'sub_svc_unsend_base_amt'
+                    , 33: 'sub_svc_unsend_crd_amt'
+                    // , 34: 'sub_etc_amt' // 기타는 주석 처리
+                    // 입금마감 - 차감실행    
+                    , 34: 'recv_base_amt'
+                    , 35: 'recv_svc_amt'
+                    , 36: 'recv_crd_amt'
+                    // 입금마감 - 차감수기실행
+                    , 37: 'mrecv_base_amt'
+                    , 38: 'mrecv_crd_amt'
+                    , 39: 'mrecv_crd_amt'
+                    // 여신 - 사업자대출 차감실행
+                    , 40: 'recv_biz_base_amt'
+                    , 41: 'recv_biz_crd_amt'
+                    , 42: 'recv_biz_delay_crd_amt'
+                    // 여신 - 사업자대출 수기실행
+                    , 43: 'mrecv_biz_base_amt'
+                    , 44: 'mrecv_biz_crd_amt'
+                    , 45: 'mrecv_biz_delay_crd_amt'
+                    // 여신 - 스팟자금 차감실행
+                    , 46: 'recv_spot_base_amt'
+                    , 47: 'recv_spot_crd_amt'
+                    , 48: 'recv_spot_delay_crd_amt'
+                    // 여신 - 수팟자금 수기실행 
+                    , 49: 'mrecv_spot_base_amt'
+                    , 50: 'mrecv_spot_crd_amt'
+                    , 51: 'mrecv_spot_delay_crd_amt'
+                    // 여신 - 기타
+                    , 52: 'recv_loan_etc_amt'
+                    // 총 사용금액
+                    , 53: 'tot_use_amt'
+                    , 54: 'pre_tot_use_amt'
+                    , 55: 'tot_use_amt_gap'
+                };
+
+                Object.entries(colMap).forEach(([colIdx, key]) => {
+                    const footer = api.column(Number(colIdx)).footer();
+                    if (footer) {
+                        const val = totalSumm[key] || 0;
+                        $(footer).html(renderNumber(val));
+                    }
+                }); 
+            },
+            fixedColumns: {
+                left: 2, // 왼쪽에 고정할 열의 개수
+                right: 0 // 오른쪽에 고정할 열의 개수
+            } 
+        });  
+        // Excel download button click event
+        $('#btn_list_excel').click(function () {
+          // var formData = $('#frm_sch_list').serializeObject();
+          var schCloseDate = $('#sch_close_date').val();
+          if (!schCloseDate) {
+            alert('정산 마감일을 선택해주세요');
+            return;
+          }
+          var formData = {
+            sch_corp_no   : $('#sch_corp_no').val(), 
+            sch_close_date : schCloseDate
+          };
+          $.ajax({
+            url: '/statis/report/dayReport/downListExcel',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            xhrFields: {
+              responseType: 'blob'
+            },
+            success: function (data, status, xhr) {
+              var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+              var link = document.createElement('a');
+              link.href = window.URL.createObjectURL(blob);
+              link.download = '영업일보_'+ schCloseDate + '.xlsx';
+              link.click();
+            },
+            error: function (xhr, status, error) {
+              alert('Excel download failed.');
+            }
+          });
+        }); 
+        
+      }); 
+    
+    </script>
+  </head>
+  <div class="content">     
+    <div class="row g-1 mb-1">       
+      <div class="card">
+        <div class="card-header" style="height:80px;">          
+          <div class="row flex-between-end">
+            <div class="col-lg-2 align-self-center">
+              <h4 class="mb-0">영업 일보</h4>
+            </div>            
+            <div class="col-lg-10">
+              <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
+                <div class="row mb-1">
+                  <div class="col-sm-2">
+                    <div class="input-group input-group-sm mb-1">
+                      <select class="form-select form-control-sm me-1" id="sch_corp_cd" name="sch_corp_cd" style="width: 120px">
+                        <option value="">여신사</option>
+                      </select>  
+                    </div>                                             
+                  </div>
+                  <div class="col-sm-5">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_date_from">정산일자</label>                      
+                      <div class="col-sm-4">
+                        <input class="form-control form-control-sm " id="sch_date_from" type="text" name="sch_date_from" istyle="date" maxlength="10" required />
+                      </div>   
+                      <span class="input-group-text">~</span>
+                      <div class="col-sm-4">
+                        <input class="form-control form-control-sm" id="sch_date_to" type="text" name="sch_date_to" istyle="date" maxlength="10" required />
+                      </div>   
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
+                    </div>
+                  </div>
+                  <div class="col-sm-3">   
+                  </div>
+                  <div class="col-sm-2">
+                    <button type="button" class="btn btn-success btn-sm" id="btn_excel" name="btn_excel">Excel 출력</button>                      
+                  </div>
+                </div>
+              </form>                
+            </div>
+          </div>          
+        </div>
+        <div class="card-body pt-0 px-0" style="padding-top: 0px">
+          <div class="table-responsive scrollbar" style="overflow-x: auto; min-width: 1800px;">
+            <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_day_summary" style="min-width: 7280px; border-collapse: collapse;">
+              <thead>
+              <tr>
+                <th rowspan="3" class="text-center align-middle" style="width:80px; border:1px solid #dee2e6;">NO</th>
+                <th rowspan="3" class="text-center align-middle" style="width:200px; border:1px solid #dee2e6;">정산 일자</th>
+
+                <th colspan="9" class="text-center" style="border:1px solid #dee2e6;">출금마감</th>
+                <th colspan="29" class="text-center" style="border:1px solid #dee2e6;">입금마감</th>
+                <th colspan="13" class="text-center" style="border:1px solid #dee2e6;">여신</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">총 사용금액</th>
+              </tr>
+              <tr>
+                <th colspan="2" class="text-center" style="border:1px solid #dee2e6;">매출</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">수수료</th>
+                <th colspan="4" class="text-center" style="border:1px solid #dee2e6;">출금</th>
+
+                <th rowspan="2" class="text-center align-middle" style="width:130px; border:1px solid #dee2e6;">매출금액</th>
+
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">입금예정액</th>
+                <th colspan="9" class="text-center" style="border:1px solid #dee2e6;">운영사 입금정산</th>
+                <th colspan="4" class="text-center" style="border:1px solid #dee2e6;">과입등록</th>
+                <th colspan="6" class="text-center" style="border:1px solid #dee2e6;">차감등록</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">차감실행</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">수기차감</th>
+
+                
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">사업자대출 - 차감실행</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">사업자대출 - 수기실행</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">스팟자금 - 차감실행</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">스팟자금 - 수기실행</th>
+
+                <th rowspan="2" class="text-center align-middle" style="width:130px; border:1px solid #dee2e6;">기타</th>
+
+                <th rowspan="2" class="text-center align-middle" style="width:130px; border:1px solid #dee2e6;">현재</th>
+                <th rowspan="2" class="text-center align-middle" style="width:130px; border:1px solid #dee2e6;">전일</th>
+                <th rowspan="2" class="text-center align-middle" style="width:130px; border:1px solid #dee2e6;">증감</th>
+              </tr>
+              <tr>
+                <!-- 출금마감 - 매출 -->
+                <th class="text-center" style="width:110px; border:1px solid #dee2e6;">총건</th>
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">매출총액</th>
+                <!-- 출금마감 - 수수료 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">카드사</th>
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">운영사</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신사</th> 
+                <!-- 출금마감 - 출금 -->  
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">차감액</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">과입금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">총송금액</th> 
+                <!-- 입금마감 - 입금예정액 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">원금</th>
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">운영수수료</th>                     
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <!-- 입금마감 - 운영사 입금정산 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">가맹점입금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">운영사입금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">운영수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">차액</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">입금수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">과입처리</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">차감처리</th> 
+                <!-- 입금마감 - 과입등록 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">과입금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">카드수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">이자오차</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">운영과송금</th> 
+                <!-- 입금마감 - 차감등록 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">이자</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">카드수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">이자오차</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">미집금원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">미집금이자</th> 
+                <!-- 입금마감 - 차감실행 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">카드수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <!-- 입금마감 - 차감수기실행 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">카드수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+
+                <!-- 여신 - 사업자대출 차감실행 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">대출원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">연체이자</th> 
+                <!-- 여신 - 사업자대출 수기실행 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">대출원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">연체이자</th> 
+                <!-- 여신 - 스팟 차감실행 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">대출원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">연체이자</th> 
+                <!-- 여신 - 스팟 수기실행 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">대출원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">연체이자</th> 
+              </tr>
+              </thead>
+              <tbody class="list"></tbody>
+              <tfoot>
+                <tr>
+                  <th colspan="2" class="text-center">총계</th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th> 
+                                   <!--  -->
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                     
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                     
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>          
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                </tr>
+              </tfoot> 
+            </table>
+          </div>
+        </div>
+      </div> 
+
+      <div class="card">
+        <div class="card-header" style="height:80px;">          
+          <div class="row flex-between-end">
+            <div class="col-lg-10 align-self-center">
+              <h4 class="mb-0">상세 리스트</h4>
+            </div>            
+            <div class="col-lg-2">
+              <form id="frm_sch_list" name="frm_sch_list" onsubmit="return false;" novalidate="">
+                <input type="hidden" id="sch_close_date" name="sch_close_date">
+                <div class="col-sm">
+                  <button type="button" class="btn btn-success btn-sm" id="btn_list_excel" name="btn_list_excel">상세 내역 Excel</button>                      
+                </div>
+              </form>                
+            </div>
+          </div>          
+        </div>
+        <div class="card-body pt-0 px-0" style="padding-top: 0px">
+          <div class="table-responsive scrollbar" style="overflow-x: auto; min-width: 1800px;">
+            <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_day_list" style="min-width: 7280px; border-collapse: collapse;">
+              <thead>
+              <tr>
+                <th rowspan="3" class="text-center align-middle" style="width:80px; border:1px solid #dee2e6;">NO</th>
+                <th rowspan="3" class="text-center align-middle" style="width:200px; border:1px solid #dee2e6;">가맹점 명</th>
+
+                <th colspan="9" class="text-center" style="border:1px solid #dee2e6;">출금마감</th>
+                <th colspan="29" class="text-center" style="border:1px solid #dee2e6;">입금마감</th>
+                <th colspan="13" class="text-center" style="border:1px solid #dee2e6;">여신</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">총 사용금액</th>
+              </tr>
+              <tr>
+                <th colspan="2" class="text-center" style="border:1px solid #dee2e6;">매출</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">수수료</th>
+                <th colspan="4" class="text-center" style="border:1px solid #dee2e6;">출금</th>
+
+                <th rowspan="2" class="text-center align-middle" style="width:130px; border:1px solid #dee2e6;">매출금액</th>
+
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">입금예정액</th>
+                <th colspan="9" class="text-center" style="border:1px solid #dee2e6;">운영사 입금정산</th>
+                <th colspan="4" class="text-center" style="border:1px solid #dee2e6;">과입등록</th>
+                <th colspan="6" class="text-center" style="border:1px solid #dee2e6;">차감등록</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">차감실행</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">수기차감</th>
+
+                
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">사업자대출 - 차감실행</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">사업자대출 - 수기실행</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">스팟자금 - 차감실행</th>
+                <th colspan="3" class="text-center" style="border:1px solid #dee2e6;">스팟자금 - 수기실행</th>
+
+                <th rowspan="2" class="text-center align-middle" style="width:130px; border:1px solid #dee2e6;">기타</th>
+
+                <th rowspan="2" class="text-center align-middle" style="width:130px; border:1px solid #dee2e6;">현재</th>
+                <th rowspan="2" class="text-center align-middle" style="width:130px; border:1px solid #dee2e6;">전일</th>
+                <th rowspan="2" class="text-center align-middle" style="width:130px; border:1px solid #dee2e6;">증감</th>
+              </tr>
+              <tr>
+                <!-- 출금마감 - 매출 -->
+                <th class="text-center" style="width:110px; border:1px solid #dee2e6;">총건</th>
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">매출총액</th>
+                <!-- 출금마감 - 수수료 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">카드사</th>
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">운영사</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신사</th> 
+                <!-- 출금마감 - 출금 -->  
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">차감액</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">과입금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">총송금액</th> 
+                <!-- 입금마감 - 입금예정액 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">원금</th>
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">운영수수료</th>                     
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <!-- 입금마감 - 운영사 입금정산 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">가맹점입금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">운영사입금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">운영수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">차액</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">입금수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">과입처리</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">차감처리</th> 
+                <!-- 입금마감 - 과입등록 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">과입금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">카드수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">이자오차</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">운영과송금</th> 
+                <!-- 입금마감 - 차감등록 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">이자</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">카드수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">이자오차</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">미집금원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">미집금이자</th> 
+                <!-- 입금마감 - 차감실행 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">카드수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <!-- 입금마감 - 차감수기실행 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">카드수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+
+                <!-- 여신 - 사업자대출 차감실행 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">대출원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">연체이자</th> 
+                <!-- 여신 - 사업자대출 수기실행 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">대출원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">연체이자</th> 
+                <!-- 여신 - 스팟 차감실행 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">대출원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">연체이자</th> 
+                <!-- 여신 - 스팟 수기실행 -->
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">대출원금</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">여신수수료</th> 
+                <th class="text-center" style="width:130px; border:1px solid #dee2e6;">연체이자</th> 
+              </tr>
+              </thead>
+              <tbody class="list"></tbody>
+              <tfoot>
+                <tr>
+                  <th colspan="2" class="text-center">총계</th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th> 
+                                   <!--  -->
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                     
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                     
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>          
+
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div> 
+    </div>  
+  </div>
+</html>

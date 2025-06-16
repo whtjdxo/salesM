@@ -9,9 +9,11 @@ import com.web.manage.api.domain.ScrapBankDataVO;
 import com.web.manage.api.domain.ScrapCompVO;
 import com.web.manage.api.domain.ScrapDeliDataVO;
 import com.web.manage.api.domain.ScrapErrorLogVO;
+import com.web.manage.api.domain.ScrapKsolutionVO;
 import com.web.manage.api.domain.ScrapLogVO;
+import com.web.manage.api.domain.ScrapProcTransVO;
 import com.web.manage.api.domain.ScrapUserVO;
-import com.web.manage.api.domain.ScrapVanDataVO;
+import com.web.manage.api.domain.ScrapVanDataVO; 
 
 @Mapper
 public interface ScrapMapper {
@@ -26,6 +28,13 @@ public interface ScrapMapper {
     boolean scrapUploadVanData(ScrapVanDataVO scrapVanDataVO);
     boolean scrapUploadDeliData(ScrapDeliDataVO    scrapDeliDataVO);
     boolean scrapUploadBankData(ScrapBankDataVO scrapBankDataVO);
+
+    boolean scrapUploadKsolutionData(ScrapKsolutionVO scrapKsolutionVO);
+
+    void callProcTransVanDocu(ScrapProcTransVO procVo);
+    void callProcTransDeliDocu(ScrapProcTransVO procVo);
+    void callProcTransBankDeposit(ScrapProcTransVO procVo);
+    void callProcTransKsolution(ScrapProcTransVO procVo);
 
     boolean writeScrapErrorLog(ScrapErrorLogVO errorVo);
     boolean writeScrapLog(ScrapLogVO logVO);

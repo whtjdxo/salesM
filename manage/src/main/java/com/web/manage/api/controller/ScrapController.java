@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// import org.hibernate.validator.internal.util.logging.Log_.logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +18,7 @@ import com.web.common.util.StringUtil;
 import com.web.manage.api.domain.ScrapCompVO;
 import com.web.manage.api.domain.ScrapErrorLogVO;
 import com.web.manage.api.domain.ScrapLogVO;
+import com.web.manage.api.domain.ScrapProcTransVO;
 import com.web.manage.api.domain.ScrapUserVO;
 import com.web.manage.api.domain.ScrapVanDataVO;
 import com.web.manage.api.service.ScrapService;  
@@ -355,6 +357,69 @@ public class ScrapController {
                 hashmapResult.put("repCd", "0000");
                 hashmapResult.put("repMsg", "Data Upload Complete"); 
                 hashmapResult.put("repData", "");
+            } else {
+                hashmapResult.put("repCd", "9100");
+                hashmapResult.put("repMsg", "Insert Data Fail"); 
+                hashmapResult.put("repData", "");
+            }            
+        } catch (Exception e) {
+            e.printStackTrace();
+            hashmapResult.put("repCd", "9900");
+            hashmapResult.put("repMsg", "Insert Data Fail"); 
+            hashmapResult.put("repData", null);
+        }
+
+        jString = gson.toJson(hashmapResult);
+        return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);
+    }
+
+    @RequestMapping(value = "/scrapApiUploadKsolutionData.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public @ResponseBody ResponseEntity<String> scrapApiUploadKsolutionData(
+                                                      @RequestParam("userId") String userId
+                                                    , @RequestParam("bankCd") String bankCd
+                                                    , @RequestParam("apiAuthKey") String apiAuthKey
+                                                    , @RequestParam("authKey") String authKey
+                                                    , @RequestParam("uploadData") String uploadData
+                                                ) {         		
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>(); 
+        ScrapUserVO scrapUserVo = new ScrapUserVO();
+        ScrapLogVO logVo = new ScrapLogVO();
+
+        Gson gson = new Gson();
+        String jString = null;
+        // -- 사용자 인증키 체크
+
+        scrapUserVo.setUserId(userId);
+        scrapUserVo.setUserAuthKey(apiAuthKey);         
+
+		if (scrapService.getUserAuthKeyCheck(scrapUserVo) <= 0){
+            hashmapResult.put("repCd", "9001");
+            hashmapResult.put("repMsg", "User AuthKey Check Fail~");
+            hashmapResult.put("apiAuthKey", ""); 
+            jString = gson.toJson(hashmapResult);
+            return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);                    
+        }  
+        try {
+            logVo.setChain_no("common");
+            logVo.setVan_cd(bankCd);
+            logVo.setScrap_gb("BANK");
+            System.out.println(uploadData);
+
+            if ( scrapService.scrapUploadKsolutionData(uploadData, logVo)) {
+                hashmapResult.put("repCd", "0000");
+                hashmapResult.put("repMsg", "Data Upload Complete"); 
+                hashmapResult.put("repData", "");
+                // scrap 데이터 처리 프로시져 호출  
+                ScrapProcTransVO procVo = new ScrapProcTransVO();
+                procVo.setUserId(userId);
+                scrapService.callProcTransKsolution(procVo);
+                
             } else {
                 hashmapResult.put("repCd", "9100");
                 hashmapResult.put("repMsg", "Insert Data Fail"); 

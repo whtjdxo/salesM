@@ -5,16 +5,22 @@
 		SELECT FOUND_ROWS()
 	</select> 
 
-    <select id="getDayCloseCheck" parameterType="java.util.HashMap" resultType="int">
-		SELECT  COUNT(1)    AS CNT
-          FROM 	TB_DAY_CLOSE_REPORT DC
-                JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO                
-         WHERE  close_date = #{close_date}
+    <select id="getDayCloseCheck" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT  CASE WHEN IFNULL(CNT, 0) > 0 THEN 'CLOSE' ELSE 'READY'  END  AS close_chk
+                , CASE WHEN  IFNULL(CNT, 0) > 0 THEN 
+                            CASE WHEN DATE_FORMAT(NOW(), '%Y-%m-%d') = #{close_date} THEN 'UNLOCK' ELSE 'LOCK' END 
+                    ELSE 'UNLOCK' 	END AS  lock_chk                
+          FROM  (
+                    SELECT  COUNT(1) AS CNT
+                    FROM 	TB_DAY_CLOSE_REPORT DC       
+                    WHERE  close_date = #{close_date}
+                ) V
 	</select> 
 	
     <select id="getDayPreCloseList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
         SELECT 	SQL_CALC_FOUND_ROWS
-                #{close_date}						AS close_date
+                'N'                               AS close_stat
+                , #{close_date}						AS close_date
                 , TC.CHAIN_NO 						AS chain_no
                 , TC.CHAIN_NM                       AS chain_nm
                 , TC.CORP_CD						AS corp_cd        		
@@ -553,7 +559,11 @@
 
     <select id="getDayCloseList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
         SELECT 	SQL_CALC_FOUND_ROWS
-                close_date				, dc.chain_no			, tc.chain_nm	        , dc.corp_cd			
+                'N'                               AS close_chk
+                , close_date				
+                , dc.chain_no			
+                , tc.chain_nm	        
+                , dc.corp_cd			
                 , IFNULL(rm_remit_cnt, 0)              AS rm_remit_cnt
                 , IFNULL(rm_conf_amt, 0)               AS rm_conf_amt
                 , IFNULL(rm_card_fee_amt, 0)           AS rm_card_fee_amt
@@ -725,6 +735,17 @@
     <update id="callProcDayClose" parameterType="com.web.manage.deposit.domain.ProcDayCloseVO" statementType="CALLABLE">
 		{ 
 				CALL PRC_CLOSE_DAILY_ADJUST(
+						#{closeDate, mode=IN, jdbcType=VARCHAR} 
+						, #{userId, mode=IN, jdbcType=VARCHAR}
+						, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+						, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+				) 
+		}
+	</update>
+
+    <update id="callProcDayCloseCancel" parameterType="com.web.manage.deposit.domain.ProcDayCloseVO" statementType="CALLABLE">
+		{ 
+				CALL PRC_CLOSE_DAILY_ADJUST_CANCEL(
 						#{closeDate, mode=IN, jdbcType=VARCHAR} 
 						, #{userId, mode=IN, jdbcType=VARCHAR}
 						, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}

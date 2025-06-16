@@ -71,8 +71,7 @@ public class CorpController {
             jString = gson.toJson(hashmapResult);
         } catch (Exception e) {
             e.printStackTrace();
-        }
-
+        }        
         return jString; 
     } 
     

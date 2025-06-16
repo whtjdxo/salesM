@@ -118,7 +118,7 @@
               { targets: 13, width: '120px', className: 'text-right px-1 dt-body-right' },
               { targets: 14, width: '120px', className: 'text-right px-1 dt-body-right' }, 
           ],
-          order: [[1, 'desc']], // 기본 정렬 설정
+          order: [[0, 'desc']], // 기본 정렬 설정
           paging: true,
           lengthChange: false,
           searching: false,
@@ -389,7 +389,7 @@
             { targets: 16, width: '120px', className: 'text-end' },
             // { targets: 17, width: '100px', className: 'text-center' },            
           ],
-          order: [[1, 'desc']],
+          order: [[0, 'desc']],
           paging: true,
           lengthChange: false,
           searching: false,
@@ -595,6 +595,7 @@
                     <th class="text-center">차감 정산액</th> 
                   </tr>
                 </thead>
+                <tbody class="list"></tbody>
                 <tfoot>
                   <tr>
                     <th colspan="5" class="text-center">총계</th>
@@ -612,8 +613,7 @@
                     <th class="text-right px-2"></th>
                     <th class="text-right px-2"></th>  
                   </tr>
-                </tfoot>
-                <tbody class="list"></tbody>
+                </tfoot>                
               </table>
             </div>
           </div>

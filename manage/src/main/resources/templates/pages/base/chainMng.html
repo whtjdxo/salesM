@@ -57,6 +57,11 @@
           codeSetting('AGENCY_CD', data.data, '#sch_agency_cd', '1', '', '');
           codeSetting('AGENCY_CD', data.data, '#agency_cd', '1', '', '');
         }
+        
+        callAjax('/common/totalCodelist', "code_grp_cd=('CONT_TP')", fn_cont_tp_setting);      
+        function fn_cont_tp_setting(data) {
+          codeSetting('CONT_TP', data.data, '#cont_tp', '1', '', '');
+        }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('SVC_STAT')", fn_svc_stat_setting);      
         function fn_svc_stat_setting(data) {
@@ -1289,10 +1294,9 @@
       });
     </script>
   </head>
-  <div class="content">
-    
+  <div class="content">    
     <div class="row g-3 mb-2">
-      <div class="col-lg-8">
+      <div class="col-lg-7">
         <div class="card">
           <div class="card-header">
             <div class="row flex-between-end">
@@ -1350,7 +1354,7 @@
           </div>
         </div>
       </div>
-      <div class="col-lg-4">
+      <div class="col-lg-5">
         <div class="card">
           <!-- <div class="card-header">
             <div class="row flex-between-end">
@@ -1618,16 +1622,30 @@
                     <div class="row mb-1">
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="cont_tp">계약유형</label>  
+                          <div class="col-sm-8">
+                            <select class="form-select form-control-sm" id="cont_tp" name="cont_tp"  required>
+                              <option value="">계약유형</option>
+                            </select>
+                          </div>         
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_fee_rate">정산 수수료</label>  
                           <div class="col-sm-8">
                             <div class="input-group input-group-sm mb-1">
                               <input class="form-control form-control-sm text-end" id="svc_fee_rate" type="text" name="svc_fee_rate" placeholder="00.0" istyle="float" maxlength="4" required />
                               <span class="input-group-text">%</span>
+                            <!-- </div>
+                            <div class="input-group input-group-sm mb-1"> -->
+                              <input class="form-control form-control-sm text-end" id="etc_fee_rate" type="text" name="etc_fee_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <span class="input-group-text">%</span>
                             </div>
                           </div>         
                         </div>
                       </div>
-                      <div class="col-sm-6">
+                      <!-- <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="etc_fee_rate">기타 수수료</label>  
                           <div class="col-sm-8">
@@ -1637,7 +1655,7 @@
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </div> -->
                     </div>
                     <div class="row mb-1">
                       <div class="col-sm-6">

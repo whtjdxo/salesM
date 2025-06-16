@@ -9,7 +9,7 @@ import com.web.manage.deposit.domain.ProcDayCloseVO;
 @Mapper
 public interface DayCloseMapper {
     int getQueryTotalCnt(); 
-    int getDayCloseCheck(HashMap<String, Object> hashmapParam);
+    HashMap<String, Object> getDayCloseCheck(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getDayPreCloseList(HashMap<String, Object> hashmapParam);
     HashMap<String, Object> getDayPreCloseSumm(HashMap<String, Object> hashmapParam);
     
@@ -17,5 +17,7 @@ public interface DayCloseMapper {
     HashMap<String, Object> getDayCloseSumm(HashMap<String, Object> hashmapParam);
 
     void callProcDayClose(ProcDayCloseVO procVo);
+
+    void callProcDayCloseCancel(ProcDayCloseVO procVo);
 
 }

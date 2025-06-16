@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.web.manage.billing.mapper.AgencyFeeMapper">
+
+  <select id="getQueryTotalCnt" resultType="int">
+		SELECT FOUND_ROWS()
+	</select> 
+
+  <select id="getAgencyFeeSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+      SELECT	SQL_CALC_FOUND_ROWS
+              AF.AGENCY_CD                          AS agency_cd              
+              , AG.AGENCY_NM                        AS agency_nm
+              , AF.CHAIN_NO                         AS chain_no 
+              , TC.CHAIN_NM                         AS chain_nm
+              , TU.USER_NM							            AS ceo_nm
+              , IFNULL(SUM(AF.CONF_CNT), 0)			    AS conf_cnt 
+              , IFNULL(SUM(AF.CONF_AMT), 0)			    AS conf_amt
+              , IFNULL(SUM(AF.ORG_CARD_RESV_AMT), 0)	AS org_card_resv_amt
+              , IFNULL(SUM(AF.RESV_BASE_AMT), 0)		AS resv_base_amt
+              , IFNULL(SUM(AF.RESV_SVC_AMT), 0)		  AS resv_svc_amt
+              , IFNULL(SUM(AF.RESV_CRD_AMT), 0)		  AS resv_crd_amt
+              , IFNULL(SUM(AF.BANK_IN_AMT), 0)		  AS bank_in_amt
+              , IFNULL(SUM(AF.BANK_IN_BASE_AMT), 0)	AS bank_in_base_amt
+              , IFNULL(SUM(AF.BANK_IN_SVC_AMT), 0)	AS bank_in_svc_amt
+              , IFNULL(SUM(AF.BANK_IN_CRD_AMT), 0)	AS bank_in_crd_amt
+              , IFNULL(SUM(AF.EXC_AMT), 0)			    AS exc_amt
+              , IFNULL(SUM(AF.SUB_BASE_AMT), 0)		  AS sub_base_amt
+              , IFNULL(SUM(AF.SUB_SVC_AMT), 0)		  AS sub_svc_amt
+              , IFNULL(SUM(AF.SUB_CRD_AMT), 0)		  AS sub_crd_amt
+              , IFNULL(SUM(AF.SUB_AMT), 0)			    AS sub_amt
+              , IFNULL(SUM(AF.BIZ_CRD_AMT), 0)		  AS biz_crd_amt
+              , IFNULL(ROUND(SUM(AF.AGENCY_SVC_FEE)), 0)	AS agent_svc_fee
+              , IFNULL(ROUND(SUM(AF.AGENCY_CRD_FEE)), 0)	AS agent_crd_fee
+              , IFNULL(ROUND(SUM(AF.AGENCY_LOAN_FEE)), 0)	AS agent_loan_fee
+              , IFNULL(ROUND(SUM(AF.AGENCY_SVC_FEE)), 0)
+                + IFNULL(ROUND(SUM(AF.AGENCY_CRD_FEE)), 0)
+                + IFNULL(ROUND(SUM(AF.AGENCY_LOAN_FEE)), 0)	AS agent_tot_fee		
+        FROM	VW_AGENCY_FEE_LIST AF
+              JOIN TB_AGENCY AG ON AG.AGENCY_CD  = AF.AGENCY_CD
+              JOIN TB_CHAIN TC ON TC.CHAIN_NO = AF.CHAIN_NO 
+              JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
+       WHERE	AF.ADJUST_DATE BETWEEN CONCAT(#{sch_month}, '-01')
+                                 AND CONCAT(#{sch_month}, '-31')
+      <if test="sch_agency_cd != null and sch_agency_cd != ''"> 
+				 AND  AF.AGENCY_CD =  #{sch_agency_cd} 
+		  </if>                                       
+       GROUP 	BY AF.AGENCY_CD, AG.AGENCY_NM, AF.CHAIN_NO, TC.CHAIN_NM, TU.USER_NM
+        <choose>
+            <when test="sidx != ''">
+                    ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                    ORDER BY 1
+            </otherwise>
+        </choose> 
+        LIMIT  ${start}, ${end}
+  </select>
+
+  <select id="getAgencyFeeSummaryTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+      SELECT	SQL_CALC_FOUND_ROWS 
+              IFNULL(SUM(AF.CONF_CNT), 0)			    AS conf_cnt 
+              , IFNULL(SUM(AF.CONF_AMT), 0)			    AS conf_amt
+              , IFNULL(SUM(AF.ORG_CARD_RESV_AMT), 0)	AS org_card_resv_amt
+              , IFNULL(SUM(AF.RESV_BASE_AMT), 0)		AS resv_base_amt
+              , IFNULL(SUM(AF.RESV_SVC_AMT), 0)		  AS resv_svc_amt
+              , IFNULL(SUM(AF.RESV_CRD_AMT), 0)		  AS resv_crd_amt
+              , IFNULL(SUM(AF.BANK_IN_AMT), 0)		  AS bank_in_amt
+              , IFNULL(SUM(AF.BANK_IN_BASE_AMT), 0)	AS bank_in_base_amt
+              , IFNULL(SUM(AF.BANK_IN_SVC_AMT), 0)	AS bank_in_svc_amt
+              , IFNULL(SUM(AF.BANK_IN_CRD_AMT), 0)	AS bank_in_crd_amt
+              , IFNULL(SUM(AF.EXC_AMT), 0)			    AS exc_amt
+              , IFNULL(SUM(AF.SUB_BASE_AMT), 0)		  AS sub_base_amt
+              , IFNULL(SUM(AF.SUB_SVC_AMT), 0)		  AS sub_svc_amt
+              , IFNULL(SUM(AF.SUB_CRD_AMT), 0)		  AS sub_crd_amt
+              , IFNULL(SUM(AF.SUB_AMT), 0)			    AS sub_amt
+              , IFNULL(SUM(AF.BIZ_CRD_AMT), 0)		  AS biz_crd_amt
+              , IFNULL(ROUND(SUM(AF.AGENCY_SVC_FEE)), 0)	AS agent_svc_fee
+              , IFNULL(ROUND(SUM(AF.AGENCY_CRD_FEE)), 0)	AS agent_crd_fee
+              , IFNULL(ROUND(SUM(AF.AGENCY_LOAN_FEE)), 0)	AS agent_loan_fee
+              , IFNULL(ROUND(SUM(AF.AGENCY_SVC_FEE)), 0)
+                + IFNULL(ROUND(SUM(AF.AGENCY_CRD_FEE)), 0)
+                + IFNULL(ROUND(SUM(AF.AGENCY_LOAN_FEE)), 0)	AS agent_tot_fee		
+        FROM	VW_AGENCY_FEE_LIST AF
+              JOIN TB_AGENCY AG ON AG.AGENCY_CD  = AF.AGENCY_CD
+              JOIN TB_CHAIN TC ON TC.CHAIN_NO = AF.CHAIN_NO 
+              JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
+       WHERE	AF.ADJUST_DATE BETWEEN CONCAT(#{sch_month}, '-01')
+                                 AND CONCAT(#{sch_month}, '-31')
+      <if test="sch_agency_cd != null and sch_agency_cd != ''"> 
+				 AND  AF.AGENCY_CD =  #{sch_agency_cd} 
+		  </if>
+  </select>
+
+  <select id="getAgencyFeeList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+      SELECT	SQL_CALC_FOUND_ROWS
+              AF.ADJUST_DATE							          AS adjust_date
+              , IFNULL(SUM(AF.CONF_CNT), 0)			    AS conf_cnt 
+              , IFNULL(SUM(AF.CONF_AMT), 0)			    AS conf_amt
+              , IFNULL(SUM(AF.ORG_CARD_RESV_AMT), 0)	AS org_card_resv_amt
+              , IFNULL(SUM(AF.RESV_BASE_AMT), 0)		AS resv_base_amt
+              , IFNULL(SUM(AF.RESV_SVC_AMT), 0)		  AS resv_svc_amt
+              , IFNULL(SUM(AF.RESV_CRD_AMT), 0)		  AS resv_crd_amt
+              , IFNULL(SUM(AF.BANK_IN_AMT), 0)		  AS bank_in_amt
+              , IFNULL(SUM(AF.BANK_IN_BASE_AMT), 0)	AS bank_in_base_amt
+              , IFNULL(SUM(AF.BANK_IN_SVC_AMT), 0)	AS bank_in_svc_amt
+              , IFNULL(SUM(AF.BANK_IN_CRD_AMT), 0)	AS bank_in_crd_amt
+              , IFNULL(SUM(AF.EXC_AMT), 0)			    AS exc_amt
+              , IFNULL(SUM(AF.SUB_BASE_AMT), 0)		  AS sub_base_amt
+              , IFNULL(SUM(AF.SUB_SVC_AMT), 0)		  AS sub_svc_amt
+              , IFNULL(SUM(AF.SUB_CRD_AMT), 0)		  AS sub_crd_amt
+              , IFNULL(SUM(AF.SUB_AMT), 0)			    AS sub_amt
+              , IFNULL(SUM(AF.BIZ_CRD_AMT), 0)		  AS biz_crd_amt
+              , IFNULL(ROUND(SUM(AF.AGENCY_SVC_FEE)), 0)	AS agent_svc_fee
+              , IFNULL(ROUND(SUM(AF.AGENCY_CRD_FEE)), 0)	AS agent_crd_fee
+              , IFNULL(ROUND(SUM(AF.AGENCY_LOAN_FEE)), 0)	AS agent_loan_fee
+              , IFNULL(ROUND(SUM(AF.AGENCY_SVC_FEE)), 0)
+                + IFNULL(ROUND(SUM(AF.AGENCY_CRD_FEE)), 0)
+                + IFNULL(ROUND(SUM(AF.AGENCY_LOAN_FEE)), 0)	AS agent_tot_fee		
+        FROM	VW_AGENCY_FEE_LIST AF
+              JOIN TB_AGENCY AG ON AG.AGENCY_CD  = AF.AGENCY_CD
+              JOIN TB_CHAIN TC ON TC.CHAIN_NO = AF.CHAIN_NO 
+              JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
+       WHERE	AF.ADJUST_DATE BETWEEN CONCAT(#{sch_month}, '-01')
+                                 AND CONCAT(#{sch_month}, '-31')
+				 AND  AF.CHAIN_NO   = #{sch_chain_no}  
+       GROUP 	BY AF.ADJUST_DATE
+        <choose>
+            <when test="sidx != ''">
+                    ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                    ORDER BY 1
+            </otherwise>
+        </choose> 
+        LIMIT  ${start}, ${end}
+  </select>
+
+  <select id="getAgencyFeeListTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+      SELECT	SQL_CALC_FOUND_ROWS 
+              IFNULL(SUM(AF.CONF_CNT), 0)			    AS conf_cnt 
+              , IFNULL(SUM(AF.CONF_AMT), 0)			    AS conf_amt
+              , IFNULL(SUM(AF.ORG_CARD_RESV_AMT), 0)	AS org_card_resv_amt
+              , IFNULL(SUM(AF.RESV_BASE_AMT), 0)		AS resv_base_amt
+              , IFNULL(SUM(AF.RESV_SVC_AMT), 0)		  AS resv_svc_amt
+              , IFNULL(SUM(AF.RESV_CRD_AMT), 0)		  AS resv_crd_amt
+              , IFNULL(SUM(AF.BANK_IN_AMT), 0)		  AS bank_in_amt
+              , IFNULL(SUM(AF.BANK_IN_BASE_AMT), 0)	AS bank_in_base_amt
+              , IFNULL(SUM(AF.BANK_IN_SVC_AMT), 0)	AS bank_in_svc_amt
+              , IFNULL(SUM(AF.BANK_IN_CRD_AMT), 0)	AS bank_in_crd_amt
+              , IFNULL(SUM(AF.EXC_AMT), 0)			    AS exc_amt
+              , IFNULL(SUM(AF.SUB_BASE_AMT), 0)		  AS sub_base_amt
+              , IFNULL(SUM(AF.SUB_SVC_AMT), 0)		  AS sub_svc_amt
+              , IFNULL(SUM(AF.SUB_CRD_AMT), 0)		  AS sub_crd_amt
+              , IFNULL(SUM(AF.SUB_AMT), 0)			    AS sub_amt
+              , IFNULL(SUM(AF.BIZ_CRD_AMT), 0)		  AS biz_crd_amt
+              , IFNULL(ROUND(SUM(AF.AGENCY_SVC_FEE)), 0)	AS agent_svc_fee
+              , IFNULL(ROUND(SUM(AF.AGENCY_CRD_FEE)), 0)	AS agent_crd_fee
+              , IFNULL(ROUND(SUM(AF.AGENCY_LOAN_FEE)), 0)	AS agent_loan_fee
+              , IFNULL(ROUND(SUM(AF.AGENCY_SVC_FEE)), 0)
+                + IFNULL(ROUND(SUM(AF.AGENCY_CRD_FEE)), 0)
+                + IFNULL(ROUND(SUM(AF.AGENCY_LOAN_FEE)), 0)	AS agent_tot_fee		
+        FROM	VW_AGENCY_FEE_LIST AF
+              JOIN TB_AGENCY AG ON AG.AGENCY_CD  = AF.AGENCY_CD
+              JOIN TB_CHAIN TC ON TC.CHAIN_NO = AF.CHAIN_NO 
+              JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
+       WHERE	AF.ADJUST_DATE BETWEEN CONCAT(#{sch_month}, '-01')
+                                 AND CONCAT(#{sch_month}, '-31')
+				 AND  AF.CHAIN_NO   = #{sch_chain_no}  
+  </select>
+
+</mapper>
