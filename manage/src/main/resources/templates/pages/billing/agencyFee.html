@@ -324,7 +324,7 @@
               var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
               var link = document.createElement('a');
               link.href = window.URL.createObjectURL(blob);
-              link.download = '영업일보_'+ schChainNo + '.xlsx';
+              link.download = '수수료현황_'+ schChainNo + '.xlsx';
               link.click();
             },
             error: function (xhr, status, error) {
@@ -343,16 +343,16 @@
         <div class="card-header" style="height:80px;">          
           <div class="row flex-between-end">
             <div class="col-lg-2 align-self-center">
-              <h4 class="mb-0">영업 월보</h4>
+              <h4 class="mb-0">수수료 현황</h4>
             </div>            
             <div class="col-lg-10">
               <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
                 <div class="row mb-1">
                   <div class="col-sm-2">
                     <div class="input-group input-group-sm mb-1">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_month">여신사</label>              
+                      <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_month">대리점</label>              
                       <select class="form-select form-control-sm me-1" id="sch_agency_cd" name="sch_agency_cd" style="width: 120px">
-                        <option value="">여신사</option>
+                        <option value="">대리점</option>
                       </select>  
                     </div>                                             
                   </div>

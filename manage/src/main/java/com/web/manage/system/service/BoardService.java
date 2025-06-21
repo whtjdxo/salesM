@@ -34,7 +34,7 @@ public class BoardService {
 		return mapper.getSelectBoardFileList(hashmapParam);
 	}
 	
-	public int createBoardSeq() {
+	public String createBoardSeq() {
 		return mapper.createBoardSeq();
 	}
 	

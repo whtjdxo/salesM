@@ -103,6 +103,14 @@
         function fn_file_gb_setting(data) {
           codeSetting('FILE_GB', data.data, '#file_gb', '1', '', '');
         }        
+
+        // 기본 에러 메시지 사용
+        validateForDateFormat($('#ceo_birth_dt'));
+        // 커스텀 에러 메시지 사용
+        // setupDateInputValidation($('#ceo_birth_dt'), "올바른 날짜 형식이 아닙니다!");
+
+        validateForBizFormat('#biz_no');
+        
         var tbl_chain = $('#tbl_chain').DataTable({
           processing: true,
           serverSide: true,
@@ -145,7 +153,7 @@
             { targets: 9, width: '80px', className: 'text-center' },
             { targets: 10, width: '80px', className: 'text-center' },
           ],  
-          order: [[1, 'desc']],
+          order: [[0, 'desc']],
           paging: true,
           lengthChange: false,
           searching: false,
@@ -220,16 +228,16 @@
             $('#svc_stat').val(data.svc_stat);
             $('#svc_start_dt').val(data.svc_start_dt);
             $('#svc_end_dt').val(data.svc_end_dt);
-
+            $('#cont_tp').val(data.cont_tp);
 
             $('#crd_fee_rate').val(data.crd_fee_rate);
             $('#crd_delay_rate').val(data.crd_delay_rate);
             $('#svc_fee_rate').val(data.svc_fee_rate);
             $('#etc_fee_rate').val(data.etc_fee_rate);
             $('#day_use_rate').val(data.day_use_rate);
-            $('#day_use_amt').val(data.day_use_amt); 
-            $('#tot_limit_amt').val(data.tot_limit_amt);
-            $('#unit_limit_amt').val(data.unit_limit_amt);
+            $('#day_use_amt').val(Number(data.day_use_amt).toLocaleString());
+            $('#tot_limit_amt').val(Number(data.tot_limit_amt).toLocaleString());
+            $('#unit_limit_amt').val(Number(data.unit_limit_amt).toLocaleString());
             $('#day_use_rate').val(data.day_use_rate);
             
             $('#abank_cd').val(data.abank_cd);
@@ -1296,7 +1304,7 @@
   </head>
   <div class="content">    
     <div class="row g-3 mb-2">
-      <div class="col-lg-7">
+      <div class="col-lg-8">
         <div class="card">
           <div class="card-header">
             <div class="row flex-between-end">
@@ -1354,7 +1362,7 @@
           </div>
         </div>
       </div>
-      <div class="col-lg-5">
+      <div class="col-lg-4">
         <div class="card">
           <!-- <div class="card-header">
             <div class="row flex-between-end">
@@ -1522,7 +1530,7 @@
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="ceo_birth_dt">생년월일</label>
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="ceo_birth_dt" type="text" name="ceo_birth_dt" istyle="date" maxlength="10" required />
+                            <input class="form-control form-control-sm" id="ceo_birth_dt" type="text" name="ceo_birth_dt" placeholder="yyyy-mm-dd" maxlength="10" required />
                           </div>   
                         </div>
                       </div> 
@@ -1636,12 +1644,13 @@
                           <div class="col-sm-8">
                             <div class="input-group input-group-sm mb-1">
                               <input class="form-control form-control-sm text-end" id="svc_fee_rate" type="text" name="svc_fee_rate" placeholder="00.0" istyle="float" maxlength="4" required />
-                              <span class="input-group-text">%</span>
-                            <!-- </div>
-                            <div class="input-group input-group-sm mb-1"> -->
-                              <input class="form-control form-control-sm text-end" id="etc_fee_rate" type="text" name="etc_fee_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <input class="form-control form-control-sm text-end" id="etc_fee_rate" type="hidden" name="etc_fee_rate" placeholder="00.0" istyle="float" maxlength="4" value="0" />
                               <span class="input-group-text">%</span>
                             </div>
+                            <!-- <div class="input-group input-group-sm mb-1">
+                              <input class="form-control form-control-sm text-end" id="etc_fee_rate" type="text" name="etc_fee_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                              <span class="input-group-text">%</span>
+                            </div> -->
                           </div>         
                         </div>
                       </div>

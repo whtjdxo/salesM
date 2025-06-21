@@ -28,7 +28,7 @@
           codeSetting('AGENCY_CD', data.data, '#sch_agency_cd', '1', '', ''); 
         }  
 
-        callAjax('/common/totalCodelist', "code_grp_cd=('WD_STATUS') AND CODE LIKE 'W%'", fn_wd_status_setting);      
+        callAjax('/common/totalCodelist', "code_grp_cd=('WD_STATUS') AND CODE LIKE 'W%' AND CHK_CD2 = 'M'", fn_wd_status_setting);      
         function fn_wd_status_setting(data) {
           codeSetting('WD_STATUS', data.data, '#change_wd_status', '1', '', '');  
         }
@@ -126,7 +126,7 @@
             autoWidth: false,
             // responsive: true, // 이미 위에서 설정됨
             // scrollCollapse: true,
-            scrollY: '420px',
+            scrollY: '300px',
             pageLength: 20,
             language: {
                 emptyTable: '데이터가 없습니다.',
@@ -234,22 +234,19 @@
           var clickedColumnIndex = clickedCell.index();
           
           var row = tbl_wd_summ.row(this).data();
-          if (clickedColumnIndex == 2 && row.risk_grade > 0) {
-              // Show modal_risk              
-              $('#risk_chain_no').val(row.chain_no);              
-              $('#modal_risk').modal('show');   
-              $('#tbl_risk_list').DataTable().ajax.reload(); 
-          }
+          // if (clickedColumnIndex == 2 && row.risk_grade > 0) {
+          //     // Show modal_risk              
+          //     $('#risk_chain_no').val(row.chain_no);              
+          //     $('#modal_risk').modal('show');   
+          //     $('#tbl_risk_list').DataTable().ajax.reload(); 
+          // }
 
-          if (clickedColumnIndex == 9 && row.error_cnt > 0) {
-            // alert('미확정 건이 있습니다. 확인 후 진행하세요.');
-            $('#sch_list_wd_status').val('N');
-          } else{
-            $('#sch_list_wd_status').val('A');
+          if (clickedColumnIndex == 9 && row.error_cnt > 0) { 
+            $('#sch_list_wd_status_n').prop('checked', true);           
           }
           
           $('#frm_sch_card')[0].reset();   
-          $('#frm_sch_list')[0].reset();
+          // $('#frm_sch_list')[0].reset();
           
           $('#sch_card_chain_no').val(row.chain_no);
           $('#sch_list_chain_no').val(row.chain_no);   // list 검색 조건
@@ -340,6 +337,12 @@
           $('#tbl_card_summ').DataTable().clear().draw();
           $('#tbl_wd_resv_list').DataTable().clear().draw();
         }
+
+        // sch_list_wd_status 라디오 버튼 클릭 시 이벤트 처리
+        $('input[name="sch_list_wd_status"]').on('change', function () {
+          // alert('검색 조건이 변경되었습니다. 리스트를 새로고침합니다.');
+          tbl_wd_resv_list.ajax.reload();          
+        });
         
         var tbl_card_summ = $('#tbl_card_summ').DataTable({
           processing: true,
@@ -384,7 +387,7 @@
           responsive: true,
           // scrollCollapse: true,
           // pageLength: 15,
-          scrollY: '420px',
+          scrollY: '315px',
           info: false,
           language: {
             emptyTable: '데이터가 없습니다.',
@@ -873,7 +876,7 @@
   <div class="content">     
     <div class="row g-1 mb-1">
       <div class="col-lg-7">
-        <div class="card" style="height: 680px;">
+        <div class="card" style="height: 560px;">
           <div class="card-header">          
             <div class="row flex-between-end">
               <div class="col-lg-2 align-self-center">
@@ -938,6 +941,7 @@
                     <th class="text-center">미확정</th> 
                   </tr>
                 </thead>
+                <tbody class="list"></tbody>
                 <tfoot>
                   <tr>
                     <th colspan="3" class="text-center">총계</th>
@@ -950,14 +954,14 @@
                     <th class="text-right px-2"></th>
                   </tr>
                 </tfoot>
-                <tbody class="list"></tbody>
+                
               </table>
             </div>
           </div>
         </div>      
       </div>
       <div class="col-lg-5">
-        <div class="card" style="height: 680px;">    
+        <div class="card" style="height: 560px;">    
           <div class="card-header">            
             <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">
               <input class="form-control form-control-sm" id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly" />
@@ -1084,11 +1088,18 @@
                       <!-- <div class="col-sm-3">
                         <input class="form-control form-control-sm" id="sch_list_conf_date" type="text" name="sch_list_conf_date" istyle="date" maxlength="10" required />
                       </div>  -->
-                      <select class="form-select form-control-sm me-1" id="sch_list_wd_status" name="sch_list_wd_status" style="width: 120px">
-                        <option value="A">전체</option>
-                        <option value="Y">정산확정</option>
-                        <option value="N">미확정</option>
-                      </select>                     
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="sch_list_wd_status" id="sch_list_wd_status_all" value="A" checked>
+                        <label class="form-check-label" for="sch_list_wd_status_all">전체</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="sch_list_wd_status" id="sch_list_wd_status_y" value="Y">
+                        <label class="form-check-label" for="sch_list_wd_status_y">정산확정</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="sch_list_wd_status" id="sch_list_wd_status_n" value="N">
+                        <label class="form-check-label" for="sch_list_wd_status_n">미확정</label>
+                      </div>
                       <select class="form-select form-control-sm me-1" id="sch_list_gb" name="sch_list_gb" style="width: 120px">
                         <option value="sch_list_gb_conf_no">승인 번호</option>
                         <option value="sch_list_gb_card_no">카드 번호</option>
@@ -1102,16 +1113,16 @@
                     <div class="input-group input-group-sm mb-1">
                       <label class="col-sm-2 col-form-label col-form-label-sm" for="change_wd_status">변경 처리</label>                       
                       <select class="form-select form-control-sm me-1" id="change_gb" name="change_gb" style="width: 100px;" >
-                        <option value="WORK_DATE">작업일</option>                          
-                        <option value="WD_STATUS">진행상태</option>                          
+                        <option value="WD_STATUS">상태 변경</option>
+                        <option value="WORK_DATE">출금일 변경</option>
                       </select> 
                       <div class="col-sm-5">
-                        <div id="div_work_date">
-                          <input class="form-control form-control-sm" id="change_work_date" type="text" name="change_work_date" istyle="date" maxlength="10" placeholder="변경 작업일" />  
-                        </div>                        
-                        <select class="form-select form-control-sm me-1" id="change_wd_status" name="change_wd_status" style="width: 200px; display: none;" >
+                        <select class="form-select form-control-sm me-1" id="change_wd_status" name="change_wd_status" style="width: 200px;" >
                           <option value="">선택</option>   
                         </select>
+                        <div id="div_work_date" style="display:none;">
+                          <input class="form-control form-control-sm" id="change_work_date" type="text" name="change_work_date" istyle="date" maxlength="10" placeholder="변경 작업일" />
+                        </div>                        
                       </div>
                       <button type="button" class="btn btn-info btn-sm" id="btn_list_change" name="btn_list_change">변경</button>                                              
                     </div>                             

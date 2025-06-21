@@ -34,6 +34,8 @@
         function fn_bank_setting(data) {
           codeSetting('BANK_CD', data.data, '#bank_cd', '1', '', '');
         }  
+
+        validateForBizFormat('#biz_no');
         
         var tbl_agency = $('#tbl_agency').DataTable({
           processing: true,

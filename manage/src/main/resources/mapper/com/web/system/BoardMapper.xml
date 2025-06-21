@@ -15,11 +15,10 @@
 
 	<select id="boardMstListRetrieve" parameterType="hashMap" resultType="hashMap">
 		SELECT SQL_CALC_FOUND_ROWS
-			   tb.aca_id 
-			 , tb.board_seq
+			   tb.board_seq
 			 , tb.board_tp
-			 , (SELECT code_nm FROM tb_code WHERE code = tb.board_tp AND code_grp_cd = 'BOARD_TP') as brd_tp_nm
-			 , tb.view_aca 
+			 , GET_CODE_NM('BOARD_TP', BOARD_TP) as brd_tp_nm
+			 , tb.view_corp 
 			 , tb.title 
 			 , tb.conts 
 			 , tb.use_yn 
@@ -29,13 +28,11 @@
 			 , tb.ent_user_id as ent_user_id
 			 , DATE_FORMAT(tb.upt_dttm, '%Y-%m-%d') as upt_dttm
 			 , tb.upt_user_id as upt_user_id			 
-		FROM 
+		FROM 	
 			tb_board tb
 	
 		WHERE 1 = 1
-		<if test="srch_center != ''">
-			AND tb.aca_id = #{srch_center}
-		 </if>
+		 
 		<if test="srch_brd_tp != '' and srch_brd_tp != null">
 			AND tb.board_tp = #{srch_brd_tp}
 		</if>
@@ -61,7 +58,7 @@
 	<select id="getSelectBoardFileList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
 	/* BoardMapper.getSelectBoardFileList */
 		SELECT
-			BLBD_SQ AS brd_seq
+			BOARD_SEQ AS board_seq
 			, FILE_NM AS file_nm
 			, ALL_FILE_NM AS all_file_nm
 			, FILE_SEQ AS file_seq
@@ -69,36 +66,36 @@
 		FROM
 			TB_BOARD_FILE
 		WHERE
-			BLBD_SQ = ${brd_seq}	
+			BOARD_SEQ = ${brd_seq}	
 	</select>
 	
-	<select id="createBoardSeq" resultType="java.lang.Integer">
+	<select id="createBoardSeq" resultType="java.lang.String">
 	/* BoardMapper.createBoardSeq */
 		SELECT GET_JOB_SEQ('TB_BOARD', 'BOARD_SEQ')
 	</select>
 	
 	<select id="getChkFileSeq" parameterType="com.web.manage.system.domain.BoardVO" resultType="java.lang.Integer">
 	/* BoardMapper.getChkFileSeq */
-		SELECT IF(COUNT(1), 0, 1) FROM TB_BOARD_FILE WHERE BLBD_SQ = ${brd_seq}
+		SELECT IF(COUNT(1), 0, 1) FROM TB_BOARD_FILE WHERE BOARD_SEQ = ${brd_seq}
 	</select>
 	
 	<select id="generateFileSeq" resultType="java.lang.Integer">
 	/* BoardMapper.generateFileSeq */
-		SELECT FN_GET_JOB_SEQ('TB_BOARD_FILE')
+		SELECT GET_JOB_SEQ('TB_BOARD_FILE')
 	</select>
 	
 	<insert id="insertBoardFileInfo" parameterType="com.web.manage.system.domain.BoardVO">
 	/* BoardMapper.insertBoardFileInfo */
 		INSERT INTO TB_BOARD_FILE
 		(
-			BLBD_SQ
+			BOARD_SEQ
 			, FILE_SEQ
 			, FILE_NM
 			, ALL_FILE_NM
 			, FILE_PATH
 		)
 		SELECT
-			${brd_seq}
+			${board_seq}
 			, ${file_seq}
 			, #{file_name}
 			, #{origin_file_name}
@@ -113,10 +110,9 @@
 	<insert id="boardCreate" parameterType="com.web.manage.system.domain.BoardVO">
 		INSERT INTO tb_board
 		(
-			aca_id
-			, board_tp
-			<if test='view_aca != null and view_aca != ""'>
-			, view_aca
+			BOARD_SEQ		, board_tp
+			<if test='view_corp != null and view_corp != ""'>
+			, view_corp
 			</if>
 			, title
 			, conts
@@ -124,11 +120,10 @@
 			, ent_dttm
 			, ent_user_id
 		)
-		VALUES(
-			#{aca_id}
-			, #{board_tp}
-			<if test='view_aca != null and view_aca != ""'>
-			, #{view_aca}
+		VALUES( 
+			#{board_seq}	, #{board_tp}
+			<if test='view_corp != null and view_corp != ""'>
+			, #{view_corp}
 			</if>
 			, #{title}
 			, #{conts}
@@ -142,8 +137,8 @@
 		UPDATE tb_board
 		SET
 			board_tp = #{board_tp}
-			<if test='view_aca != null and view_aca != ""'>
-			, view_aca = #{view_aca}
+			<if test='view_corp != null and view_corp != ""'>
+			, view_corp = #{view_corp}
 			</if>			
 			, title = #{title}
 			, conts = #{conts}

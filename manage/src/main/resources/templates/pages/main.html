@@ -1,42 +1,451 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content"> 
   <head>
     <title>메인 페이지</title>
-    <!-- inline CSS 영역-->
-    <style th:inline="css" type="text/css"></style>
-    <!-- inline JS 영역-->
-    <script th:inline="javascript" type="text/javascript"></script>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script> 
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />    
+    <!-- DataTables Select CSS 추가 -->
+    <link rel="stylesheet" href="/css/custom-salesm.css" />
+
+    <script th:inline="none">      
+      $(document).ready(function () {    
+        var toDay = returnDate('today');          
+        var formData = {
+           sch_date : toDay, 
+        };          
+        tinymce.init({
+          selector: 'textarea#conts',
+          height: '357',
+          menubar: false,
+        });
+        callAjaxJson('/main/daySalesSumm', formData, fn_DaySalesSummSet);        
+        function fn_DaySalesSummSet(data){
+          // console.log('------------------------------------fn_DaySalesSummSet');
+          // console.log(data.data); 
+          var salesSumm = data.data || {};
+          $('#daysumm_chain_cnt').val(salesSumm.chain_cnt ? $.fn.dataTable.render.number(',', '.', 0, '').display(salesSumm.chain_cnt) : '0');
+          $('#daysumm_conf_cnt').val(salesSumm.conf_cnt ? $.fn.dataTable.render.number(',', '.', 0, '').display(salesSumm.conf_cnt) : '0');
+          $('#daysumm_conf_amt').val(salesSumm.conf_amt ? $.fn.dataTable.render.number(',', '.', 0, '').display(salesSumm.conf_amt) : '0'); 
+          $('#daysumm_remit_amt').val(salesSumm.remit_tot_amt ? $.fn.dataTable.render.number(',', '.', 0, '').display(salesSumm.remit_tot_amt) : '0'); 
+        }
+      
+        callAjaxJson('/main/dayDepoSumm', formData, fn_DayDepoSummSet);        
+        function fn_DayDepoSummSet(data){
+          // console.log('------------------------------------fn_DayDepoSummSet');
+          // console.log(data.data); 
+          var depoSumm = data.data || {}; 
+          $('#daysumm_depo_amt').val(depoSumm.card_resv_amt ? $.fn.dataTable.render.number(',', '.', 0, '').display(depoSumm.card_resv_amt) : '0');
+          $('#daysumm_undepo_amt').val(depoSumm.gap_amt ? $.fn.dataTable.render.number(',', '.', 0, '').display(depoSumm.gap_amt) : '0');
+
+          if (depoSumm.gap_amt) {
+            var gapAmt = Number(depoSumm.gap_amt);
+            var formatted = $.fn.dataTable.render.number(',', '.', 0, '').display(gapAmt);
+            if (gapAmt > 0) {
+              $('#daysumm_undepo_amt').val(formatted).css({'color': 'blue', 'font-weight': 'bold'});
+            } else if (gapAmt < 0) {
+              $('#daysumm_undepo_amt').val(formatted).css({'color': 'red', 'font-weight': 'bold'});
+            } else {
+              $('#daysumm_undepo_amt').val(formatted).css({'color': '', 'font-weight': ''});
+            }
+          } else {
+            $('#daysumm_undepo_amt').val('0').css({'color': '', 'font-weight': ''});
+          } 
+        } 
+        var tbl_sales_list = $('#tbl_sales_list').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true,
+            responsive: true,
+            ajax: {
+                url: '/main/salesList',
+                contentType: 'application/json',
+                dataType: 'JSON',
+                type: 'POST',
+                data: function (postData) {
+                    var formData = {
+                    }
+                    Object.assign(postData, formData);
+                    return JSON.stringify(postData);
+                }, 
+                // 서버 에러 처리 등 추가 가능
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                    // 사용자에게 에러 메시지 표시 등
+                }
+            },
+            columns: [
+                  { data: 'close_date' }
+                , { data: 'rm_remit_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') }                
+                , { data: 'rm_conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'rm_remit_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'dp_card_resv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'dp_bank_in_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'tot_use_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                
+            ],
+            columnDefs: [
+                  { targets: 0, width: '100px', className: 'text-center dt-body-center' } // 중앙 정렬 확인
+                , { targets: 1, width: '100px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 2, width: '120px', className: 'text-right px-1 dt-body-right' } 
+                , { targets: 3, width: '120px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 4, width: '120px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 5, width: '120px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 6, width: '120px', className: 'text-right px-1 dt-body-right' }
+            ],
+            order: [[0, 'desc']], // 기본 정렬 설정
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            info: false, // 필요에 따라 true로 변경
+            autoWidth: false,
+            // responsive: true, // 이미 위에서 설정됨
+            scrollCollapse: true,
+            scrollY: '280px',
+            pageLength: 10,
+            language: {
+                emptyTable: '데이터가 없습니다.',
+                zeroRecords: '일치하는 데이터가 없습니다.',
+                loadingRecords: '로딩중...',
+                processing: '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">처리중...</span></div>', // 로딩/처리중 시각적 표시 개선
+            },            
+        }); 
+ 
+        $('#tbl_sales_list').on('click', 'tr', function (e) {          
+          if ($(this).hasClass('selected')) {
+              $(this).removeClass('selected');
+          } else {
+              tbl_sales_list.$('tr.selected').removeClass('selected');
+              $(this).addClass('selected');
+          }  
+        });    
+        
+        var tbl_board_list = $('#tbl_board_list').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          // responsive: true,
+          ajax: {
+            url: '/main/boardList',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',
+            data: function (postData) {
+              formData = {
+
+              }
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
+            }, 
+            // 서버 에러 처리 등 추가 가능
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                // 사용자에게 에러 메시지 표시 등
+            }
+          },
+          columns: [
+                { data: 'brd_tp_nm' }
+              , { data: 'title' }
+              , { data: 'upt_dt' }              
+          ],
+          columnDefs: [            
+            { targets: 0, width: '100px', className: 'text-center dt-body-center' } // 중앙 정렬 확인
+            , { targets: 1, width: '300px', className: 'text-left px-1' }
+            , { targets: 2, width: '100px', className: 'text-center dt-body-center' } // DataTables 권장 클래스
+          ],
+          order: [[2, 'desc']],
+          paging: true,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          autoWidth: false,
+          responsive: false,
+          scrollCollapse: true,
+          pageLength: 10,
+          scrollY: '320px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
+           
+        });
+ 
+        $('#tbl_board_list').on('click', 'tr', function () {            
+          if ($(this).hasClass('selected')) {
+              $(this).removeClass('selected');
+          } else {
+              tbl_board_list.$('tr.selected').removeClass('selected');
+              $(this).addClass('selected');
+          } 
+          var row = tbl_board_list.row(this).data();
+          
+          $('#board_title').val(row.title);
+          // tinymce.activeEditor.setContent(row.conts);
+          $('#board_conts').val(row.conts); 
+          // $('#modal_board').modal('show'); // Show the modal             
+        });   
+
+        // 모달 창 표시될때 초기화 처리
+        $('#modal_board').on('shown.bs.modal', function() {  
+          // 모달 열릴 때 첫 번째 포커스 가능 요소로 이동          
+          // $(this).data('trigger-element', document.activeElement);
+            
+          // });
+          // 첫 번째 포커스 가능 요소로 이동
+          $(this).find('button:not([disabled]), input:not([disabled])').first().focus();           
+        });
+
+        // 모달이 닫힐 때 포커스 복원
+        $('#modal_board').on('hidden.bs.modal', function() {
+          var triggerElement = $(this).data('trigger-element');
+          if (triggerElement) {
+            $(triggerElement).focus();
+          } 
+          return true; // 모달 닫기 허용
+        });           
+      });
+    </script>
   </head>
-  <div class="content" layout:fragment="Content">
-    <div class="card mb-3">
-      <div class="card-body position-relative">
-        <div class="row">
-          <div class="col-lg-8">
-            <nav aria-label="breadcrumb">
-              <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                  <a href="#">Home</a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">
-                  <a class="dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Data</a>
-                  <ul class="dropdown-menu">
-                    <li>
-                      <a class="dropdown-item" href="#">Action</a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="#">Another action</a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="#">Something else here</a>
-                    </li>
-                  </ul>
-                </li>
-              </ol>
-            </nav>
+  <div class="content">
+    <div class="row g-1 mb-1">
+      <div class="card">
+        <div class="card-header">          
+          <div class="row flex-between-end">
+            <div class="col-lg-2 align-self-center">
+              <h4 class="mb-0">일일 Summary</h4>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row mb-1">
+            <div class="row align-items-center g-4">
+              <div class="col-12 col-md-auto">
+                <div class="d-flex align-items-center"><span class="fa-stack" style="min-height: 46px;min-width: 46px;"><svg class="svg-inline--fa fa-square fa-stack-2x dark__text-opacity-50 text-success-light" data-fa-transform="down-4 rotate--10 left-4" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="square" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" data-fa-i2svg="" style="transform-origin: 0.1875em 0.75em;"><g transform="translate(224 256)"><g transform="translate(-128, 128)  scale(1, 1)  rotate(-10 0 0)"><path fill="currentColor" d="M0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96z" transform="translate(-224 -256)"></path></g></g></svg><!-- <span class="fa-solid fa-square fa-stack-2x dark__text-opacity-50 text-success-light" data-fa-transform="down-4 rotate--10 left-4"></span> Font Awesome fontawesome.com --><svg class="svg-inline--fa fa-circle fa-stack-2x stack-circle text-stats-circle-success" data-fa-transform="up-4 right-3 grow-2" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="circle" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" data-fa-i2svg="" style="transform-origin: 0.6875em 0.25em;"><g transform="translate(256 256)"><g transform="translate(96, -128)  scale(1.125, 1.125)  rotate(0 0 0)"><path fill="currentColor" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" transform="translate(-256 -256)"></path></g></g></svg><!-- <span class="fa-solid fa-circle fa-stack-2x stack-circle text-stats-circle-success" data-fa-transform="up-4 right-3 grow-2"></span> Font Awesome fontawesome.com --><svg class="svg-inline--fa fa-star fa-stack-1x text-success" data-fa-transform="shrink-2 up-8 right-6" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="star" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg="" style="transform-origin: 0.9375em 0em;"><g transform="translate(288 256)"><g transform="translate(192, -256)  scale(0.875, 0.875)  rotate(0 0 0)"><path fill="currentColor" d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z" transform="translate(-288 -256)"></path></g></g></svg><!-- <span class="fa-stack-1x fa-solid fa-star text-success " data-fa-transform="shrink-2 up-8 right-6"></span> Font Awesome fontawesome.com --></span>
+                  <div class="ms-3">
+                    <h4 class="mb-0">10</h4>
+                    <p class="text-body-secondary fs-9 mb-0">on Service</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-auto">
+                <div class="d-flex align-items-center"><span class="fa-stack" style="min-height: 46px;min-width: 46px;"><svg class="svg-inline--fa fa-square fa-stack-2x dark__text-opacity-50 text-warning-light" data-fa-transform="down-4 rotate--10 left-4" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="square" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" data-fa-i2svg="" style="transform-origin: 0.1875em 0.75em;"><g transform="translate(224 256)"><g transform="translate(-128, 128)  scale(1, 1)  rotate(-10 0 0)"><path fill="currentColor" d="M0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96z" transform="translate(-224 -256)"></path></g></g></svg><!-- <span class="fa-solid fa-square fa-stack-2x dark__text-opacity-50 text-warning-light" data-fa-transform="down-4 rotate--10 left-4"></span> Font Awesome fontawesome.com --><svg class="svg-inline--fa fa-circle fa-stack-2x stack-circle text-stats-circle-warning" data-fa-transform="up-4 right-3 grow-2" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="circle" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" data-fa-i2svg="" style="transform-origin: 0.6875em 0.25em;"><g transform="translate(256 256)"><g transform="translate(96, -128)  scale(1.125, 1.125)  rotate(0 0 0)"><path fill="currentColor" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" transform="translate(-256 -256)"></path></g></g></svg><!-- <span class="fa-solid fa-circle fa-stack-2x stack-circle text-stats-circle-warning" data-fa-transform="up-4 right-3 grow-2"></span> Font Awesome fontawesome.com --><svg class="svg-inline--fa fa-pause fa-stack-1x text-warning" data-fa-transform="shrink-2 up-8 right-6" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="pause" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" data-fa-i2svg="" style="transform-origin: 0.6875em 0em;"><g transform="translate(160 256)"><g transform="translate(192, -256)  scale(0.875, 0.875)  rotate(0 0 0)"><path fill="currentColor" d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z" transform="translate(-160 -256)"></path></g></g></svg><!-- <span class="fa-stack-1x fa-solid fa-pause text-warning " data-fa-transform="shrink-2 up-8 right-6"></span> Font Awesome fontawesome.com --></span>
+                  <div class="ms-3">
+                    <h4 class="mb-0">5 orders</h4>
+                    <p class="text-body-secondary fs-9 mb-0">On hold</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-auto">
+                <div class="d-flex align-items-center"><span class="fa-stack" style="min-height: 46px;min-width: 46px;"><svg class="svg-inline--fa fa-square fa-stack-2x dark__text-opacity-50 text-danger-light" data-fa-transform="down-4 rotate--10 left-4" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="square" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" data-fa-i2svg="" style="transform-origin: 0.1875em 0.75em;"><g transform="translate(224 256)"><g transform="translate(-128, 128)  scale(1, 1)  rotate(-10 0 0)"><path fill="currentColor" d="M0 96C0 60.7 28.7 32 64 32H384c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96z" transform="translate(-224 -256)"></path></g></g></svg><!-- <span class="fa-solid fa-square fa-stack-2x dark__text-opacity-50 text-danger-light" data-fa-transform="down-4 rotate--10 left-4"></span> Font Awesome fontawesome.com --><svg class="svg-inline--fa fa-circle fa-stack-2x stack-circle text-stats-circle-danger" data-fa-transform="up-4 right-3 grow-2" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="circle" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" data-fa-i2svg="" style="transform-origin: 0.6875em 0.25em;"><g transform="translate(256 256)"><g transform="translate(96, -128)  scale(1.125, 1.125)  rotate(0 0 0)"><path fill="currentColor" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" transform="translate(-256 -256)"></path></g></g></svg><!-- <span class="fa-solid fa-circle fa-stack-2x stack-circle text-stats-circle-danger" data-fa-transform="up-4 right-3 grow-2"></span> Font Awesome fontawesome.com --><svg class="svg-inline--fa fa-xmark fa-stack-1x text-danger" data-fa-transform="shrink-2 up-8 right-6" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="xmark" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" data-fa-i2svg="" style="transform-origin: 0.75em 0em;"><g transform="translate(192 256)"><g transform="translate(192, -256)  scale(0.875, 0.875)  rotate(0 0 0)"><path fill="currentColor" d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" transform="translate(-192 -256)"></path></g></g></svg><!-- <span class="fa-stack-1x fa-solid fa-xmark text-danger " data-fa-transform="shrink-2 up-8 right-6"></span> Font Awesome fontawesome.com --></span>
+                  <div class="ms-3">
+                    <h4 class="mb-0">15 products</h4>
+                    <p class="text-body-secondary fs-9 mb-0">Out of stock</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-1">
+            <div class="col-sm-2">
+              <div class="input-group input-group-sm mb-1">
+                <label class="col-sm-4 col-form-label col-form-label-sm" for="daysumm_chain_cnt">가맹점 수</label>
+                <div class="col-sm-8">
+                  <input class="form-control form-control-sm text-end bg-light" id="daysumm_chain_cnt" type="text" name="daysumm_chain_cnt" value="0" readonly />
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-2">
+              <div class="input-group input-group-sm mb-1">
+                <label class="col-sm-4 col-form-label col-form-label-sm" for="daysumm_conf_cnt">총 승인건</label>
+                <div class="col-sm-8">
+                  <input class="form-control form-control-sm text-end bg-light" id="daysumm_conf_cnt" type="text" name="daysumm_conf_cnt" value="0" readonly />
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-2">
+              <div class="input-group input-group-sm mb-1">
+                <label class="col-sm-4 col-form-label col-form-label-sm" for="daysumm_conf_amt">총 승인 금액</label>
+                <div class="col-sm-8">
+                  <input class="form-control form-control-sm text-end bg-light" id="daysumm_conf_amt" type="text" name="daysumm_conf_amt" value="0" readonly />
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-2">
+              <div class="input-group input-group-sm mb-1">
+                <label class="col-sm-4 col-form-label col-form-label-sm" for="daysumm_remit_amt">총 출금 (예정)액</label>
+                <div class="col-sm-8">
+                  <input class="form-control form-control-sm text-end bg-light" id="daysumm_remit_amt" type="text" name="daysumm_remit_amt" value="0" readonly />
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-2">
+              <div class="input-group input-group-sm mb-1">
+                <label class="col-sm-4 col-form-label col-form-label-sm" for="daysumm_depo_amt">총 입금 (예정) 액</label>
+                <div class="col-sm-8">
+                  <input class="form-control form-control-sm text-end bg-light" id="daysumm_depo_amt" type="text" name="daysumm_depo_amt" value="0" readonly />
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-2">
+              <div class="input-group input-group-sm mb-1">
+                <label class="col-sm-4 col-form-label col-form-label-sm" for="daysumm_undepo_amt">미 입 금 액</label>
+                <div class="col-sm-8">
+                  <input class="form-control form-control-sm text-end bg-light" id="daysumm_undepo_amt" type="text" name="daysumm_undepo_amt" value="0" readonly />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </div>  
+    <div class="row g-1 mb-1">
+      <div class="col-lg-5">
+        <div class="card">
+          <div class="card-header">          
+            <div class="row flex-between-end">
+              <div class="align-self-left">
+                <h5 class="mb-0">최근 매출 현황</h5>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_sales_list">  
+                <thead>
+                  <tr>
+                    <th class="text-center">정산일</th>
+                    <th class="text-center">총건</th>
+                    <th class="text-center">매출 총액</th> 
+                    <th class="text-center">출금 총액</th>
+                    <th class="text-center">입금 예정액</th>
+                    <th class="text-center">입  금  액</th>  
+                    <th class="text-center">총 사용금액</th> 
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody> 
+              </table>
+            </div>    
+          </div>
+        </div>  
+      </div>
+      <div class="col-lg-4">
+        <div class="row g-1 mb-1">
+          <div class="card">
+            <div class="card-header">          
+              <div class="row flex-between-end">
+                <div class="align-self-left">
+                  <h5 class="mb-0">데이터 수집 현황</h5>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive scrollbar">
+                <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_van_data">  
+                  <thead>
+                    <tr>
+                      <th class="text-center">Van</th>
+                      <th class="text-center"></th>
+                      <th class="text-center">출금액</th>
+                      <th class="text-center">입금 예정액</th>
+                      <th class="text-center">입  금  액</th>
+                      <th class="text-center">미 입 금 액</th> 
+                    </tr>
+                  </thead>
+                  <tbody class="list"></tbody>                  
+                </table>
+              </div>    
+            </div>
+          </div>  
+        </div>
+
+        <div class="row g-1 mb-1">
+          <div class="card">
+            <div class="card-header">          
+              <div class="row flex-between-end">
+                <div class="align-self-left">
+                  <h5 class="mb-0">Batch 작업 현황</h5>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive scrollbar">
+                <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_batch_list">  
+                  <thead>
+                    <tr>
+                      <th class="text-center">Batch 작업명</th>
+                      <th class="text-center">최근 작업 시간</th>
+                      <th class="text-center">작업결과</th> 
+                    </tr>
+                  </thead>
+                  <tbody class="list"></tbody>                  
+                </table>
+              </div>    
+            </div>
+          </div>  
+        </div>
+
+      </div>
+      <div class="col-lg-3"> 
+        <div class="card">
+          <div class="card-header">          
+            <div class="row flex-between-end">
+              <div class="align-self-left">
+                <h5 class="mb-0">공지 사항</h5>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_board_list">  
+                <thead>
+                  <tr>
+                    <th class="text-center">구분</th>
+                    <th class="text-center">제목</th>
+                    <th class="text-center">등록일</th>
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody>              
+              </table>
+            </div>    
+          </div>
+        </div>  
+      </div> 
+    </div>  
     <footer th:replace="~{fragments/footer :: footer}"></footer>
+  </div>
+
+  <div class="modal fade" id="modal_board" tabindex="-1" aria-labelledby="unprocessedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl"> <!-- Changed modal-lg to modal-xl for larger size -->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">공지사항</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">           
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label col-form-label-sm" for="title">제목</label>
+            <div class="col-sm-10">
+              <input class="form-control form-control-sm" id="title" type="text" name="title" readonly />
+            </div>
+          </div>          
+          <div class="mb-3">
+            <label class="col-form-label col-form-label-sm" for="board_conts">내용</label>
+            <textarea class="tinymce d-none" id="board_conts" name="board_conts" readonly></textarea>
+          </div>          
+          <div class="modal-footer">            
+            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
+          </div>          
+        </form>
+      </div>
+    </div>
   </div>
 </html>

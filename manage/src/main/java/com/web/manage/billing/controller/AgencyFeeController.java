@@ -46,6 +46,8 @@ public class AgencyFeeController {
         Gson gson = new Gson();
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
+        hashmapParam.put("userCorpCd", member.getUserCorpCd());
+		hashmapParam.put("userCorpType", member.getUserCorpType());
         String jString = null; 
         try {
             PageingVO pageing = new PageingVO();
@@ -86,6 +88,8 @@ public class AgencyFeeController {
         Gson gson = new Gson();
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
+        hashmapParam.put("userCorpCd", member.getUserCorpCd());
+		hashmapParam.put("userCorpType", member.getUserCorpType());
         String jString = null; 
         try {
             PageingVO pageing = new PageingVO();
@@ -119,9 +123,11 @@ public class AgencyFeeController {
     } 
 
     @RequestMapping(value = "agencyFee/downExcel", method = RequestMethod.POST)
-    public ResponseEntity<byte[]> getAgncyFeeSummaryToExcel(@RequestBody HashMap<String, Object> hashmapParam) {
+    public ResponseEntity<byte[]> getAgncyFeeSummaryToExcel(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
         try {
-            // Fetch data for the Excel file
+            hashmapParam.put("userCorpCd", member.getUserCorpCd());
+		    hashmapParam.put("userCorpType", member.getUserCorpType());
             hashmapParam.put("sidx", "");
             hashmapParam.put("sord", "");
             hashmapParam.put("start", "0");
@@ -189,14 +195,16 @@ public class AgencyFeeController {
     } 
 
     @RequestMapping(value = "agencyFee/downListExcel", method = RequestMethod.POST)
-    public ResponseEntity<byte[]> getAgncyFeeListToExcel(@RequestBody HashMap<String, Object> hashmapParam) {
+    public ResponseEntity<byte[]> getAgncyFeeListToExcel(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
         try {
-            // Fetch data for the Excel file
+            hashmapParam.put("userCorpCd", member.getUserCorpCd());
+		    hashmapParam.put("userCorpType", member.getUserCorpType());
             hashmapParam.put("sidx", "");
             hashmapParam.put("sord", "");
             hashmapParam.put("start", "0");
             hashmapParam.put("end", "9999");
-            List<HashMap<String, Object>> list = agencyFeeService.getAgencyFeeSummary(hashmapParam);
+            List<HashMap<String, Object>> list = agencyFeeService.getAgencyFeeList(hashmapParam);
 
             // Create an Excel workbook
             Workbook workbook = new XSSFWorkbook();
@@ -223,7 +231,7 @@ public class AgencyFeeController {
                 // 1. NO (row number)
                 dataRow.createCell(colIndex++).setCellValue(rowIndex - 1);                
                 // 2. 출금
-                dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("close_date", "").toString());
+                dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("adjust_date", "").toString());
                 dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_cnt")))); 
                 dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
                 dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_base_amt"))));

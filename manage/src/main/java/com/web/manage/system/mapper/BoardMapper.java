@@ -21,7 +21,7 @@ public interface BoardMapper {
 	
 	List<HashMap<String, Object>> getSelectBoardFileList(HashMap<String, Object> hashmapParam);
 	
-	int createBoardSeq();
+	String createBoardSeq();
 	
 	int getChkFileSeq(BoardVO vo);
 	

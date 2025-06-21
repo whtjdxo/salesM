@@ -202,7 +202,7 @@
                                         , COUNT(1) 			AS TOT_CNT
                                         , SUM(ORDER_AMT) 	AS TOT_AMT
                                         , SUM((CASE WHEN PROC_FG = 'N' THEN 1 ELSE NULL END))	AS SETTLE_CNT
-                                  FROM  TB_SCRAP_DELI_DATA
+                                  FROM  TB_SCRAP_DELI_DATA T1
                                  WHERE	ORDER_DTTM  &gt;=  #{sch_conf_sdt}
                                    AND  ORDER_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
                         <if test="sch_card_acq != ''">
@@ -301,7 +301,7 @@
                                         , COUNT(1) 			AS TOT_CNT
                                         , SUM(ORDER_AMT) 	AS TOT_AMT
                                         , SUM((CASE WHEN PROC_FG = 'N' THEN 1 ELSE NULL END))	AS SETTLE_CNT
-                                  FROM  TB_SCRAP_DELI_DATA
+                                  FROM  TB_SCRAP_DELI_DATA T1
                                  WHERE	ORDER_DTTM  &gt;=  #{sch_conf_sdt}
                                    AND  ORDER_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
                         <if test="sch_card_acq != ''">

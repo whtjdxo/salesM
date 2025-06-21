@@ -83,6 +83,20 @@
         <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
 				AND  TC.CORP_CD =  #{sch_corp_cd} 
 	</if>                                       
+        <choose>
+            <when test='userCorpType == "LN"'>
+                AND TC.CORP_CD = #{userCorpCd}
+            </when>
+            <when test='userCorpType == "OP"'>
+                AND 1 = 1
+            </when>
+            <when test='userCorpType == "AG"'>
+                AND TC.AGENCY_CD = #{userCorpCd}
+            </when>
+            <otherwise>
+                AND  1 = 0
+            </otherwise>
+        </choose>    
          WHERE  DC.CLOSE_DATE BETWEEN CONCAT(#{sch_month}, '-01')
                                AND CONCAT(#{sch_month}, '-31')
          GROUP  BY DC.CHAIN_NO, TC.CHAIN_NM
@@ -172,7 +186,21 @@
                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO
         <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
 		AND  TC.CORP_CD =  #{sch_corp_cd} 
-	</if>                                       
+	</if>        
+        <choose>
+            <when test='userCorpType == "LN"'>
+                AND TC.CORP_CD = #{userCorpCd}
+            </when>
+            <when test='userCorpType == "OP"'>
+                AND 1 = 1
+            </when>
+            <when test='userCorpType == "AG"'>
+                AND TC.AGENCY_CD = #{userCorpCd}
+            </when>
+            <otherwise>
+                AND  1 = 0
+            </otherwise>
+        </choose>                                   
          WHERE  DC.CLOSE_DATE BETWEEN CONCAT(#{sch_month}, '-01')
                                AND CONCAT(#{sch_month}, '-31')
          
@@ -254,7 +282,21 @@
                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO 
         <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
 				AND  TC.CORP_CD =  #{sch_corp_cd} 
-	</if>                                       
+	</if>                   
+        <choose>
+            <when test='userCorpType == "LN"'>
+                AND TC.CORP_CD = #{userCorpCd}
+            </when>
+            <when test='userCorpType == "OP"'>
+                AND 1 = 1
+            </when>
+            <when test='userCorpType == "AG"'>
+                AND TC.AGENCY_CD = #{userCorpCd}
+            </when>
+            <otherwise>
+                AND  1 = 0
+            </otherwise>
+        </choose>                       
          WHERE  DC.CLOSE_DATE BETWEEN CONCAT(#{sch_month}, '-01')
                                AND CONCAT(#{sch_month}, '-31')
            AND  DC.CHAIN_NO  = #{sch_chain_no}
@@ -344,7 +386,21 @@
                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO
         <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
 				AND  TC.CORP_CD =  #{sch_corp_cd} 
-	</if>                                       
+	</if>   
+        <choose>
+            <when test='userCorpType == "LN"'>
+                AND TC.CORP_CD = #{userCorpCd}
+            </when>
+            <when test='userCorpType == "OP"'>
+                AND 1 = 1
+            </when>
+            <when test='userCorpType == "AG"'>
+                AND TC.AGENCY_CD = #{userCorpCd}
+            </when>
+            <otherwise>
+                AND  1 = 0
+            </otherwise>
+        </choose>                                        
           WHERE  DC.CLOSE_DATE BETWEEN CONCAT(#{sch_month}, '-01')
                                AND CONCAT(#{sch_month}, '-31')
            AND  DC.CHAIN_NO  = #{sch_chain_no} 

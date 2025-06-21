@@ -3,9 +3,241 @@
 
 <mapper namespace="com.web.manage.common.mapper.MainMapper">
 
-	<select id="getQueryTotalCnt" resultType="int">
-	/* MainMapper.getQueryTotalCnt */
+    <select id="getQueryTotalCnt" resultType="int">
 		SELECT FOUND_ROWS()
+	</select> 
+
+    <select id="getSalesSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	GB AS remit_gb 
+					, IFNULL(COUNT(DISTINCT VT.CHAIN_NO), 0)  	AS chain_cnt 
+					, IFNULL(SUM(CONF_CNT), 0) 					AS conf_cnt
+					, IFNULL(SUM(CONF_AMT), 0) 					AS conf_amt
+					, IFNULL(SUM(CARD_RESV_AMT), 0) 			AS card_resv_amt
+					, IFNULL(SUM(CARD_FEE_AMT), 0) 				AS card_fee_amt	
+					, IFNULL(SUM(SVC_FEE_AMT), 0) 				AS svc_fee_amt	
+					, IFNULL(SUM(CRD_FEE_AMT), 0) 				AS crd_fee_amt
+					, IFNULL(SUM(WD_BASE_AMT), 0) 				AS wd_base_amt
+					, IFNULL(SUM(EXC_REMIT_AMT), 0) 			AS exc_remit_amt	
+					, IFNULL(SUM(SUB_AMT), 0) 					AS sub_amrm	
+					, IFNULL(SUM(CONF_AMT), 0) - IFNULL(SUM(REMIT_TOT_AMT), 0) + IFNULL(SUM(EXC_REMIT_AMT), 0) AS sub_amt	
+					, IFNULL(SUM(REMIT_TOT_AMT), 0)				AS remit_tot_amt
+		  FROM 	(
+				SELECT 	1 AS ORD
+						, 'REMI'									AS GB
+						, CHAIN_NO 									AS CHAIN_NO
+						, IFNULL(SUM(ADJUST_CNT ), 0)				AS CONF_CNT 
+						, IFNULL(SUM(CONF_AMT ), 0)					AS CONF_AMT 
+						, IFNULL(SUM(RM.CARD_RESV_AMT), 0)         	AS CARD_RESV_AMT
+						, IFNULL(SUM(RM.CARD_FEE_AMT), 0)          	AS CARD_FEE_AMT 
+						, IFNULL(SUM(RM.SVC_FEE_AMT), 0)           	AS SVC_FEE_AMT 
+						, IFNULL(SUM(RM.CRD_FEE_AMT), 0)           	AS CRD_FEE_AMT 
+						, IFNULL(SUM(RM.WD_BASE_AMT), 0)           	AS WD_BASE_AMT 
+						, IFNULL(SUM(RM.EXC_REMIT_AMT), 0)          AS EXC_REMIT_AMT 
+						, IFNULL(SUM(RM.SUB_AMT), 0)             	AS SUB_AMT 
+						, IFNULL(SUM(RM.REMIT_AMT), 0)            	AS REMIT_TOT_AMT 
+				  FROM 	TB_REMIT_MST RM
+				 WHERE 	RM.REMIT_DATE = DATE_FORMAT(NOW(), '%Y-%m-%d') 
+ 				   <!-- AND  CHAIN_NO = #chainNo#		      -->
+				 GROUP 	BY CHAIN_NO
+				 UNION 	ALL 
+				SELECT  2 AS ORD
+						, WD.GB
+						, WD.CHAIN_NO
+						, WD.ADJUST_CNT
+						, WD.CONF_AMT
+						, WD.CARD_RESV_AMT
+						, WD.CARD_FEE_AMT
+						, WD.SVC_FEE_AMT
+						, WD.CRD_FEE_AMT
+						, WD.WD_BASE_AMT
+						, IFNULL(EC.EXC_REMIT_AMT, 0)		AS EXC_REMIT_AMT 
+						, IFNULL(SB.SUB_AMT, 0)		AS SUB_AMT
+						, REMIT_TOT_AMT + IFNULL(EC.EXC_REMIT_AMT, 0) - IFNULL(SB.SUB_AMT, 0)		AS REMIT_TOT_AMT
+				  FROM 	(		
+						 SELECT	 'RESV'								AS GB
+						 		, CHAIN_NO							AS CHAIN_NO
+						 		, WORK_DATE 						AS REMIT_DT
+						 		, COUNT(1)							AS ADJUST_CNT
+								, IFNULL(SUM(CONF_AMT), 0) 				AS CONF_AMT 
+								, IFNULL(SUM(CARD_RESV_AMT), 0)        AS CARD_RESV_AMT
+								, IFNULL(SUM(CARD_FEE_AMT), 0)         AS CARD_FEE_AMT 
+								, IFNULL(SUM(SVC_FEE_AMT), 0)          AS SVC_FEE_AMT 
+								, IFNULL(SUM(CRD_FEE_AMT), 0)          AS CRD_FEE_AMT 
+								, IFNULL(SUM(WD_BASE_AMT), 0)          AS WD_BASE_AMT 
+								, IFNULL(SUM(REMIT_AMT), 0)           AS REMIT_TOT_AMT 
+						  FROM  TB_WITHDRAW WD  		
+						 WHERE 	WORK_DATE = DATE_FORMAT(NOW(), '%Y-%m-%d') 
+						   <!-- AND 	CHAIN_NO = #chainNo# -->
+					       AND 	REMIT_NO IS NULL
+						   AND 	USE_YN    = 'Y'
+						 GROUP 	BY CHAIN_NO, WORK_DATE
+						) WD  
+						LEFT OUTER JOIN (
+				  			SELECT CHAIN_NO 
+							       	, SUM(REMAIN_AMT)  AS SUB_AMT
+							  FROM 	TB_SUB_MST
+							 WHERE 	SUB_STATUS IN ('000000', '100000')
+							   AND 	USE_YN = 'Y'
+							 GROUP BY CHAIN_NO
+				  		) SB ON SB.CHAIN_NO = WD.CHAIN_NO 
+				  		LEFT OUTER JOIN (
+				  			SELECT 	CHAIN_NO, SUM(REMAIN_AMT) AS EXC_REMIT_AMT
+				  			  FROM 	TB_EXCEED_MST
+							 WHERE	EXC_STATUS = '100000'
+							   AND	USE_YN = 'Y'
+				   			 GROUP	BY CHAIN_NO
+				  		) EC ON EC.CHAIN_NO = WD.CHAIN_NO
+				) VT  
+				JOIN TB_CHAIN TC ON TC.CHAIN_NO = VT.CHAIN_NO
+                <choose>
+                    <when test='userCorpType == "LN"'>
+                        AND TC.CORP_CD = #{userCorpCd}
+                    </when>
+                    <when test='userCorpType == "OP"'>
+                        AND 1 = 1
+                    </when>
+                    <when test='userCorpType == "AG"'>
+                        AND TC.AGENCY_CD = #{userCorpCd}
+                    </when>
+                    <when test='userCorpType == "CH"'>
+                        AND TC.CHAIN_NO = #{userCorpCd}
+                    </when>
+                    <otherwise>
+                        AND  1 = 0
+                    </otherwise>
+                </choose>    
+ 		 GROUP  BY 	GB  
+		 LIMIT  1 
+    </select>
+
+    <select id="getDepositSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	IFNULL(SUM(CARD_RESV_AMT), 0)		                        AS card_resv_amt
+                , IFNULL(SUM(DEPO_AMT), 0)				                    AS depo_amt
+                , IFNULL(SUM(CARD_RESV_AMT), 0) - IFNULL(SUM(DEPO_AMT), 0)	AS gap_amt
+        FROM 	(		
+                    SELECT 	WD.CHAIN_NO
+                            , WD.CARD_ACQ
+                            , SUM(WD.CARD_RESV_AMT) AS CARD_RESV_AMT
+                            , NULL					AS DEPO_AMT
+                    FROM	TB_WITHDRAW WD    
+                    WHERE 	WD.CARD_RESV_DATE = DATE_FORMAT(NOW(), '%Y-%m-%d') 
+                    AND	WD.USE_YN = 'Y'
+                    GROUP 	BY WD.CHAIN_NO, WD.CARD_ACQ 
+                    UNION  ALL 
+                    SELECT 	CHAIN_NO, CARD_ACQ
+                            , NULL
+                            , SUM(IN_AMT) AS DEPO_AMT
+                    FROM 	TB_CHAIN_DEPOSIT_LIST
+                    WHERE BANK_IN_DATE = DATE_FORMAT(NOW(), '%Y-%m-%d') 
+                    GROUP BY CHAIN_NO, CARD_ACQ 
+                ) VT
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = VT.CHAIN_NO
+                                AND TC.SVC_STAT IN ('O', 'R')
+                                AND TC.USE_YN = 'Y'                
+                <choose>
+                    <when test='userCorpType == "LN"'>
+                        AND TC.CORP_CD = #{userCorpCd}
+                    </when>
+                    <when test='userCorpType == "OP"'>
+                        AND 1 = 1
+                    </when>
+                    <when test='userCorpType == "AG"'>
+                        AND TC.AGENCY_CD = #{userCorpCd}
+                    </when>
+                    <when test='userCorpType == "CH"'>
+                        AND TC.CHAIN_NO = #{userCorpCd}
+                    </when>
+                    <otherwise>
+                        AND  1 = 0
+                    </otherwise>
+                </choose> 
+    </select>
+
+    <select id="getDailySummaryList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	SQL_CALC_FOUND_ROWS
+                DC.CLOSE_DATE                               AS close_date				
+                , IFNULL(SUM(rm_remit_cnt), 0)              AS rm_remit_cnt
+                , IFNULL(SUM(rm_conf_amt), 0)               AS rm_conf_amt
+                , IFNULL(SUM(rm_card_fee_amt), 0)           AS rm_card_fee_amt
+                , IFNULL(SUM(rm_svc_fee_amt), 0)            AS rm_svc_fee_amt
+                , IFNULL(SUM(rm_crd_fee_amt), 0)            AS rm_crd_fee_amt
+                , IFNULL(SUM(rm_wd_base_amt), 0)            AS rm_wd_base_amt
+                , IFNULL(SUM(rm_sub_amt), 0)                AS rm_sub_amt
+                , IFNULL(SUM(rm_remit_amt), 0)              AS rm_remit_amt
+                , IFNULL(SUM(rm_exc_remit_amt), 0)          AS rm_exc_remit_amt
+                , IFNULL(SUM(rm_remit_tot_amt), 0)          AS rm_remit_tot_amt
+                , IFNULL(SUM(dp_conf_amt_sum), 0)           AS dp_conf_amt_sum
+                , IFNULL(SUM(dp_card_resv_amt), 0)          AS dp_card_resv_amt
+                , IFNULL(SUM(dp_resv_base_amt), 0)          AS dp_resv_base_amt
+                , IFNULL(SUM(dp_resv_svc_amt), 0)           AS dp_resv_svc_amt
+                , IFNULL(SUM(dp_resv_crd_amt), 0)           AS dp_resv_crd_amt
+                , IFNULL(SUM(dp_bank_in_amt), 0)            AS dp_bank_in_amt
+                , IFNULL(SUM(dp_bank_in_base_amt), 0)       AS dp_bank_in_base_amt
+                , IFNULL(SUM(dp_bank_in_crd_amt), 0)        AS dp_bank_in_crd_amt
+                , IFNULL(SUM(op_bank_in_amt), 0)            AS op_bank_in_amt
+                , IFNULL(SUM(op_bank_in_base_amt), 0)       AS op_bank_in_base_amt
+                , IFNULL(SUM(op_bank_in_svc_amt), 0)        AS op_bank_in_svc_amt
+                , IFNULL(SUM(op_bank_in_crd_amt), 0)        AS op_bank_in_crd_amt
+                , IFNULL(SUM(op_send_gap_amt), 0)           AS op_send_gap_amt
+                , IFNULL(SUM(op_remit_trans_fee), 0)        AS op_remit_trans_fee
+                , IFNULL(SUM(op_send_exc_amt), 0)           AS op_send_exc_amt
+                , IFNULL(SUM(op_send_sub_amt), 0)           AS op_send_sub_amt
+                , IFNULL(SUM(DC.tot_use_amt), 0)            AS tot_use_amt  
+          FROM 	TB_DAY_CLOSE_REPORT DC
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO 
+        <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
+			AND  TC.CORP_CD =  #{sch_corp_cd} 
+	    </if>                   
+        <choose>
+            <when test='userCorpType == "LN"'>
+                AND TC.CORP_CD = #{userCorpCd}
+            </when>
+            <when test='userCorpType == "OP"'>
+                AND 1 = 1
+            </when>
+            <when test='userCorpType == "AG"'>
+                AND TC.AGENCY_CD = #{userCorpCd}
+            </when>
+            <otherwise>
+                AND  1 = 0
+            </otherwise>
+        </choose>                        
+         WHERE  CLOSE_DATE BETWEEN DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 15 DAY), '%Y-%m-%d') 
+                               AND DATE_FORMAT(NOW(), '%Y-%m-%d') 
+         GROUP  BY DC.CLOSE_DATE
+         ORDER  BY DC.CLOSE_DATE DESC
+    </select>
+
+    <select id="getBoardList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT  SQL_CALC_FOUND_ROWS
+                tb.board_seq
+                , tb.board_tp
+                , GET_CODE_NM('BOARD_TP', BOARD_TP) as brd_tp_nm
+                , tb.view_corp 
+                , tb.title 
+                , tb.conts 
+                , tb.use_yn 
+                , tb.popup_yn 
+                , IFNULL(tb.view_cnt, 0) as view_cnt
+				, DATE_FORMAT(IFNULL(tb.upt_dttm, tb.ent_dttm), '%Y-%m-%d')  		as upt_dt
+                , DATE_FORMAT(IFNULL(tb.upt_dttm, tb.ent_dttm), '%Y-%m-%d %H:%i')  as upt_dttm
+                , IFNULL(tb.upt_user_id, tb.ent_user_id)                           as upt_user_id
+		FROM 	tb_board tb	
+		 WHERE  1 = 1		 
+           AND  tb.view_corp IN ('ALL', #{userCorpCd})
+		<if test="srch_brd_tp != '' and srch_brd_tp != null">
+			AND tb.board_tp = #{srch_brd_tp}
+		</if>
+          AND   tb.use_yn =     'Y'
+		<choose>
+			<when test="sidx != ''">
+				ORDER BY ${sidx} ${sord}
+			</when>
+			<otherwise>
+				ORDER BY tb.ent_dttm DESC
+			</otherwise>
+		</choose>
+		LIMIT ${start}, ${end}
 	</select>
 
 </mapper>

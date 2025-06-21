@@ -44,8 +44,11 @@ public class DailyReportController {
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
         HashMap<String, Object> totalSumm = new HashMap<String, Object>();
         Gson gson = new Gson();
-        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");        
         hashmapParam.put("user_id", member.getUserId());
+        hashmapParam.put("userCorpCd", member.getUserCorpCd());
+		hashmapParam.put("userCorpType", member.getUserCorpType());
+		// System.out.println(hashmapParam.get("userCorpCd"));
         String jString = null; 
         try {
             PageingVO pageing = new PageingVO();
@@ -86,6 +89,8 @@ public class DailyReportController {
         Gson gson = new Gson();
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
+        hashmapParam.put("userCorpCd", member.getUserCorpCd());
+		hashmapParam.put("userCorpType", member.getUserCorpType());
         String jString = null; 
         try {
             PageingVO pageing = new PageingVO();
@@ -119,8 +124,11 @@ public class DailyReportController {
     }
 
     @RequestMapping(value = "dayReport/downExcel", method = RequestMethod.POST)
-    public ResponseEntity<byte[]> getDailySummaryToExcel(@RequestBody HashMap<String, Object> hashmapParam) {
+    public ResponseEntity<byte[]> getDailySummaryToExcel(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
         try {
+            hashmapParam.put("userCorpCd", member.getUserCorpCd());
+		    hashmapParam.put("userCorpType", member.getUserCorpType());
             // Fetch data for the Excel file
             hashmapParam.put("sidx", "");
             hashmapParam.put("sord", "");
@@ -316,9 +324,11 @@ public class DailyReportController {
     } 
 
     @RequestMapping(value = "dayReport/downListExcel", method = RequestMethod.POST)
-    public ResponseEntity<byte[]> getDailyListToExcel(@RequestBody HashMap<String, Object> hashmapParam) {
+    public ResponseEntity<byte[]> getDailyListToExcel(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
         try {
-            // Fetch data for the Excel file
+            hashmapParam.put("userCorpCd", member.getUserCorpCd());
+		    hashmapParam.put("userCorpType", member.getUserCorpType());
             hashmapParam.put("sidx", "");
             hashmapParam.put("sord", "");
             hashmapParam.put("start", "0");

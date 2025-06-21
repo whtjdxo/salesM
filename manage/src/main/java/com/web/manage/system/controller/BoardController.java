@@ -117,7 +117,6 @@ public class BoardController {
 
 		try {
 			String cnts = boardVO.getConts();
-
 			result = ValidateUtil.validCheck(bindResult, result);
 			
 			/*
@@ -126,7 +125,7 @@ public class BoardController {
 			}
 			*/
 			
-			int seq = mapper.createBoardSeq();
+			String seq = mapper.createBoardSeq();
 			boardVO.setBoard_seq(String.valueOf(seq));
 			
 			// 첨부파일
@@ -179,13 +178,8 @@ public class BoardController {
 					
 				}
 			}
-			
-			
-
 			boardVO.setConts(StringEscapeUtils.unescapeHtml4(cnts));
-
 			mapper.boardCreate(boardVO);
-
 			result.setResultCode("S000");
 
 		} catch (Exception e) {

@@ -10,6 +10,7 @@
     <script src="/js/jquery.form.js"></script>
     <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />
     <link href="/vendors/dropzone/dropzone.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/custom-salesm.css" />
     <script th:inline="none">
       $(document).ready(function () {
         function resetPreviewArea() {
@@ -59,15 +60,18 @@
             processing: '처리중...',
           },
         });
-        $('#board tbody').on('click', 'tr', function () {
+
+        $('#board').on('click', 'tr', function () {
+           if ($(this).hasClass('selected')) {
+              $(this).removeClass('selected');
+          } else {
+              table.$('tr.selected').removeClass('selected');              
+              $(this).addClass('selected');
+          } 
+
           $('#frm_board_info').clearForm();
-
-          var aca_id = $('#aca_id').val();
-
           var row = table.row(this).data();
-
           $("input:radio[name='use_yn']").prop('checked', false);
-
           $("input:radio[name='use_yn'][value='" + row.use_yn + "']").prop('checked', true);
 
           $('#frm_board_info').autoMapping(row);

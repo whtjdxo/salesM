@@ -847,5 +847,159 @@ function codeSetting(group, data, combo, type, val, multiYn) {
       $(comboArray[k]).children().remove();
       $(comboArray[k]).append('<option value="">데이터가 없습니다</option>');
     }
-  }
+  } 
+}
+ 
+/* *
+ * 실시간 날짜 입력 포맷팅 및 유효성 검사 (완벽 동작 버전)
+ * @param {string|jQuery} input - CSS 선택자 또는 jQuery 객체
+ * @param {string} [errorMessage="정확한 날짜를 입력해주세요"] - 에러 메시지
+ */
+function validateForDateFormat(input, errorMessage) {
+    errorMessage = errorMessage || "정확한 날짜를 입력해주세요";
+    var $input = (typeof input === 'string') ? $(input) : input;
+    if (!$input.length) return;
+
+    $input.on('input', function() {
+        var value = this.value;
+        var selectionStart = this.selectionStart;
+        
+        // 1. 8자리 숫자 → yyyy-mm-dd 자동 변환 (예: 20231231 → 2023-12-31)
+        if (/^\d{8}$/.test(value)) {
+            var formatted = value.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+            this.value = formatted;
+            this.setSelectionRange(formatted.length, formatted.length);
+            validateDate(this, formatted);
+            return;
+        }
+        
+        // 2. 하이픈 포함 시 포맷 검사 (예: 2023/12/31 → 2023-12-31)
+        if (/[\-\/.]/.test(value)) {
+            var formatted = value
+                .replace(/[^\d\-/.]/g, '')
+                .replace(/(\d{4})[\/.](\d{1,2})[\/.](\d{1,2})/, '$1-$2-$3')
+                .replace(/(\d{2})[\/.](\d{1,2})[\/.](\d{1,2})/, '20$1-$2-$3');
+            
+            if (formatted !== value) {
+                this.value = formatted;
+                this.setSelectionRange(formatted.length, formatted.length);
+            }
+            validateDate(this, formatted);
+        }
+    });
+
+    $input.on('blur', function() {
+        var value = this.value;
+        if (!value) return;
+        
+        // 3. 포커스 아웃 시 완성된 형식만 검증
+        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+            validateDate(this, value);
+        } else if (value.trim()) {
+            showError($(this), errorMessage);
+        }
+    });
+
+    function validateDate(element, value) {
+        var $element = $(element);
+        clearError($element);
+        
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
+        
+        var parts = value.split('-');
+        var date = new Date(parts[0], parts[1]-1, parts[2]);
+        if (isNaN(date) || date.getDate() != parts[2]) {
+            showError($element, errorMessage);
+        }
+    }
+
+    function showError($element, message) {
+        $element.addClass('error');
+        if (!$element.next('.error-message').length) {
+            $element.after('<span class="error-message" style="color:red;font-size:12px;">'+message+'</span>');
+        }
+    }
+
+    function clearError($element) {
+        $element.removeClass('error');
+        $element.next('.error-message').remove();
+    }
+}
+
+/* *
+ * 사업자번호 입력 필드 자동 포맷팅 및 유효성 검사
+ * @param {jQuery} $input - jQuery 선택자 (예: $('#bizNoInput'))
+ * @param {string} [errorMessage="올바른 사업자번호를 입력해주세요"] - 유효하지 않을 때 표시할 메시지
+ */ 
+function validateForBizFormat(input, errorMessage) {
+    errorMessage = errorMessage || "올바른 사업자번호를 입력해주세요";
+    
+    // jQuery 객체로 변환
+    var $input = (typeof input === 'string') ? $(input) : input;
+    
+    // jQuery 객체인지 확인
+    if (!$input || !$input.on) {
+        console.error('유효한 jQuery 객체 또는 선택자를 제공해주세요');
+        return;
+    }
+
+    // 입력 시 자동 하이픈 처리
+    $input.on('input', function(e) {
+        var value = $(this).val().replace(/[^0-9]/g, '');
+        if (value.length > 10) value = value.substring(0, 10);
+        
+        if (value.length >= 3 && value.length <= 5) {
+            value = value.replace(/(\d{3})(\d{1,2})/, '$1-$2');
+        } else if (value.length > 5) {
+            value = value.replace(/(\d{3})(\d{2})(\d{1,5})/, '$1-$2-$3');
+        }
+        $(this).val(value);
+    });
+
+    // 포커스 아웃 시 최종 검증
+    $input.on('blur', function() {
+        var value = $(this).val().replace(/-/g, '');
+        
+        if (value.length === 0) {
+            clearError($(this));
+            return;
+        }
+
+        if (value.length !== 10 || !isValidBizNo(value)) {
+            showError($(this), errorMessage);
+        } else {
+            clearError($(this));
+            // 최종 하이픈 포맷팅 (3-2-5)
+            $(this).val(value.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3'));
+        }
+    });
+
+    // 사업자번호 유효성 검사 (체크섬 계산)
+    function isValidBizNo(bizNo) {
+        if (!/^\d{10}$/.test(bizNo)) return false;
+        
+        var key = [1, 3, 7, 1, 3, 7, 1, 3, 5];
+        var sum = 0;
+        
+        for (var i = 0; i < 9; i++) {
+            sum += (parseInt(bizNo.charAt(i)) * key[i]) % 10;
+        }
+        
+        sum += Math.floor((parseInt(bizNo.charAt(8)) * 5) / 10);
+        var checkDigit = (10 - (sum % 10)) % 10;
+        
+        return checkDigit === parseInt(bizNo.charAt(9));
+    }
+
+    function showError($element, message) {
+        $element.addClass('error');
+        if ($element.next('.error-message').length === 0) {
+            $element.after('<span class="error-message" style="color:red;font-size:12px;">' + message + '</span>');
+        }
+    }
+
+    function clearError($element) {
+        $element.removeClass('error');
+        $element.next('.error-message').remove();
+    }
 }

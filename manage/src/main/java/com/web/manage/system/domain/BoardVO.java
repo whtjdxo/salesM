@@ -18,7 +18,7 @@ public class BoardVO implements Serializable{
 	
 	private String board_seq;
 	private String board_tp;
-	private String view_aca;
+	private String view_corp;
 	private String title;
 	private String conts;
 	private String use_yn;

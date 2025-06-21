@@ -68,6 +68,8 @@
                 , IFNULL(TC.AUTO_REMIT_YN, '')      AS  auto_remit_yn
                 , IFNULL(TC.SVC_STAT, '')           AS  svc_stat
                 , GET_CODE_NM('SVC_STAT', TC.SVC_STAT)       AS svc_stat_nm
+                , IFNULL(TC.CONT_TP, '')           AS  cont_tp
+                , GET_CODE_NM('CONT_TP', TC.CONT_TP)       AS cont_tp_nm
                 , IFNULL(TC.CONT_DT, '')            AS  cont_dt
                 , IFNULL(TC.SVC_START_DT, '')       AS  svc_start_dt
                 , IFNULL(TC.SVC_END_DT, '')         AS  svc_end_dt
@@ -147,6 +149,9 @@
             </when>
             <when test='userCorpType == "OP"'>
                 AND 1 = 1
+            </when>
+            <when test='userCorpType == "AG"'>
+                AND TC.AGENCY_CD = #{userCorpCd}
             </when>
             <otherwise>
                 AND  1 = 0
@@ -231,6 +236,7 @@
                 <!-- , AUTO_REMIT_YN       = #{auto_remit_yn} -->
                 , CONT_DT             = #{cont_dt}
                 , SVC_STAT            = #{svc_stat}
+                , CONT_TP             = #{cont_tp}
                 , SVC_START_DT        = #{svc_start_dt}
                 , SVC_END_DT          = #{svc_end_dt}
                 , CRD_FEE_RATE        = #{crd_fee_rate}

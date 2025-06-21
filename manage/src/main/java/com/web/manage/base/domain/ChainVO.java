@@ -57,6 +57,7 @@ public class ChainVO {
     private String bbank_check_dt;
     private String auto_remit_yn;
     private String svc_stat;
+    private String cont_tp;
     private String cont_dt;
     private String svc_start_dt;
     private String svc_end_dt;
