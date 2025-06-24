@@ -297,7 +297,7 @@
                         , IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
                         , IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
                         , IFNULL(WD.REMIT_NO, '')       AS remit_seq
-                        , IFNULL(WD.REMIT_DATE, '')     AS remit_date
+                        , IFNULL(WD.REMIT_DT, '')     AS remit_dt
                         , IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
                         , IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
                         , IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg
@@ -394,7 +394,7 @@
                         , RM.REMIT_NO                                           AS remit_no
                         , RM.REMIT_STATUS                                       AS remit_status    
                         , GET_CODE_NM('WD_STATUS', RM.REMIT_STATUS)             AS remit_status_nm
-                        , RM.REMIT_DATE	                                        AS remit_date
+                        , RM.REMIT_DT	                                        AS remit_dt
                         , RM.CONF_AMT                                           AS conf_amt        
                         , RM.CARD_FEE_AMT                                       AS card_fee_amt
                         , RM.CARD_RESV_AMT                                      AS card_resv_amt
@@ -433,7 +433,7 @@
                         JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID  
                         JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
                                         AND CO.USE_YN = 'Y'
-                 WHERE	RM.REMIT_DATE BETWEEN #{sch_remit_dt}
+                 WHERE	RM.REMIT_DT BETWEEN #{sch_remit_dt}
                                           AND #{sch_remit_dt}
                 <choose>
                         <when test="sidx != ''">
@@ -483,7 +483,7 @@
                         JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID  
                         JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
                                         AND CO.USE_YN = 'Y'
-                 WHERE	RM.REMIT_DATE BETWEEN #{sch_remit_dt}
+                 WHERE	RM.REMIT_DT BETWEEN #{sch_remit_dt}
                                           AND #{sch_remit_dt}
         </select>
 
@@ -522,7 +522,7 @@
                         , IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
                         , IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
                         , IFNULL(WD.REMIT_NO, '')       AS remit_seq
-                        , IFNULL(WD.REMIT_DATE, '')     AS remit_date
+                        , IFNULL(WD.REMIT_DT, '')     AS remit_dt
                         , IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
                         , IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
                         , IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg

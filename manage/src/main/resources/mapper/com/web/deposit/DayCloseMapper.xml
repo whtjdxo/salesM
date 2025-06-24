@@ -160,7 +160,7 @@
                                 FROM 	TB_SUB_RECEIVE
                                 GROUP 	BY REMIT_NO
                             ) T2 ON T2.REMIT_NO = T1.REMIT_NO
-                    WHERE	T1.REMIT_DATE = #{close_date}
+                    WHERE	T1.REMIT_DT = #{close_date}
                     GROUP	BY T1.CHAIN_NO
                 ) RM ON RM.CHAIN_NO = TC.CHAIN_NO
                 LEFT OUTER JOIN (
@@ -439,7 +439,7 @@
                                 FROM 	TB_SUB_RECEIVE
                                 GROUP 	BY REMIT_NO
                             ) T2 ON T2.REMIT_NO = T1.REMIT_NO
-                    WHERE	T1.REMIT_DATE = #{close_date}
+                    WHERE	T1.REMIT_DT = #{close_date}
                     GROUP	BY T1.CHAIN_NO
                 ) RM ON RM.CHAIN_NO = TC.CHAIN_NO
                 LEFT OUTER JOIN (

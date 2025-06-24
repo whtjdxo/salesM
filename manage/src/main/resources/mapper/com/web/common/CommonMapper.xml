@@ -132,6 +132,10 @@
     SELECT GET_NEXT_WORKDAY(DATE_FORMAT(NOW(), '%Y-%m-%d')) AS next_workday
 	</select>
 
+  <select id="getNearWorkDay" parameterType="java.util.HashMap" resultType="String">
+    SELECT GET_NEAR_WORKDAY(DATE_FORMAT(NOW(), '%Y-%m-%d')) AS near_workday
+	</select>
+
   <select id="getToDay" parameterType="java.util.HashMap" resultType="String">
     SELECT DATE_FORMAT(NOW(), '%Y-%m-%d') AS to_day
 	</select>

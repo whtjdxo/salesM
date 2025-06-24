@@ -116,6 +116,27 @@ public class MainController {
         return jString;  
     }
 
+    @RequestMapping(value = "/salesTrend", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO getSalesTrend(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();  
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+		hashmapParam.put("userCorpCd", member.getUserCorpCd());
+		hashmapParam.put("userCorpType", member.getUserCorpType());  
+
+        ReturnDataVO result = new ReturnDataVO();
+		try {
+			list = mainService.getSalesTrend(hashmapParam);
+			result.setResultCode("S000");
+			result.setData(list);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result; 
+    }
+
 	@RequestMapping(value = "/boardList", method = RequestMethod.POST)
     public @ResponseBody String getBoardList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();

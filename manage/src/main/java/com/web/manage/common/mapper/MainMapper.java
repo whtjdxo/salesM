@@ -12,6 +12,7 @@ public interface MainMapper {
     
     HashMap<String, Object> getSalesSummary(HashMap<String, Object> hashmapParam); 
     HashMap<String, Object> getDepositSummary(HashMap<String, Object> hashmapParam); 
+    List<HashMap<String, Object>> getSalesTrend(HashMap<String, Object> hashmapParam);    
     List<HashMap<String, Object>> getDailySummaryList(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getBoardList(HashMap<String, Object> hashmapParam);
 

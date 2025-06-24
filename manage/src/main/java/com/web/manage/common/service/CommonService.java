@@ -50,6 +50,10 @@ public class CommonService {
         return commonMapper.getNextWorkDay();
     }
 
+    public String getNearWorkDay() {
+        return commonMapper.getNearWorkDay();
+    }
+
     public String getToDay() {
         return commonMapper.getToDay();
     }

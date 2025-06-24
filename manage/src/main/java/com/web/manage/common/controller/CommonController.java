@@ -193,6 +193,24 @@ public class CommonController {
 		return result;
 	}
 
+	@RequestMapping(value="/getNearWorkDay")
+	public @ResponseBody ReturnDataVO getNearWorkDay(@RequestParam HashMap<String, String> hashmapParam){
+		String nDate ="";
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+			nDate = commonService.getNearWorkDay();
+			result.setResultCode("S000");
+			result.setData(nDate);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	
+
 	@RequestMapping(value="/getToDay")
 	public @ResponseBody ReturnDataVO getToDay(@RequestParam HashMap<String, String> hashmapParam){
 		String nDate ="";

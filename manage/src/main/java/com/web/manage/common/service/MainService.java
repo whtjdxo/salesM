@@ -31,8 +31,12 @@ public class MainService {
     } 
 
     public HashMap<String, Object> getDepositSummary(HashMap<String, Object> hashmapParam) {
-        return mainMapper.getDepositSummary(hashmapParam);
+        return mainMapper.getDepositSummary(hashmapParam);    
     } 
+
+    public List<HashMap<String, Object>> getSalesTrend(HashMap<String, Object> hashmapParam) {
+        return mainMapper.getSalesTrend(hashmapParam); 
+    }
 
     public List<HashMap<String, Object>> getDailySummaryList(HashMap<String, Object> hashmapParam) {
         return mainMapper.getDailySummaryList(hashmapParam); 

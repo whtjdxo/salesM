@@ -197,7 +197,7 @@
 				, IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
 				, IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
 				, IFNULL(WD.REMIT_NO, '')       AS remit_seq
-				, IFNULL(WD.REMIT_DATE, '')    	AS remit_date
+				, IFNULL(WD.REMIT_DT, '')    	AS remit_dt
 				, IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
 				, IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
 				, IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg
@@ -399,7 +399,7 @@
 				, IFNULL(T2.CHAIN_AMT, 0)									AS chain_depo_amt
 				, IFNULL(T3.CREDIT_AMT, 0)									AS credit_depo_amt
 				, CASE WHEN T1.ABANK_CD = '039' THEN 0
-						ELSE IFNULL(T2.CHAIN_AMT, 0) - IFNULL(T3.CREDIT_AMT, 0) END 	AS gap_amt			
+						ELSE IFNULL(T3.CREDIT_AMT, 0) - IFNULL(T2.CHAIN_AMT, 0) END 	AS gap_amt			
 				, IFNULL(T4.CRD_REMIT_FEE_AMT, 0)							AS crd_remit_fee_amt
 				, IFNULL(T4.CRD_UNREMIT_SUB_AMT, 0)							AS crd_unremit_sub_amt
 				, IFNULL(T5.CRD_EXC_AMT, 0)									AS crd_exc_amt
@@ -482,7 +482,7 @@
 				, IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
 				, IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
 				, IFNULL(WD.REMIT_NO, '')       AS remit_seq
-				, IFNULL(WD.REMIT_DATE, '')    	AS remit_date
+				, IFNULL(WD.REMIT_DT, '')    	AS remit_dt
 				, IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
 				, IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
 				, IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg

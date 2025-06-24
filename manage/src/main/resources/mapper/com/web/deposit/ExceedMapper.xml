@@ -75,7 +75,7 @@
 				, EM.EXC_STATUS 							AS exc_status
 				, GET_CODE_NM('EXC_STATUS', EM.EXC_STATUS)  AS exc_status_nm
 				, EM.EXC_DATE								AS exc_date
-				, IFNULL(RM.REMIT_DATE, '')					AS remit_date
+				, IFNULL(RM.REMIT_DT, '')					AS remit_dt
 				, IFNULL(OCCUR_AMT, 0) 						AS occur_amt 
 				, IFNULL(ISSUE_AMT, 0) 						AS issue_amt
 				, IFNULL(REMAIN_AMT, 0) 					AS remain_amt 
@@ -144,7 +144,7 @@
 				, EM.EXC_STATUS 							AS exc_status
 				, GET_CODE_NM('EXC_STATUS', EM.EXC_STATUS)  AS exc_status_nm
 				, EM.EXC_DATE								AS exc_date
-				, IFNULL(RM.REMIT_DATE, '')					AS remit_date
+				, IFNULL(RM.REMIT_DT, '')					AS remit_dt
 				, IFNULL(OCCUR_AMT, 0) 						AS occur_amt 
 				, IFNULL(ISSUE_AMT, 0) 						AS issue_amt
 				, IFNULL(REMAIN_AMT, 0) 					AS remain_amt 

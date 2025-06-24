@@ -36,7 +36,7 @@
 						, IFNULL(SUM(RM.SUB_AMT), 0)             	AS SUB_AMT 
 						, IFNULL(SUM(RM.REMIT_AMT), 0)            	AS REMIT_TOT_AMT 
 				  FROM 	TB_REMIT_MST RM
-				 WHERE 	RM.REMIT_DATE = DATE_FORMAT(NOW(), '%Y-%m-%d') 
+				 WHERE 	RM.REMIT_DT = #{sch_work_date}  
  				   <!-- AND  CHAIN_NO = #chainNo#		      -->
 				 GROUP 	BY CHAIN_NO
 				 UNION 	ALL 
@@ -66,7 +66,7 @@
 								, IFNULL(SUM(WD_BASE_AMT), 0)          AS WD_BASE_AMT 
 								, IFNULL(SUM(REMIT_AMT), 0)           AS REMIT_TOT_AMT 
 						  FROM  TB_WITHDRAW WD  		
-						 WHERE 	WORK_DATE = DATE_FORMAT(NOW(), '%Y-%m-%d') 
+						 WHERE 	WORK_DATE = #{sch_work_date}
 						   <!-- AND 	CHAIN_NO = #chainNo# -->
 					       AND 	REMIT_NO IS NULL
 						   AND 	USE_YN    = 'Y'
@@ -113,14 +113,14 @@
     <select id="getDepositSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
         SELECT 	IFNULL(SUM(CARD_RESV_AMT), 0)		                        AS card_resv_amt
                 , IFNULL(SUM(DEPO_AMT), 0)				                    AS depo_amt
-                , IFNULL(SUM(CARD_RESV_AMT), 0) - IFNULL(SUM(DEPO_AMT), 0)	AS gap_amt
+                , IFNULL(SUM(DEPO_AMT), 0) -IFNULL(SUM(CARD_RESV_AMT), 0)  	AS gap_amt
         FROM 	(		
                     SELECT 	WD.CHAIN_NO
                             , WD.CARD_ACQ
                             , SUM(WD.CARD_RESV_AMT) AS CARD_RESV_AMT
                             , NULL					AS DEPO_AMT
                     FROM	TB_WITHDRAW WD    
-                    WHERE 	WD.CARD_RESV_DATE = DATE_FORMAT(NOW(), '%Y-%m-%d') 
+                    WHERE 	WD.CARD_RESV_DATE = #{sch_work_date}
                     AND	WD.USE_YN = 'Y'
                     GROUP 	BY WD.CHAIN_NO, WD.CARD_ACQ 
                     UNION  ALL 
@@ -128,7 +128,7 @@
                             , NULL
                             , SUM(IN_AMT) AS DEPO_AMT
                     FROM 	TB_CHAIN_DEPOSIT_LIST
-                    WHERE BANK_IN_DATE = DATE_FORMAT(NOW(), '%Y-%m-%d') 
+                    WHERE BANK_IN_DATE = #{sch_work_date}
                     GROUP BY CHAIN_NO, CARD_ACQ 
                 ) VT
                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = VT.CHAIN_NO
@@ -206,6 +206,42 @@
                                AND DATE_FORMAT(NOW(), '%Y-%m-%d') 
          GROUP  BY DC.CLOSE_DATE
          ORDER  BY DC.CLOSE_DATE DESC
+    </select>
+
+    <select id="getSalesTrend" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT 	SQL_CALC_FOUND_ROWS
+                DC.CLOSE_DATE                               AS close_date				
+                , IFNULL(FLOOR(SUM(rm_remit_cnt) / 1000), 0)         AS rm_remit_cnt
+                , IFNULL(FLOOR(SUM(rm_conf_amt) / 1000), 0)          AS rm_conf_amt
+                , IFNULL(FLOOR(SUM(rm_remit_amt) / 1000), 0)         AS rm_remit_amt
+                , IFNULL(FLOOR(SUM(dp_card_resv_amt) / 1000), 0)     AS dp_card_resv_amt
+                , IFNULL(FLOOR(SUM(dp_bank_in_amt) / 1000) , 0)       AS dp_bank_in_amt                
+          FROM 	TB_DAY_CLOSE_REPORT DC
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO 
+        <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
+			AND  TC.CORP_CD =  #{sch_corp_cd} 
+	    </if>                   
+        <choose>
+            <when test='userCorpType == "LN"'>
+                AND TC.CORP_CD = #{userCorpCd}
+            </when>
+            <when test='userCorpType == "OP"'>
+                AND 1 = 1
+            </when>
+            <when test='userCorpType == "AG"'>
+                AND TC.AGENCY_CD = #{userCorpCd}
+            </when>
+            <when test='userCorpType == "CH"'>
+                AND TC.CHAIN_NO = #{userCorpCd}
+            </when>
+            <otherwise>
+                AND  1 = 0
+            </otherwise>
+        </choose>                        
+         WHERE  CLOSE_DATE BETWEEN DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 30 DAY), '%Y-%m-%d') 
+                               AND DATE_FORMAT(NOW(), '%Y-%m-%d') 
+         GROUP  BY DC.CLOSE_DATE
+         ORDER  BY DC.CLOSE_DATE ASC
     </select>
 
     <select id="getBoardList" parameterType="java.util.HashMap" resultType="java.util.HashMap">

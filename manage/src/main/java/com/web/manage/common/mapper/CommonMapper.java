@@ -22,6 +22,7 @@ public interface CommonMapper {
 
     String getPreWorkDay();
     String getNextWorkDay();
+    String getNearWorkDay();
     String getToDay();
 
 }
