@@ -189,7 +189,7 @@
                 , LM.INT_AMT                        AS int_amt
                 , LM.TOT_LOAN_AMT                   AS tot_loan_amt
                 , IFNULL(SC.RECV_AMT, 0)            AS recv_amt
-                , IFNULL(SC.RECV_AMT, 0)            AS remain_amt
+                , IFNULL(SC.REMAIN_AMT, 0)          AS remain_amt
                 , LM.DELAY_RATE                     AS delay_rate 
                 , CASE WHEN LM.DELAY_YN = 'Y' THEN '연체 중' ELSE '정상' END                 AS delay_yn
                 , IFNULL(LM.DELAY_CNT, 0)           AS delay_cnt
@@ -395,12 +395,12 @@
     <update id="callProcLoanPrepay" parameterType="com.web.manage.loan.domain.ProcPrepayVO" statementType="CALLABLE">
 		{ 
 				CALL PRC_LOAN_PREPAY(
-						#{loanNo, mode=IN, jdbcType=VARCHAR} 
-						, #{recpDate, mode=IN, jdbcType=VARCHAR}
-                        , #{memo, mode=IN, jdbcType=VARCHAR}
-						, #{userId, mode=IN, jdbcType=VARCHAR}
-						, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-						, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+						#{prepay_loan_no        , mode=IN, jdbcType=VARCHAR} 
+						, #{prepay_recv_date   , mode=IN, jdbcType=VARCHAR}
+                        , #{prepay_memo        , mode=IN, jdbcType=VARCHAR}
+						, #{prepay_user_id     , mode=IN, jdbcType=VARCHAR}
+						, #{resultCode  , mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+						, #{resultMsg   , mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
 				) 
 		}
 	</update>

@@ -18,7 +18,6 @@
       $(document).ready(function () {
         $('#frm_chain_list').onLoadFunction();
         $('#frm_loan_mst').onLoadFunction(); 
-        $('#frm_prepay').onLoadFunction(); 
         $('#frm_sch_counsel').onLoadFunction(); 
         $('#frm_counsel_mst').onLoadFunction(); 
 
@@ -59,7 +58,6 @@
         $('#sch_cont_edt').val(toDay); 
         $('#cont_dt').val(toDay); 
         $('#loan_sdt').val(toDay); 
-        $('#prepay_recv_date').val(toDay); 
         $('#counsel_dt').val(toDay); 
 
         var tbl_loan_summary = $('#tbl_loan_summary').DataTable({
@@ -101,16 +99,16 @@
                 , { data: 'remit_stat_nm' }
               ],
             columnDefs: [
-             { targets: 0, width: '120px', className: 'text-left' }
+             { targets: 0, width: '120px', className: 'text-center' }
             , { targets: 1, width: '120px', className: 'text-center' }
-            , { targets: 2, width: '70px', className: 'text-center' }
+            , { targets: 2, width: '90px', className: 'text-center' }
             , { targets: 3, width: '110px', className: 'text-right' }
             , { targets: 4, width: '110px', className: 'text-right' }
-            , { targets: 5, width: '100px', className: 'text-right' }
-            , { targets: 6, width: '90px', className: 'text-right' }
+            , { targets: 5, width: '110px', className: 'text-right' }
+            , { targets: 6, width: '110px', className: 'text-right' }
             , { targets: 7, width: '110px', className: 'text-right' }
-            , { targets: 8, width: '50px', className: 'text-center' }
-            , { targets: 9, width: '50px', className: 'text-center' }
+            , { targets: 8, width: '90px', className: 'text-center' }
+            , { targets: 9, width: '90px', className: 'text-center' }
           ],
           order: [[0, 'desc']],
           paging: true,
@@ -188,12 +186,6 @@
           fn_frm_counsel_reset();
         });
 
-        $('#btn_list_search').click(function () {
-          tbl_chain_loan_list.ajax.reload(); 
-          fn_frm_loan_mst_clear();
-          fn_frm_counsel_reset();
-        });
-
         // --------------------------------------------------------------- frm_chain_list 정보 처리 ---------------------------------------------------
         var tbl_chain_loan_list = $('#tbl_chain_loan_list').DataTable({
             processing: true,
@@ -242,7 +234,7 @@
                   , { targets: 7, width: '100px', className: 'text-center' }
 
             ],
-            order: [[0, 'desc']],
+            order: [[1, 'desc']],
             paging: true,
             lengthChange: false,
             searching: false,
@@ -289,7 +281,7 @@
           isListClick = true;
           if (data) {
             $('#frm_loan_mst')[0].reset();
-            $('#loan_no').val(data.loan_no);             
+            $('#loan_no').val(data.loan_no); 
             $('#corp_cd').val(data.corp_no);
             $('#corp_nm').val(data.corp_nm);
             $('#chain_no').val(data.chain_no);
@@ -314,10 +306,6 @@
             $('#upt_dttm').val(data.upt_dttm);
             $('#upt_user_id').val(data.upt_user_id);
 
-            $('#frm_prepay')[0].reset();
-            $('#prepay_recv_date').val(toDay); 
-            $('#prepay_loan_no').val(data.loan_no); 
-
 
             $('#cont_dt').prop('readonly', true).addClass('bg-light');
             $('#princ_amt').prop('readonly', true).addClass('bg-light');
@@ -335,11 +323,9 @@
             //   $('#princ_amt').prop('readonly', false);
             // }
 
-            
-
             $('#crud').val('update');
             $('#btn_delete').show();
-            $('#btn_prepay_view').show();
+            $('#btn_prepay').show();
             $('#btn_create').hide();
             isListClick = false;
           }
@@ -376,7 +362,7 @@
 
           $('#crud').val('create');
           $('#btn_delete').hide();
-          $('#btn_prepay_view').hide();
+          $('#btn_prepay').hide();
           $('#btn_create').show();
         }
 
@@ -448,7 +434,7 @@
           if (checked) {
             ConfirmdialogToAjax('create', '/loan/loan/loanMng/insertLoanMst', $('#frm_loan_mst').serialize(), fn_return_result);
           }
-        }); 
+        });
 
         // loan_type 변경 시 대출종료일 제어
         $('#loan_type').on('change', function () {
@@ -540,50 +526,12 @@
               return;
             }
             $('#crud').val('delete');
-            ConfirmdialogToAjax('delete', '/loan/loan/loanMng/deleteLoanMst', $('#frm_loan_mst').serialize(), fn_return_result); 
+            ConfirmdialogToAjax('update', '/loan/loan/loanMng/deleteLoanMst', $('#frm_loan_mst').serialize(), fn_return_result); 
           } else {
             swal('실패', "대출건을 먼저 선택해주세요.", 'error'); 
             return;
           } 
         });
-
-        $('#btn_prepay_view').click(function () {
-          if ($('#chain_no').val() == "" )  {
-            swal('확인', "가맹점을 선택 하세요", 'error');
-            return ;
-          }
-          $('#modal_prepay').modal('show'); // Show the modal
-        });
-
-        $('#btn_prepay').click(function () {
-          var selectData = tbl_chain_loan_list.row('.selected').data();
-          if (selectData) {             
-            var loan_no = $('#loan_no').val();
-            if(loan_no == '') {
-              swal('실패', "대출건을 먼저 선택해주세요.", 'error');
-              return;
-            }            
-            ConfirmdialogToAjax('execute', '/loan/loan/loanMng/procLoanPrepay', $('#frm_loan_mst').serialize(), fn_prepay_result); 
-          } else {
-            swal('실패', "대출건을 먼저 선택해주세요.", 'error'); 
-            return;
-          } 
-        });
-
-        function fn_prepay_result(data) {
-          var resultCode = data.resultCode;
-          var resultMsg = data.resultMsg;
-
-          if (resultCode == 'S000') {
-            $('#modal_prepay').modal('hide');
-            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');            
-            tbl_loan_summary.ajax.reload();
-            tbl_chain_loan_list.ajax.reload();
-            fn_frm_loan_mst_clear();
-          } else { 
-            swal('실패', resultMsg, 'error');
-          }
-        } 
 
         function fn_return_result(data) {
           var resultCode = data.resultCode;
@@ -733,6 +681,15 @@
             $('#btn_counsel_create').hide();
           }
         });
+
+        // // 모달이 닫힐 때 포커스 복원
+        // $('#modal_counsel').on('hidden.bs.modal', function() {
+        //   var triggerElement = $(this).data('trigger-element');
+        //   if (triggerElement) {
+        //     $(triggerElement).focus();
+        //   } 
+        //   return true; // 모달 닫기 허용
+        // });
 
         $('#btn_counsel_clear').click(function () {
           fn_frm_counsel_reset();
@@ -1051,7 +1008,7 @@
                   <tr>
                     <th rowspan="2" class="text-center">가맹점명</th>
                     <th rowspan="2" class="text-center">사업자번호</th>
-                    <th rowspan="2" class="text-center">대표자</th>
+                    <th rowspan="2" class="text-center">대표자명</th>
                     <th rowspan="2" class="text-center">즉결잔고</th>
                     <th colspan="3" class="text-center">대출</th>
                     <th rowspan="2" class="text-center">대출잔액</th>
@@ -1113,7 +1070,7 @@
                       <select class="form-select form-control-sm" id="sch_loan_status" name="sch_loan_status" style="width: 100px">
                         <option value="">선택</option> 
                       </select>
-                      <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_list_search" name="btn_list_search">조회</button></span> 
+                      <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
                     </div>
                   </div>
                 </div>
@@ -1154,7 +1111,7 @@
                   <button class="btn btn-success btn-sm" id="btn_schedule"><i class="fa fa-check"></i>상환일정</button>
                 </div>
                 <div class="col-sm-2">
-                  <button class="btn btn-primary btn-sm" id="btn_prepay_view" style="display: none"><i class="fa fa-check"></i>중도 상환</button> 
+                  <button class="btn btn-primary btn-sm" id="btn_prepay" style="display: none"><i class="fa fa-check"></i>중도 상환</button> 
                 </div>
                 <div class="col-sm-4 text-end">
                     <!-- <button class="btn btn-info text-end" id="btn_counsel"><i class="fa fa-check"></i>상담 관리</button> -->
@@ -1340,6 +1297,7 @@
       <div class="col-lg-6">
         <div class="card" style="height: 300px;">
           <div class="card-body">
+
             <form class="needs-validation" id="frm_counsel_mst" name="frm_counsel_mst" onsubmit="return false;" method="post" novalidate=""> 
               <input id="counsel_no"  type="hidden" name="counsel_no" /> 
               <div class="d-flex justify-content-between align-items-center mt-0 mb-2 fw-bold fs-8 border-bottom pb-1 text-primary">
@@ -1437,38 +1395,4 @@
       </div>
     </div>
   </div>
-
-  <div class="modal fade" id="modal_prepay" tabindex="-1" aria-labelledby="subtractmanage" aria-hidden="true">
-    <div class="modal-dialog modal-md">
-      <div class="modal-content">
-        <form class="needs-validation" novalidate="" id="frm_prepay" name="frm_prepay" onsubmit="return false;">           
-          <input id="prepay_loan_no" type="hidden" name="prepay_loan_no"/>
-          <div class="modal-header">
-            <h5 class="modal-title">중도 상환</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div class="row mb-1">
-              <div class="col-sm-4">
-                <div class="input-group input-group-sm mb-1">
-                  <label class="col-sm-5 col-form-label col-form-label-sm" for="prepay_recv_date">중도상환일</label>
-                  <input class="form-control form-control-sm bg-light" id="prepay_recv_date" type="text" name="prepay_recv_date" readonly/>
-                </div>
-              </div>
-              <div class="col-sm-8">
-                <div class="input-group input-group-sm mb-1">
-                  <label class="col-sm-2 col-form-label col-form-label-sm" for="prepay_memo">메모</label>
-                  <input class="form-control form-control-sm" id="prepay_memo" type="text" name="prepay_memo" maxlength="30" />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-primary" id="btn_prepay" type="submit" aria-label="처리">중도 상환</button>
-            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
-          </div>          
-        </form>
-      </div>
-    </div>
-  </div> 
 </html>

@@ -17,10 +17,11 @@
 				, IFNULL(CONF_AMT, 0) 			as conf_amt
 				, IFNULL(CNCL_AMT, 0) 			as cncl_amt
 				, IFNULL(CARD_FEE_AMT, 0) 		as card_fee_amt
-				, IFNULL(CARD_RESV_AMT, 0) 		as card_resv_amt		
+				, IFNULL(CARD_RESV_AMT, 0) 			as card_resv_amt		
+				, IFNULL(CARD_RESV_AMT_REMIT, 0) 	as card_resv_amt_remit
 				, IFNULL(DEPO_AMT, 0)			as depo_amt
-				, IFNULL(DEPO_GAP_AMT, 0)  		as unrecv_amt
-				, IFNULL(REMIT_RESV_AMT, 0) 	as remit_resv_amt
+				, IFNULL(DEPO_GAP_AMT_REMIT, 0) as depo_gap_amt_remit
+				, IFNULL(DEPO_GAP_AMT, 0)  		as depo_gap_amt				
 				, IFNULL(REMIT_AMT, 0) 			as remit_amt
 		FROM	(              
 					SELECT 	WD.CHAIN_NO 
@@ -32,9 +33,10 @@
 							, SUM(TOT_SALES_AMT)		AS TOT_AMT
 							, SUM(CARD_FEE_AMT)			AS CARD_FEE_AMT
 							, SUM(CARD_RESV_AMT) 		AS CARD_RESV_AMT
-							, SUM(REMIT_RESV_AMT)		AS REMIT_RESV_AMT
+							, SUM(CARD_RESV_AMT_REMIT)	AS CARD_RESV_AMT_REMIT
 							, SUM(DEPO_AMT)				AS DEPO_AMT
-							, SUM(DEPO_GAP_AMT)			AS DEPO_GAP_AMT						
+							, SUM(DEPO_GAP_AMT_REMIT)	AS DEPO_GAP_AMT_REMIT						
+							, SUM(DEPO_GAP_AMT)			AS DEPO_GAP_AMT
 							, SUM(SVC_FEE_AMT)			AS SVC_FEE_AMT
 							, SUM(CRD_FEE_AMT)			AS CRD_FEE_AMT
 							, SUM(WD_BASE_AMT)			AS WD_BASE_AMT
@@ -71,11 +73,12 @@
 				, IFNULL(SUM(CONF_AMT), 0) 			as conf_amt
 				, IFNULL(SUM(CNCL_AMT), 0) 			as cncl_amt
 				, IFNULL(SUM(CARD_FEE_AMT), 0) 		as card_fee_amt
-				, IFNULL(SUM(CARD_RESV_AMT), 0) 	as card_resv_amt		
-				, IFNULL(SUM(DEPO_AMT), 0)			as depo_amt
-				, IFNULL(SUM(DEPO_GAP_AMT), 0)  		as unrecv_amt
-				, IFNULL(SUM(REMIT_RESV_AMT), 0) 	as remit_resv_amt
-				, IFNULL(SUM(REMIT_AMT), 0) 		as remit_amt
+				, IFNULL(SUM(CARD_RESV_AMT), 0) 		as card_resv_amt		
+				, IFNULL(SUM(CARD_RESV_AMT_REMIT), 0) 	as card_resv_amt_remit
+				, IFNULL(SUM(DEPO_AMT), 0)				as depo_amt
+				, IFNULL(SUM(DEPO_GAP_AMT_REMIT), 0) 	as depo_gap_amt_remit
+				, IFNULL(SUM(DEPO_GAP_AMT), 0)  		as depo_gap_amt			
+				, IFNULL(SUM(REMIT_AMT), 0) 			as remit_amt
 		FROM	(              
 					SELECT 	WD.CHAIN_NO 
 							, SUM(TOT_CNT)				AS TOT_CNT
@@ -86,9 +89,10 @@
 							, SUM(TOT_SALES_AMT)		AS TOT_AMT
 							, SUM(CARD_FEE_AMT)			AS CARD_FEE_AMT
 							, SUM(CARD_RESV_AMT) 		AS CARD_RESV_AMT
-							, SUM(REMIT_RESV_AMT)		AS REMIT_RESV_AMT
+							, SUM(CARD_RESV_AMT_REMIT)	AS CARD_RESV_AMT_REMIT
 							, SUM(DEPO_AMT)				AS DEPO_AMT
 							, SUM(DEPO_GAP_AMT)			AS DEPO_GAP_AMT						
+							, SUM(DEPO_GAP_AMT_REMIT)	AS DEPO_GAP_AMT_REMIT	
 							, SUM(SVC_FEE_AMT)			AS SVC_FEE_AMT
 							, SUM(CRD_FEE_AMT)			AS CRD_FEE_AMT
 							, SUM(WD_BASE_AMT)			AS WD_BASE_AMT
@@ -122,10 +126,11 @@
 				, IFNULL(CONF_AMT, 0) 			as conf_amt
 				, IFNULL(CNCL_AMT, 0) 			as cncl_amt
 				, IFNULL(CARD_FEE_AMT, 0) 		as card_fee_amt
-				, IFNULL(CARD_RESV_AMT, 0) 		as card_resv_amt		
+				, IFNULL(CARD_RESV_AMT, 0) 			as card_resv_amt		
+				, IFNULL(CARD_RESV_AMT_REMIT, 0) 	as card_resv_amt_remit
 				, IFNULL(DEPO_AMT, 0)			as depo_amt
-				, IFNULL(DEPO_GAP_AMT, 0)  		as unrecv_amt
-				, IFNULL(REMIT_RESV_AMT, 0) 	as remit_resv_amt
+				, IFNULL(DEPO_GAP_AMT_REMIT, 0) as depo_gap_amt_remit
+				, IFNULL(DEPO_GAP_AMT, 0)  		as depo_gap_amt			
 				, IFNULL(REMIT_AMT, 0) 			as remit_amt
 		FROM	(              
 					SELECT 	WD.CHAIN_NO, WD.CARD_ACQ 
@@ -137,9 +142,10 @@
 							, SUM(TOT_SALES_AMT)		AS TOT_AMT
 							, SUM(CARD_FEE_AMT)			AS CARD_FEE_AMT
 							, SUM(CARD_RESV_AMT) 		AS CARD_RESV_AMT
-							, SUM(REMIT_RESV_AMT)		AS REMIT_RESV_AMT
+							, SUM(CARD_RESV_AMT_REMIT)	AS CARD_RESV_AMT_REMIT
 							, SUM(DEPO_AMT)				AS DEPO_AMT
 							, SUM(DEPO_GAP_AMT)			AS DEPO_GAP_AMT						
+							, SUM(DEPO_GAP_AMT_REMIT)	AS DEPO_GAP_AMT_REMIT							
 							, SUM(SVC_FEE_AMT)			AS SVC_FEE_AMT
 							, SUM(CRD_FEE_AMT)			AS CRD_FEE_AMT
 							, SUM(WD_BASE_AMT)			AS WD_BASE_AMT
@@ -421,6 +427,7 @@
 							, SUM(IN_AMT)       CREDIT_AMT
 					  FROM 	TB_CREDIT_DEPOSIT_LIST
 					 WHERE	BANK_IN_DATE = #{sch_card_resv_date}
+					   AND  TRANS_COMP	= #{sch_card_chain_no}
 					 GROUP 	BY TRANS_COMP, BANK_IN_DATE
 				) T3 ON T3.CHAIN_NO 	= T2.CHAIN_NO
 					AND T3.BANK_IN_DATE = T2.BANK_IN_DATE
@@ -430,6 +437,8 @@
 							, SUM(CASE WHEN SUB_CODE = 'I07001' THEN OCCUR_AMT ELSE NULL END)  CRD_UNREMIT_SUB_AMT              
 					  FROM 	TB_SUB_MST
 					 WHERE 	SUB_CODE  IN ('I06001', 'I07001')
+					   AND  CHAIN_NO	= #{sch_card_chain_no}
+					   AND  REG_DATE 	= #{sch_card_resv_date}
 					   AND 	USE_YN  = 'Y'
 					   AND	SHIFT_FLAG = 'N'					
 					 GROUP 	BY CHAIN_NO, REG_DATE
@@ -438,8 +447,10 @@
 				LEFT OUTER JOIN (
 					SELECT 	CHAIN_NO, EXC_DATE, SUM(OCCUR_AMT)  CRD_EXC_AMT
 					  FROM 	TB_EXCEED_MST
-					 WHERE 	EXC_CODE  = 'I05001'														 
-					   AND 	USE_YN  = 'Y'
+					 WHERE 	EXC_CODE  	= 'I05001'
+					   AND  CHAIN_NO	= #{sch_card_chain_no}
+					   AND  EXC_DATE 	= #{sch_card_resv_date}
+					   AND 	USE_YN  	= 'Y'
 					 GROUP 	BY CHAIN_NO, EXC_DATE
 				) T5 ON T5.CHAIN_NO = T2.CHAIN_NO
 					AND T5.EXC_DATE = T2.BANK_IN_DATE

@@ -510,8 +510,8 @@ public class WithdrawController {
             // Create header row
             Row headerRow = sheet.createRow(0);
             String[] headers = {
-                  "가맹점명"       , "사업자번호"       , "대표자명"          ,  "송금은행"       , "계좌번호"
-                , "송금액"         , "비고"         
+                // 은행명 계좌번호 송금액 예금주 빈칸 빈칸 가맹점명 운영사명
+                "송금은행" , "계좌번호" , "송금액", "예금주", "", "",  "가맹점명"       , "운영사"
             };
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -521,13 +521,17 @@ public class WithdrawController {
             int rowIndex = 1;
             for (HashMap<String, Object> row : list) {
                 Row dataRow = sheet.createRow(rowIndex++);
-                dataRow.createCell(0).setCellValue(String.valueOf(row.get("chain_nm")));
-                dataRow.createCell(1).setCellValue(String.valueOf(row.get("biz_no")));
-                dataRow.createCell(2).setCellValue(String.valueOf(row.get("ceo_nm")));
-                dataRow.createCell(3).setCellValue(String.valueOf(row.get("bbank_nm")));
-                dataRow.createCell(4).setCellValue(String.valueOf(row.get("bbank_account_no")));
-                dataRow.createCell(5).setCellValue(String.valueOf(row.get("remit_amt")));
-                dataRow.createCell(6).setCellValue(String.valueOf(row.get("corp_nm")));            // 송금처:여신사명
+                dataRow.createCell(0).setCellValue(String.valueOf(row.get("bbank_nm")));            // 은행명
+                dataRow.createCell(1).setCellValue(String.valueOf(row.get("bbank_account_no")));    // 계좌번호
+                dataRow.createCell(2).setCellValue(String.valueOf(row.get("remit_amt")));           // 송금액 
+                dataRow.createCell(3).setCellValue(String.valueOf(row.get("ceo_nm")));              // 예금주:대표자명
+                dataRow.createCell(4).setCellValue("");                                                 // 빈칸
+                dataRow.createCell(5).setCellValue("");                                                 // 빈칸
+                dataRow.createCell(6).setCellValue(String.valueOf(row.get("chain_nm")));            // 가맹점명  
+                dataRow.createCell(7).setCellValue(String.valueOf(row.get("corp_nm")));             // 송금처:여신사명
+
+                // dataRow.createCell(0).setCellValue(String.valueOf(row.get("chain_nm")));
+                // dataRow.createCell(1).setCellValue(String.valueOf(row.get("biz_no")));                
             }
 
             // Write workbook to a byte array

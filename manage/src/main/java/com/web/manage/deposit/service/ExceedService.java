@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import com.web.manage.deposit.domain.ExceedMstVO;
+import com.web.manage.deposit.domain.ProcExceedVO;
 import com.web.manage.deposit.mapper.ExceedMapper;
 import com.web.manage.base.domain.ChainCardVO;
 import com.web.manage.common.domain.ReturnDataVO;
@@ -62,6 +63,14 @@ public class ExceedService {
     }
     public boolean updateExceedMst(ExceedMstVO exceedMstVo ) {
         return exceedMapper.updateExceedMst(exceedMstVo); 
+    }
+
+    public boolean setExceedReady(ProcExceedVO procVo) {
+        return exceedMapper.setExceedReady(procVo); 
+    }
+
+    public boolean setExceedReadyAll(ProcExceedVO procVo ) {
+        return exceedMapper.setExceedReadyAll(procVo); 
     }
 
 }

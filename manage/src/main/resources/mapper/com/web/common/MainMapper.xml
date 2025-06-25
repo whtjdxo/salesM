@@ -113,7 +113,7 @@
     <select id="getDepositSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
         SELECT 	IFNULL(SUM(CARD_RESV_AMT), 0)		                        AS card_resv_amt
                 , IFNULL(SUM(DEPO_AMT), 0)				                    AS depo_amt
-                , IFNULL(SUM(DEPO_AMT), 0) -IFNULL(SUM(CARD_RESV_AMT), 0)  	AS gap_amt
+                , IFNULL(SUM(CARD_RESV_AMT), 0) - IFNULL(SUM(DEPO_AMT), 0)  AS gap_amt
         FROM 	(		
                     SELECT 	WD.CHAIN_NO
                             , WD.CARD_ACQ
@@ -121,7 +121,8 @@
                             , NULL					AS DEPO_AMT
                     FROM	TB_WITHDRAW WD    
                     WHERE 	WD.CARD_RESV_DATE = #{sch_work_date}
-                    AND	WD.USE_YN = 'Y'
+                      AND 	WD.REMIT_NO IS NOT NULL
+                      AND	WD.USE_YN = 'Y'
                     GROUP 	BY WD.CHAIN_NO, WD.CARD_ACQ 
                     UNION  ALL 
                     SELECT 	CHAIN_NO, CARD_ACQ
@@ -258,7 +259,7 @@
 				, DATE_FORMAT(IFNULL(tb.upt_dttm, tb.ent_dttm), '%Y-%m-%d')  		as upt_dt
                 , DATE_FORMAT(IFNULL(tb.upt_dttm, tb.ent_dttm), '%Y-%m-%d %H:%i')  as upt_dttm
                 , IFNULL(tb.upt_user_id, tb.ent_user_id)                           as upt_user_id
-		FROM 	tb_board tb	
+		FROM 	TB_BOARD tb	
 		 WHERE  1 = 1		 
            AND  tb.view_corp IN ('ALL', #{userCorpCd})
 		<if test="srch_brd_tp != '' and srch_brd_tp != null">

@@ -70,11 +70,11 @@ public class LoanService {
                 .divide(BigDecimal.valueOf(365), 10, RoundingMode.HALF_UP);
 
         // 총 상환 회차 수 (1일 1회차 기준)
-        System.out.println("loanType : " + loanType);
-        System.out.println("loanPrincAmt : " + loanPrincAmt);
-        System.out.println("intRate : " + intRate);
-        System.out.println("loanDays : " + loanDays);
-        System.out.println("loanSDate : " + loanSDate);
+        // System.out.println("loanType : " + loanType);
+        // System.out.println("loanPrincAmt : " + loanPrincAmt);
+        // System.out.println("intRate : " + intRate);
+        // System.out.println("loanDays : " + loanDays);
+        // System.out.println("loanSDate : " + loanSDate);
         
         if ("L02001".equals(loanType)) {            // 스팟 자금 상환일에 스케줄 1개 생성
             // 상환 내역 추가 

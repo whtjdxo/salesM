@@ -21,6 +21,8 @@ import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
 import com.web.manage.common.service.CommonService;
 import com.web.manage.deposit.domain.ExceedMstVO;
+import com.web.manage.deposit.domain.ProcDepositVO;
+import com.web.manage.deposit.domain.ProcExceedVO;
 import com.web.manage.deposit.service.ExceedService;
 import com.web.manage.user.domain.UserVO;
 
@@ -201,6 +203,55 @@ public class ExceedController {
             exceedMstVo.setRemain_amt(exceedMstVo.getRemain_amt().replace(",", "") );
 
             if (exceedService.updateExceedMst(exceedMstVo)) {
+                System.out.println("Update Exceed  success");
+                result.setResultCode("S000");
+                result.setResultMsg("Exceed Update successful.");     
+                
+            } else {
+                System.out.println("UpdateExceed  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Exceed update failed.");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Exceed update failed.");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "excMng/setExceedReady", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO setExceedReady(@ModelAttribute("ProcExceedVO") @Valid ProcExceedVO procVo, HttpSession session ){
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            procVo.setUserId(member.getUserId()); 
+            if (exceedService.setExceedReady(procVo)) {
+                System.out.println("Update Exceed  success");
+                result.setResultCode("S000");
+                result.setResultMsg("Exceed Update successful.");     
+                
+            } else {
+                System.out.println("UpdateExceed  Fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Exceed update failed.");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Exceed update failed.");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "excMng/setExceedReadyAll", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO setExceedReadyAll(@ModelAttribute("ProcExceedVO") @Valid ProcExceedVO procVo, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+    	    procVo.setUserId(member.getUserId()); 
+
+            if (exceedService.setExceedReadyAll(procVo)) {
                 System.out.println("Update Exceed  success");
                 result.setResultCode("S000");
                 result.setResultMsg("Exceed Update successful.");     

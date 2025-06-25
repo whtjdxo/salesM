@@ -374,7 +374,7 @@
         <update id="changeWorkDate" parameterType="com.web.manage.withdraw.domain.ProcRemitVO">
                 UPDATE TB_WITHDRAW
                    SET 
-                        WD_STATUS       = #{workDate},
+                        WORK_DATE       = #{workDate},
                         UPT_USER_ID     = #{userId},
                         UPT_DTTM        = NOW()
                 WHERE   FIND_IN_SET(WD_NO, #{wdNo})  

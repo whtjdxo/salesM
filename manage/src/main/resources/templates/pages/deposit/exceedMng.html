@@ -175,7 +175,12 @@
             tbl_exc_list.ajax.reload();            
           }
           fn_frm_exc_mst_clear();      
-        });      
+        });     
+        
+        $('#btn_list_search').click(function () {
+          tbl_exc_list.ajax.reload();          
+          $('#frm_exc_mst')[0].reset();          
+        });
          
         // --------------------------------------------------------------- frm_sch_exc 정보 처리 ---------------------------------------------------
         var tbl_exc_list = $('#tbl_exc_list').DataTable({
@@ -358,11 +363,11 @@
             $('#remain_amt').val(data.remain_amt);             
 
             if (data.exc_status == '500000'){
-              $('#btn_exceed_process').hide();
+              // $('#btn_exceed_ready').hide();
               $('#btn_create').hide();
               $('#btn_update').hide();
             } else{
-              $('#btn_exceed_process').hide();
+              // $('#btn_exceed_ready').hide();
               $('#btn_create').hide();
               $('#btn_update').show();
             }
@@ -430,7 +435,7 @@
             return;
           }
           if ($('#issue_amt').val() > 0 && $("input[name='use_yn']:checked").val() === 'N') {
-            swal('실패', "수납금액이 존재하면 사용여부를 '아니요'로 설정할 수 없습니다.", 'error');
+            swal('실패', "출금 금액이 존재하면 사용여부를 '아니요'로 설정할 수 없습니다.", 'error');
             checked = false;
             return;
           }
@@ -471,12 +476,39 @@
           fn_frm_exc_mst_clear();
         });
 
-        $('#btn_exceed_process').click(function () {
-          var selectedRow = tbl_exc_list.row('.selected').data();
-          if (!selectedRow) {
-            swal('실패', '차감 상세 항목을 선택해주세요.', 'error');
+        $('#btn_exceed_ready').click(function () {
+          if (!$('#sch_chain_no').val()) {
+            swal('실패', '가맹점을 먼저 선택해주세요.', 'error');
             return;
-          }  
+          }
+          var selectedExcNo = [];
+          // Iterate through checked checkboxes in the current page
+          tbl_exc_list.rows({ page: 'current' }).nodes().to$().find('.row-checkbox:checked').each(function () {
+            selectedExcNo.push($(this).val());
+          });
+          
+          var dataParam ="";          
+          if (selectedExcNo.length === 0) {
+            swal('실패', '출금 대기 항목을 선택해주세요.', 'error');
+            return;
+          }
+          dataParam ={              
+            chainNo   : $('#sch_chain_no').val(),
+            excNo     : selectedExcNo.join(','),
+          }    
+          ConfirmdialogToAjax('execute', '/deposit/exceed/excMng/setExceedReady', dataParam, fn_return_result);
+        }); 
+
+        $('#btn_exceed_ready_all').click(function () {
+          if (!$('#sch_chain_no').val()) {
+            swal('실패', '가맹점을 먼저 선택해주세요.', 'error');
+            return;
+          }
+           
+          dataParam ={              
+            chainNo    : $('#sch_chain_no').val() 
+          }    
+          ConfirmdialogToAjax('execute', '/deposit/exceed/excMng/setExceedReadyAll', dataParam, fn_return_result);
         }); 
            
       });
@@ -577,7 +609,7 @@
                       <select class="form-select form-control-sm" id="sch_exc_status" name="sch_exc_status" style="width: 100px">
                         <option value="">선택</option> 
                       </select>
-                      <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
+                      <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_list_search" name="btn_list_search">조회</button></span> 
                     </div>
                   </div>                  
                 </div>
@@ -588,7 +620,8 @@
             <div class="min-vh-50">              
               <div class="d-flex justify-content-between align-items-center mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">
                 <div>
-                  <button class="btn btn-success me-2" id="btn_exceed_process">수납처리</button> 
+                  <button class="btn btn-success me-2" id="btn_exceed_ready">출금대기 </button> 
+                  <button class="btn btn-primary me-2" id="btn_exceed_ready_all">모두 출금대기 </button> 
                 </div>
               </div>
               <div class="table-responsive scrollbar">

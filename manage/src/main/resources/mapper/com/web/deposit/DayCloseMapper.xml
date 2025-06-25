@@ -191,15 +191,15 @@
                             , SUM(SUB_DATE_CHANGE_AMT)	 	AS SUB_DATE_CHANGE_AMT
                             , SUM(SUB_CARD_GAP_AMT)	 		AS SUB_CARD_GAP_AMT
                             , SUM(SUB_CARD_UNRECV_AMT)	 	AS SUB_CARD_UNRECV_AMT
-                            , SUM(SUB_CARD_UNRECV_BASE_AMT)	 	AS SUB_CARD_UNRECV_BASE_AMT
-                            , SUM(SUB_CARD_UNRECV_CRD_AMT)	 	AS SUB_CARD_UNRECV_CRD_AMT
+                            , SUM(SUB_CARD_UNRECV_BASE_AMT)	AS SUB_CARD_UNRECV_BASE_AMT
+                            , SUM(SUB_CARD_UNRECV_CRD_AMT)	AS SUB_CARD_UNRECV_CRD_AMT
                             , SUM(SUB_SVC_UNSEND_AMT)	 	AS SUB_SVC_UNSEND_AMT
-                            , SUM(SUB_SVC_UNSEND_BASE_AMT)	 	AS SUB_SVC_UNSEND_BASE_AMT
-                            , SUM(SUB_SVC_UNSEND_CRD_AMT)	 	AS SUB_SVC_UNSEND_CRD_AMT
-                            , SUM(SETOFF_AMT) 	 	AS SETOFF_AMT
+                            , SUM(SUB_SVC_UNSEND_BASE_AMT)	AS SUB_SVC_UNSEND_BASE_AMT
+                            , SUM(SUB_SVC_UNSEND_CRD_AMT)	AS SUB_SVC_UNSEND_CRD_AMT
+                            , SUM(SETOFF_AMT) 	 	        AS SETOFF_AMT
                             , CASE IFNULL(SUM(PROC_AMT), 0) WHEN 0 THEN 'Y' ELSE 'N' END AS RSLT
-                            , SUM(EXC_ETC_AMT)	 				AS EXC_ETC_AMT
-                            , SUM(SUB_ETC_AMT)	 				AS SUB_ETC_AMT
+                            , SUM(EXC_ETC_AMT)	 			AS EXC_ETC_AMT
+                            , SUM(SUB_ETC_AMT)	 			AS SUB_ETC_AMT
                     FROM 	VW_DEPOSIT_COMPLETE T1
                     WHERE	CARD_RESV_DATE = #{close_date}
                     GROUP 	BY CHAIN_NO
