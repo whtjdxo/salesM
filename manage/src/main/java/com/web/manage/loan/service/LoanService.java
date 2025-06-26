@@ -104,14 +104,16 @@ public class LoanService {
             repayVo.setRemain_int_amt(repayIntAmt.toPlainString());
             repayVo.setRecv_yn("N");
             repayVo.setRecv_yn_nm("");
+            repayVo.setRecv_dt("");
             
-            schedule.add(repayVo);                
+            schedule.add(repayVo); 
+
         } else {
             int loopDays = loanDays;
 
             // 일별 상환액 계산 (원리금 균등 상환)
             BigDecimal dailyPayment = calcDailyRepayment(loanPrincAmt, dailyInterestRate, loopDays);
-
+            BigDecimal dailyPaymentAmt = dailyPayment.setScale(0, RoundingMode.DOWN);       // 일별 상환액 소수점 버림 데이터 저장, 인쇄용
             BigDecimal balanceAmt = loanPrincAmt;
             
 
@@ -122,11 +124,11 @@ public class LoanService {
 
                 // 원금 상환액 계산
                 BigDecimal dailyRepayPrincAmt = dailyPayment.subtract(dailyRepayIntAmt)
-                        .setScale(0, RoundingMode.HALF_UP);
+                        .setScale(0, RoundingMode.DOWN);
 
                 // 잔액 조정
                 balanceAmt = balanceAmt.subtract(dailyRepayPrincAmt)
-                        .setScale(0, RoundingMode.HALF_UP);
+                        .setScale(0, RoundingMode.DOWN);
 
                 // 마지막 회차 조정 (잔액이 0이 되도록)
                 if (scSeq == loopDays) {
@@ -145,7 +147,7 @@ public class LoanService {
                 LoanRepayScheduleVO repayVo = new LoanRepayScheduleVO();
                 repayVo.setSc_seq(String.valueOf(scSeq));                 
                 repayVo.setSc_date(scDate.format(DateTimeFormatter.ISO_LOCAL_DATE));
-                repayVo.setRepay_tot_amt(dailyPayment.toPlainString());
+                repayVo.setRepay_tot_amt(dailyPaymentAmt.toPlainString());
                 repayVo.setRepay_princ_amt(dailyRepayPrincAmt.toPlainString());
                 repayVo.setRepay_int_amt(dailyRepayIntAmt.toPlainString());
                 repayVo.setBalance_amt(balanceAmt.toPlainString()); 
@@ -154,12 +156,12 @@ public class LoanService {
                 repayVo.setRecv_princ_amt("0");
                 repayVo.setRecv_int_amt("0");
 
-                repayVo.setRemain_tot_amt(dailyPayment.toPlainString());
+                repayVo.setRemain_tot_amt(dailyPaymentAmt.toPlainString());
                 repayVo.setRemain_princ_amt(dailyRepayPrincAmt.toPlainString());
                 repayVo.setRemain_int_amt(dailyRepayIntAmt.toPlainString());
                 repayVo.setRecv_yn("N");
                 repayVo.setRecv_yn_nm("");
-                
+                repayVo.setRecv_dt("");
                 schedule.add(repayVo); 
                 
             }

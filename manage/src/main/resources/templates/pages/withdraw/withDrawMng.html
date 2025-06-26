@@ -33,6 +33,10 @@
           codeSetting('WD_STATUS', data.data, '#change_wd_status', '1', '', '');  
         }
 
+        callAjax('/common/totalCodelist', "code_grp_cd=('VAN_CD')", fn_corp_van_setting);      
+        function fn_corp_van_setting(data) {
+          codeSetting('VAN_CD', data.data, '#sch_list_van', '1', '', '');  
+        }
 
         // Set default values for sch_reg_sdt and sch_reg_edt
         var toDay = returnDate('today');
@@ -578,10 +582,10 @@
           var selectedValue = $(this).val();
           if (selectedValue === 'WORK_DATE') {
             $('#div_work_date').show();
-            $('#change_wd_status').hide();
+            $('#div_wd_status').hide();
           } else if (selectedValue === 'WD_STATUS') {
             $('#div_work_date').hide();
-            $('#change_wd_status').show();
+            $('#div_wd_status').show();
           }
         });
  
@@ -1090,21 +1094,18 @@
       <div class="card">
         <div class="card-header"> 
           <div class="row flex-between-end">              
-            <div class="col-lg-2 align-self-center">
-              <h4 class="mb-0">승인전문 상세 List</h4>
+            <div class="col-lg-1 align-self-center">
+              <h4 class="mb-0">상세 List</h4>
             </div>     
-            <div class="col-lg-10">
+            <div class="col-lg-11">
               <form id="frm_sch_list" name="frm_sch_list" onsubmit="return false;" novalidate=""> 
                 <input id="sch_list_chain_no"  type="hidden" name="sch_list_chain_no" />
                 <input id="sch_list_chain_nm"  type="hidden" name="sch_list_chain_nm" />
                 <input id="sch_list_work_date" type="hidden" name="sch_list_work_date"/>
                 <input id="sch_list_card_acq"  type="hidden" name="sch_list_card_acq" />
                 <div class="row mb-1">
-                  <div class="col-sm-5">
-                    <div class="input-group input-group-sm mb-1"> 
-                      <!-- <div class="col-sm-3">
-                        <input class="form-control form-control-sm" id="sch_list_conf_date" type="text" name="sch_list_conf_date" istyle="date" maxlength="10" required />
-                      </div>  -->
+                  <div class="col-sm-8">
+                    <div class="input-group input-group-sm mb-1">
                       <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" name="sch_list_wd_status" id="sch_list_wd_status_all" value="A" checked>
                         <label class="form-check-label" for="sch_list_wd_status_all">전체</label>
@@ -1117,36 +1118,53 @@
                         <input class="form-check-input" type="radio" name="sch_list_wd_status" id="sch_list_wd_status_n" value="N">
                         <label class="form-check-label" for="sch_list_wd_status_n">미확정</label>
                       </div>
-                      <select class="form-select form-control-sm me-1" id="sch_list_gb" name="sch_list_gb" style="width: 120px">
+                      <div class="col-sm-2">
+                        <input class="form-control form-control-sm me-1" id="sch_list_conf_sdt" type="text" name="sch_conf_sdt" istyle="date" maxlength="10" required />
+                      </div>   
+                      <span class="input-group-text">~</span>
+                      <div class="col-sm-2">
+                        <input class="form-control form-control-sm me-1" id="sch_list_conf_edt" type="text" name="sch_conf_edt" istyle="date" maxlength="10" required />
+                      </div>
+                     
+                      <select class="form-select form-control-sm me-1" id="sch_list_van" name="sch_list_van" style="width: 90px">
+                        <option value="">전체</option>
+                      </select>                    
+                      <select class="form-select form-control-sm me-1" id="sch_list_gb" name="sch_list_gb" style="width: 90px">
                         <option value="sch_list_gb_conf_no">승인 번호</option>
                         <option value="sch_list_gb_card_no">카드 번호</option>
                         <option value="sch_list_gb_conf_amt">승인 금액</option>
                       </select>
-                      <input type="text" class="form-control form-control-sm me-1" id="sch_list_gb_conf_val" name="sch_list_gb_conf_val" style="width:100px" />                        
+                      <input type="text" class="form-control form-control-sm me-1" id="sch_list_gb_conf_val" name="sch_list_gb_conf_val" style="width:90px" />                        
                       <button type="button" class="btn btn-primary btn-sm" id="btn_list_search" name="btn_list_search">조회</button> 
                     </div>
                   </div> 
-                  <div class="col-sm-5">
+                  <div class="col-sm-3">
                     <div class="input-group input-group-sm mb-1">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="change_wd_status">변경 처리</label>                       
-                      <select class="form-select form-control-sm me-1" id="change_gb" name="change_gb" style="width: 100px;" >
-                        <option value="WD_STATUS">상태 변경</option>
-                        <option value="WORK_DATE">출금일 변경</option>
-                      </select> 
-                      <div class="col-sm-5">
-                        <select class="form-select form-control-sm me-1" id="change_wd_status" name="change_wd_status" style="width: 200px;" >
+                      <!-- <label class="col-sm-2 col-form-label col-form-label-sm" for="change_wd_status">변경 처리</label>                        -->
+                      <div class="col-sm-4">
+                        <select class="form-select form-control-sm me-1" id="change_gb" name="change_gb">
+                          <option value="WD_STATUS">상태변경</option>
+                          <option value="WORK_DATE">출금일</option>
+                        </select>
+                      </div>                      
+                      <div class="col-sm-5" id="div_wd_status">
+                        <select class="form-select form-control-sm me-1" id="change_wd_status" name="change_wd_status" >
                           <option value="">선택</option>   
                         </select>
-                        <div id="div_work_date" style="display:none;">
-                          <input class="form-control form-control-sm" id="change_work_date" type="text" name="change_work_date" istyle="date" maxlength="10" placeholder="변경 작업일" />
-                        </div>                        
+                      </div>                      
+                      <div class="col-sm-5" id="div_work_date" style="display:none;">
+                        <input class="form-control form-control-sm me-1" id="change_work_date" type="text" name="change_work_date" istyle="date" maxlength="10" placeholder="변경 작업일" />
+                      </div>  
+                      <div class="col-sm-2">
+                        <button type="button" class="btn btn-info btn-sm" id="btn_list_change" name="btn_list_change">변경</button>
                       </div>
-                      <button type="button" class="btn btn-info btn-sm" id="btn_list_change" name="btn_list_change">변경</button>                                              
-                    </div>                             
+                    </div>                    
                   </div>
-                  <div class="col-sm-2 text-end"> 
-                    <button type="button" class="btn btn-primary btn-sm" id="btn_list_excel" name="btn_list_excel">Excel</button> 
-                  </div>    
+                  <div class="col-sm-1">
+                    <div class="col-sm-1 text-end"> 
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_list_excel" name="btn_list_excel">Excel</button> 
+                    </div>                           
+                  </div>
                 </div> 
               </form>
             </div>

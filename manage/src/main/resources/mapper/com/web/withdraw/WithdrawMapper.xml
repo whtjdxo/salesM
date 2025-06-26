@@ -313,6 +313,9 @@
                 AND  WD.WORK_DATE    = #{sch_list_work_date} 
                 AND  WD.CHAIN_NO     = #{sch_list_chain_no} 
                 AND  WD.WD_STATUS    LIKE 'W%'  
+                <if test="sch_list_card_acq != ''"> 
+                        AND  FIND_IN_SET(WD.CARD_ACQ, #{sch_list_card_acq})  
+                </if>
                 <choose>
                         <when test='sch_list_wd_status != null and sch_list_wd_status == "Y"'>
                                 AND WD.WD_STATUS  IN ('W00000', 'W00C00', 'W00C11', 'W00C12')
@@ -322,9 +325,15 @@
                                 AND WD.WD_STATUS  NOT IN ('W00000', 'W00C00', 'W00C11', 'W00C12')
                         </when>                         
                 </choose>                
-                <if test="sch_list_card_acq != ''"> 
-                        AND  FIND_IN_SET(WD.CARD_ACQ, #{sch_list_card_acq})  
+                <if test="sch_list_conf_sdt != ''"> 
+                        AND  WD.CONF_DTTM &gt;= #{sch_list_conf_sdt}
                 </if>
+                <if test="sch_list_conf_edt != ''"> 
+                        AND  WD.CONF_DTTM &lt;= #{sch_list_conf_edt}
+                </if>
+                <if test="sch_list_van != ''"> 
+                        AND  WD.VAN_CD = #{sch_list_van}
+                </if>                
                 <if test="sch_list_gb_conf_val != ''">
                         <choose>
                                 <when test="sch_list_gb == 'sch_list_gb_conf_no'">

@@ -508,17 +508,17 @@ public class WithdrawController {
             Sheet sheet = workbook.createSheet("Docu List");
 
             // Create header row
-            Row headerRow = sheet.createRow(0);
-            String[] headers = {
-                // 은행명 계좌번호 송금액 예금주 빈칸 빈칸 가맹점명 운영사명
-                "송금은행" , "계좌번호" , "송금액", "예금주", "", "",  "가맹점명"       , "운영사"
-            };
-            for (int i = 0; i < headers.length; i++) {
-                Cell cell = headerRow.createCell(i);
-                cell.setCellValue(headers[i]);
-            }
+            // Row headerRow = sheet.createRow(0);
+            // String[] headers = {
+            //     // 은행명 계좌번호 송금액 예금주 빈칸 빈칸 가맹점명 운영사명
+            //     "송금은행" , "계좌번호" , "송금액", "예금주", "", "",  "가맹점명"       , "운영사"
+            // };
+            // for (int i = 0; i < headers.length; i++) {
+            //     Cell cell = headerRow.createCell(i);
+            //     cell.setCellValue(headers[i]);
+            // }
             // Populate data rows
-            int rowIndex = 1;
+            int rowIndex = 0;
             for (HashMap<String, Object> row : list) {
                 Row dataRow = sheet.createRow(rowIndex++);
                 dataRow.createCell(0).setCellValue(String.valueOf(row.get("bbank_nm")));            // 은행명

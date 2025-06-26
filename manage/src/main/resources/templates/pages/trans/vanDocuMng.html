@@ -39,7 +39,17 @@
 
         $('#btn_search').click(function () {   
           tbl_chain_summ.ajax.reload();
+          clearDataTable();
         }); 
+
+        function clearDataTable() {
+          // 검색조건을 일부러 무효하게 세팅해서 빈 결과 유도
+          $('#sch_sub_chain_no').val('###'); // 서버에 없는 값
+          // 서버에서 빈 데이터 받게 하고 그리기
+          tbl_chain_docu_summ.ajax.reload(null, false);
+          tbl_docu_list.ajax.reload(null, false);
+        }
+
 
         $('#schlist_conf_val').keypress(function (e) {
           if (e.which === 13) { // Enter key pressed
@@ -204,7 +214,18 @@
             dataType: 'JSON',
             type: 'POST',
             data: function (postData) {
-              formData = $('#frm_chain_day_summ').serializeObject();
+              // formData = $('#frm_chain_day_summ').serializeObject();
+              formData ={
+                sch_sub_chain_no  : $('#sch_sub_chain_no').val(),
+                sch_sub_chain_nm  : $('#sch_sub_chain_nm').val(),
+                sch_sub_conf_dt   : $('#sch_sub_conf_dt').val(),                
+                sch_agency_cd     : $('#sch_agency_cd').val(),
+                sch_card_acq      : $('#sch_card_acq').val(),
+                schgb_conf        : $('#schgb_conf').val(),
+                schgb_conf_val    : $('#schgb_conf_val').val(),
+                schgb_chain       : $('#schgb_chain').val(),
+                schgb_chain_val   : $('#schgb_chain_val').val(),                  
+              };
               Object.assign(postData, formData);
               return JSON.stringify(postData);
             },
@@ -225,7 +246,7 @@
             { targets: 4, width: '130px', className: 'text-end' },
             { targets: 5, width: '130px', className: 'text-end' },
           ],
-          order: [[1, 'asc']],
+          order: [[0, 'asc']],
           paging: false,
           lengthChange: false,
           searching: false,
@@ -256,7 +277,19 @@
             dataType: 'JSON',
             type: 'POST',
             data: function (postData) {
-              formData = $('#frm_sch_list').serializeObject();
+              // formData = $('#frm_sch_list').serializeObject();
+              formData = {
+                sch_sub_chain_no  : $('#sch_sub_chain_no').val(),
+                sch_sub_chain_nm  : $('#sch_sub_chain_nm').val(),
+                sch_sub_conf_dt   : $('#sch_sub_conf_dt').val(),                
+                sch_agency_cd     : $('#sch_agency_cd').val(),
+                sch_card_acq      : $('#sch_card_acq').val(),
+                schgb_conf        : $('#schgb_conf').val(),
+                schgb_conf_val    : $('#schgb_conf_val').val(),
+                schgb_chain       : $('#schgb_chain').val(),
+                schgb_chain_val   : $('#schgb_chain_val').val(), 
+                schlist_card_acq  : $('#schlist_card_acq').val() 
+              };
               Object.assign(postData, formData);
               return JSON.stringify(postData);
             },
@@ -293,7 +326,7 @@
             { targets: 12, width: '130px', className: 'text-center' },
             { targets: 13, width: '120px', className: 'text-center' },
           ],
-          order: [[1, 'desc']],
+          order: [[0, 'desc']],
           paging: true,
           lengthChange: false,
           searching: false,
@@ -337,9 +370,10 @@
               $('#schlist_card_acq').val(newValue);
             }
           } 
-          if ($('#schlist_chain_no').val() && $('#schlist_conf_dt').val()) {
-            tbl_docu_list.ajax.reload();
-          } 
+          tbl_docu_list.ajax.reload();
+          // if ($('#schlist_chain_no').val() && $('#schlist_conf_dt').val()) {
+          //   tbl_docu_list.ajax.reload();
+          // } 
         });   
 
         // Excel download button click event
@@ -476,7 +510,7 @@
         <div class="card-header">          
           <div class="row flex-between-end">
             <div class="col-lg-2 align-self-center">
-              <h4 class="mb-0">승인전문 관리</h4>
+              <h4 class="mb-0">승인전문 조회</h4>
             </div>            
             <div class="col-lg-10">
               <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
@@ -504,14 +538,12 @@
                         <option value="">카드사</option>
                       </select>
                       <select class="form-select form-control-sm me-1" id="schgb_conf" name="schgb_conf" style="width: 75px">
-                        <option value="">승인 정보</option>
                         <option value="schgb_conf_no">승인 번호</option>
                         <option value="schgb_card_no">카드 번호</option>
                         <option value="schgb_conf_amt">승인 금액</option>
                       </select>
                       <input type="text" class="form-control form-control-sm me-1" id="schgb_conf_val" name="schgb_conf_val" style="width:150px" />
-                      <select class="form-select form-control-sm me-1" id="schgb_chain" name="schgb_chain" style="width: 75px">
-                        <option value="">가맹점 정보</option>
+                      <select class="form-select form-control-sm me-1" id="schgb_chain" name="schgb_chain" style="width: 100px">
                         <option value="schgb_chain_nm">가맹점 명</option>
                         <option value="schgb_biz_no">사업자 번호</option>
                       </select>
@@ -601,13 +633,13 @@
             </div>     
             <div class="col-lg-5">
               <form id="frm_sch_list" name="frm_sch_list" onsubmit="return false;" novalidate=""> 
-                <input id="schlist_chain_no" type="hidden" name="schlist_chain_no" />
+                <!-- <input id="schlist_chain_no" type="hidden" name="schlist_chain_no" />
                 <input id="schlist_chain_nm" type="hidden" name="schlist_chain_nm"/>
-                <input id="schlist_conf_dt" type="hidden" name="schlist_conf_dt"/>
+                <input id="schlist_conf_dt" type="hidden" name="schlist_conf_dt"/> -->
                 <input id="schlist_card_acq" type="hidden" name="schlist_card_acq"/>
                 <div class="row mb-1">
                   <div class="col-sm-10">
-                    <div class="input-group input-group-sm mb-1">                      
+                    <!-- <div class="input-group input-group-sm mb-1">                      
                       <select class="form-select form-control-sm me-1" id="schlist_conf" name="schlist_conf" style="width: 75px">
                         <option value="">승인 정보</option>
                         <option value="schlist_conf_no">승인 번호</option>
@@ -616,7 +648,7 @@
                       </select>
                       <input type="text" class="form-control form-control-sm me-1" id="schlist_conf_val" name="schlist_conf_val" style="width:150px" />                        
                       <button type="button" class="btn btn-primary btn-sm" id="btn_list_search" name="btn_list_search">조회</button> 
-                    </div>
+                    </div> -->
                   </div>
                   <div class="col-sm-2">
                     <button type="button" class="btn btn-primary btn-sm" id="btn_list_excel" name="btn_list_search">Excel</button>

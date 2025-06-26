@@ -227,9 +227,9 @@
                   , { data: 'loan_type_nm' }
                   , { data: 'princ_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                   , { data: 'int_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
-                  , { data: 'remain_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                  , { data: 'remain_princ_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                   , { data: 'delay_yn' }
-                  , { data: 'loan_edt' }
+                  , { data: 'loan_expr_dt' }
                 ],
               columnDefs: [
                     { targets: 0, width: '100px', className: 'text-center dt-body-center' } // 중앙 정렬 확인
@@ -307,8 +307,8 @@
             $('#loan_edt').val(data.loan_edt);
 
             $('#delay_rate').val(data.delay_rate);
-            $('#delay_yn').val(data.delay_yn);
-            $('#delay_cnt').val(data.delay_cnt);
+            $('#delay_status').val(data.delay_yn + " / " + data.delay_cnt + "회");
+            $('#recv_status').val("납입 : " + data.recv_cnt + " / 잔여 : " + data.unrecv_cnt + " 회");
 
             $('#loan_memo').val(data.loan_memo);
             $('#upt_dttm').val(data.upt_dttm);
@@ -335,11 +335,13 @@
             //   $('#princ_amt').prop('readonly', false);
             // }
 
-            
-
             $('#crud').val('update');
             $('#btn_delete').show();
-            $('#btn_prepay_view').show();
+            if (data.loan_status === '01') {
+              $('#btn_prepay_view').show();
+            } else {
+              $('#btn_prepay_view').hide();
+            }
             $('#btn_create').hide();
             isListClick = false;
           }
@@ -547,27 +549,39 @@
           } 
         });
 
-        $('#btn_prepay_view').click(function () {
-          if ($('#chain_no').val() == "" )  {
-            swal('확인', "가맹점을 선택 하세요", 'error');
-            return ;
+        $('#btn_prepay_view').click(function () {          
+          
+          var selectData = tbl_chain_loan_list.row('.selected').data();
+                    
+          if (!selectData) {
+            swal('실패', "대출건을 먼저 선택해주세요.", 'error');
+            return;
           }
+          $('#prepay_recv_date').val(toDay);
+          $('#prepay_loan_no').val(selectData.loan_no);            
+          $('#pre_princ_amt').val(Number(selectData.pre_princ_amt).toLocaleString());  
+          $('#pre_int_amt').val(Number(selectData.pre_int_amt).toLocaleString());
+          $('#post_princ_amt').val(Number(selectData.post_princ_amt).toLocaleString());
+          $('#delay_int_amt').val(Number(selectData.delay_int_amt).toLocaleString());
+          $('#prepay_tot_amt').val(Number(selectData.prepay_tot_amt).toLocaleString());
+
           $('#modal_prepay').modal('show'); // Show the modal
         });
 
-        $('#btn_prepay').click(function () {
-          var selectData = tbl_chain_loan_list.row('.selected').data();
-          if (selectData) {             
-            var loan_no = $('#loan_no').val();
-            if(loan_no == '') {
-              swal('실패', "대출건을 먼저 선택해주세요.", 'error');
-              return;
-            }            
-            ConfirmdialogToAjax('execute', '/loan/loan/loanMng/procLoanPrepay', $('#frm_loan_mst').serialize(), fn_prepay_result); 
-          } else {
-            swal('실패', "대출건을 먼저 선택해주세요.", 'error'); 
+        $('#btn_prepay').click(function () {                      
+          var loan_no = $('#prepay_loan_no').val();
+          if(loan_no == '') {
+            swal('실패', "대출건을 먼저 선택해주세요.", 'error');
             return;
-          } 
+          }
+          var formData = {
+              prepay_recv_date : $('#prepay_recv_date').val()
+            , prepay_memo     : $('#prepay_memo').val()
+            , prepay_loan_no  : $('#prepay_loan_no').val()
+          }
+
+          ConfirmdialogToAjax('execute', '/loan/loan/loanMng/procLoanPrepay', formData, fn_prepay_result); 
+        
         });
 
         function fn_prepay_result(data) {
@@ -807,16 +821,16 @@
           var resultMsg = data.resultMsg;
           if (resultCode == 'S000') {
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
-            // var selectedRowData = tbl_counsel_list.row('.selected').data(); // 현재 선택된 데이터 저장
-            // tbl_counsel_list.ajax.reload(function () {
-            //   if (selectedRowData) {
-            //     tbl_counsel_list.rows().every(function () {
-            //       if (this.data().counsel_no === selectedRowData.counsel_no) { // 저장된 데이터와 매칭
-            //         $(this.node()).addClass('selected'); // 다시 선택
-            //       }
-            //     });
-            //   }
-            // });
+            var selectedRowData = tbl_counsel_list.row('.selected').data(); // 현재 선택된 데이터 저장
+            tbl_counsel_list.ajax.reload(function () {
+              if (selectedRowData) {
+                tbl_counsel_list.rows().every(function () {
+                  if (this.data().counsel_no === selectedRowData.counsel_no) { // 저장된 데이터와 매칭
+                    $(this.node()).addClass('selected'); // 다시 선택
+                  }
+                });
+              }
+            });
             tbl_counsel_list.ajax.reload(); 
             fn_frm_counsel_reset();
           } else { 
@@ -900,6 +914,7 @@
                   return $.fn.dataTable.render.number(',', '.', 0, '').display(data);
                 }
               },
+              { data: 'recv_dt' },
               { data: 'recv_yn_nm' },
             ],
             columnDefs: [
@@ -912,9 +927,10 @@
               { targets: 6, width: '120px', className: 'text-end' },
               { targets: 7, width: '120px', className: 'text-end' },
               { targets: 8, width: '120px', className: 'text-end' },
-              { targets: 9, width: '120px', className: 'text-center' },
+              { targets: 9, width: '100px', className: 'text-center' },
+              { targets: 10, width: '120px', className: 'text-center' },
             ],
-            order: [[1, 'desc']],
+            order: [[0, 'asc']],
             paging: false,
             lengthChange: false,
             searching: false,
@@ -1248,7 +1264,7 @@
                     <div class="input-group input-group-sm mb-1">
                       <label class="col-sm-4 col-form-label col-form-label-sm" for="int_amt">이자액</label> 
                       <div class="col-sm-8">
-                        <input class="form-control form-control-sm bg-light" id="int_amt" type="text" name="int_amt" istyle="amount" maxlength="10" readonly />
+                        <input class="form-control form-control-sm text-end bg-light" id="int_amt" type="text" name="int_amt" istyle="amount" maxlength="10" readonly />
                       </div>
                     </div>
                   </div>
@@ -1256,7 +1272,7 @@
                     <div class="input-group input-group-sm mb-1">
                       <label class="col-sm-4 col-form-label col-form-label-sm" for="tot_loan_amt">총 액</label> 
                       <div class="col-sm-8">
-                        <input class="form-control form-control-sm text-end bg-light" id="tot_loan_amt" type="text" name="tot_loan_amt" istyle="number" readonly>
+                        <input class="form-control form-control-sm text-end bg-light" id="tot_loan_amt" type="text" name="tot_loan_amt" istyle="amount" readonly>
                       </div>
                     </div>
                   </div>
@@ -1273,25 +1289,28 @@
                     <div class="input-group input-group-sm mb-1">
                       <label class="col-sm-4 col-form-label col-form-label-sm" for="delay_rate">연체 이자율</label> 
                       <div class="col-sm-8">
-                        <input class="form-control form-control-sm " id="delay_rate" type="text" name="delay_rate" istyle="float" maxlength="5" required />
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-sm-4">
-                    <div class="input-group input-group-sm mb-1">
-                      <label class="col-sm-4 col-form-label col-form-label-sm" for="delay_yn">연체여부</label> 
-                      <div class="col-sm-8">
-                        <input class="form-control form-control-sm bg-light" id="delay_yn" type="text" name="delay_yn" readonly />
+                        <div class="input-group">
+                          <input class="form-control form-control-sm text-end" id="delay_rate" type="text" name="delay_rate" placeholder="00.0" istyle="float" maxlength="4" required />
+                          <span class="input-group-text">%</span>
+                        </div>
                       </div> 
                     </div>
                   </div>
                   <div class="col-sm-4">
                     <div class="input-group input-group-sm mb-1">
-                      <label class="col-sm-4 col-form-label col-form-label-sm" for="delay_cnt">연체횟수</label> 
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="delay_cnt">납입상태</label> 
                       <div class="col-sm-8">
-                        <input class="form-control form-control-sm text-end bg-light" id="delay_cnt" type="text" name="delay_cnt" istyle="number" readonly>                        </div>
+                        <input class="form-control form-control-sm bg-light" id="recv_status" type="text" name="recv_status" istyle="number" readonly>                        </div>
                     </div>
                   </div>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="delay_status">연체상태</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm bg-light" id="delay_status" type="text" name="delay_status" readonly />
+                      </div> 
+                    </div>
+                  </div>                  
                 </div>
                 <div class="row mb-1">
                   <div class="col-sm-8">
@@ -1403,14 +1422,15 @@
               <thead class="bg-200">
                 <tr>
                   <th class="text-center" style="width: 80px;">회차</th>
-                  <th class="text-center" style="width: 100px;">상환일</th>
-                  <th class="text-center" style="width: 120px;">잔액</th>
-                  <th class="text-center" style="width: 120px;">원금</th>
-                  <th class="text-center" style="width: 120px;">이자</th>
-                  <th class="text-center" style="width: 120px;">총상환금액</th> 
+                  <th class="text-center" style="width: 100px;">상환예정일</th>
+                  <th class="text-center" style="width: 120px;">거래전잔액</th>
+                  <th class="text-center" style="width: 120px;">청구원금</th>
+                  <th class="text-center" style="width: 120px;">청구이자</th>
+                  <th class="text-center" style="width: 120px;">청구금액</th> 
                   <th class="text-center" style="width: 120px;">미수원금</th>
                   <th class="text-center" style="width: 120px;">미수이자</th>
                   <th class="text-center" style="width: 120px;">미수금액</th> 
+                  <th class="text-center" style="width: 100px;">수납완료일</th>
                   <th class="text-center" style="width: 120px;">비고</th> 
                 </tr>
               </thead>
@@ -1425,6 +1445,7 @@
                   <th class="text-right px-2"></th>
                   <th class="text-right px-2"></th> 
                   <th class="text-right px-2"></th> 
+                  <th class="text-right px-2"></th>  
                 </tr>
               </tfoot>
             </table>
@@ -1439,26 +1460,76 @@
   </div>
 
   <div class="modal fade" id="modal_prepay" tabindex="-1" aria-labelledby="subtractmanage" aria-hidden="true">
-    <div class="modal-dialog modal-md">
+    <div class="modal-dialog modal-sm">
       <div class="modal-content">
         <form class="needs-validation" novalidate="" id="frm_prepay" name="frm_prepay" onsubmit="return false;">           
-          <input id="prepay_loan_no" type="hidden" name="prepay_loan_no"/>
           <div class="modal-header">
             <h5 class="modal-title">중도 상환</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="row mb-1">
-              <div class="col-sm-4">
+              <div class="col-sm-12">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-5 col-form-label col-form-label-sm" for="prepay_loan_no">대출관리번호</label>
+                  <input class="form-control form-control-sm bg-light" id="prepay_loan_no" type="text" name="prepay_loan_no" readonly/>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-1">
+              <div class="col-sm-12">
                 <div class="input-group input-group-sm mb-1">
                   <label class="col-sm-5 col-form-label col-form-label-sm" for="prepay_recv_date">중도상환일</label>
                   <input class="form-control form-control-sm bg-light" id="prepay_recv_date" type="text" name="prepay_recv_date" readonly/>
                 </div>
               </div>
-              <div class="col-sm-8">
+            </div>                         
+            <div class="row mb-1">
+              <div class="col-sm-12">
                 <div class="input-group input-group-sm mb-1">
-                  <label class="col-sm-2 col-form-label col-form-label-sm" for="prepay_memo">메모</label>
-                  <input class="form-control form-control-sm" id="prepay_memo" type="text" name="prepay_memo" maxlength="30" />
+                  <label class="col-sm-5 col-form-label col-form-label-sm" for="prepay_recv_date">미수 원금</label>
+                  <input class="form-control form-control-sm text-end bg-light" id="pre_princ_amt" type="text" name="pre_princ_amt" readonly/>
+                </div>
+              </div>
+            </div>              
+            <div class="row mb-1">
+              <div class="col-sm-12">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-5 col-form-label col-form-label-sm" for="prepay_recv_date">미수이자</label>
+                  <input class="form-control form-control-sm text-end bg-light" id="pre_int_amt" type="text" name="pre_int_amt" readonly/>
+                </div>
+              </div>
+            </div>              
+            <div class="row mb-1">
+              <div class="col-sm-12">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-5 col-form-label col-form-label-sm" for="post_princ_amt">잔여 원금</label>
+                  <input class="form-control form-control-sm text-end bg-light" id="post_princ_amt" type="text" name="post_princ_amt" readonly/>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-1">
+              <div class="col-sm-12">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-5 col-form-label col-form-label-sm" for="delay_int_amt">연체 이자</label>
+                  <input class="form-control form-control-sm text-end bg-light" id="delay_int_amt" type="text" name="delay_int_amt" readonly/>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-1">
+              <div class="col-sm-12">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-5 col-form-label col-form-label-sm" for="prepay_tot_amt">총수납금액 : </label>
+                  <input class="form-control form-control-sm text-end bg-light" id="prepay_tot_amt" type="text" name="prepay_tot_amt" readonly/>
+                  <!-- <h3 id="tot_prepay_amt" class="text-end">2,000,000</h3> -->
+                </div>
+              </div>                  
+            </div>               
+            <div class="row mb-1">
+              <div class="col-sm-12">
+                <div class="input-group input-group-sm mb-1">
+                  <label class="col-sm-5 col-form-label col-form-label-sm" for="prepay_memo">메모</label>
+                  <textarea class="form-control form-control-sm" id="prepay_memo" name="prepay_memo" rows="3" maxlength="50"></textarea>                  
                 </div>
               </div>
             </div>

@@ -119,7 +119,7 @@
               { targets: 13, width: '120px', className: 'text-right px-1 dt-body-right' },
               { targets: 14, width: '120px', className: 'text-right px-1 dt-body-right' }, 
           ],
-          order: [[0, 'desc']], // 기본 정렬 설정
+          order: [[3, 'desc']], // 기본 정렬 설정
           paging: true,
           lengthChange: false,
           searching: false,
@@ -206,15 +206,17 @@
             }
         } 
  
-        $('#tbl_remit_summ').on('click', 'tr', function (e) {                       
+        $('#tbl_remit_summ').on('click', 'tr', function (e) {                 
+          
           if ($(this).hasClass('selected')) {
             $(this).removeClass('selected');     
             $(this).find('.row-checkbox').prop('checked', false);       
           } else {
-            $(this).addClass('selected');
+            tbl_remit_summ.$('tr.selected').removeClass('selected');      
+            $(this).addClass('selected');            
             $(this).find('.row-checkbox').prop('checked', true);
           }
-           
+          
           var row = tbl_remit_summ.row(this).data();
           $('#frm_sch_list')[0].reset();
           $('#sch_list_chain_no').val(row.chain_no);   // list 검색 조건          
@@ -421,8 +423,8 @@
         $('#tbl_remit_list').on('click', 'tr', function () {
           if ($(this).hasClass('selected')) {
               $(this).removeClass('selected');
-          } else {
-              tbl_remit_summ.$('tr.selected').removeClass('selected');
+          } else {              
+              tbl_remit_list.$('tr.selected').removeClass('selected');              
               $(this).addClass('selected');
           } 
         });
@@ -790,7 +792,7 @@
                 <input id="sch_list_remit_no" type="hidden" name="sch_list_remit_no"/>
                 <input id="sch_list_card_acq"  type="hidden" name="sch_list_card_acq" />
                 <div class="row mb-1">
-                  <div class="col-sm-5">
+                  <div class="col-sm-4">
                     <div class="input-group input-group-sm mb-1">                                       
                       <select class="form-select form-control-sm me-1" id="sch_list_gb" name="sch_list_gb" style="width: 120px">
                         <option value="sch_list_gb_conf_no">승인 번호</option>
@@ -801,7 +803,7 @@
                       <button type="button" class="btn btn-primary btn-sm" id="btn_list_search" name="btn_list_search">조회</button> 
                     </div>
                   </div> 
-                  <div class="col-sm-5">                                               
+                  <div class="col-sm-6">                                               
                   </div>
                   <div class="col-sm-2 text-end"> 
                     <button type="button" class="btn btn-primary btn-sm" id="btn_list_excel" name="btn_list_excel">Excel</button> 

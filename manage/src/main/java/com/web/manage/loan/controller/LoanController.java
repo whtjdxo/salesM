@@ -61,8 +61,7 @@ public class LoanController {
     @RequestMapping("loanMng/view")    
     public String view() {
         return "pages/loan/loanMng";
-    }
- 
+    } 
  
     @RequestMapping("loanMng/loanSummary")    
     public @ResponseBody String getLoanSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
@@ -222,8 +221,8 @@ public class LoanController {
             // Create header row
             Row headerRow = sheet.createRow(0);
             String[] headers = {
-                "회차"          , "상환일"       , "잔액"          ,  "원금"       , "이자"         , "총상환금액"
-                , "미수원금"    , "미수이자"      , "미수금액"       , "수납여부"   , "상환일"
+                "회차"          , "상환예정일"       , "거래전잔액"          ,  "청구원금"        , "청구이자"         , "총청구금액"
+                , "미수원금"    , "미수이자"      , "미수총액"       , "상환일"       , "비고"
             };
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -282,8 +281,8 @@ public class LoanController {
                     dataRow.createCell(6).setCellValue(Double.parseDouble(String.valueOf(row.getRemain_princ_amt())));
                     dataRow.createCell(7).setCellValue(Double.parseDouble(String.valueOf(row.getRemain_int_amt())));
                     dataRow.createCell(8).setCellValue(Double.parseDouble(String.valueOf(row.getRemain_tot_amt())));
-                    dataRow.createCell(9).setCellValue(String.valueOf(row.getRecv_yn_nm()));
-                    // dataRow.createCell(10).setCellValue(String.valueOf(row.getRecv_dt()));
+                    dataRow.createCell(9).setCellValue(String.valueOf(row.getRecv_dt()));
+                    dataRow.createCell(10).setCellValue(String.valueOf(row.getRecv_yn_nm())); 
                 }
 			} else {
                 List<HashMap<String, Object>> list  = new ArrayList<HashMap<String, Object>>();
@@ -301,8 +300,8 @@ public class LoanController {
                     dataRow.createCell(6).setCellValue(Double.parseDouble(String.valueOf(row.get("remain_princ_amt"))));
                     dataRow.createCell(7).setCellValue(Double.parseDouble(String.valueOf(row.get("remain_int_amt"))));
                     dataRow.createCell(8).setCellValue(Double.parseDouble(String.valueOf(row.get("remain_tot_amt"))));
-                    dataRow.createCell(9).setCellValue(String.valueOf(row.get("recv_yn_nm")));
-                    dataRow.createCell(10).setCellValue(String.valueOf(row.get("recv_dt")));
+                    dataRow.createCell(9).setCellValue(String.valueOf(row.get("recv_dt")));
+                    dataRow.createCell(10).setCellValue(String.valueOf(row.get("recv_yn_nm")));
                 }
 			}
             // Write workbook to a byte array
@@ -360,8 +359,7 @@ public class LoanController {
             if (loanService.updateLoanMst(loanMstVo)) {
                 System.out.println("Update LoanMst  success");
                 result.setResultCode("S000");
-                result.setResultMsg("LoanMst Update successful.");     
-                
+                result.setResultMsg("LoanMst Update successful.");                     
             } else {
                 System.out.println("UpdateExceed  Fail");
                 result.setResultCode("F000");
@@ -380,13 +378,16 @@ public class LoanController {
         ReturnDataVO result = new ReturnDataVO(); 
         try {
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
-    	    procVo.setPrepay_user_id(member.getUserId());            
-
+    	    procVo.setPrepay_user_id(member.getUserId());
             if (loanService.callProcLoanPrepay(procVo)) {
-                System.out.println("PrePay Change success");
-                result.setResultCode("S000");
-                result.setResultMsg("PrePay Update successful.");     
-                
+                if (procVo.getResultCode() == 0) {
+                    result.setResultCode("S000");
+                    result.setResultMsg("PrePay Update successful.");                         
+                } else {
+                    System.out.println("PrePay  Fail");
+                    result.setResultCode("F000");
+                    result.setResultMsg(procVo.getResultMsg());    
+                }
             } else {
                 System.out.println("PrePay  Fail");
                 result.setResultCode("F000");
