@@ -24,29 +24,29 @@
         var isListClick = false;
         callAjax('/common/totalCodelist', "code_grp_cd=('LOAN_TYPE')", fn_loan_type_setting);
         function fn_loan_type_setting(data) {
-          codeSetting('LOAN_TYPE', data.data, '#sch_loan_type', '1', '', ''); 
+          codeSetting('LOAN_TYPE', data.data, '#sch_loan_type', '▽ 지원유형', '', ''); 
           codeSetting('LOAN_TYPE', data.data, '#loan_type', '1', '', ''); 
         }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('LOAN_CODE') AND CHK_CD1 = '" + $('#sch_loan_type').val() + "'", fn_sch_loan_code_setting);
         function fn_sch_loan_code_setting(data) {
-          codeSetting('LOAN_CODE', data.data, '#sch_loan_code', '1', '', ''); 
+          codeSetting('LOAN_CODE', data.data, '#sch_loan_code', '▽ 지원구분', '', ''); 
         }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('LOAN_STATUS')", fn_loan_status_setting);
         function fn_loan_status_setting(data) {
-          codeSetting('LOAN_STATUS', data.data, '#sch_loan_status', '1', '', '');
+          codeSetting('LOAN_STATUS', data.data, '#sch_loan_status', '▽ 진행상태', '', '');
           codeSetting('LOAN_STATUS', data.data, '#loan_status', '1', '', '');
         } 
         callAjax('/common/getCreditCorpList', "", fn_credit_list_setting);
         function fn_credit_list_setting(data) { 
-          codeSetting('CORP_CD', data.data, '#sch_corp_cd', '1', '', '');
+          codeSetting('CORP_CD', data.data, '#sch_corp_cd', '여신사', '', '');
           // codeSetting('CORP_CD', data.data, '#corp_cd', '1', '', '');
         }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('COUNSEL_CD') AND CHK_CD1='LOAN'", fn_counsel_setting);
         function fn_counsel_setting(data) {
-          codeSetting('COUNSEL_CD', data.data, '#sch_counsel_cd', '1', '', '');
+          codeSetting('COUNSEL_CD', data.data, '#sch_counsel_cd', '▽ 상담유형', '', '');
           codeSetting('COUNSEL_CD', data.data, '#counsel_cd', '1', '', '');
         }
 

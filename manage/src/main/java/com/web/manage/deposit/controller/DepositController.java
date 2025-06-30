@@ -138,7 +138,7 @@ public class DepositController {
     }
 
     @RequestMapping(value="depoMng/chainDepositStatus", method = RequestMethod.POST)
-	public @ResponseBody ReturnDataVO totalCodelist(@RequestBody HashMap<String, Object> hashmapParam){
+	public @ResponseBody ReturnDataVO totalCodelist(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session){
 		HashMap<String, Object> depoStatus = new HashMap<String, Object>();
 		ReturnDataVO result = new ReturnDataVO();
 		try {

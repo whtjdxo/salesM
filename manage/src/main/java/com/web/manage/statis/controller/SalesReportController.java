@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 import com.web.manage.common.domain.PageingVO;
+import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
 import com.web.manage.statis.service.SalesReportService;
 
@@ -36,6 +37,11 @@ public class SalesReportController {
     @RequestMapping("salesReport/view")
     public String view() {
         return "pages/statis/salesReport";
+    }
+
+    @RequestMapping("salesTransition/view")
+    public String salesTransitionview() {
+        return "pages/statis/salesTransition";
     }
 
     @RequestMapping(value = "salesReport/salesSummary", method = RequestMethod.POST)
@@ -154,5 +160,68 @@ public class SalesReportController {
             return ResponseEntity.status(500).build();
         }
     } 
- 
+
+
+    @RequestMapping(value = "salesReport/salesTransition", method = RequestMethod.POST)
+    public @ResponseBody String getSalesTransition(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> totalSumm = new HashMap<String, Object>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        hashmapParam.put("userCorpCd", member.getUserCorpCd());
+		hashmapParam.put("userCorpType", member.getUserCorpType());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            // System.out.println(hashmapParam);
+            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+            
+            list = salesReportService.getSalesTransition(hashmapParam);
+            int records = salesReportService.getQueryTotalCnt();
+            totalSumm = salesReportService.getSalesTransitionTotal(hashmapParam);
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+            hashmapResult.put("totalSumm", totalSumm);
+
+            jString = gson.toJson(hashmapResult);
+            System.err.println(jString);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jString;  
+    }    
+    
+    @RequestMapping(value="salesReport/chainSalesTransition", method = RequestMethod.POST)
+	public @ResponseBody ReturnDataVO chainSalesTransition(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session){
+		HashMap<String, Object> chainSalesInfo = new HashMap<String, Object>();
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            hashmapParam.put("user_id", member.getUserId());
+            hashmapParam.put("userCorpCd", member.getUserCorpCd());
+            hashmapParam.put("userCorpType", member.getUserCorpType());
+			chainSalesInfo = salesReportService.getChainSalesTransition(hashmapParam); 
+			result.setResultCode("S000");
+			result.setData(chainSalesInfo);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
 }

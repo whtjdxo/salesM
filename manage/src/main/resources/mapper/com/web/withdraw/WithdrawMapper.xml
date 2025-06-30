@@ -10,6 +10,8 @@
                 SELECT  SQL_CALC_FOUND_ROWS
                         TC.CHAIN_NO				AS chain_no
                         , GET_RISK_GRADE(TC.CHAIN_NO)           AS risk_grade
+                        , ST.RATE_PER_AVG                       AS rate_per_avg
+                        , ST.RATE_PER_PREDAY                    AS rate_per_preday
                         , TC.CHAIN_NM				AS chain_nm
                         , TC.BIZ_NO			        AS biz_no
                         , TC.REMIT_STAT				AS remit_stat
@@ -71,6 +73,7 @@
                                                 FROM 	VW_WD_SUB_RESV_LIST
                                                 GROUP 	BY CHAIN_NO
                                         ) SR ON SR.CHAIN_NO = VW.CHAIN_NO
+                        LEFT OUTER JOIN VW_SALES_TRANSITION ST ON ST.CHAIN_NO = VW.CHAIN_NO 
                         JOIN TB_CHAIN TC ON TC.CHAIN_NO = VW.CHAIN_NO
                                         AND TC.SVC_STAT = 'O'
                                         AND TC.USE_YN   = 'Y'

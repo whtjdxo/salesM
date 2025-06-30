@@ -709,7 +709,13 @@ function codeSetting(group, data, combo, type, val, multiYn) {
         $(comboArray[k]).children().remove();
         $(comboArray[k]).append('<option value="">전 체</option>');
       } else {
-        $(comboArray[k]).children().remove();
+        if (type == '') {
+          $(comboArray[k]).children().remove();
+        } else { 
+          $(comboArray[k]).children().remove();
+          $(comboArray[k]).append('<option value="">'+ type +' 선택</option>');
+        }
+        // $(comboArray[k]).children().remove();
       }
       for (var i = 0; i < cnt; i++) {
         var valArray = val.split(',');
@@ -819,7 +825,12 @@ function codeSetting(group, data, combo, type, val, multiYn) {
         $(comboArray[k]).children().remove();
         $(comboArray[k]).append('<option value="">전 체</option>');
       } else {
-        $(comboArray[k]).children().remove();
+        if (type == '') {
+          $(comboArray[k]).children().remove();
+        } else { 
+          $(comboArray[k]).children().remove();          
+          $(comboArray[k]).append('<option value="">'+ type +' 선택</option>');
+        }
       }
       for (var i = 0; i < cnt; i++) {
         var valArray = val.split(',');

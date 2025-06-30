@@ -177,7 +177,10 @@
                                   FROM  TB_SCRAP_VAN_DATA T1
                                  WHERE	CONF_DTTM  &gt;=  #{sch_conf_sdt}
                                    AND  CONF_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
-                        <if test="schgb_conf_val != ''">
+                                <!-- <if test="sch_card_acq != ''">
+                                        AND T1.CARD_ACQ  = #{sch_card_acq}
+                                </if>     -->
+                                <if test="schgb_conf_val != ''">
                                 <choose>
                                         <when test="schgb_conf == 'schgb_conf_no'">
                                                 AND T1.CONF_NO  = #{schgb_conf_val}
@@ -189,7 +192,7 @@
                                                 AND T1.CONF_AMT  = #{schgb_conf_val}
                                         </when>
                                 </choose>
-                        </if>  
+                                </if>  
                                  GROUP	BY CHAIN_NO, SUBSTR(CONF_DTTM, 1, 10) 	
                                  UNION	ALL
                                 SELECT  'DELI'				AS GB
@@ -205,9 +208,9 @@
                                   FROM  TB_SCRAP_DELI_DATA T1
                                  WHERE	ORDER_DTTM  &gt;=  #{sch_conf_sdt}
                                    AND  ORDER_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
-                        <if test="sch_card_acq != ''">
+                        <!-- <if test="sch_card_acq != ''">
                                 AND CARD_ACQ  = #{sch_card_acq}
-                        </if>                                   
+                        </if>                                    -->
                         <if test="schgb_conf_val != ''">
                                 <choose>
                                         <when test="schgb_conf == 'schgb_conf_no'">
@@ -229,7 +232,7 @@
                  WHERE  1 = 1
                 <if test="sch_agency_cd != ''">
                         AND TC.AGENCY_CD  = #{sch_agency_cd}
-                </if> 
+                </if>
                 <if test="schgb_chain_val != ''">
                         <choose>
                                 <when test="schgb_chain == 'schgb_biz_no'">
@@ -276,7 +279,10 @@
                                   FROM  TB_SCRAP_VAN_DATA T1
                                  WHERE	CONF_DTTM  &gt;=  #{sch_conf_sdt}
                                    AND  CONF_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
-                        <if test="schgb_conf_val != ''">
+                                <!-- <if test="sch_card_acq != ''">
+                                        AND T1.CARD_ACQ  = #{sch_card_acq}
+                                </if>      -->
+                                <if test="schgb_conf_val != ''">
                                 <choose>
                                         <when test="schgb_conf == 'schgb_conf_no'">
                                                 AND T1.CONF_NO  = #{schgb_conf_val}
@@ -288,7 +294,7 @@
                                                 AND T1.CONF_AMT  = #{schgb_conf_val}
                                         </when>
                                 </choose>
-                        </if>  
+                                </if>  
                                  GROUP	BY CHAIN_NO, SUBSTR(CONF_DTTM, 1, 10) 	
                                  UNION	ALL
                                 SELECT  'DELI'				AS GB
@@ -304,10 +310,10 @@
                                   FROM  TB_SCRAP_DELI_DATA T1
                                  WHERE	ORDER_DTTM  &gt;=  #{sch_conf_sdt}
                                    AND  ORDER_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
-                        <if test="sch_card_acq != ''">
-                                AND CARD_ACQ  = #{sch_card_acq}
-                        </if>                                   
-                        <if test="schgb_conf_val != ''">
+                                <!-- <if test="sch_card_acq != ''">
+                                        AND CARD_ACQ  = #{sch_card_acq}
+                                </if>                                    -->
+                                <if test="schgb_conf_val != ''">
                                 <choose>
                                         <when test="schgb_conf == 'schgb_conf_no'">
                                                 AND T1.ORDER_NO  = #{schgb_conf_val}
@@ -319,7 +325,7 @@
                                                 AND T1.ORDER_AMT  = #{schgb_conf_val}
                                         </when>
                                 </choose>
-                        </if>
+                                </if>
                                  GROUP	BY CHAIN_NO,  SUBSTR(ORDER_DTTM, 1, 10) 
                         ) V
                         JOIN TB_CHAIN TC ON TC.CHAIN_NO = V.CHAIN_NO
@@ -371,9 +377,9 @@
            WHERE  1 = 1      
                 AND  VD.CONF_DT   &gt;=  #{sch_conf_sdt} 
                 AND  VD.CONF_DT   &lt;=  #{sch_conf_edt}         
-        <if test="sch_card_acq != ''">
+        <!-- <if test="sch_card_acq != ''">
                 AND  VD.CARD_ACQ = #{sch_card_acq})
-        </if>     
+        </if>      -->
         <if test="schgb_conf_val != ''">
                 <choose>
                         <when test="schgb_conf == 'schgb_conf_no'">
@@ -413,9 +419,9 @@
                   FROM  TB_VAN_DOCU VD
                  WHERE	VD.CHAIN_NO  = #{sch_sub_chain_no} 
                    AND  VD.CONF_DT   = #{sch_sub_conf_dt} 
-                <if test="sch_card_acq != ''">
+                <!-- <if test="sch_card_acq != ''">
                    AND  VD.CARD_ACQ = #{sch_card_acq}
-                </if>                   
+                </if>                    -->
                 <if test="schgb_conf_val != ''">
                         <choose>
                                 <when test="schgb_conf == 'schgb_conf_no'">
@@ -481,9 +487,9 @@
                         LEFT OUTER JOIN TB_WITHDRAW W ON W.DOCU_SEQ = VD.DOCU_SEQ
                  WHERE	VD.CHAIN_NO  = #{sch_sub_chain_no} 
                    AND  VD.CONF_DT   = #{sch_sub_conf_dt} 
-                <if test="sch_card_acq != ''">
+                <!-- <if test="sch_card_acq != ''">
                         AND  VD.CARD_ACQ = #{sch_card_acq}
-                </if>       
+                </if>        -->
                 <if test="schlist_card_acq != ''">
                    AND  FIND_IN_SET(VD.CARD_ACQ, #{schlist_card_acq})
                 </if>   

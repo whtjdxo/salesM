@@ -28,7 +28,11 @@
               return JSON.stringify(postData);
             },
           },
-          columns: [{ data: 'code_grp_cd' }, { data: 'code_grp_nm' }, { data: 'use_yn_nm' }],
+          columns: [
+                { data: 'code_grp_cd' }
+              , { data: 'code_grp_nm' }
+              , { data: 'use_yn_nm' }
+          ],
           order: [[0, 'desc']],
           paging: false,
           lengthChange: false,
@@ -45,6 +49,7 @@
             processing: '처리중...',
           },
         });
+
         $('#tbl_gr_code tbody').on('click', 'tr', function () {
           if ($(this).hasClass('selected')) {
             $(this).removeClass('selected');
@@ -83,7 +88,16 @@
               return JSON.stringify(postData);
             },
           },
-          columns: [{ data: 'code' }, { data: 'code_grp_nm' }, { data: 'code_nm' }, { data: 'ord_no' }, { data: 'use_yn_nm' }, { data: 'view_yn_nm' }, { data: 'upt_user_id' }, { data: 'ent_dttm' }],
+          columns: [  
+            { data: 'code' }
+            , { data: 'code_grp_nm' }
+            , { data: 'code_nm' }
+            , { data: 'ord_no' }
+            , { data: 'use_yn_nm' }
+            , { data: 'view_yn_nm' }
+            , { data: 'upt_user_id' }
+            , { data: 'ent_dttm' }
+          ],
           columnDefs: [
             {
               defaultContent: '-',
@@ -463,11 +477,11 @@
                 <thead class="bg-200">
                   <tr>
                     <th class="text-120">코드</th>
-                    <th class="text-200">분류명</th>
+                    <th class="text-150">분류명</th>
                     <th class="text-300">코드명</th>
                     <th class="text-90">정렬</th>
-                    <th class="text-100">사용여부</th>
-                    <th class="text-100">노출여부</th>
+                    <th class="text-90">사용</th>
+                    <th class="text-90">노출</th>
                     <th class="text-100">수정자</th>
                     <th class="text-150">등록 일시</th>
                   </tr>

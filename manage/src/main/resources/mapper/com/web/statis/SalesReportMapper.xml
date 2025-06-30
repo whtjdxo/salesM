@@ -94,4 +94,229 @@
                                   AND #{sch_date_to}
         
     </select>
+
+    <select id="getSalesTransition" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT	SQL_CALC_FOUND_ROWS
+                TC.CHAIN_NO         AS chain_no
+                , TC.CHAIN_NM       AS chain_nm
+                , IFNULL(ROUND(AVG(CASE WHEN DAY_GAP > 1 THEN SALES_CNT ELSE NULL END), 0), 0)		AS avg_sales_cnt
+                , IFNULL(ROUND(AVG(CASE WHEN DAY_GAP > 1 THEN SALES_AMT ELSE NULL END), 0), 0)		AS avg_sales_amt		
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 1 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt1
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 1 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt1
+                , IFNULL((ROUND( 
+                        (IFNULL(SUM(CASE WHEN DAY_GAP = 1 THEN SALES_AMT ELSE NULL END), 0))
+                        / (IFNULL(ROUND(AVG(CASE WHEN DAY_GAP > 0 THEN SALES_AMT ELSE NULL END), 1), 0))
+                        , 2) * 100) , 0)                                           AS rate_per_avg
+                , IFNULL((ROUND(
+                            (IFNULL(SUM(CASE WHEN DAY_GAP = 1 THEN SALES_AMT ELSE NULL END), 0))
+                        /   (IFNULL(SUM(CASE WHEN DAY_GAP = 2 THEN SALES_AMT ELSE NULL END), 0))
+                        , 2) * 100) , 0)                                            AS rate_per_preday
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 2 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt2
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 2 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt2
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 3 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt3
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 3 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt3
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 4 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt4
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 4 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt4
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 5 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt5
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 5 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt5
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 6 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt6
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 6 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt6		
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 7 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt7
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 7 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt7	
+        FROM 	TB_CHAIN TC
+                JOIN (		
+                        SELECT 	  CHAIN_NO             					AS CHAIN_NO 
+                                , SUBSTR(CONF_DTTM, 1, 10)				AS CONF_DT 
+                                , 1										AS DAY_GAP
+                                , IFNULL(SUM(CASE WHEN CONF_GB = 'A' THEN 1 ELSE NULL END), 0)      		AS CONF_CNT 
+                                , IFNULL(SUM(CASE WHEN CONF_GB = 'A' THEN CONF_AMT ELSE NULL END), 0)   	AS CONF_AMT
+                                , IFNULL(SUM(CASE WHEN CONF_GB = 'C' THEN 1 ELSE NULL END), 0)          	AS CNCL_CNT
+                                , IFNULL(SUM(CASE WHEN CONF_GB = 'C' THEN CONF_AMT * -1 ELSE NULL END), 0)	AS CNCL_AMT 
+                                , COUNT(1)          					AS SALES_CNT
+                                , IFNULL(SUM(CONF_AMT), 0)				AS SALES_AMT                     
+                        FROM  TB_WITHDRAW
+                        WHERE 	CONF_DTTM &gt;= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 DAY), '%Y-%m-%d')
+                          AND	CONF_DTTM &lt;  DATE_FORMAT(NOW(), '%Y-%m-%d')
+                        GROUP 	BY CHAIN_NO, SUBSTR(CONF_DTTM, 1, 10)
+                        UNION 	ALL
+                        SELECT  CHAIN_NO
+                                , CONF_DT		
+                                , DATEDIFF(DATE(NOW()), DATE(CONF_DT))  AS DAY_GAP
+                                , SUM(CONF_CNT)
+                                , SUM(CONF_AMT)
+                                , SUM(CNCL_CNT)
+                                , SUM(CNCL_AMT)
+                                , SUM(SALES_CNT)
+                                , SUM(SALES_AMT)
+                        FROM 	TB_STAT_SALES  
+                        WHERE 	CONF_DT &gt;= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 10 DAY), '%Y-%m-%d')
+                          AND	CONF_DT &lt;  DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 DAY), '%Y-%m-%d')  
+                        GROUP 	BY CHAIN_NO, CONF_DT, DATEDIFF(DATE(NOW()), DATE(CONF_DT))
+                ) VT ON VT.CHAIN_NO = TC.CHAIN_NO            
+        WHERE	TC.USE_YN = 'Y'		
+        AND	TC.SVC_STAT IN ('O', 'R')
+            <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
+                AND  TC.CORP_CD =  #{sch_corp_cd} 
+            </if>                                       
+            <if test="sch_agency_cd != null and sch_agency_cd != ''"> 
+                AND  TC.AGENCY_CD =  #{sch_agency_cd} 
+            </if>                                       
+            <choose>
+                <when test='userCorpType == "LN"'>
+                    AND TC.CORP_CD = #{userCorpCd}
+                </when>
+                <when test='userCorpType == "OP"'>
+                    AND 1 = 1
+                </when>
+                <when test='userCorpType == "AG"'>
+                    AND TC.AGENCY_CD = #{userCorpCd}
+                </when>
+                <otherwise>
+                    AND  1 = 0
+                </otherwise>
+            </choose>    
+        GROUP 	BY TC.CHAIN_NO, TC.CHAIN_NM
+        <choose>
+            <when test="sidx != ''">
+                    ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                    ORDER BY 1
+            </otherwise>
+        </choose> 
+        LIMIT  ${start}, ${end}
+    </select>
+
+    <select id="getChainSalesTransition" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT	SQL_CALC_FOUND_ROWS
+                TC.CHAIN_NO         AS chain_no
+                , IFNULL(ROUND(AVG(CASE WHEN DAY_GAP > 1 THEN SALES_CNT ELSE NULL END), 0), 0)		AS avg_sales_cnt
+                , IFNULL(ROUND(AVG(CASE WHEN DAY_GAP > 1 THEN SALES_AMT ELSE NULL END), 0), 0)		AS avg_sales_amt		
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 1 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt1
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 1 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt1
+                , IFNULL((ROUND( 
+                        (IFNULL(SUM(CASE WHEN DAY_GAP = 1 THEN SALES_AMT ELSE NULL END), 0))
+                        / (IFNULL(ROUND(AVG(CASE WHEN DAY_GAP > 0 THEN SALES_AMT ELSE NULL END), 1), 0))
+                        , 2) * 100) , 0)                                           AS rate_per_avg
+                , IFNULL((ROUND(
+                            (IFNULL(SUM(CASE WHEN DAY_GAP = 1 THEN SALES_AMT ELSE NULL END), 0))
+                        /   (IFNULL(SUM(CASE WHEN DAY_GAP = 2 THEN SALES_AMT ELSE NULL END), 0))
+                        , 2) * 100) , 0)                                            AS rate_per_preday
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 2 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt2
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 2 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt2                 
+        FROM 	TB_CHAIN TC
+                JOIN (		
+                        SELECT 	  CHAIN_NO             					AS CHAIN_NO 
+                                , SUBSTR(CONF_DTTM, 1, 10)				AS CONF_DT 
+                                , 1										AS DAY_GAP
+                                , IFNULL(SUM(CASE WHEN CONF_GB = 'A' THEN 1 ELSE NULL END), 0)      		AS CONF_CNT 
+                                , IFNULL(SUM(CASE WHEN CONF_GB = 'A' THEN CONF_AMT ELSE NULL END), 0)   	AS CONF_AMT
+                                , IFNULL(SUM(CASE WHEN CONF_GB = 'C' THEN 1 ELSE NULL END), 0)          	AS CNCL_CNT
+                                , IFNULL(SUM(CASE WHEN CONF_GB = 'C' THEN CONF_AMT * -1 ELSE NULL END), 0)	AS CNCL_AMT 
+                                , COUNT(1)          					AS SALES_CNT
+                                , IFNULL(SUM(CONF_AMT), 0)				AS SALES_AMT                     
+                        FROM  TB_WITHDRAW
+                        WHERE 	CONF_DTTM &gt;= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 DAY), '%Y-%m-%d')
+                          AND	CONF_DTTM &lt;  DATE_FORMAT(NOW(), '%Y-%m-%d')
+                          AND   CHAIN_NO = #{sch_chain_no}
+                        GROUP 	BY CHAIN_NO, SUBSTR(CONF_DTTM, 1, 10)
+                        UNION 	ALL
+                        SELECT  CHAIN_NO
+                                , CONF_DT		
+                                , DATEDIFF(DATE(NOW()), DATE(CONF_DT))  AS DAY_GAP
+                                , SUM(CONF_CNT)
+                                , SUM(CONF_AMT)
+                                , SUM(CNCL_CNT)
+                                , SUM(CNCL_AMT)
+                                , SUM(SALES_CNT)
+                                , SUM(SALES_AMT)
+                        FROM 	TB_STAT_SALES  
+                        WHERE 	CONF_DT &gt;= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 10 DAY), '%Y-%m-%d')
+                          AND	CONF_DT &lt;  DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 DAY), '%Y-%m-%d')  
+                          AND   CHAIN_NO = #{sch_chain_no}
+                        GROUP 	BY CHAIN_NO, CONF_DT, DATEDIFF(DATE(NOW()), DATE(CONF_DT))
+                ) VT ON VT.CHAIN_NO = TC.CHAIN_NO            
+        WHERE	TC.USE_YN = 'Y'		
+          AND	TC.SVC_STAT IN ('O', 'R')
+          AND   TC.CHAIN_NO = #{sch_chain_no} 
+    </select>
+
+    <select id="getSalesTransitionTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT	  IFNULL(ROUND(AVG(CASE WHEN DAY_GAP > 1 THEN SALES_CNT ELSE NULL END), 0), 0)		AS avg_sales_cnt
+                , IFNULL(ROUND(AVG(CASE WHEN DAY_GAP > 1 THEN SALES_AMT ELSE NULL END), 0), 0)		AS avg_sales_amt		
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 1 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt1
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 1 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt1
+                , IFNULL((ROUND( 
+                        (IFNULL(SUM(CASE WHEN DAY_GAP = 1 THEN SALES_AMT ELSE NULL END), 0))
+                        / (IFNULL(ROUND(AVG(CASE WHEN DAY_GAP > 0 THEN SALES_AMT ELSE NULL END), 1), 0))
+                        , 2) * 100) , 0)                                           AS rate_per_avg
+                , IFNULL((ROUND(
+                            (IFNULL(SUM(CASE WHEN DAY_GAP = 1 THEN SALES_AMT ELSE NULL END), 0))
+                        /   (IFNULL(SUM(CASE WHEN DAY_GAP = 2 THEN SALES_AMT ELSE NULL END), 0))
+                        , 2) * 100) , 0)                                            AS rate_per_preday
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 2 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt2
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 2 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt2
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 3 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt3
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 3 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt3
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 4 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt4
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 4 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt4
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 5 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt5
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 5 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt5
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 6 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt6
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 6 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt6		
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 7 THEN SALES_CNT ELSE NULL END), 0) 	AS sales_cnt7
+                , IFNULL(SUM(CASE WHEN DAY_GAP = 7 THEN SALES_AMT ELSE NULL END), 0) 	AS sales_amt7
+        FROM 	TB_CHAIN TC
+                JOIN (		
+                        SELECT 	  CHAIN_NO             					AS CHAIN_NO 
+                                , SUBSTR(CONF_DTTM, 1, 10)				AS CONF_DT 
+                                , 1										AS DAY_GAP
+                                , IFNULL(SUM(CASE WHEN CONF_GB = 'A' THEN 1 ELSE NULL END), 0)      		AS CONF_CNT 
+                                , IFNULL(SUM(CASE WHEN CONF_GB = 'A' THEN CONF_AMT ELSE NULL END), 0)   	AS CONF_AMT
+                                , IFNULL(SUM(CASE WHEN CONF_GB = 'C' THEN 1 ELSE NULL END), 0)          	AS CNCL_CNT
+                                , IFNULL(SUM(CASE WHEN CONF_GB = 'C' THEN CONF_AMT * -1 ELSE NULL END), 0)	AS CNCL_AMT 
+                                , COUNT(1)          					AS SALES_CNT
+                                , IFNULL(SUM(CONF_AMT), 0)				AS SALES_AMT                     
+                        FROM  TB_WITHDRAW
+                        WHERE 	CONF_DTTM &gt;= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 DAY), '%Y-%m-%d')
+                          AND	CONF_DTTM &lt;  DATE_FORMAT(NOW(), '%Y-%m-%d')
+                        GROUP 	BY CHAIN_NO, SUBSTR(CONF_DTTM, 1, 10)
+                        UNION 	ALL
+                        SELECT  CHAIN_NO
+                                , CONF_DT		
+                                , DATEDIFF(DATE(NOW()), DATE(CONF_DT))  AS DAY_GAP
+                                , SUM(CONF_CNT)
+                                , SUM(CONF_AMT)
+                                , SUM(CNCL_CNT)
+                                , SUM(CNCL_AMT)
+                                , SUM(SALES_CNT)
+                                , SUM(SALES_AMT)
+                        FROM 	TB_STAT_SALES  
+                        WHERE 	CONF_DT &gt;= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 10 DAY), '%Y-%m-%d')
+                          AND	CONF_DT &lt;  DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 DAY), '%Y-%m-%d')  
+                        GROUP 	BY CHAIN_NO, CONF_DT, DATEDIFF(DATE(NOW()), DATE(CONF_DT))
+                ) VT ON VT.CHAIN_NO = TC.CHAIN_NO            
+        WHERE	TC.USE_YN = 'Y'		
+        AND	TC.SVC_STAT IN ('O', 'R')
+            <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
+                AND  TC.CORP_CD =  #{sch_corp_cd} 
+            </if>                                       
+            <if test="sch_agency_cd != null and sch_agency_cd != ''"> 
+                AND  TC.AGENCY_CD =  #{sch_agency_cd} 
+            </if>     
+            <choose>
+            <when test='userCorpType == "LN"'>
+                AND TC.CORP_CD = #{userCorpCd}
+            </when>
+            <when test='userCorpType == "OP"'>
+                AND 1 = 1
+            </when>
+            <when test='userCorpType == "AG"'>
+                AND TC.AGENCY_CD = #{userCorpCd}
+            </when>
+            <otherwise>
+                AND  1 = 0
+            </otherwise>
+            </choose>            
+    </select>
 </mapper>

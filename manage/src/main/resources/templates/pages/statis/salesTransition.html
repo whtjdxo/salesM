@@ -1,0 +1,349 @@
+)<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>사전정산 관리</title>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script> 
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />    
+    <!-- DataTables Select CSS 추가 -->
+    <link rel="stylesheet" href="/css/custom-salesm.css" />
+
+    <script th:inline="none">      
+      $(document).ready(function () {           
+        $('#frm_sch').onLoadFunction();    
+
+        callAjax('/common/getCreditCorpList', "", fn_corp_list_setting);
+        function fn_corp_list_setting(data) {
+          codeSetting('CORP_CD', data.data, '#sch_corp_cd', '여신사', '', ''); 
+        }
+
+        callAjax('/common/getAgencyList', "", fn_agency_list_setting);
+        function fn_agency_list_setting(data) {
+          codeSetting('AGENCY_CD', data.data, '#sch_agency_cd', '대리점', '', '');
+        }
+
+        // Set default values for sch_reg_sdt and sch_reg_edt        
+        // var monthStart  = returnDate('monthStart');
+        // var toDay = returnDate('today');
+        // $('#sch_date_from').val(monthStart); 
+        // $('#sch_date_to').val(toDay);        
+         
+        $('#btn_search').click(function () {   
+          tbl_sales.ajax.reload();
+        });
+         
+        var tbl_sales = $('#tbl_sales').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true, 
+            ajax: {
+                url: '/statis/report/salesReport/salesTransition',
+                contentType: 'application/json',
+                dataType: 'json',
+                type: 'POST',
+                data: function (postData) {
+                    var formData = $('#frm_sch').serializeObject(); 
+                    Object.assign(postData, formData);
+                    return JSON.stringify(postData);
+                },
+                dataSrc: function (json) {
+                    // totalSummary 저장
+                    totalSumm = json.totalSumm || {};
+                    return json.data;
+                },
+                // 서버 에러 처리 등 추가 가능
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                    // 사용자에게 에러 메시지 표시 등
+                }
+            },
+            columns: [
+                {
+                    data: 'chain_no',
+                    render: function (data, type, row, meta) {
+                      return meta.row + meta.settings._iDisplayStart + 1;
+                    },                    
+                }
+                , { data: 'chain_nm', orderable: true}
+                , { data: 'avg_sales_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') , orderable: false }
+                , { data: 'avg_sales_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sales_cnt1', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sales_amt1', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }                 
+                , { 
+                  data: 'rate_per_avg', 
+                  orderable: false,
+                  render: function (data, type, row) {
+                    if (type === 'display' || type === 'filter') {
+                      var value = data == null ? 0 : data;
+                      var color = '';
+                      if (value < 50) {
+                        color = 'background-color:#ff4d4f;color:#fff;'; // 붉은 계열
+                      } else if (value < 60) {
+                        color = 'background-color:#ffa940;color:#fff;'; // 오렌지
+                      }
+                      return '<span style="padding:2px 6px;border-radius:4px;' + color + '">' + value + ' %</span>';
+                    }
+                    return data;
+                  }
+                }
+                , { 
+                  data: 'rate_per_preday', 
+                  orderable: false,
+                  render: function (data, type, row) {
+                    if (type === 'display' || type === 'filter') {
+                      var value = data == null ? 0 : data;
+                      var color = '';
+                      if (value < 50) {
+                        color = 'background-color:#ff4d4f;color:#fff;'; // 붉은 계열
+                      } else if (value < 60) {
+                        color = 'background-color:#ffa940;color:#fff;'; // 오렌지
+                      }
+                      return '<span style="padding:2px 6px;border-radius:4px;' + color + '">' + value + ' %</span>';
+                    }
+                    return data;
+                  }
+                }                
+                , { data: 'sales_cnt2', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sales_amt2', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sales_cnt3', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sales_amt3', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sales_cnt4', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sales_amt4', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sales_cnt5', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sales_amt5', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sales_cnt6', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sales_amt6', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sales_cnt7', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+                , { data: 'sales_amt7', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+            ],
+            columnDefs: [
+              { targets: 0,  width: '50px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
+              { targets: 1,  width: '150px', className: 'text-left px-1' },
+              { targets: 2,  width: '80px', className: 'text-right px-1 dt-body-right' },
+              { targets: 3,  width: '110px', className: 'text-right px-1 dt-body-right' },
+              { targets: 4,  width: '80px', className: 'text-right px-1 dt-body-right' },
+              { targets: 5,  width: '110px', className: 'text-right px-1 dt-body-right' },
+              { targets: 6,  width: '90px', className: 'text-right px-1 dt-body-right' },
+              { targets: 7,  width: '90px', className: 'text-right px-1 dt-body-right' },
+              { targets: 8,  width: '80px', className: 'text-right px-1 dt-body-right' },
+              { targets: 9,  width: '110px', className: 'text-right px-1 dt-body-right' },
+              { targets: 10, width: '80px', className: 'text-right px-1 dt-body-right' },
+              { targets: 11, width: '110px', className: 'text-right px-1 dt-body-right' },
+              { targets: 12, width: '80px', className: 'text-right px-1 dt-body-right' },
+              { targets: 13, width: '110px', className: 'text-right px-1 dt-body-right' },
+              { targets: 14, width: '80px', className: 'text-right px-1 dt-body-right' },
+              { targets: 15, width: '110px', className: 'text-right px-1 dt-body-right' },
+              { targets: 16, width: '80px', className: 'text-right px-1 dt-body-right' },
+              { targets: 17, width: '110px', className: 'text-right px-1 dt-body-right' },              
+              { targets: 18, width: '80px', className: 'text-right px-1 dt-body-right' },
+              { targets: 19, width: '110px', className: 'text-right px-1 dt-body-right' },              
+            ], 
+            order: [[0, 'desc']], // 기본 정렬 설정
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            scrollX: true,
+            info: false, // 필요에 따라 true로 변경
+            autoWidth: false,
+            responsive: true, 
+            scrollCollapse: false,
+            scrollY: '520px',
+            pageLength: 20,
+            language: {
+                emptyTable: '데이터가 없습니다.',
+                zeroRecords: '일치하는 데이터가 없습니다.',
+                loadingRecords: '로딩중...',
+                processing: '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">처리중...</span></div>', // 로딩/처리중 시각적 표시 개선
+            },
+            footerCallback: function (row, data, start, end, display) {
+              var api = this.api();
+              const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+              const colMap = {    
+                  2: 'avg_sales_cnt',
+                  3: 'avg_sales_amt',
+                  4: 'sales_cnt1',
+                  5: 'sales_amt1',
+                  6: 'rate_per_avg',
+                  7: 'rate_per_preday',
+                  8: 'sales_cnt2',
+                  9: 'sales_amt2',
+                  10: 'sales_cnt3',
+                  11: 'sales_amt3',
+                  12: 'sales_cnt4',
+                  13: 'sales_amt4',
+                  14: 'sales_cnt5',
+                  15: 'sales_amt5',
+                  16: 'sales_cnt6',
+                  17: 'sales_amt6',
+                  18: 'sales_cnt7',
+                  19: 'sales_amt7',                    
+              };            
+              Object.entries(colMap).forEach(([colIdx, key]) => {
+                  var column = api.column(parseInt(colIdx));
+                  if (column && column.footer()) {
+                      const val = totalSumm[key] || 0;
+                      $(column.footer()).html(renderNumber(val));
+                  }
+              });
+          }, 
+            fixedColumns: {
+                left: 2, // 왼쪽에 고정할 열의 개수
+                right: 0 // 오른쪽에 고정할 열의 개수
+            } 
+        }); 
+ 
+        $('#tbl_sales').on('click', 'tr', function (e) {          
+          if ($(this).hasClass('selected')) {
+              $(this).removeClass('selected');
+          } else {
+              tbl_sales.$('tr.selected').removeClass('selected');
+              $(this).addClass('selected');
+          }  
+        });    
+
+        // // Excel download button click event
+        // $('#btn_excel').click(function () {
+        //   var formData = $('#frm_sch').serializeObject();
+        //   $.ajax({
+        //     url: '/statis/report/salesReport/downExcel',
+        //     type: 'POST',
+        //     contentType: 'application/json',
+        //     data: JSON.stringify(formData),
+        //     xhrFields: {
+        //       responseType: 'blob'
+        //     },
+        //     success: function (data, status, xhr) {
+        //       var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        //       var link = document.createElement('a');
+        //       link.href = window.URL.createObjectURL(blob);
+        //       link.download = '매출현황.xlsx';
+        //       link.click();
+        //     },
+        //     error: function (xhr, status, error) {
+        //       alert('Excel download failed.');
+        //     }
+        //   });
+        // }); 
+      });   
+    </script>
+  </head>
+  <div class="content">     
+    <div class="row g-1 mb-1">       
+      <div class="card">
+        <div class="card-header" style="height:80px;">          
+          <div class="row flex-between-end">
+            <div class="col-lg-2 align-self-center">
+              <h4 class="mb-0">가맹점 매출 </h4>
+            </div>            
+            <div class="col-lg-10">
+              <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
+                <div class="row mb-1">
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <select class="form-select form-control-sm me-1" id="sch_corp_cd" name="sch_corp_cd" style="width: 120px">
+                        <option value="">여신사</option>
+                      </select>
+                      <select class="form-select form-control-sm me-1" id="sch_agency_cd" name="sch_agency_cd" style="width: 120px">
+                        <option value="">대리점</option>
+                      </select>  
+                    </div>                                             
+                  </div>
+                  <div class="col-sm-5">
+                    <div class="input-group input-group-sm mb-1">
+                      <!-- <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_date_from">정산일자</label>                      
+                      <div class="col-sm-4">
+                        <input class="form-control form-control-sm " id="sch_date_from" type="text" name="sch_date_from" istyle="date" maxlength="10" required />
+                      </div>   
+                      <span class="input-group-text">~</span>
+                      <div class="col-sm-4">
+                        <input class="form-control form-control-sm" id="sch_date_to" type="text" name="sch_date_to" istyle="date" maxlength="10" required />
+                      </div>    -->
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <!-- <button type="button" class="btn btn-success btn-sm" id="btn_excel" name="btn_excel">Excel 출력</button>                       -->
+                  </div>
+                </div>
+              </form>                
+            </div>
+          </div>          
+        </div>
+        <div class="card-body pt-0 px-0" style="padding-top: 0px">
+          <div class="table-responsive scrollbar">
+            <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_sales">
+              <thead>
+              <tr>
+                <th rowspan="2" class="text-center align-middle" style="border:1px solid #dee2e6;">NO</th>
+                <th rowspan="2" class="text-center align-middle" style="border:1px solid #dee2e6;">가맹점</th>
+                <th colspan="2" class="text-center" style="border:1px solid #dee2e6;">평균</th>
+                <th colspan="4" class="text-center" style="border:1px solid #dee2e6;">D-1 (전일)</th>                
+                <th colspan="2" class="text-center" style="border:1px solid #dee2e6;">D-2</th>
+                <th colspan="2" class="text-center" style="border:1px solid #dee2e6;">D-3</th>
+                <th colspan="2" class="text-center" style="border:1px solid #dee2e6;">D-4</th>
+                <th colspan="2" class="text-center" style="border:1px solid #dee2e6;">D-5</th>
+                <th colspan="2" class="text-center" style="border:1px solid #dee2e6;">D-6</th>
+                <th colspan="2" class="text-center" style="border:1px solid #dee2e6;">D-7</th>
+              </tr>               
+              <tr>                
+                <th class="text-center" style="border:1px solid #dee2e6;">승인건</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인금액</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인건</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인금액</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">평균대비</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">전일대비</th>
+
+                <th class="text-center" style="border:1px solid #dee2e6;">승인건</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인금액</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인건</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인금액</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인건</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인금액</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인건</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인금액</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인건</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인금액</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인건</th>
+                <th class="text-center" style="border:1px solid #dee2e6;">승인금액</th>
+              </tr>
+              </thead>
+              <tbody class="list"></tbody>
+              <tfoot>
+                <tr>
+                  <th colspan="2" class="text-center">총계</th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  
+                  <th class="text-right px-2"></th> 
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                     
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>                  
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th>
+                  <th class="text-right px-2"></th> 
+                </tr>
+              </tfoot>
+              
+            </table>
+          </div>
+        </div>
+      </div> 
+    </div>  
+  </div>
+</html>
+

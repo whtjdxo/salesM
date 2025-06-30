@@ -20,22 +20,22 @@
 
         callAjax('/common/getCreditCorpList', "", fn_corp_list_setting);
         function fn_corp_list_setting(data) {
-          codeSetting('CORP_CD', data.data, '#sch_corp_no', '1', '', ''); 
+          codeSetting('CORP_CD', data.data, '#sch_corp_no', '여신사', '', ''); 
         }
 
         callAjax('/common/getAgencyList', "", fn_agency_list_setting);
         function fn_agency_list_setting(data) {
-          codeSetting('AGENCY_CD', data.data, '#sch_agency_cd', '1', '', ''); 
+          codeSetting('AGENCY_CD', data.data, '#sch_agency_cd', '대리점', '', ''); 
         }  
 
         callAjax('/common/totalCodelist', "code_grp_cd=('WD_STATUS') AND CODE LIKE 'W%' AND CHK_CD2 = 'M'", fn_wd_status_setting);      
         function fn_wd_status_setting(data) {
-          codeSetting('WD_STATUS', data.data, '#change_wd_status', '1', '', '');  
+          codeSetting('WD_STATUS', data.data, '#change_wd_status', '진행상태', '', '');  
         }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('VAN_CD')", fn_corp_van_setting);      
         function fn_corp_van_setting(data) {
-          codeSetting('VAN_CD', data.data, '#sch_list_van', '1', '', '');  
+          codeSetting('VAN_CD', data.data, '#sch_list_van', 'VAN', '', '');  
         }
 
         // Set default values for sch_reg_sdt and sch_reg_edt
@@ -92,7 +92,25 @@
                     className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
                 }
                 , { data: 'chain_nm' }
-                , { data: 'risk_grade' }
+                , { 
+                  data: null,
+                  render: function(data, type, row) {
+                  let avgColor = '', predayColor = '';
+            
+                  under50 = 'background-color:#ff4d4f;color:#fff;'; // 붉은 계열
+                  under60 = 'background-color:#ffa940;color:#fff;'; // 오렌지 
+                  avgValue = row.rate_per_avg != null ? row.rate_per_avg : 0;
+                  predayValue = row.rate_per_preday != null ? row.rate_per_preday : 0;
+
+                  if (avgValue <= 50) avgColor = under50;
+                  else if (avgValue <= 60) avgColor =under60;
+                  if (predayValue <= 50) predayColor = under50;
+                  else if (predayValue <= 60) predayColor = under60;
+                  return '<span style="padding:2px 6px;border-radius:4px;' + avgColor + '">' + avgValue + '%</span>' 
+                    + ' / <span style="padding:2px 6px;border-radius:4px;' + predayColor + '">' + predayValue + '%</span>';
+                  }
+                }
+                // , { data: 'risk_grade' }
                 , { data: 'conf_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { data: 'conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { data: 'cncl_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
@@ -111,15 +129,15 @@
             ],
             columnDefs: [
                 { targets: 0, width: '40px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
-                { targets: 1, width: '120px', className: 'text-left px-1' },
-                { targets: 2, width: '50px', className: 'text-right px-1 dt-body-right' }, // DataTables 권장 클래스
+                { targets: 1, width: '130px', className: 'text-left px-1' },
+                { targets: 2, width: '100px', className: 'text-right px-1 dt-body-center' }, // DataTables 권장 클래스
                 { targets: 3, width: '80px', className: 'text-right px-1 dt-body-right' }, // 숫자 데이터는 오른쪽 정렬이 일반적
-                { targets: 4, width: '130px', className: 'text-right px-1 dt-body-right' },
+                { targets: 4, width: '110px', className: 'text-right px-1 dt-body-right' },
                 { targets: 5, width: '80px', className: 'text-right px-1 dt-body-right' },
-                { targets: 6, width: '130px', className: 'text-right px-1 dt-body-right' },
+                { targets: 6, width: '110px', className: 'text-right px-1 dt-body-right' },
                 { targets: 7, width: '80px', className: 'text-right px-1 dt-body-right' },
-                { targets: 8, width: '130px', className: 'text-right px-1 dt-body-right' },
-                { targets: 9, width: '90px', className: 'text-right px-1 dt-body-right' }
+                { targets: 8, width: '110px', className: 'text-right px-1 dt-body-right' },
+                { targets: 9, width: '80px', className: 'text-right px-1 dt-body-right' }
             ],
             order: [[1, 'desc']], // 기본 정렬 설정
             paging: true,
@@ -257,8 +275,7 @@
           $('#sch_risk_chain_no').val(row.chain_no);   // risk 검색 조건
 
           $('#sch_card_work_date').val($('#sch_work_date').val());   // 카드 작업일 설정
-          $('#sch_list_work_date').val($('#sch_work_date').val());   // risk 작업일 설정
-           
+          $('#sch_list_work_date').val($('#sch_work_date').val());   // risk 작업일 설정           
 
           $('#tot_conf_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.tot_amt));
           $('#card_fee_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.card_fee_amt));
@@ -952,7 +969,7 @@
                         <input type="checkbox" id="check_all" class="form-check-input" />
                     </th>
                     <th class="text-center">가맹점 명</th>
-                    <th class="text-center">Risk</th>
+                    <th class="text-center">평균/어제</th>
                     <th class="text-center">승인 건</th>
                     <th class="text-center">승인 금액</th>
                     <th class="text-center">취소 건</th>
@@ -1119,11 +1136,11 @@
                         <label class="form-check-label" for="sch_list_wd_status_n">미확정</label>
                       </div>
                       <div class="col-sm-2">
-                        <input class="form-control form-control-sm me-1" id="sch_list_conf_sdt" type="text" name="sch_conf_sdt" istyle="date" maxlength="10" required />
+                        <input class="form-control form-control-sm me-1" id="sch_list_conf_sdt" type="text" name="sch_list_conf_sdt" istyle="date" maxlength="10" required />
                       </div>   
                       <span class="input-group-text">~</span>
                       <div class="col-sm-2">
-                        <input class="form-control form-control-sm me-1" id="sch_list_conf_edt" type="text" name="sch_conf_edt" istyle="date" maxlength="10" required />
+                        <input class="form-control form-control-sm me-1" id="sch_list_conf_edt" type="text" name="sch_list_conf_edt" istyle="date" maxlength="10" required />
                       </div>
                      
                       <select class="form-select form-control-sm me-1" id="sch_list_van" name="sch_list_van" style="width: 90px">

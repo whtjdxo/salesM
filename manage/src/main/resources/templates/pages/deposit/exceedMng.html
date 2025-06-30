@@ -23,18 +23,18 @@
         var isListClick = false;
         callAjax('/common/totalCodelist', "code_grp_cd=('EXC_TYPE')", fn_exc_type_setting);      
         function fn_exc_type_setting(data) {
-          codeSetting('EXC_TYPE', data.data, '#sch_exc_type', '1', '', ''); 
+          codeSetting('EXC_TYPE', data.data, '#sch_exc_type', '과입유형', '', ''); 
           codeSetting('EXC_TYPE', data.data, '#exc_type', '1', '', ''); 
         }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('EXC_CODE') AND CHK_CD1 = '" + $('#sch_exc_type').val() + "'", fn_sch_exc_code_setting);      
         function fn_sch_exc_code_setting(data) {
-          codeSetting('EXC_CODE', data.data, '#sch_exc_code', '1', '', ''); 
+          codeSetting('EXC_CODE', data.data, '#sch_exc_code', '과입사유', '', ''); 
         }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('EXC_STATUS')", fn_exc_status_setting);      
         function fn_exc_status_setting(data) {
-          codeSetting('EXC_STATUS', data.data, '#sch_exc_status', '1', '', '');
+          codeSetting('EXC_STATUS', data.data, '#sch_exc_status', '진행상태', '', '');
           codeSetting('EXC_STATUS', data.data, '#exc_status', '1', '', '');
         } 
         // Set default values for sch_exc_sdt and sch_exc_edt
@@ -141,7 +141,7 @@
         });  
 
         function fn_sch_exc_code_setting(data) {
-          codeSetting('EXC_CODE', data.data, '#sch_exc_code', '1', '', ''); 
+          codeSetting('EXC_CODE', data.data, '#sch_exc_code', '과입사유', '', ''); 
         }
  
         $('#exc_type').change(function () {
@@ -214,7 +214,7 @@
                       data: 'exc_no',
                         render: function(data, type, row) {
                           // exc_status가 '500000'>> 출금완료 이면 '-' 표시, 아니면 체크박스
-                          if (row.exc_status === '500000') {
+                            if (row.exc_status === '500000' || row.exc_status === '100000') {
                             return '-';
                           }
                           return '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '">';
@@ -392,7 +392,7 @@
         function fn_frm_exc_mst_clear(){
           var chain_no = $('#chain_no').val();           
           $('#frm_exc_mst')[0].reset();
-          $('#exc_date').val(today.toISOString().split('T')[0]);
+          $('#exc_date').val(toDay);
           $('#exc_type').val('I').prop('selected', true).trigger('change');                      
           $('#exc_status').val('000000');
           $("input:radio[name='use_yn'][value='Y']").prop('checked', true); 
@@ -467,7 +467,7 @@
             });
             tbl_exc_list.ajax.reload();
             fn_frm_exc_mst_clear();            
-          } else { 
+          } else {  
             swal('실패', resultMsg, 'error');
           }
         } 

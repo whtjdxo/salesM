@@ -20,7 +20,7 @@
         callAjax('/common/totalCodelist', "code_grp_cd=('CORP_TYPE') AND CHK_CD1 = 'OP'", fn_corp_setting);      
         function fn_corp_setting(data) {
           codeSetting('CORP_TYPE', data.data, '#corp_type', '1', '', '');
-          codeSetting('CORP_TYPE', data.data, '#sch_corp_type', '1', '', '');
+          codeSetting('CORP_TYPE', data.data, '#sch_corp_type', '여신사', '', '');
         } 
         callAjax('/common/totalCodelist', "code_grp_cd=('BANK_CD')", fn_bank_setting);      
         function fn_bank_setting(data) {

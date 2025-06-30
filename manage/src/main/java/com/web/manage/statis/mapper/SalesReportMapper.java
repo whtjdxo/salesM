@@ -12,4 +12,8 @@ public interface SalesReportMapper {
     List<HashMap<String, Object>> getSalesSummary(HashMap<String, Object> hashmapParam);
 
     HashMap<String, Object> getSalesSummaryTotal(HashMap<String, Object> hashmapParam); 
+
+    List<HashMap<String, Object>> getSalesTransition(HashMap<String, Object> hashmapParam);
+    HashMap<String, Object> getChainSalesTransition(HashMap<String, Object> hashmapParam); 
+    HashMap<String, Object> getSalesTransitionTotal(HashMap<String, Object> hashmapParam); 
 }

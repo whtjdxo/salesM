@@ -355,7 +355,7 @@
                 , CASE WHEN SC_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d') THEN
                             CASE RECV_YN WHEN 'Y' THEN '납부' ELSE '미납' END
                         ELSE '대기' END	        AS recv_yn_nm
-                , RECV_DT					    AS recv_dt				
+                , IFNULL(RECV_DT, 'N')		    AS recv_dt				
                 , SUB_TRANS_YN													AS sub_trans_yn
                 , SUB_TRANS_NO													AS sub_trans_no
                 , DATE_FORMAT(SUB_TRANS_DTTM, '%Y-%m-%d %H:%i:%s')				AS trans_dttm

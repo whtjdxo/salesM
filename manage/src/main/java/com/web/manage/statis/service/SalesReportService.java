@@ -29,4 +29,16 @@ public class SalesReportService {
     public HashMap<String, Object> getSalesSummaryTotal(HashMap<String, Object> hashmapParam) {
         return salesReportMapper.getSalesSummaryTotal(hashmapParam);
     } 
+
+    public List<HashMap<String, Object>> getSalesTransition(HashMap<String, Object> hashmapParam) {
+        return salesReportMapper.getSalesTransition(hashmapParam); 
+    }
+
+    public HashMap<String, Object> getChainSalesTransition(HashMap<String, Object> hashmapParam) {
+        return salesReportMapper.getChainSalesTransition(hashmapParam);
+    }
+     
+    public HashMap<String, Object> getSalesTransitionTotal(HashMap<String, Object> hashmapParam) {
+        return salesReportMapper.getSalesTransitionTotal(hashmapParam);
+    }
 }

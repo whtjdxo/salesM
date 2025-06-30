@@ -23,18 +23,18 @@
         var isListClick = false;
         callAjax('/common/totalCodelist', "code_grp_cd=('SUB_TYPE')", fn_sub_type_setting);      
         function fn_sub_type_setting(data) {
-          codeSetting('SUB_TYPE', data.data, '#sch_sub_type', '1', '', ''); 
+          codeSetting('SUB_TYPE', data.data, '#sch_sub_type', '차감유형', '', ''); 
           codeSetting('SUB_TYPE', data.data, '#sub_type', '1', '', ''); 
         }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('SUB_CODE') AND CHK_CD1 = '" + $('#sch_sub_type').val() + "'", fn_sch_sub_code_setting);      
         function fn_sch_sub_code_setting(data) {
-          codeSetting('SUB_CODE', data.data, '#sch_sub_code', '1', '', ''); 
+          codeSetting('SUB_CODE', data.data, '#sch_sub_code', '차감코드', '', ''); 
         }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('SUB_STATUS')", fn_sub_status_setting);      
         function fn_sub_status_setting(data) {
-          codeSetting('SUB_STATUS', data.data, '#sch_sub_status', '1', '', '');
+          codeSetting('SUB_STATUS', data.data, '#sch_sub_status', '진행상태', '', '');
           codeSetting('SUB_STATUS', data.data, '#sub_status', '1', '', '');
         } 
         // Set default values for sch_reg_sdt and sch_reg_edt
@@ -126,7 +126,7 @@
         });  
 
         function fn_sch_sub_code_setting(data) {
-          codeSetting('SUB_CODE', data.data, '#sch_sub_code', '1', '', ''); 
+          codeSetting('SUB_CODE', data.data, '#sch_sub_code', '차감코드', '', ''); 
         }
 
         function fn_sub_code_setting(data) {

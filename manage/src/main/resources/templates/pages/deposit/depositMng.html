@@ -20,7 +20,7 @@
 
         callAjax('/common/getCreditCorpList', "", fn_corp_list_setting);
         function fn_corp_list_setting(data) {
-          codeSetting('CORP_CD', data.data, '#sch_corp_cd', '1', '', ''); 
+          codeSetting('CORP_CD', data.data, '#sch_corp_cd', '여신사', '', ''); 
         }
         // Set default values for sch_reg_sdt and sch_reg_edt
         var toDay = returnDate('today');  
