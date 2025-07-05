@@ -352,7 +352,7 @@
                         VD.CHAIN_NO             AS chain_no
                         , TC.CHAIN_NM           AS chain_nm
                         , T2.BIZ_NO             AS biz_no
-                        , TC.CONF_DT            AS conf_dt
+                        , VD.CONF_DT            AS conf_dt
                         , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'A' THEN 1 ELSE NULL END), 0)               AS conf_cnt
                         , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'A' THEN VD.CONF_AMT ELSE NULL END), 0)     AS conf_amt
                         , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'C' THEN 1 ELSE NULL END), 0)               AS cncl_cnt

@@ -39,8 +39,10 @@
                         , IFNULL(CRD_FEE_AMT, 0)                AS crd_fee_amt
                         , IFNULL(VW.EXC_AMT, 0) 		AS exc_amt
                         , IFNULL(SR.SUB_AMT, 0)		        AS sub_amt
-                        , IFNULL(VW.WD_BASE_AMT, 0) + IFNULL(VW.EXC_AMT, 0)
-                        - ( IFNULL(SVC_FEE_AMT, 0) + IFNULL(SR.SUB_AMT, 0))	AS remit_amt
+                        , IFNULL(GREATEST( 
+                                IFNULL(VW.WD_BASE_AMT, 0) + IFNULL(VW.EXC_AMT, 0)
+                                - ( IFNULL(SVC_FEE_AMT, 0) + IFNULL(SR.SUB_AMT, 0))
+                                , 0), 0)	                AS remit_amt
                 FROM	(
                                 SELECT 	CHAIN_NO, WORK_DATE 
                                         , IFNULL(SUM(TOT_CNT), 0) 		AS TOT_CNT					  					 
@@ -129,10 +131,10 @@
                         , IFNULL(SUM(CRD_FEE_AMT), 0)           AS crd_fee_amt
                         , IFNULL(SUM(VW.EXC_AMT), 0) 		AS exc_amt
                         , IFNULL(SUM(SR.SUB_AMT), 0)		AS sub_amt
-                        , IFNULL(SUM(
+                        , IFNULL(GREATEST( SUM(
                                 (IFNULL(VW.WD_BASE_AMT, 0) + IFNULL(VW.EXC_AMT, 0))
                               - (IFNULL(SVC_FEE_AMT, 0) + IFNULL(SR.SUB_AMT, 0))
-                                ), 0)	                        AS remit_amt
+                                ), 0), 0)                        AS remit_amt
                 FROM	(
                                 SELECT 	CHAIN_NO, WORK_DATE 
                                         , IFNULL(SUM(TOT_CNT), 0) 		AS TOT_CNT					  					 

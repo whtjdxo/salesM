@@ -24,7 +24,7 @@
 			  	, DATE_FORMAT(upt_dttm, '%Y-%m-%m %H:%i:%s') AS "upt_dttm"
 			  	, view_icon AS "view_icon"
 		  FROM 	tb_menu 
-		 WHERE 	site_gb_cd = 'SG0001'
+		 WHERE 	site_gb_cd = IFNULL(#{site_gb_cd}, 'MANAGE')
 		   AND 	menu_tp != 'R'
 		 ORDER 	BY menu_cd ASC, menu_prnt_cd ASC, menu_ord ASC
 	</select>

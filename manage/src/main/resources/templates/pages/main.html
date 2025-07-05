@@ -147,7 +147,6 @@
           chart2.setOption(option2);
         }
           
-          
         var tbl_sales_list = $('#tbl_sales_list').DataTable({
             processing: true,
             serverSide: true,
@@ -182,12 +181,12 @@
             ],
             columnDefs: [
                   { targets: 0, width: '100px', className: 'text-center dt-body-center' } // 중앙 정렬 확인
-                , { targets: 1, width: '100px', className: 'text-right px-1 dt-body-right' }
-                , { targets: 2, width: '120px', className: 'text-right px-1 dt-body-right' } 
-                , { targets: 3, width: '120px', className: 'text-right px-1 dt-body-right' }
-                , { targets: 4, width: '120px', className: 'text-right px-1 dt-body-right' }
-                , { targets: 5, width: '120px', className: 'text-right px-1 dt-body-right' }
-                , { targets: 6, width: '120px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 1, width: '90px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 2, width: '110px', className: 'text-right px-1 dt-body-right' } 
+                , { targets: 3, width: '110px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 4, width: '110px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 5, width: '110px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 6, width: '110px', className: 'text-right px-1 dt-body-right' }
             ],
             order: [[0, 'desc']], // 기본 정렬 설정
             paging: true,
@@ -197,7 +196,7 @@
             info: false, // 필요에 따라 true로 변경
             autoWidth: false,
             // responsive: true, // 이미 위에서 설정됨
-            scrollCollapse: true,
+            scrollCollapse: false,
             scrollY: '280px',
             pageLength: 10,
             language: {
@@ -247,7 +246,7 @@
           ],
           columnDefs: [            
             { targets: 0, width: '100px', className: 'text-center dt-body-center' } // 중앙 정렬 확인
-            , { targets: 1, width: '300px', className: 'text-left px-1' }
+            , { targets: 1, width: '250px', className: 'text-left px-1' }
             , { targets: 2, width: '100px', className: 'text-center dt-body-center' } // DataTables 권장 클래스
           ],
           order: [[2, 'desc']],
@@ -257,9 +256,9 @@
           ordering: true,
           autoWidth: false,
           responsive: false,
-          scrollCollapse: true,
+          scrollCollapse: false,
           pageLength: 10,
-          scrollY: '320px',
+          scrollY: '280px',
           info: false,
           language: {
             emptyTable: '데이터가 없습니다.',
@@ -367,7 +366,7 @@
             </div>
           </div>
           <div class="card-body">                    
-            <div class="col-12 col-xl-12">
+            <div class="col-12 col-lg-12">
               <div id="salesTrendsChart" style="width:100%; height:400px;"></div> 
             </div>
           </div>
@@ -384,7 +383,7 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="col-12 col-xl-12">
+            <div class="col-12 col-lg-12">
               <div id="depositTrendsChart" style="width:100%; height:400px;"></div> 
             </div>
           </div>
@@ -402,17 +401,17 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="table-responsive scrollbar">
-              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_sales_list">  
+            <div class="table-responsive scrollbar" style="overflow-x: auto; min-width: 320px;">
+              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_sales_list" style="min-width: 740px; border-collapse: collapse;">
                 <thead>
                   <tr>
-                    <th class="text-center">정산일</th>
-                    <th class="text-center">총건</th>
-                    <th class="text-center">매출 총액</th> 
-                    <th class="text-center">출금 총액</th>
-                    <th class="text-center">입금 예정액</th>
-                    <th class="text-center">입  금  액</th>  
-                    <th class="text-center">총 사용금액</th> 
+                    <th class="text-center" style="width:100px; border:1px solid #dee2e6;">정산일</th>
+                    <th class="text-center" style="width:90px; border:1px solid #dee2e6;">총건</th>
+                    <th class="text-center" style="width:110px; border:1px solid #dee2e6;">매출 총액</th>
+                    <th class="text-center" style="width:110px; border:1px solid #dee2e6;">출금 총액</th>
+                    <th class="text-center" style="width:110px; border:1px solid #dee2e6;">입금 예정액</th>
+                    <th class="text-center" style="width:110px; border:1px solid #dee2e6;">입  금  액</th>
+                    <th class="text-center" style="width:110px; border:1px solid #dee2e6;">총 사용금액</th>  
                   </tr>
                 </thead>
                 <tbody class="list"></tbody> 
@@ -431,13 +430,13 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="table-responsive scrollbar">
-              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_board_list">  
+            <div class="table-responsive scrollbar" style="overflow-x: auto; min-width: 320px;">
+              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_board_list" style="min-width: 450px; border-collapse: collapse;"> 
                 <thead>
                   <tr>
-                    <th class="text-center">구분</th>
-                    <th class="text-center">제목</th>
-                    <th class="text-center">등록일</th>
+                    <th class="text-center" style="width:100px; border:1px solid #dee2e6;">구분</th>
+                    <th class="text-center" style="width:250px; border:1px solid #dee2e6;">제 목</th>
+                    <th class="text-center" style="width:100px; border:1px solid #dee2e6;">등록일</th>
                   </tr>
                 </thead>
                 <tbody class="list"></tbody>              

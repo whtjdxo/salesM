@@ -81,9 +81,9 @@
                   data: 'depo_gap_amt_remit', 
                   render: function(data, type, row) {
                     var formatted = $.fn.dataTable.render.number(',', '.', 0, '').display(data);
-                    if (data > 0) {
+                    if (data < 0) {
                       return '<span style="color: blue; font-weight: bold;">' + formatted + '</span>';
-                    } else if (data < 0) {
+                    } else if (data > 0) {
                       return '<span style="color: red; font-weight: bold;">' + formatted + '</span>';
                     }
                     return formatted;
@@ -239,9 +239,9 @@
           if (depoStatus.gap_amt) {
             var gapAmt = Number(depoStatus.gap_amt);
             var formatted = $.fn.dataTable.render.number(',', '.', 0, '').display(gapAmt);
-            if (gapAmt > 0) {
+            if (gapAmt < 0) {
               $('#gap_amt').val(formatted).css({'color': 'blue', 'font-weight': 'bold'});
-            } else if (gapAmt < 0) {
+            } else if (gapAmt > 0) {
               $('#gap_amt').val(formatted).css({'color': 'red', 'font-weight': 'bold'});
             } else {
               $('#gap_amt').val(formatted).css({'color': '', 'font-weight': ''});
@@ -377,9 +377,9 @@
               , { 
                 data: 'depo_gap_amt_remit', 
                 render: function(data, type, row) {
-                  if (data > 0) {
+                  if (data < 0) {
                     return '<span style="color: blue;">' + $.fn.dataTable.render.number(',', '.', 0, '').display(data) + '</span>';
-                  } else if (data < 0) {
+                  } else if (data > 0) {
                     return '<span style="color: red; font-weight: bold;">' + $.fn.dataTable.render.number(',', '.', 0, '').display(data) + '</span>';
                   }
                   return $.fn.dataTable.render.number(',', '.', 0, '').display(data);

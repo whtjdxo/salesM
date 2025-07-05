@@ -196,7 +196,7 @@
           // 수정된 부분: 클릭된 셀 정보 가져오기
           var clickedCell = $(e.target).closest('td');
           var clickedColumnIndex = clickedCell.index();
-          if (clickedColumnIndex == 8 && row.error_cnt > 0) {
+          if (clickedColumnIndex == 9 && row.error_cnt > 0) {
               // Show modal_scrap
               $('#modal_scrap').modal('show');   
               $('#sch_unproc_chain_no').val(row.chain_no);

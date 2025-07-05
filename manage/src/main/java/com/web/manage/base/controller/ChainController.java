@@ -109,7 +109,7 @@ public class ChainController {
             userVO.setUser_nm(chainVo.getCeo_nm());
             userVO.setUser_pwd(chainVo.getCeo_pwd());
             userVO.setUser_gb("20");
-            userVO.setAuth_grp_cd("AG2001");        // 대리점 대표 권한
+            userVO.setAuth_grp_cd("AG2001");        // 가맹점 대표 권한
             userVO.setHp_no(chainVo.getCeo_tel_no());
             userVO.setTel_no(chainVo.getCeo_tel_no());
             userVO.setEmail(chainVo.getEmail());
@@ -829,7 +829,7 @@ public class ChainController {
     	    counselVo.setUpt_user_id(member.getUserId()); 
 
             if (chainService.updateChainCounsel(counselVo)) {
-                System.out.println("Chain Counsel Update  success");
+                // System.out.println("Chain Counsel Update  success");
                 result.setResultCode("S000");
                 result.setResultMsg("Chain Counsel Update successful.");
             } else {

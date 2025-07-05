@@ -77,7 +77,18 @@
                 , { data: 'tot_sales_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { data: 'org_card_resv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { data: 'bank_in_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
-                , { data: 'depo_gap_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                // , { data: 'depo_gap_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { 
+                  data: 'depo_gap_amt', 
+                  render: function(data, type, row) {
+                    if (data < 0) {
+                      return '<span style="color: blue;">' + $.fn.dataTable.render.number(',', '.', 0, '').display(data) + '</span>';
+                    } else if (data > 0) {
+                      return '<span style="color: red; font-weight: bold;">' + $.fn.dataTable.render.number(',', '.', 0, '').display(data) + '</span>';
+                    }
+                    return $.fn.dataTable.render.number(',', '.', 0, '').display(data);
+                  } 
+                }
                 
             ],
             columnDefs: [
@@ -331,9 +342,9 @@
                 , { 
                   data: 'depo_gap_amt', 
                   render: function(data, type, row) {
-                    if (data > 0) {
+                    if (data < 0) {
                       return '<span style="color: blue;">' + $.fn.dataTable.render.number(',', '.', 0, '').display(data) + '</span>';
-                    } else if (data < 0) {
+                    } else if (data > 0) {
                       return '<span style="color: red; font-weight: bold;">' + $.fn.dataTable.render.number(',', '.', 0, '').display(data) + '</span>';
                     }
                     return $.fn.dataTable.render.number(',', '.', 0, '').display(data);

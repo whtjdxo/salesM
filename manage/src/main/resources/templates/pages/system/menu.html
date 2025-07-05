@@ -98,7 +98,7 @@
       function fn_code_setting(data) {
         codeSetting('MENU_TP', data.data, '#menu_tp', '1', '', '');
       }
-      callCombo('/manage/system/menu/upMenuRetrieve', 'site_gb_cd=SG0001', '#menu', '1', '');
+      callCombo('/manage/system/menu/upMenuRetrieve', 'site_gb_cd=MANAGE', '#menu', '1', '');
 
       $('#btn_menu_reset').click(function () {
         $('#frm_menu_info')[0].reset();
@@ -240,7 +240,7 @@
       }
 
       function reloadCallCombo() {
-        callCombo('/manage/system/menu/upMenuRetrieve', 'SITE_GB_CD=SG0001', '#menu', '1', '');
+        callCombo('/manage/system/menu/upMenuRetrieve', 'SITE_GB_CD=MANAGE', '#menu', '1', '');
       }
 
       function callCombo(target, data, combo, type, val) {
@@ -342,7 +342,7 @@
             <form class="needs-validation" id="frm_menu_info" name="frm_menu_info" onsubmit="return false;" novalidate="">
               <input type="hidden" name="menu_state" id="menu_state" />
               <input type="hidden" name="menu_prnt_cd" id="menu_prnt_cd" />
-              <input type="text" name="site_gb_cd" id="site_gb_cd" value="SG0001"/>
+              <input type="hidden" name="site_gb_cd" id="site_gb_cd" value="MANAGE"/>
               <input type="hidden" name="upt_user_id" id="upt_user_id" th:value="${session.S_USER.userId}" />
               <div class="row mb-3">
                 <label class="col-sm-2 col-form-label col-form-label-sm" for="menu">상위메뉴</label>
