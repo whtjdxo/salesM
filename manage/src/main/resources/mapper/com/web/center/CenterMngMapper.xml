@@ -31,7 +31,7 @@
         FROM tb_aca tb
         WHERE 1 = 1
         <choose>
-			<when test="sidx != ''">
+			<when test="sidx != '' and sidx != null ">
 				ORDER BY ${sidx} ${sord}
 			</when>
 			<otherwise>

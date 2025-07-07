@@ -73,7 +73,7 @@
           AND TC.CHAIN_NM LIKE CONCAT('%', #{sch_help_chain_nm}, '%')
         </if>
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                 ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>

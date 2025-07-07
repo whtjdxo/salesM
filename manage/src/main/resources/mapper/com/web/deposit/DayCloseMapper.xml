@@ -276,7 +276,7 @@
                 )
           AND  TC.USE_YN = 'Y'
         <choose>
-                <when test="sidx != ''">
+                <when test="sidx != '' and sidx != null ">
                         ORDER BY ${sidx} ${sord}
                 </when>
                 <otherwise>
@@ -641,7 +641,7 @@
                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO                
          WHERE  close_date = #{close_date}
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                     ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>
@@ -724,7 +724,7 @@
                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO                
          WHERE  CLOSE_DATE = #{close_date}
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                     ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>

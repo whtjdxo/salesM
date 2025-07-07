@@ -158,7 +158,7 @@
             </otherwise>
         </choose>    
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                 ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>
@@ -294,7 +294,7 @@
 			AND CV.VAN_CD = #{sch_van_cd}
 		</if>
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                 ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>
@@ -360,7 +360,7 @@
 			AND CC.CARD_ACQ = #{sch_card_cd}
 		</if>
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                 ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>
@@ -428,7 +428,7 @@
                 JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
          WHERE  L.CHAIN_NO = #{link_org_chain_no}
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                 ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>
@@ -490,7 +490,7 @@
 			AND CC.FILE_GB = #{sch_file_gb}
 		</if>
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                 ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>
@@ -567,7 +567,7 @@
 			AND CC.COUNSEL_SDT &lt;= #{sch_counsel_edt}
 		</if>
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                 ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>

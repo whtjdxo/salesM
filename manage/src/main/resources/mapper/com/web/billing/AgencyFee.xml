@@ -61,7 +61,7 @@
 		  </if>                                       
        GROUP 	BY AF.AGENCY_CD, AG.AGENCY_NM, AF.CHAIN_NO, TC.CHAIN_NM, TU.USER_NM
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                     ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>
@@ -168,7 +168,7 @@
 	 AND    AF.CHAIN_NO   = #{sch_chain_no}  
        GROUP 	BY AF.ADJUST_DATE
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                     ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>

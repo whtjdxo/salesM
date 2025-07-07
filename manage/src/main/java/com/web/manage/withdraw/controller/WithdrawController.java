@@ -77,20 +77,14 @@ public class WithdrawController {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam);
 
-            // System.out.println(hashmapParam);
-            // // System.out.println("ordCol: " + pageing.getOrder().get(0).get("column"));
-            // int ordCol = 0; // 기본값 설정
-            // if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-            //     ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            // }
-
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            System.out.println("ordCol: " + ordCol);
-            System.out.println("ordCol.data : " + pageing.getColumns().get(ordCol).get("data"));
-            System.out.println("ordCol.data : " + pageing.getOrder().get(0).get("dir"));
-            
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -130,9 +124,14 @@ public class WithdrawController {
 
             // System.out.println(hashmapParam);
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -169,9 +168,14 @@ public class WithdrawController {
 
             // System.out.println(hashmapParam);
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -209,9 +213,14 @@ public class WithdrawController {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam); 
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -386,9 +395,14 @@ public class WithdrawController {
 
             // System.out.println(hashmapParam);
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -427,9 +441,14 @@ public class WithdrawController {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam); 
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -465,9 +484,14 @@ public class WithdrawController {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam); 
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 

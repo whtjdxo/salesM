@@ -62,7 +62,7 @@
 			AND TA.USE_YN = #{sch_use_yn}
 		</if>
                 <choose>
-                        <when test="sidx != ''">
+                        <when test="sidx != '' and sidx != null ">
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>

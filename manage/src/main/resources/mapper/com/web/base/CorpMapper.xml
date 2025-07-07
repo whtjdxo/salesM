@@ -40,7 +40,7 @@
 			AND CORP_TYPE = #{sch_corp_type}
 		</if>
 		<choose>
-			<when test="sidx != ''">
+			<when test="sidx != '' and sidx != null ">
 				ORDER BY ${sidx} ${sord}
 			</when>
 			<otherwise>

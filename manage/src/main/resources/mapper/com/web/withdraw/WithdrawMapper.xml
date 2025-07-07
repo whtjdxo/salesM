@@ -98,7 +98,7 @@
                                         </if> 
                                         
                 <choose>
-                        <when test="sidx != ''">
+                        <when test="sidx != '' and sidx != null ">
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>
@@ -257,7 +257,7 @@
                    AND  CHAIN_NO = #{sch_card_chain_no} 
                  GROUP	BY CARD_ACQ, GET_CODE_NM('CARD_ACQ', CARD_ACQ) 
                 <choose>
-                        <when test="sidx != ''">
+                        <when test="sidx != '' and sidx != null ">
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>
@@ -334,7 +334,7 @@
                         AND  WD.CONF_DTTM &gt;= #{sch_list_conf_sdt}
                 </if>
                 <if test="sch_list_conf_edt != ''"> 
-                        AND  WD.CONF_DTTM &lt;= #{sch_list_conf_edt}
+                        AND  WD.CONF_DTTM &lt;= CONCAT(#{sch_list_conf_edt} , ' 23:59:59')
                 </if>
                 <if test="sch_list_van != ''"> 
                         AND  WD.VAN_CD = #{sch_list_van}
@@ -353,7 +353,7 @@
                         </choose>
                 </if>  
                 <choose>
-                        <when test="sidx != ''">
+                        <when test="sidx != '' and sidx != null ">
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>
@@ -450,7 +450,7 @@
                  WHERE	RM.REMIT_DT BETWEEN #{sch_remit_dt}
                                           AND #{sch_remit_dt}
                 <choose>
-                        <when test="sidx != ''">
+                        <when test="sidx != '' and sidx != null ">
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>

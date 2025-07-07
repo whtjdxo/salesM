@@ -44,6 +44,7 @@
         $('#change_work_date').val(toDay);
 
         $('#btn_search').click(function () {   
+          fn_default_clear();
           tbl_wd_summ.ajax.reload();
         });  
 
@@ -354,9 +355,14 @@
           // $('#frm_sch')[0].reset();
           $('#frm_sch_card')[0].reset();   
           $('#frm_sch_list')[0].reset();
+          $('#sch_card_chain_no').val('');
+          $('#sch_card_work_date').val('');
 
-          $('#tbl_card_summ').DataTable().clear().draw();
-          $('#tbl_wd_resv_list').DataTable().clear().draw();
+          $('#sch_list_chain_no').val('');
+          $('#sch_list_work_date').val('');
+          $('#sch_list_card_acq').val('');  
+          tbl_card_summ.ajax.reload(); 
+          tbl_wd_resv_list.ajax.reload();  
         }
 
         // sch_list_wd_status 라디오 버튼 클릭 시 이벤트 처리
@@ -1004,87 +1010,88 @@
             <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">
               <input class="form-control form-control-sm" id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly" />
               <input class="form-control form-control-sm" id="sch_card_work_date" type="hidden" name="sch_card_work_date"/>                
-            </form>          
-            <div class="row flex-between-end">
-              <div class="row mb-1">
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="tot_conf_amt">총 매출금액</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="tot_conf_amt" type="text" name="tot_conf_amt" istyle="amount" readonly />
+            
+              <div class="row flex-between-end">
+                <div class="row mb-1">
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="tot_conf_amt">총 매출금액</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="tot_conf_amt" type="text" name="tot_conf_amt" istyle="amount" readonly />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="card_fee_amt">카드 수수료</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="card_fee_amt" type="text" name="card_fee_amt" istyle="amount" readonly/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="card_resv_amt">입금 예정액</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="card_resv_amt" type="text" name="card_resv_amt" istyle="amount" readonly/>
+                      </div>
+                    </div>
+                  </div>
+                </div>  
+                <div class="row mb-1">
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_fee_amt">운영 수수료</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="svc_fee_amt" type="text" name="svc_fee_amt" istyle="amount" readonly/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_fee_amt">여신 수수료</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="crd_fee_amt" type="text" name="crd_fee_amt" istyle="amount"  readonly />                           
+                      </div>
+                    </div>
+                  </div>              
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="wd_base_amt">원    금</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="wd_base_amt" type="text" name="wd_base_amt" istyle="amount" readonly />
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="card_fee_amt">카드 수수료</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="card_fee_amt" type="text" name="card_fee_amt" istyle="amount" readonly/>
+                <div class="row mb-1">
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="sub_amt">차 감 액</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="sub_amt" type="text" name="sub_amt" istyle="amount" readonly/>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="card_resv_amt">입금 예정액</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="card_resv_amt" type="text" name="card_resv_amt" istyle="amount" readonly/>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_amt">과 입 금</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="exc_amt" type="text" name="exc_amt" istyle="amount" readonly/>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>  
-              <div class="row mb-1">
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_fee_amt">운영 수수료</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="svc_fee_amt" type="text" name="svc_fee_amt" istyle="amount" readonly/>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="remit_amt">출금 예정액</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="remit_amt" type="text" name="remit_amt" istyle="amount"  readonly />                           
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_fee_amt">여신 수수료</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="crd_fee_amt" type="text" name="crd_fee_amt" istyle="amount"  readonly />                           
-                    </div>
-                  </div>
-                </div>              
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="wd_base_amt">원    금</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="wd_base_amt" type="text" name="wd_base_amt" istyle="amount" readonly />
-                    </div>
-                  </div>
-                </div>
+                </div>     
               </div>
-              <div class="row mb-1">
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="sub_amt">차 감 액</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="sub_amt" type="text" name="sub_amt" istyle="amount" readonly/>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_amt">과 입 금</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="exc_amt" type="text" name="exc_amt" istyle="amount" readonly/>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-sm-4">
-                  <div class="input-group input-group-sm mb-1">
-                    <label class="col-sm-4 col-form-label col-form-label-sm" for="remit_amt">출금 예정액</label> 
-                    <div class="col-sm-8">
-                      <input class="form-control form-control-sm text-end bg-light" id="remit_amt" type="text" name="remit_amt" istyle="amount"  readonly />                           
-                    </div>
-                  </div>
-                </div>
-              </div>     
-            </div>
+            </form>          
           </div>
           <div class="card-body pt-0 px-0" style="padding-top: 0px">
             <div class="table-responsive scrollbar">              

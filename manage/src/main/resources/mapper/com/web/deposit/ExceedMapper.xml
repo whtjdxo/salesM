@@ -32,7 +32,7 @@
 		   AND	EM.USE_YN	= 'Y'
 		 GROUP 	BY   EM.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO 
         <choose>
-			<when test="sidx != ''">
+			<when test="sidx != '' and sidx != null ">
 					ORDER BY ${sidx} ${sord}
 			</when>
 			<otherwise>
@@ -100,7 +100,7 @@
 		</if>
 		
 		<choose>
-			<when test="sidx != ''">
+			<when test="sidx != '' and sidx != null ">
 					ORDER BY ${sidx} ${sord}
 			</when>
 			<otherwise>
@@ -158,7 +158,7 @@
 		   AND  EM.USE_YN = 'Y'
 		   AND 	EM.EXC_STATUS = '100000'
 		<choose>
-			<when test="sidx != ''">
+			<when test="sidx != '' and sidx != null ">
 					ORDER BY ${sidx} ${sord}
 			</when>
 			<otherwise>

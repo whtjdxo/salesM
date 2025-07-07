@@ -123,7 +123,7 @@
                  WHERE	M.MAP_PCODE = #{map_pcode}
                    AND  M.MAP_CODE  = #{map_code}
                 <choose>
-                        <when test="sidx != ''">
+                        <when test="sidx != '' and sidx != null ">
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>
@@ -395,7 +395,7 @@
         </if>               
          GROUP 	BY VD.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO, VD.CONF_DT
                 <choose>
-                        <when test="sidx != ''">
+                        <when test="sidx != '' and sidx != null ">
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>
@@ -437,7 +437,7 @@
                 </if>  
                  GROUP 	BY VD.CARD_ACQ,    GET_CODE_NM('CARD_ACQ', VD.CARD_ACQ) 
                 <choose>
-                        <when test="sidx != ''">
+                        <when test="sidx != '' and sidx != null ">
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>
@@ -507,7 +507,7 @@
                         </choose>
                 </if>  
                 <choose>
-                        <when test="sidx != ''">
+                        <when test="sidx != '' and sidx != null ">
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>
@@ -552,7 +552,7 @@
                                         AND TC.SVC_STAT IN ('O', 'R')
                 GROUP 	BY VT.CHAIN_NO, TC.CHAIN_NM, VT.PROC_RESULT
                 <choose>
-                        <when test="sidx != ''">
+                        <when test="sidx != '' and sidx != null ">
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>

@@ -54,7 +54,7 @@
 				</if>				 
 		WHERE  1= 1       
         <choose>
-                <when test="sidx != ''">
+                <when test="sidx != '' and sidx != null ">
                         ORDER BY ${sidx} ${sord}
                 </when>
                 <otherwise>
@@ -158,7 +158,7 @@
 				JOIN TB_CHAIN TC ON TC.CHAIN_NO = VW.CHAIN_NO  
 		WHERE  1= 1       
 		<choose>
-			<when test="sidx != ''">
+			<when test="sidx != '' and sidx != null ">
 					ORDER BY ${sidx} ${sord}
 			</when>
 			<otherwise>
@@ -238,7 +238,7 @@
 				</choose>
 		</if>  
 		<choose>
-				<when test="sidx != ''">
+				<when test="sidx != '' and sidx != null ">
 						ORDER BY ${sidx} ${sord}
 				</when>
 				<otherwise>
@@ -310,7 +310,7 @@
 		WHERE	DA.ADJUST_DATE = #{sch_adjust_date} 
 		GROUP 	BY DA.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO
         <choose>
-                <when test="sidx != ''">
+                <when test="sidx != '' and sidx != null ">
                         ORDER BY ${sidx} ${sord}
                 </when>
                 <otherwise>
@@ -387,7 +387,7 @@
 		   AND  DA.CHAIN_NO 	= #{sch_card_chain_no}
 		 GROUP	BY DA.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO, DA.CARD_ACQ, GET_CODE_NM('CARD_ACQ', DA.CARD_ACQ)
 		<choose>
-			<when test="sidx != ''">
+			<when test="sidx != '' and sidx != null ">
 					ORDER BY ${sidx} ${sord}
 			</when>
 			<otherwise>
@@ -532,7 +532,7 @@
 				</choose>
 		</if>  
 		<choose>
-				<when test="sidx != ''">
+				<when test="sidx != '' and sidx != null ">
 						ORDER BY ${sidx} ${sord}
 				</when>
 				<otherwise>

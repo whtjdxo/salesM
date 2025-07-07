@@ -101,7 +101,7 @@
                                AND #{sch_date_to}
          GROUP  BY DC.CLOSE_DATE
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                     ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>
@@ -300,7 +300,7 @@
          WHERE  CLOSE_DATE = #{sch_close_date}
          GROUP  BY DC.CHAIN_NO, TC.CHAIN_NM
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                     ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>

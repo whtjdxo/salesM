@@ -67,9 +67,14 @@ public class ChainController {
             pageing.setPageingVO(hashmapParam);
 
             // hashmapParam.put("srch_chain_name", StringUtil.nullCheck((String) pageing.getSearch().get("srch_chain_name"), ""));
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -224,9 +229,14 @@ public class ChainController {
             System.out.println("van_chain_no >> " + hashmapParam.get("van_chain_no"));
 
             hashmapParam.put("chain_no", hashmapParam.get("van_chain_no"));
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -334,9 +344,14 @@ public class ChainController {
             
             // System.out.println("card_chain_no >> " + hashmapParam.get("card_chain_no"));
             hashmapParam.put("chain_no", hashmapParam.get("card_chain_no"));
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -444,9 +459,14 @@ public class ChainController {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam);
             
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -532,9 +552,14 @@ public class ChainController {
             pageing.setPageingVO(hashmapParam);
              
             hashmapParam.put("chain_no", hashmapParam.get("card_chain_no"));
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -771,10 +796,15 @@ public class ChainController {
         try {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam);
-            
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+             
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 

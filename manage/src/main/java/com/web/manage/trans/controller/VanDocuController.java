@@ -88,9 +88,14 @@ public class VanDocuController {
 
             // System.out.println(hashmapParam);
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -125,9 +130,14 @@ public class VanDocuController {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam);
             
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -210,8 +220,9 @@ public class VanDocuController {
         hashmapParam.put("user_id", member.getUserId());
         String jString = null; 
         try {
-            PageingVO pageing = new PageingVO();
-            pageing.setPageingVO(hashmapParam);
+            PageingVO pageing = new PageingVO();            
+            pageing.setPageingVO(hashmapParam); 
+
             if (hashmapParam.get("sch_conf_sdt") == null || hashmapParam.get("sch_conf_sdt").toString().isEmpty()) {
                 String sch_conf_sdt = commonService.getPreWorkDay();
                 hashmapParam.put("sch_conf_sdt", sch_conf_sdt);
@@ -221,9 +232,14 @@ public class VanDocuController {
                 hashmapParam.put("sch_conf_edt", sch_conf_edt);
             }
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -259,9 +275,14 @@ public class VanDocuController {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam);
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -294,9 +315,14 @@ public class VanDocuController {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam);
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -388,9 +414,14 @@ public class VanDocuController {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam);
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -422,9 +453,14 @@ public class VanDocuController {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam);
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 

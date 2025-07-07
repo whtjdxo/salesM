@@ -25,7 +25,7 @@
                     AND  BM.SUCC_FLAG = #{sch_succ_flag}
             </if>
             <choose>
-                <when test="sidx != ''">
+                <when test="sidx != '' and sidx != null ">
                     ORDER BY ${sidx} ${sord}
                 </when>
                 <otherwise>
@@ -44,7 +44,7 @@
             WHERE  BATCH_SEQ = #{batch_seq} 
             
             <choose>
-                    <when test="sidx != ''">
+                    <when test="sidx != '' and sidx != null ">
                             ORDER BY ${sidx} ${sord}
                     </when>
                     <otherwise>
@@ -130,7 +130,7 @@
                         AND  TML.VAN_CD = #{sch_van_cd} 
                 </if>
                 <choose>
-                    <when test="sidx != ''">
+                    <when test="sidx != '' and sidx != null ">
                             ORDER BY ${sidx} ${sord}
                     </when>
                     <otherwise>

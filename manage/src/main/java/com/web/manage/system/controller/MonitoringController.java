@@ -47,9 +47,14 @@ public class MonitoringController {
 
             // System.out.println(hashmapParam);
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -86,9 +91,14 @@ public class MonitoringController {
 
             // System.out.println(hashmapParam);
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -128,9 +138,14 @@ public class MonitoringController {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam); 
 
-            int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-            hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-            hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 

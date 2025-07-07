@@ -102,7 +102,7 @@
          GROUP  BY DC.CHAIN_NO, TC.CHAIN_NM
 
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                     ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>
@@ -302,7 +302,7 @@
            AND  DC.CHAIN_NO  = #{sch_chain_no}
          GROUP  BY DC.CLOSE_DATE
         <choose>
-            <when test="sidx != ''">
+            <when test="sidx != '' and sidx != null ">
                     ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>

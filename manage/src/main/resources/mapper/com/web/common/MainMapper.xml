@@ -267,7 +267,7 @@
 		</if>
           AND   tb.use_yn =     'Y'
 		<choose>
-			<when test="sidx != ''">
+			<when test="sidx != '' and sidx != null ">
 				ORDER BY ${sidx} ${sord}
 			</when>
 			<otherwise>

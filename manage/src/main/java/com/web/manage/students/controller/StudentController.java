@@ -46,12 +46,17 @@ public class StudentController {
 			hashmapParam.put("srch_center", StringUtil.nullCheck((String) pageing.getSearch().get("srch_center"), "") );
 			hashmapParam.put("srch_tp", StringUtil.nullCheck((String) pageing.getSearch().get("srch_tp"), ""));
 			hashmapParam.put("srch_tp_inp", StringUtil.nullCheck((String) pageing.getSearch().get("srch_tp_inp"), ""));
-			int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-			hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-			hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));
 			
-			hashmapParam.put("start", pageing.getStart());
-			hashmapParam.put("end", pageing.getLength());
+			if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
 
             list = studentService.studentsListRetrieve(hashmapParam);
             int records =  studentService.getQueryTotalCnt();

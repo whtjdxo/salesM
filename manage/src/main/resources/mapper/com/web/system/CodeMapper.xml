@@ -26,7 +26,7 @@
 			AND use_yn = #{srch_gr_useyn_tp}
 		</if>
 		<choose>
-			<when test="sidx != ''">
+			<when test="sidx != '' and sidx != null ">
 				ORDER BY ${sidx} ${sord}
 			</when>
 			<otherwise>
@@ -79,7 +79,7 @@
 			AND use_yn = #{srch_low_useyn_tp}
 		</if>
 		<choose>
-			<when test="sidx != ''">
+			<when test="sidx != '' and sidx != null ">
 				ORDER BY ${sidx} ${sord}
 			</when>
 			<otherwise>
