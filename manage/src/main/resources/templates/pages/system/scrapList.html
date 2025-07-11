@@ -55,7 +55,20 @@
                 , { data: 'van_nm' }
                 , { data: 'chain_no' }      
                 , { data: 'chain_nm' }      
-                , { data: 'act_status' }                      
+                , { 
+                  data: 'act_status',
+                  render: function(data, type, row) {
+                    if (type === 'display') {
+                    if (
+                      (typeof data === 'string' && data.startsWith('N')) ||
+                      data === '스크래핑 기록이 없습니다'
+                    ) {
+                      return '<span style="color:red; font-weight:bold;">' + (data || '') + '</span>';
+                    }
+                    }
+                    return data || '';
+                  }
+                }
                 , { data: 'last_scrap_dttm' }      
               ],
             columnDefs: [           

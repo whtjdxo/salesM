@@ -446,12 +446,14 @@ public class WithdrawController {
                 hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
                 hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
             } else {
+                System.out.println("++++++++++++++++++++ empty");
                 hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
                 hashmapParam.put("sord", "");                
             } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
+            
             list = withdrawService.getRemitList(hashmapParam);
             int records = withdrawService.getQueryTotalCnt();
 

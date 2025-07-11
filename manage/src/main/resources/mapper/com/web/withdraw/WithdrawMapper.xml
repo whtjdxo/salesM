@@ -337,7 +337,7 @@
                         AND  WD.CONF_DTTM &lt;= CONCAT(#{sch_list_conf_edt} , ' 23:59:59')
                 </if>
                 <if test="sch_list_van != ''"> 
-                        AND  WD.VAN_CD = #{sch_list_van}
+                        AND  VD.VAN_CD = #{sch_list_van}
                 </if>                
                 <if test="sch_list_gb_conf_val != ''">
                         <choose>
@@ -565,7 +565,7 @@
                         </choose>                     
                 </if>  
                 <choose>
-                        <when test='sidx != ""'>
+                        <when test="sidx != '' and sidx != null ">
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>
@@ -607,7 +607,7 @@
                                 GROUP 	BY SUB_NO, REMIT_NO 
                         ) SR ON SR.SUB_NO = SM.SUB_NO 
                 <choose>
-                        <when test='sidx != ""'>
+                        <when test="sidx != '' and sidx != null ">
                                 ORDER BY ${sidx} ${sord}
                         </when>
                         <otherwise>

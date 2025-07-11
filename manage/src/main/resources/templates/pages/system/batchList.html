@@ -58,7 +58,7 @@
             { targets: 5, width: '90px', className: 'text-center' }, 
             
           ],  
-          order: [[1, 'desc']],
+          order: [[0, 'desc']],
           paging: true,
           lengthChange: false,
           searching: false,
@@ -97,8 +97,8 @@
           var data = tbl_batch_mst.row(this).data();
           if (data) {
             
-            $('#batch_seq').val(data.map_pcode);
-            $('#err_msg').val(data.map_pcode_nm);
+            $('#batch_seq').val(data.batch_seq);
+            $('#err_msg').val(data.err_msg);
             tbl_batch_dtl.ajax.reload();    
           }  
         });      
@@ -129,7 +129,7 @@
               { targets: 1, width: '600px', className: 'text-left' },
               { targets: 2, width: '150px', className: 'text-center' },
             ],
-            order: [[1, 'desc']],
+            order: [[0, 'desc']],
             paging: true,
             lengthChange: false,
             searching: false,

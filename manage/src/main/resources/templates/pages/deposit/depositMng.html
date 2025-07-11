@@ -463,21 +463,24 @@
           var row = tbl_card_summ.row(this).data();
           var currentValue = $('#sch_list_card_acq').val();
           var newValue = row.card_acq;
-          
+          // console.log('newValue : ' + newValue );
           if (currentValue.includes(newValue)) {
             // Remove the value if it already exists
+            // console.log('Remove the value if it already exists : ' + newValue);
             var updatedValue = currentValue.split(',').filter(function (value) {
               return value !== newValue;
             }).join(',');
             $('#sch_list_card_acq').val(updatedValue);
           } else {
             // Add the value if it doesn't exist
+            // console.log('Add the value if it does not exist : ' + newValue);
             if (currentValue) {
               $('#sch_list_card_acq').val(currentValue + ',' + newValue);
             } else {
               $('#sch_list_card_acq').val(newValue);
             }
           } 
+          // console.log('currentValue : ' + $('#sch_list_card_acq').val() );
 
           if ($('#sch_list_chain_no').val() && $('#sch_list_resv_date').val()) {
             tbl_depo_resv_list.ajax.reload();
