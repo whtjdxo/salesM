@@ -23,10 +23,12 @@
                 , GET_CODE_NM('AUTH_GRP_CD', TU.auth_grp_cd ) AS authGrpNm
           FROM 	TB_USER TU    
           LEFT 	JOIN VW_CORP VC ON VC.CORP_CD = TU.CORP_CD 
+                          AND VC.CORP_GB IN ('OP', 'AG') 
+                          AND VC.SVC_STAT IN ('O', 'R')
          WHERE 	1 = 1
            AND	TU.USER_ID = #{userId}
            AND	USER_PWD = SHA2(#{userPwd}, 256)
-           AND  TU.USE_YN = 'Y'
+           AND  TU.USE_YN = 'Y'           
          LIMIT  1
 	</select>
 

@@ -37,8 +37,8 @@
 
     <select id="getBatchDetailList" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
             SELECT  SQL_CALC_FOUND_ROWS
-                    SEQ_NO          AS seq_no
-                    , ERR_MSG       AS err_msg
+                    SEQ_NO                              AS seq_no
+                    , IFNULL(ERR_MSG, '')               AS err_msg
                     , DATE_FORMAT(ENT_DTTM, '%Y-%m-%d %H:%i')		AS ent_dttm
               FROM  TB_BATCH_LIST
             WHERE  BATCH_SEQ = #{batch_seq} 

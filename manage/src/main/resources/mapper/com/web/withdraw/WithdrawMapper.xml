@@ -276,6 +276,8 @@
                         , WD.CHAIN_NO           AS chain_no
                         , TC.CHAIN_NM           AS chain_nm
                         , WD.DOCU_SEQ           AS docu_seq
+                        , VD.VAN_CD             AS van_cd
+                        , GET_CODE_NM('VAN_CD', VD.VAN_CD)          AS van_cd_nm
                         , WD.CARD_ACQ           AS card_acq
                         , GET_CODE_NM('CARD_ACQ', WD.CARD_ACQ)      AS card_acq_nm
                         , VD.CARD_NO            AS card_no        

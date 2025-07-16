@@ -68,6 +68,48 @@ public class CommonController {
 		return result;
 	}
 
+	@RequestMapping(value="getChainVanList")
+	public @ResponseBody ReturnDataVO getChainVanList(@RequestParam HashMap<String, String> hashmapParam, HttpSession session){
+		List<HashMap<String, Object>> list = new ArrayList<HashMap<String,Object>>();
+		SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("userCorpCd", member.getUserCorpCd());
+        hashmapParam.put("userCorpType", member.getUserCorpType());
+		System.out.println("hashmapParam : " + hashmapParam);
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+			list = commonService.getChainVanList(hashmapParam);
+			
+			result.setResultCode("S000");
+			result.setData(list);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	@RequestMapping(value="getChainCardList")
+	public @ResponseBody ReturnDataVO getChainCardList(@RequestParam HashMap<String, String> hashmapParam, HttpSession session){
+		List<HashMap<String, Object>> list = new ArrayList<HashMap<String,Object>>();
+		SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("userCorpCd", member.getUserCorpCd());
+        hashmapParam.put("userCorpType", member.getUserCorpType());
+		System.out.println("hashmapParam : " + hashmapParam);
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+			list = commonService.getChainCardList(hashmapParam);
+			
+			result.setResultCode("S000");
+			result.setData(list);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
 	@RequestMapping(value="/getChainList")
 	public @ResponseBody ReturnDataVO getChainList(@RequestParam HashMap<String, String> hashmapParam, HttpSession session){
 		List<HashMap<String, Object>> list = new ArrayList<HashMap<String,Object>>();

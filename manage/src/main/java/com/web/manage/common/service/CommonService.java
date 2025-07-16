@@ -26,6 +26,14 @@ public class CommonService {
         return commonMapper.getCreditCorpList(hashmapParam);
     }
 
+    public List<HashMap<String, Object>> getChainVanList(HashMap<String, String> hashmapParam) {
+        return commonMapper.getChainVanList(hashmapParam);
+    }
+
+    public List<HashMap<String, Object>> getChainCardList(HashMap<String, String> hashmapParam) {
+        return commonMapper.getChainCardList(hashmapParam);
+    }
+
     public List<HashMap<String, Object>> getChainList(HashMap<String, String> hashmapParam) {
         return commonMapper.getChainList(hashmapParam);
     }    

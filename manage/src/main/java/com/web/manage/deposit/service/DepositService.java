@@ -104,6 +104,14 @@ public class DepositService {
     public List<HashMap<String, Object>> getDepoAdjustList(HashMap<String, Object> hashmapParam) {
         return depositMapper.getDepoAdjustList(hashmapParam);
     }
+
+    public List<HashMap<String, Object>> getChainDepositList(HashMap<String, Object> hashmapParam) {
+        return depositMapper.getChainDepositList(hashmapParam);
+    }
+
+    public HashMap<String, Object> getChainDepositTotal(HashMap<String, Object> hashmapParam) {
+        return depositMapper.getChainDepositTotal(hashmapParam);
+    }
     
 
     public ReturnDataVO callProcDepoAdjustCancel(ProcDepositVO procVo) {

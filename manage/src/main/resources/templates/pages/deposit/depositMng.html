@@ -701,68 +701,76 @@
               alert('Excel download failed.');
             }
           });
-        }); 
-
-        $('#sub_amt').on('click', function () {
-          var subAmtValue = parseFloat($(this).val().replace(/,/g, '')) || 0; // Remove commas and parse as float
-          if (subAmtValue > 0) {
-            $('#modal_sub').modal('show'); // Show the modal             
+        });  
+        
+        $('#chain_depo_amt').on('click', function () {
+          var depoAmtValue = parseFloat($(this).val().replace(/,/g, '')) || 0; // Remove commas and parse as float
+          if (depoAmtValue > 0) { 
+            $('#modal_chain_depo').modal('show'); // Show the modal            
           }
         });
 
         // 모달 창 표시될때 초기화 처리
-        $('#modal_sub').on('shown.bs.modal', function() {  
+        $('#modal_chain_depo').on('shown.bs.modal', function() {  
           // 모달 열릴 때 첫 번째 포커스 가능 요소로 이동          
           $(this).data('trigger-element', document.activeElement);
-          if ($.fn.DataTable.isDataTable('#tbl_sub_list')) {
-            $('#tbl_sub_list').DataTable().destroy();
+          if ($.fn.DataTable.isDataTable('#tbl_depo_list')) {
+            $('#tbl_depo_list').DataTable().destroy();
           }          
           
-          $('#tbl_sub_list').DataTable({
+          $('#tbl_depo_list').DataTable({
             processing: true,
             serverSide: true,
             select: true,
             responsive: true,
             ajax: {
-              url: '/withdraw/subtract/subMng/chainSubList',
-              contentType: 'application/json',
-              dataType: 'JSON',
-              type: 'POST',
-              data: function (postData) {
-                var formData = { 
-                    sch_chain_no: $('#sch_card_chain_no').val()
-                    , sch_unissu : "Y" 
+                url: '/deposit/deposit/depoMng/chainDepoList',
+                contentType: 'application/json',
+                dataType: 'JSON',
+                type: 'POST',
+                data: function (postData) {
+                  var formData = { 
+                    sch_chain_no: $('#sch_card_chain_no').val(),
+                    sch_date : $('#sch_resv_date').val(),
+
                   };
-                Object.assign(postData, formData);
-                return JSON.stringify(postData);
+                  Object.assign(postData, formData);
+                  return JSON.stringify(postData);
+                },
               },
-            },
             columns: [
-              { data: 'sub_code_nm' },
-              { data: 'reg_date' },
-              { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
-              { data: 'recv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
-              { data: 'remain_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
-              { data: 'sub_memo' },
+              { 
+                  data: 'deposit_no',
+                  render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                  }
+              },
+              { data: 'gubun' },
+              { data: 'bank_cd_nm' },
+              { data: 'card_acq_nm' },
+              { data: 'bank_in_dttm' },
+              { data: 'in_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },              
+              { data: 'remark' },
             ],
             columnDefs: [
-              { targets: 0, width: '150px', className: 'text-center' },
+              { targets: 0, width: '60px', className: 'text-center' },
               { targets: 1, width: '100px', className: 'text-center' },
-              { targets: 2, width: '120px', className: 'text-end' },
-              { targets: 3, width: '120px', className: 'text-end' },
-              { targets: 4, width: '120px', className: 'text-end' },
-              { targets: 5, width: '300px', className: 'text-left' },
+              { targets: 2, width: '120px', className: 'text-left' },
+              { targets: 3, width: '120px', className: 'text-left' },
+              { targets: 4, width: '200px', className: 'text-left' },
+              { targets: 5, width: '120px', className: 'text-end' },
+              { targets: 6, width: '300px', className: 'text-left' },
             ],
-            order: [[1, 'desc']],
+            order: [[0, 'desc']],
             paging: true,
             lengthChange: false,
             searching: false,
             ordering: true,
             autoWidth: false,
             responsive: true,
-            scrollCollapse: true,
+            scrollCollapse: false,
             pageLength: 10,
-            scrollY: '400px',
+            scrollY: '280px',
             info: false,
             language: {
               emptyTable: '데이터가 없습니다.',
@@ -776,159 +784,13 @@
         });
 
         // 모달이 닫힐 때 포커스 복원
-        $('#modal_sub').on('hidden.bs.modal', function() {
+        $('#modal_chain_depo').on('hidden.bs.modal', function() {
           var triggerElement = $(this).data('trigger-element');
           if (triggerElement) {
             $(triggerElement).focus();
           } 
           return true; // 모달 닫기 허용
         });
-
-        $('#exc_amt').on('click', function () {
-          var excAmtValue = parseFloat($(this).val().replace(/,/g, '')) || 0; // Remove commas and parse as float
-          if (excAmtValue > 0) {
-            $('#modal_exc').modal('show'); // Show the modal            
-          }
-        });
-
-        // 모달 창 표시될때 초기화 처리
-        $('#modal_exc').on('shown.bs.modal', function() {  
-          // 모달 열릴 때 첫 번째 포커스 가능 요소로 이동          
-          $(this).data('trigger-element', document.activeElement);
-          if ($.fn.DataTable.isDataTable('#tbl_exc_list')) {
-            $('#tbl_exc_list').DataTable().destroy();
-          }          
-          
-          $('#tbl_exc_list').DataTable({
-            processing: true,
-            serverSide: true,
-            select: true,
-            responsive: true,
-            ajax: {
-                url: '/deposit/deopsit/excMng/chainExcList',
-                contentType: 'application/json',
-                dataType: 'JSON',
-                type: 'POST',
-                data: function (postData) {
-                  var formData = { sch_chain_no: $('#sch_card_chain_no').val() };
-                  Object.assign(postData, formData);
-                  return JSON.stringify(postData);
-                },
-              },
-            columns: [
-              { data: 'sub_code_nm' },
-              { data: 'reg_date' },
-              { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
-              { data: 'recv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
-              { data: 'remain_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
-              { data: 'sub_memo' },
-            ],
-            columnDefs: [
-              { targets: 0, width: '150px', className: 'text-center' },
-              { targets: 1, width: '100px', className: 'text-center' },
-              { targets: 2, width: '120px', className: 'text-end' },
-              { targets: 3, width: '120px', className: 'text-end' },
-              { targets: 4, width: '120px', className: 'text-end' },
-              { targets: 5, width: '300px', className: 'text-left' },
-            ],
-            order: [[1, 'desc']],
-            paging: true,
-            lengthChange: false,
-            searching: false,
-            ordering: true,
-            autoWidth: false,
-            responsive: true,
-            scrollCollapse: true,
-            pageLength: 10,
-            scrollY: '400px',
-            info: false,
-            language: {
-              emptyTable: '데이터가 없습니다.',
-              zeroRecords: '일치하는 데이터가 없습니다.',
-              loadingRecords: '로딩중...',
-              processing: '처리중...',
-            },
-          });
-          // 첫 번째 포커스 가능 요소로 이동
-          $(this).find('button:not([disabled]), input:not([disabled])').first().focus();           
-        });
-
-        // 모달이 닫힐 때 포커스 복원
-        $('#modal_exc').on('hidden.bs.modal', function() {
-          var triggerElement = $(this).data('trigger-element');
-          if (triggerElement) {
-            $(triggerElement).focus();
-          } 
-          return true; // 모달 닫기 허용
-        });
-        
-        // 모달 창 표시될때 초기화 처리
-        $('#modal_risk').on('shown.bs.modal', function() {  
-          // 모달 열릴 때 첫 번째 포커스 가능 요소로 이동          
-          $(this).data('trigger-element', document.activeElement);
-          if ($.fn.DataTable.isDataTable('#tbl_risk_list')) {
-            $('#tbl_risk_list').DataTable().destroy();
-          }          
-          // 새로 초기화
-          $('#tbl_risk_list').DataTable({ 
-              processing: true,
-              serverSide: true,
-              select: true,
-              responsive: true,
-              ajax: {
-                url: '/deposit/deposit/depoMng/getRiskList',
-                contentType: 'application/json',
-                dataType: 'JSON',
-                type: 'POST',
-                data: function (postData) {
-                  formData = $('#frm_risk').serializeObject();
-                  Object.assign(postData, formData);
-                  return JSON.stringify(postData);
-                },
-              },
-              columns: [
-                  { data: 'chain_no' },
-                  { data: 'chain_nm' },
-                  { data: 'proc_result' },
-                  { data: 'un_proc_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') },  
-              ],
-              columnDefs: [
-                  { targets: 0, width: '100px', className: 'text-left' },
-                  { targets: 1, width: '120px', className: 'text-left' },
-                  { targets: 2, width: '500px', className: 'text-left' },
-                  { targets: 3, width: '100px', className: 'text-end' },
-              ],
-              order: [[1, 'desc']],
-              paging: true,
-              lengthChange: false,
-              searching: false,
-              ordering: true,
-              autoWidth: false,
-              responsive: true,
-              scrollCollapse: true,
-              pageLength: 20,
-              scrollY: '380px',
-              info: false,
-              language: {
-                emptyTable: '데이터가 없습니다.',
-                search: '검색:',
-                zeroRecords: '일치하는 데이터가 없습니다.',
-                loadingRecords: '로딩중...',
-                processing: '처리중...',
-              },
-          });
-          // 첫 번째 포커스 가능 요소로 이동
-          $(this).find('button:not([disabled]), input:not([disabled])').first().focus();           
-        });
-        
-        // 모달이 닫힐 때 포커스 복원
-        $('#modal_risk').on('hidden.bs.modal', function() {
-          var triggerElement = $(this).data('trigger-element');
-          if (triggerElement) {
-            $(triggerElement).focus();
-          } 
-          return true; // 모달 닫기 허용
-        });          
       });
     </script>
   </head>
@@ -1056,7 +918,7 @@
                 <div class="input-group input-group-sm mb-1">
                   <label class="col-sm-4 col-form-label col-form-label-sm" for="chain_depo_amt">가맹점 입금</label>
                   <div class="col-sm-8">
-                    <input class="form-control form-control-sm text-end bg-light" id="chain_depo_amt" type="text" name="chain_depo_amt" value="0" readonly />
+                    <input class="form-control form-control-sm text-end bg-light" id="chain_depo_amt" type="text" name="chain_depo_amt" value="0" readonly /> 
                   </div>
                 </div>
               </div>
@@ -1197,90 +1059,26 @@
         </div>        
       </div>     
     </div>    
-  </div>
+  </div>  
 
-  <div class="modal fade" id="modal_risk" tabindex="-1" aria-labelledby="unprocessedModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl"> <!-- Changed modal-lg to modal-xl for larger size -->
-      <div class="modal-content">
-        <form class="needs-validation" novalidate="" id="frm_risk" name="frm_risk" onsubmit="return false;">           
-          <input id="sch_risk_chain_no" type="hidden" name="sch_risk_chain_no"/> 
-          <div class="modal-header">
-            <h5 class="modal-title">Risk Check</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body"> 
-            <div class="table-responsive scrollbar">
-              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_risk_list">  
-                <thead>
-                    <tr>
-                      <th class="text-center">가맹점 명</th> 
-                      <th class="text-center">Risk</th>
-                      <th class="text-center">내용</th>
-                      <th class="text-center">미처리 건</th>   
-                    </tr>   
-                </thead>
-                <tbody class="list"></tbody>
-              </table>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <!-- <h6 class="text-start text-primary">※미처리 메세지 내용에 대한 조치를 먼저한 후 적용 버튼을 클릭하세요.</h6> -->
-            <button class="btn btn-primary" id="btn_process" type="submit" aria-label="처리">적용</button>
-            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
-          </div>          
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="modal_sub" tabindex="-1" aria-labelledby="unprocessedModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl"> <!-- Changed modal-lg to modal-xl for larger size -->
+  <div class="modal fade" id="modal_chain_depo" tabindex="-4">
+    <div class="modal-dialog modal-xl"> 
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">차감 내역</h5>
+          <h5 class="modal-title">가맹점 입금 내역</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body"> 
           <div class="table-responsive scrollbar">
-            <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_sub_list">
+            <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_depo_list">
               <thead class="bg-200">
                 <tr>
-                  <th class="text-center" style="width: 150px;">차감 코드명</th>
-                  <th class="text-center" style="width: 100px;">차감일자</th>
-                  <th class="text-center" style="width: 120px;">등록금액</th>
-                  <th class="text-center" style="width: 120px;">실행금액</th>
-                  <th class="text-center" style="width: 120px;">미차감</th>
-                  <th class="text-center" style="width: 300px;">비고</th> 
-                </tr>
-              </thead>
-              <tbody class="list"></tbody>
-            </table>
-          </div> 
-          <div class="modal-footer">            
-            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
-          </div>          
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="modal_exc" tabindex="-1" aria-labelledby="unprocessedModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl"> <!-- Changed modal-lg to modal-xl for larger size -->
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">과입금 내역</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body"> 
-          <div class="table-responsive scrollbar">
-            <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_sub_list">
-              <thead class="bg-200">
-                <tr>
-                  <th class="text-center" style="width: 150px;">과입 코드명</th>
-                  <th class="text-center" style="width: 100px;">발생일자</th>
-                  <th class="text-center" style="width: 120px;">등록 금액</th>
-                  <th class="text-center" style="width: 120px;">출금 금액</th>
-                  <th class="text-center" style="width: 120px;">미 출금</th>
+                  <th class="text-center" style="width: 60px;">번호</th>
+                  <th class="text-center" style="width: 100px;">구분</th>
+                  <th class="text-center" style="width: 120px;">은행명</th>
+                  <th class="text-center" style="width: 120px;">입금처</th>
+                  <th class="text-center" style="width: 200px;">입금시간</th> 
+                  <th class="text-center" style="width: 120px;">입금액</th>
                   <th class="text-center" style="width: 300px;">비고</th> 
                 </tr>
               </thead>

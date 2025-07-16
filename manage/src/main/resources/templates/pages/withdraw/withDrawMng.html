@@ -308,6 +308,11 @@
           if ($('#sch_list_chain_no').val() && $('#sch_list_work_date').val()) {
             tbl_wd_resv_list.ajax.reload();
           } 
+          
+          var tmpForm = {
+            sch_chain_no : $('#sch_list_chain_no').val(),
+          }
+          callAjax('/common/getChainVanList', tmpForm, fn_corp_van_setting);   
 
         });
 
@@ -459,6 +464,7 @@
             },
             { data: 'wd_no' },
             { data: 'wd_status_nm' },
+            { data: 'van_cd_nm' },
             { data: 'card_acq_nm' },
             { data: 'card_no' },
             { data: 'card_type_nm' },
@@ -479,22 +485,23 @@
             { targets: 0, width: '60px', className: 'text-center' },
             { targets: 1, width: '40px', className: 'text-center' },
             { targets: 2, width: '130px', className: 'text-left' },
-            { targets: 3, width: '100px', className: 'text-center' },
-            { targets: 4, width: '120px', className: 'text-center' },
-            { targets: 5, width: '150px', className: 'text-center' },
-            { targets: 6, width: '80px', className: 'text-center' },
-            { targets: 7, width: '100px', className: 'text-center' },
-            { targets: 8, width: '120px', className: 'text-center' },
-            { targets: 9, width: '160px', className: 'text-center' },
-            { targets: 10, width: '120px', className: 'text-center' },
-            { targets: 11, width: '100px', className: 'text-end' },
-            { targets: 12, width: '120px', className: 'text-end' },
-            { targets: 13, width: '100px', className: 'text-end' },
-            { targets: 14, width: '120px', className: 'text-end' },
-            { targets: 15, width: '100px', className: 'text-end' },
-            { targets: 16, width: '120px', className: 'text-end' },
+            { targets: 3, width: '100px', className: 'text-left' },
+            { targets: 4, width: '90px', className: 'text-center' },
+            { targets: 5, width: '90px', className: 'text-center' },
+            { targets: 6, width: '150px', className: 'text-center' },
+            { targets: 7, width: '80px', className: 'text-center' },
+            { targets: 8, width: '100px', className: 'text-center' },
+            { targets: 9, width: '120px', className: 'text-center' },
+            { targets: 10, width: '160px', className: 'text-center' },
+            { targets: 11, width: '120px', className: 'text-center' },
+            { targets: 12, width: '100px', className: 'text-end' },
+            { targets: 13, width: '120px', className: 'text-end' },
+            { targets: 14, width: '100px', className: 'text-end' },
+            { targets: 15, width: '120px', className: 'text-end' },
+            { targets: 16, width: '100px', className: 'text-end' },
             { targets: 17, width: '120px', className: 'text-end' },
-            { targets: 18, width: '100px', className: 'text-center' },            
+            { targets: 18, width: '120px', className: 'text-end' },
+            { targets: 19, width: '100px', className: 'text-center' },            
           ],
           order: [[2, 'desc']],
           paging: true,
@@ -1205,6 +1212,7 @@
                     </th>
                     <th class="text-center">정산 번호</th> 
                     <th class="text-center">정산 상태</th>
+                    <th class="text-center">VAN</th>
                     <th class="text-center">매입사</th>
                     <th class="text-center">카드번호</th>
                     <th class="text-center">카드유형</th>

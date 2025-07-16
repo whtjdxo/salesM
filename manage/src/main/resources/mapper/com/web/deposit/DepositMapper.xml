@@ -405,7 +405,7 @@
 				, IFNULL(T2.CHAIN_AMT, 0)									AS chain_depo_amt
 				, IFNULL(T3.CREDIT_AMT, 0)									AS credit_depo_amt
 				, CASE WHEN T1.ABANK_CD = '039' THEN 0
-						ELSE IFNULL(T3.CREDIT_AMT, 0) - IFNULL(T2.CHAIN_AMT, 0) END 	AS gap_amt			
+						ELSE IFNULL(T2.CHAIN_AMT, 0) - IFNULL(T3.CREDIT_AMT, 0) END	AS gap_amt			
 				, IFNULL(T4.CRD_REMIT_FEE_AMT, 0)							AS crd_remit_fee_amt
 				, IFNULL(T4.CRD_UNREMIT_SUB_AMT, 0)							AS crd_unremit_sub_amt
 				, IFNULL(T5.CRD_EXC_AMT, 0)									AS crd_exc_amt
@@ -457,6 +457,7 @@
 		 WHERE  T2.CHAIN_NO		= #{sch_card_chain_no}
 		   AND  T2.BANK_IN_DATE = #{sch_card_resv_date} 
 	</select>
+ 
 
 	<select id="getDepoAdjustList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
 		SELECT  SQL_CALC_FOUND_ROWS
@@ -540,6 +541,55 @@
 				</otherwise>
 		</choose>                
 		LIMIT  ${start}, ${end}
+	</select>
+
+	<select id="getChainDepositList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	SQL_CALC_FOUND_ROWS
+		   		DL.DEPOSIT_NO							AS deposit_no
+				, DL.CHAIN_NO							AS chain_no
+				, DL.GUBUN								AS gubun
+				, CASE WHEN DL.BANK_IN_DATE = DL.BANK_IN_REAL_DATE THEN 
+							CONCAT(BANK_IN_DATE, ' ', DL.BANK_IN_TM)
+						ELSE CONCAT(BANK_IN_DATE, ' ', DL.BANK_IN_TM, ' (', DL.BANK_IN_REAL_DATE, ')') END bank_in_dttm
+				, DL.BANK_IN_DATE 						AS bank_in_date
+				, DL.BANK_IN_TM							AS bank_in_tm
+				, DL.BANK_IN_REAL_DATE					AS bank_in_real_date
+				, DL.CARD_ACQ 							AS card_acq 
+				, GET_CODE_NM('CARD_ACQ', DL.CARD_ACQ) 	AS card_acq_nm
+				, DL.BANK_CD							AS bank_cd
+				, GET_CODE_NM('BANK_CD', DL.BANK_CD)	AS bank_cd_nm	
+				, DL.IN_AMT								AS in_amt
+				, SD.REMARK								AS remark
+		  FROM 	TB_CHAIN_DEPOSIT_LIST DL
+			   	JOIN TB_CHAIN TC ON TC.CHAIN_NO = DL.CHAIN_NO 
+			   	LEFT OUTER JOIN (
+			   		SELECT 	'SCRAP' GB, SEQ, REMARK 
+					  FROM 	TB_SCRAP_BANK_DATA 
+					 UNION 	ALL
+					SELECT 	'KSOL', SEQ, CARD_CORP_NM 
+					  FROM 	TB_SCRAP_KSOLUTION_DATA
+			   	) SD ON SD.SEQ = DL.UPLOAD_SEQ_NO
+			   	    AND SD.GB  = DL.GUBUN
+		 WHERE	DL.BANK_IN_DATE	= #{sch_date} 
+		   AND  DL.CHAIN_NO 	= #{sch_chain_no}
+		   AND	DL.IN_AMT > 0
+		<choose>
+			<when test="sidx != '' and sidx != null ">
+				ORDER BY ${sidx} ${sord}
+			</when>
+			<otherwise>
+				ORDER BY 1
+			</otherwise>
+		</choose>                 
+	</select>
+
+	<select id="getChainDepositTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	IFNULL(SUM(DL.IN_AMT), 0) 	AS in_amt
+		  FROM 	TB_CHAIN_DEPOSIT_LIST DL
+			   	JOIN TB_CHAIN TC ON TC.CHAIN_NO = DL.CHAIN_NO 
+		 WHERE	DL.BANK_IN_DATE	= #{sch_date} 
+		   AND  DL.CHAIN_NO 	= #{sch_chain_no}		
+		   AND	DL.IN_AMT > 0
 	</select>
 
 	<update id="callProcDepoAdjustCancel" parameterType="com.web.manage.deposit.domain.ProcDepositVO" statementType="CALLABLE">

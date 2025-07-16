@@ -40,6 +40,39 @@
          ORDER  BY 2
   </select>
 
+  <select id="getChainVanList" resultType="hashMap">
+        SELECT  CV.VAN_CD 		AS code
+                , CD.CODE_NM 	AS codeNm
+                , 'VAN_CD'		AS group_code
+          FROM  TB_CHAIN_VAN CV
+                JOIN TB_CODE CD ON CD.CODE = CV.VAN_CD
+                    AND CD.CODE_GRP_CD = 'VAN_CD'
+                    AND CD.USE_YN = 'Y'
+        WHERE 	CV.USE_YN = 'Y'   
+        <if test="sch_chain_no != null and sch_chain_no != ''">
+          AND   CV.CHAIN_NO = #{sch_chain_no}  
+        </if>         
+          
+        ORDER 	BY CD.ORD_NO
+  </select>
+
+  <select id="getChainCardList" resultType="hashMap">
+        SELECT  CV.CARD_ACQ 		AS code
+                , CD.CODE_NM 		AS codeNm
+                , 'CARD_ACQ'		AS group_code
+        FROM  (
+                SELECT  CARD_ACQ, COUNT(1)  AS CNT
+                  FROM 	TB_CHAIN_CARD 
+                 WHERE 	CHAIN_NO = #{sch_chain_no} 
+                   AND 	USE_YN = 'Y'  
+                 GROUP 	BY CARD_ACQ
+            ) CV
+            JOIN TB_CODE CD ON CD.CODE = CV.CARD_ACQ
+                    AND CD.CODE_GRP_CD = 'CARD_ACQ'
+                    AND CD.USE_YN = 'Y'
+         ORDER 	BY CD.ORD_NO
+  </select>
+
   <select id="getChainList" resultType="hashMap">
         SELECT 	CHAIN_NO		  AS code 
                 , CHAIN_NM		AS codeNm

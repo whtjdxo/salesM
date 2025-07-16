@@ -1,6 +1,7 @@
 package com.web.manage.base.controller;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -599,8 +600,7 @@ public class ChainController {
             e.printStackTrace();
         }        
         return result;
-    }
-     
+    }     
 
     @RequestMapping(value = "/insertChainFile", method = RequestMethod.POST)    
     public @ResponseBody ReturnDataVO insertChainFile(@ModelAttribute("ChainFileVO") @Valid ChainFileVO chainFileVo, BindingResult bindingResult, MultipartHttpServletRequest multiRequest, HttpSession session) {    
@@ -616,7 +616,8 @@ public class ChainController {
 				if(chainFileVo.getFile_upload().size() > 0) {					
 					for(MultipartFile file : chainFileVo.getFile_upload()) {						
 					  
-	                    String pathString = origin_fileStorePath + chainFileVo.getFile_chain_no() ;
+	                    // String pathString = origin_fileStorePath + chainFileVo.getFile_chain_no() ;
+                        String pathString = Paths.get(origin_fileStorePath, chainFileVo.getFile_chain_no()).toString();
 	                    String fileSeq = chainService.getNewFileNo(); 
 
                         System.out.println("pathString : " + pathString);    
@@ -634,7 +635,7 @@ public class ChainController {
 	                    String newName = chainFileVo.getFile_gb() + "_"+ fileSeq + Math.round(Math.random() * 100);
 	                    
 	                    // filePath = File.separator + newName + "." + fileExt;
-                        String savePath = pathString + "\\" + newName + "." + fileExt;
+                        String savePath = pathString + File.separator + newName + "." + fileExt;
 
                         System.out.println("newName : " + newName);
                         System.out.println("filePath : " + savePath);
