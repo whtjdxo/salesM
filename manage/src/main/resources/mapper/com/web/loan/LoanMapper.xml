@@ -225,10 +225,10 @@
                             , SUM(REMAIN_PRINC_AMT)     AS REMAIN_PRINC_AMT
                             , SUM(REMAIN_INT_AMT)       AS REMAIN_INT_AMT
                             , SUM(REMAIN_TOT_AMT)       AS REMAIN_TOT_AMT
-                            , SUM(CASE WHEN SC_DATE &gt;= DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_PRINC_AMT ELSE NULL END) 	AS PRE_PRINC_AMT
-                            , SUM(CASE WHEN SC_DATE &gt;= DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END) 	AS PRE_INC_AMT
-                            , SUM(CASE WHEN SC_DATE &lt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_PRINC_AMT ELSE NULL END)  	AS POST_PRINC_AMT
-                            , SUM(CASE WHEN SC_DATE &lt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END)  	AS POST_INT_AMT 
+                            , SUM(CASE WHEN SC_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_PRINC_AMT ELSE NULL END) 	AS PRE_PRINC_AMT
+                            , SUM(CASE WHEN SC_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END) 	AS PRE_INC_AMT
+                            , SUM(CASE WHEN SC_DATE &gt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_PRINC_AMT ELSE NULL END)  AS POST_PRINC_AMT
+                            , SUM(CASE WHEN SC_DATE &gt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END)  	AS POST_INT_AMT 
                       FROM  TB_LOAN_REPAY_SCHEDULE
                      WHERE  USE_YN = 'Y' 
                      GROUP  BY LOAN_NO
@@ -295,10 +295,10 @@
                             , SUM(REMAIN_PRINC_AMT)     AS REMAIN_PRINC_AMT
                             , SUM(REMAIN_INT_AMT)       AS REMAIN_INT_AMT
                             , SUM(REMAIN_TOT_AMT)       AS REMAIN_TOT_AMT
-                            , SUM(CASE WHEN SC_DATE &gt;= DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_PRINC_AMT ELSE NULL END) 	AS PRE_PRINC_AMT
-                            , SUM(CASE WHEN SC_DATE &gt;= DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END) 	AS PRE_INC_AMT
-                            , SUM(CASE WHEN SC_DATE &lt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_PRINC_AMT ELSE NULL END)  	AS POST_PRINC_AMT
-                            , SUM(CASE WHEN SC_DATE &lt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END)  	AS POST_INT_AMT 
+                            , SUM(CASE WHEN SC_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_PRINC_AMT ELSE NULL END) 	AS PRE_PRINC_AMT
+                            , SUM(CASE WHEN SC_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END) 	AS PRE_INC_AMT
+                            , SUM(CASE WHEN SC_DATE &gt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_PRINC_AMT ELSE NULL END)  AS POST_PRINC_AMT
+                            , SUM(CASE WHEN SC_DATE &gt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END)  	AS POST_INT_AMT 
                       FROM  TB_LOAN_REPAY_SCHEDULE
                      WHERE  USE_YN = 'Y' 
                      GROUP  BY LOAN_NO

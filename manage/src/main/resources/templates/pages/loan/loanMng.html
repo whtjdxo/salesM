@@ -574,7 +574,7 @@
           }
           $('#prepay_recv_date').val(toDay);
           $('#prepay_loan_no').val(selectData.loan_no);            
-          $('#pre_princ_amt').val(Number(selectData.pre_princ_amt).toLocaleString());  
+          $('#pre_princ_amt').val(Number(selectData.remain_princ_amt).toLocaleString());  
           $('#pre_int_amt').val(Number(selectData.pre_int_amt).toLocaleString());
           $('#post_princ_amt').val(Number(selectData.post_princ_amt).toLocaleString());
           $('#delay_int_amt').val(Number(selectData.delay_int_amt).toLocaleString());
@@ -1503,7 +1503,7 @@
             <div class="row mb-1">
               <div class="col-sm-12">
                 <div class="input-group input-group-sm mb-1">
-                  <label class="col-sm-5 col-form-label col-form-label-sm" for="prepay_recv_date">미수 원금</label>
+                  <label class="col-sm-5 col-form-label col-form-label-sm" for="pre_princ_amt">미수 원금</label>
                   <input class="form-control form-control-sm text-end bg-light" id="pre_princ_amt" type="text" name="pre_princ_amt" readonly/>
                 </div>
               </div>
@@ -1511,7 +1511,7 @@
             <div class="row mb-1">
               <div class="col-sm-12">
                 <div class="input-group input-group-sm mb-1">
-                  <label class="col-sm-5 col-form-label col-form-label-sm" for="prepay_recv_date">미수이자</label>
+                  <label class="col-sm-5 col-form-label col-form-label-sm" for="pre_int_amt">미수이자</label>
                   <input class="form-control form-control-sm text-end bg-light" id="pre_int_amt" type="text" name="pre_int_amt" readonly/>
                 </div>
               </div>
