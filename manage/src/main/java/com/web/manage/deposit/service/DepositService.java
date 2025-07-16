@@ -112,7 +112,14 @@ public class DepositService {
     public HashMap<String, Object> getChainDepositTotal(HashMap<String, Object> hashmapParam) {
         return depositMapper.getChainDepositTotal(hashmapParam);
     }
-    
+
+    public List<HashMap<String, Object>> getCreditDepositList(HashMap<String, Object> hashmapParam) {
+        return depositMapper.getCreditDepositList(hashmapParam);
+    }
+
+    public HashMap<String, Object> getCreditDepositTotal(HashMap<String, Object> hashmapParam) {
+        return depositMapper.getCreditDepositTotal(hashmapParam);
+    } 
 
     public ReturnDataVO callProcDepoAdjustCancel(ProcDepositVO procVo) {
         // return withdrawMapper.callProcRemitMain(procVo);

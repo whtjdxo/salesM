@@ -21,13 +21,12 @@ public interface DepositMapper {
     List<HashMap<String, Object>> getDepoResvList(HashMap<String, Object> hashmapParam);
     void callProcChangeResvDate(ProcDepositVO procVo);
     void callProcDepositAdjust(ProcDepositVO procVo);
-
-    List<HashMap<String, Object>> getDepoAdjustSummary(HashMap<String, Object> hashmapParam);    
+    List<HashMap<String, Object>> getDepoAdjustSummary(HashMap<String, Object> hashmapParam);
     HashMap<String, Object> getDepoAdjustSummTotal(HashMap<String, Object> hashmapParam);
-
     List<HashMap<String, Object>> getChainDepositList(HashMap<String, Object> hashmapParam);
     HashMap<String, Object> getChainDepositTotal(HashMap<String, Object> hashmapParam);
-
+    List<HashMap<String, Object>> getCreditDepositList(HashMap<String, Object> hashmapParam);
+    HashMap<String, Object> getCreditDepositTotal(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getDepoAdjustCardSummary(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getDepoAdjustList(HashMap<String, Object> hashmapParam);
 

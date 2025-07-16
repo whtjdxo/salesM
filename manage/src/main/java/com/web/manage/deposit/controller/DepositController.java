@@ -225,8 +225,8 @@ public class DepositController {
         return jString;  
     }
 
-    @RequestMapping(value = "depoMng/chainDepoList", method = RequestMethod.POST)
-    public @ResponseBody String getChainDepositList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+    @RequestMapping(value = "depoMng/depositList", method = RequestMethod.POST)
+    public @ResponseBody String getDepositList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
         HashMap<String, Object> totalSumm = new HashMap<String, Object>();
@@ -249,10 +249,17 @@ public class DepositController {
             } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
+            int records = 0;
 
-            list = depositService.getChainDepositList(hashmapParam);
-            int records = depositService.getQueryTotalCnt();
-            totalSumm = depositService.getChainDepositTotal(hashmapParam);
+            if ("CHAIN".equals(hashmapParam.get("sch_gb"))) {
+                list = depositService.getChainDepositList(hashmapParam);
+                records = depositService.getQueryTotalCnt();
+                totalSumm = depositService.getChainDepositTotal(hashmapParam);
+            } else {
+                list = depositService.getCreditDepositList(hashmapParam);
+                records = depositService.getQueryTotalCnt();
+                totalSumm = depositService.getCreditDepositTotal(hashmapParam);
+            }
 
             pageing.setRecords(records);
             pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));

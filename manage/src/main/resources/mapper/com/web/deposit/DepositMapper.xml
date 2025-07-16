@@ -418,7 +418,8 @@
 		  		JOIN (
 					SELECT 	CHAIN_NO , BANK_IN_DATE, SUM(IN_AMT) CHAIN_AMT
 					  FROM 	TB_CHAIN_DEPOSIT_LIST
-					 WHERE	BANK_IN_DATE = #{sch_card_resv_date}					   
+					 WHERE	BANK_IN_DATE = #{sch_depo_date}	
+					   AND  CHAIN_NO	 = #{sch_chain_no}				   
 					 GROUP 	BY CHAIN_NO , BANK_IN_DATE
 		        ) T2 ON T2.CHAIN_NO = T1.CHAIN_NO 
 		        LEFT OUTER JOIN (
@@ -426,8 +427,8 @@
 							, BANK_IN_DATE
 							, SUM(IN_AMT)       CREDIT_AMT
 					  FROM 	TB_CREDIT_DEPOSIT_LIST
-					 WHERE	BANK_IN_DATE = #{sch_card_resv_date}
-					   AND  TRANS_COMP	= #{sch_card_chain_no}
+					 WHERE	BANK_IN_DATE = #{sch_depo_date}
+					   AND  TRANS_COMP	= #{sch_chain_no}
 					 GROUP 	BY TRANS_COMP, BANK_IN_DATE
 				) T3 ON T3.CHAIN_NO 	= T2.CHAIN_NO
 					AND T3.BANK_IN_DATE = T2.BANK_IN_DATE
@@ -437,8 +438,8 @@
 							, SUM(CASE WHEN SUB_CODE = 'I07001' THEN OCCUR_AMT ELSE NULL END)  CRD_UNREMIT_SUB_AMT              
 					  FROM 	TB_SUB_MST
 					 WHERE 	SUB_CODE  IN ('I06001', 'I07001')
-					   AND  CHAIN_NO	= #{sch_card_chain_no}
-					   AND  REG_DATE 	= #{sch_card_resv_date}
+					   AND  CHAIN_NO	= #{sch_chain_no}
+					   AND  REG_DATE 	= #{sch_depo_date}
 					   AND 	USE_YN  = 'Y'
 					   AND	SHIFT_FLAG = 'N'					
 					 GROUP 	BY CHAIN_NO, REG_DATE
@@ -448,14 +449,14 @@
 					SELECT 	CHAIN_NO, EXC_DATE, SUM(OCCUR_AMT)  CRD_EXC_AMT
 					  FROM 	TB_EXCEED_MST
 					 WHERE 	EXC_CODE  	= 'I05001'
-					   AND  CHAIN_NO	= #{sch_card_chain_no}
-					   AND  EXC_DATE 	= #{sch_card_resv_date}
+					   AND  CHAIN_NO	= #{sch_chain_no}
+					   AND  EXC_DATE 	= #{sch_depo_date}
 					   AND 	USE_YN  	= 'Y'
 					 GROUP 	BY CHAIN_NO, EXC_DATE
 				) T5 ON T5.CHAIN_NO = T2.CHAIN_NO
 					AND T5.EXC_DATE = T2.BANK_IN_DATE
-		 WHERE  T2.CHAIN_NO		= #{sch_card_chain_no}
-		   AND  T2.BANK_IN_DATE = #{sch_card_resv_date} 
+		 WHERE  T2.CHAIN_NO		= #{sch_chain_no}
+		   AND  T2.BANK_IN_DATE = #{sch_depo_date} 
 	</select>
  
 
@@ -552,10 +553,9 @@
 							CONCAT(BANK_IN_DATE, ' ', DL.BANK_IN_TM)
 						ELSE CONCAT(BANK_IN_DATE, ' ', DL.BANK_IN_TM, ' (', DL.BANK_IN_REAL_DATE, ')') END bank_in_dttm
 				, DL.BANK_IN_DATE 						AS bank_in_date
-				, DL.BANK_IN_TM							AS bank_in_tm
-				, DL.BANK_IN_REAL_DATE					AS bank_in_real_date
-				, DL.CARD_ACQ 							AS card_acq 
-				, GET_CODE_NM('CARD_ACQ', DL.CARD_ACQ) 	AS card_acq_nm
+				, DL.BANK_IN_TM							AS bank_in_tm				
+				, DL.CARD_ACQ 							AS send_corp 
+				, GET_CODE_NM('CARD_ACQ', DL.CARD_ACQ) 	AS send_corp_nm
 				, DL.BANK_CD							AS bank_cd
 				, GET_CODE_NM('BANK_CD', DL.BANK_CD)	AS bank_cd_nm	
 				, DL.IN_AMT								AS in_amt
@@ -589,6 +589,47 @@
 			   	JOIN TB_CHAIN TC ON TC.CHAIN_NO = DL.CHAIN_NO 
 		 WHERE	DL.BANK_IN_DATE	= #{sch_date} 
 		   AND  DL.CHAIN_NO 	= #{sch_chain_no}		
+		   AND	DL.IN_AMT > 0
+	</select>
+
+
+	<select id="getCreditDepositList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	SQL_CALC_FOUND_ROWS
+		   		DL.DEPOSIT_NO							AS deposit_no
+				, DL.TRANS_COMP							AS chain_no
+				, DL.UPLOAD_GUBUN						AS gubun
+				, CONCAT(BANK_IN_DATE, ' ', DL.BANK_IN_TM) 	AS bank_in_dttm
+				, DL.BANK_IN_DATE 						AS bank_in_date
+				, DL.BANK_IN_TM							AS bank_in_tm
+				, DL.TRANS_COMP 						AS send_corp 
+				, TC.CHAIN_NM 							AS send_corp_nm
+				, CO.BANK_CD							AS bank_cd
+				, GET_CODE_NM('BANK_CD', CO.BANK_CD)	AS bank_cd_nm	
+				, DL.IN_AMT								AS in_amt
+				, DL.BK_JUKYO 							AS remark
+		  FROM 	TB_CREDIT_DEPOSIT_LIST DL
+			   	JOIN TB_CORP CO 	ON CO.CORP_CD = DL.CORP_CD  			   	
+			   	JOIN TB_CHAIN TC 	ON TC.CHAIN_NO = DL.TRANS_COMP
+		 WHERE	DL.BANK_IN_DATE	= #{sch_date} 
+		   AND  DL.TRANS_COMP 	= #{sch_chain_no}
+		   AND	DL.IN_AMT > 0
+		<choose>
+			<when test="sidx != '' and sidx != null ">
+				ORDER BY ${sidx} ${sord}
+			</when>
+			<otherwise>
+				ORDER BY 1
+			</otherwise>
+		</choose>                 
+	</select>
+
+	<select id="getCreditDepositTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	IFNULL(SUM(DL.IN_AMT), 0) 	AS in_amt
+		  FROM 	TB_CREDIT_DEPOSIT_LIST DL
+			   	JOIN TB_CORP CO 	ON CO.CORP_CD = DL.CORP_CD  			   	
+			   	JOIN TB_CHAIN TC 	ON TC.CHAIN_NO = DL.TRANS_COMP
+		 WHERE	DL.BANK_IN_DATE	= #{sch_date} 
+		   AND  DL.TRANS_COMP 	= #{sch_chain_no}
 		   AND	DL.IN_AMT > 0
 	</select>
 

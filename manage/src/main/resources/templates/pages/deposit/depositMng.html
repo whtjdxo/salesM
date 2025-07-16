@@ -123,8 +123,9 @@
                 const colMap = {
                     3: 'conf_amt',
                     4: 'card_resv_amt',
-                    5: 'depo_amt',
-                    6: 'unrecv_amt', 
+                    5: 'card_resv_amt_remit',
+                    6: 'depo_amt',
+                    7: 'depo_gap_amt_remit', 
                 };
 
                 Object.entries(colMap).forEach(([colIdx, key]) => {
@@ -219,7 +220,11 @@
  
           $('#tbl_card_summ').DataTable().ajax.reload(); 
 
-          var formData = $('#frm_sch_card').serializeObject();          
+          // var formData = $('#frm_sch_card').serializeObject();    
+          var formData ={
+            sch_chain_no   : row.chain_no, 
+					  sch_depo_date	 : $('#sch_card_resv_date').val(),
+          }      
           callAjaxJson('/deposit/deposit/depoMng/chainDepositStatus', formData, fn_chainDepoStatus);
 
           if ($('#sch_list_chain_no').val() && $('#sch_list_resv_date').val()) {
@@ -706,12 +711,21 @@
         $('#chain_depo_amt').on('click', function () {
           var depoAmtValue = parseFloat($(this).val().replace(/,/g, '')) || 0; // Remove commas and parse as float
           if (depoAmtValue > 0) { 
-            $('#modal_chain_depo').modal('show'); // Show the modal            
+            $('#modal_depo').modal('show'); // Show the modal   
+            $('#sch_depo_gb').val('CHAIN');
+          }
+        });
+
+        $('#credit_depo_amt').on('click', function () {
+          var depoAmtValue = parseFloat($(this).val().replace(/,/g, '')) || 0; // Remove commas and parse as float
+          if (depoAmtValue > 0) { 
+            $('#modal_depo').modal('show'); // Show the modal   
+            $('#sch_depo_gb').val('CREDIT');
           }
         });
 
         // 모달 창 표시될때 초기화 처리
-        $('#modal_chain_depo').on('shown.bs.modal', function() {  
+        $('#modal_depo').on('shown.bs.modal', function() {  
           // 모달 열릴 때 첫 번째 포커스 가능 요소로 이동          
           $(this).data('trigger-element', document.activeElement);
           if ($.fn.DataTable.isDataTable('#tbl_depo_list')) {
@@ -724,15 +738,15 @@
             select: true,
             responsive: true,
             ajax: {
-                url: '/deposit/deposit/depoMng/chainDepoList',
+                url: '/deposit/deposit/depoMng/depositList',
                 contentType: 'application/json',
                 dataType: 'JSON',
                 type: 'POST',
                 data: function (postData) {
                   var formData = { 
+                    sch_gb      : $('#sch_depo_gb').val(),
                     sch_chain_no: $('#sch_card_chain_no').val(),
-                    sch_date : $('#sch_resv_date').val(),
-
+                    sch_date    : $('#sch_resv_date').val(),
                   };
                   Object.assign(postData, formData);
                   return JSON.stringify(postData);
@@ -747,7 +761,7 @@
               },
               { data: 'gubun' },
               { data: 'bank_cd_nm' },
-              { data: 'card_acq_nm' },
+              { data: 'send_corp_nm' },
               { data: 'bank_in_dttm' },
               { data: 'in_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },              
               { data: 'remark' },
@@ -757,7 +771,7 @@
               { targets: 1, width: '100px', className: 'text-center' },
               { targets: 2, width: '120px', className: 'text-left' },
               { targets: 3, width: '120px', className: 'text-left' },
-              { targets: 4, width: '200px', className: 'text-left' },
+              { targets: 4, width: '200px', className: 'text-center' },
               { targets: 5, width: '120px', className: 'text-end' },
               { targets: 6, width: '300px', className: 'text-left' },
             ],
@@ -784,7 +798,7 @@
         });
 
         // 모달이 닫힐 때 포커스 복원
-        $('#modal_chain_depo').on('hidden.bs.modal', function() {
+        $('#modal_depo').on('hidden.bs.modal', function() {
           var triggerElement = $(this).data('trigger-element');
           if (triggerElement) {
             $(triggerElement).focus();
@@ -875,8 +889,9 @@
         <div class="card" style="height: 600px;">    
           <div class="card-header">            
             <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">
-              <input class="form-control form-control-sm" id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly" />
-              <input class="form-control form-control-sm" id="sch_card_resv_date" type="hidden" name="sch_card_resv_date"/>                
+              <input id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly" />
+              <input id="sch_card_resv_date" type="hidden" name="sch_card_resv_date"/>
+              <input id="sch_depo_gb"         type="hidden" name="sch_depo_gb" />
             </form>
             <div class="row flex-between-end">              
               <div class="col-lg-10 align-self-center">
@@ -902,7 +917,7 @@
                       <th rowspan="2" class="text-center" style="vertical-align: middle;">미상환액</th>
                     </tr>
                     <tr>
-                      <th class="text-center">매출총액</th>
+                      <th class="text-center">매출액</th>
                       <th class="text-center">카드수수료</th>
                       <th class="text-center">입금예정액</th>
                       <th class="text-center">상환예정액</th>
@@ -978,10 +993,11 @@
             </div>     
             <div class="col-lg-10">
               <form id="frm_sch_list" name="frm_sch_list" onsubmit="return false;" novalidate=""> 
-                <input id="sch_list_chain_no"  type="hidden" name="sch_list_chain_no" />
-                <input id="sch_list_chain_nm"  type="hidden" name="sch_list_chain_nm" />
-                <input id="sch_list_resv_date" type="hidden" name="sch_list_resv_date"/>
-                <input id="sch_list_card_acq"  type="hidden" name="sch_list_card_acq" />
+                <input id="sch_list_chain_no"   type="hidden" name="sch_list_chain_no" />
+                <input id="sch_list_chain_nm"   type="hidden" name="sch_list_chain_nm" />
+                <input id="sch_list_resv_date"  type="hidden" name="sch_list_resv_date"/>
+                <input id="sch_list_card_acq"   type="hidden" name="sch_list_card_acq" /> 
+                
                 <div class="row mb-1">
                   <div class="col-sm-5">
                     <div class="input-group input-group-sm mb-1"> 
@@ -1061,7 +1077,7 @@
     </div>    
   </div>  
 
-  <div class="modal fade" id="modal_chain_depo" tabindex="-4">
+  <div class="modal fade" id="modal_depo" tabindex="-4">
     <div class="modal-dialog modal-xl"> 
       <div class="modal-content">
         <div class="modal-header">
