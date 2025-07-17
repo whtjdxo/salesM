@@ -16,9 +16,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -239,7 +242,14 @@ public class LoanController {
                 cell.setCellValue(headers[i]);
             }
 
+            CellStyle numberStyle = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            numberStyle.setDataFormat(format.getFormat("#,##0"));
+
 			String loan_no = (String) hashmapParam.get("loan_no"); 
+            System.out.println(loan_no);
+            int rowIndex = 1;
+
 			if ("".equals(loan_no))	{
                 String loanType = (String) hashmapParam.get("loan_type");
                 BigDecimal loanPrincAmt = new BigDecimal(((String) hashmapParam.get("princ_amt")).replace(",", ""));
@@ -278,42 +288,102 @@ public class LoanController {
                     loanSDate = LocalDate.now(); // 또는 throw new IllegalArgumentException("Invalid loan start date type");
                 }
 				List<LoanRepayScheduleVO> list  = new ArrayList<LoanRepayScheduleVO>();	
-            	list = loanService.getLoanRepaymentVOs(loanType, loanPrincAmt, intRate, loanDays, loanSDate);
-                int rowIndex = 1;
+            	list = loanService.getLoanRepaymentVOs(loanType, loanPrincAmt, intRate, loanDays, loanSDate);           
+
                 for (LoanRepayScheduleVO row : list) {
                     Row dataRow = sheet.createRow(rowIndex++);
                     dataRow.createCell(0).setCellValue(String.valueOf(row.getSc_seq()));
                     dataRow.createCell(1).setCellValue(String.valueOf(row.getSc_date()));
-                    dataRow.createCell(2).setCellValue(Double.parseDouble(String.valueOf(row.getBalance_amt())));
-                    dataRow.createCell(3).setCellValue(Double.parseDouble(String.valueOf(row.getRepay_princ_amt())));
-                    dataRow.createCell(4).setCellValue(Double.parseDouble(String.valueOf(row.getRepay_int_amt())));
-                    dataRow.createCell(5).setCellValue(Double.parseDouble(String.valueOf(row.getRepay_tot_amt())));
-                    dataRow.createCell(6).setCellValue(Double.parseDouble(String.valueOf(row.getRemain_princ_amt())));
-                    dataRow.createCell(7).setCellValue(Double.parseDouble(String.valueOf(row.getRemain_int_amt())));
-                    dataRow.createCell(8).setCellValue(Double.parseDouble(String.valueOf(row.getRemain_tot_amt())));
+
+                    Cell c2 = dataRow.createCell(2);
+                    c2.setCellValue(Double.parseDouble(String.valueOf(row.getBalance_amt())));
+                    c2.setCellStyle(numberStyle);
+
+                    Cell c3 = dataRow.createCell(3);
+                    c3.setCellValue(Double.parseDouble(String.valueOf(row.getRepay_princ_amt())));
+                    c3.setCellStyle(numberStyle);
+
+                    Cell c4 = dataRow.createCell(4);
+                    c4.setCellValue(Double.parseDouble(String.valueOf(row.getRepay_int_amt())));
+                    c4.setCellStyle(numberStyle);
+
+
+                    Cell c5 = dataRow.createCell(5);
+                    c5.setCellValue(Double.parseDouble(String.valueOf(row.getRepay_tot_amt())));
+                    c5.setCellStyle(numberStyle);
+
+
+                    Cell c6 = dataRow.createCell(6);
+                    c6.setCellValue(Double.parseDouble(String.valueOf(row.getRemain_princ_amt())));
+                    c6.setCellStyle(numberStyle);
+
+                    Cell c7 = dataRow.createCell(7);
+                    c7.setCellValue(Double.parseDouble(String.valueOf(row.getRemain_int_amt())));
+                    c7.setCellStyle(numberStyle);
+
+                    Cell c8 = dataRow.createCell(8);
+                    c8.setCellValue(Double.parseDouble(String.valueOf(row.getRemain_tot_amt())));
+                    c8.setCellStyle(numberStyle); 
                     dataRow.createCell(9).setCellValue(String.valueOf(row.getRecv_dt()));
-                    dataRow.createCell(10).setCellValue(String.valueOf(row.getRecv_yn_nm())); 
+                    dataRow.createCell(10).setCellValue(String.valueOf(row.getRecv_yn_nm()));  
                 }
 			} else {
                 List<HashMap<String, Object>> list  = new ArrayList<HashMap<String, Object>>();
                 list = loanService.getLoanRepaymentList(hashmapParam); 
-                // Populate data rows
-                int rowIndex = 1;
+                
+                // Populate data rows 
                 for (HashMap<String, Object> row : list) {
+                    
                     Row dataRow = sheet.createRow(rowIndex++);
                     dataRow.createCell(0).setCellValue(String.valueOf(row.get("sc_seq")));
-                    dataRow.createCell(1).setCellValue(String.valueOf(row.get("sc_date")));
-                    dataRow.createCell(2).setCellValue(Double.parseDouble(String.valueOf(row.get("balance_amt"))));
-                    dataRow.createCell(3).setCellValue(Double.parseDouble(String.valueOf(row.get("repay_princ_amt"))));
-                    dataRow.createCell(4).setCellValue(Double.parseDouble(String.valueOf(row.get("repay_int_amt"))));
-                    dataRow.createCell(5).setCellValue(Double.parseDouble(String.valueOf(row.get("repay_tot_amt"))));
-                    dataRow.createCell(6).setCellValue(Double.parseDouble(String.valueOf(row.get("remain_princ_amt"))));
-                    dataRow.createCell(7).setCellValue(Double.parseDouble(String.valueOf(row.get("remain_int_amt"))));
-                    dataRow.createCell(8).setCellValue(Double.parseDouble(String.valueOf(row.get("remain_tot_amt"))));
+                    dataRow.createCell(1).setCellValue(String.valueOf(row.get("sc_date"))); 
+
+                    Cell c2 = dataRow.createCell(2);
+                    c2.setCellValue(Double.parseDouble(String.valueOf(row.get("balance_amt"))));
+                    c2.setCellStyle(numberStyle);
+
+                    Cell c3 = dataRow.createCell(3);
+                    c3.setCellValue(Double.parseDouble(String.valueOf(row.get("repay_princ_amt"))));
+                    c3.setCellStyle(numberStyle);
+
+                    Cell c4 = dataRow.createCell(4);
+                    c4.setCellValue(Double.parseDouble(String.valueOf(row.get("repay_int_amt"))));
+                    c4.setCellStyle(numberStyle);
+
+
+                    Cell c5 = dataRow.createCell(5);
+                    c5.setCellValue(Double.parseDouble(String.valueOf(row.get("repay_tot_amt"))));
+                    c5.setCellStyle(numberStyle);
+
+
+                    Cell c6 = dataRow.createCell(6);
+                    c6.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_princ_amt"))));
+                    c6.setCellStyle(numberStyle);
+
+                    Cell c7 = dataRow.createCell(7);
+                    c7.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_int_amt"))));
+                    c7.setCellStyle(numberStyle);
+
+                    Cell c8 = dataRow.createCell(8);
+                    c8.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_tot_amt"))));
+                    c8.setCellStyle(numberStyle); 
                     dataRow.createCell(9).setCellValue(String.valueOf(row.get("recv_dt")));
-                    dataRow.createCell(10).setCellValue(String.valueOf(row.get("recv_yn_nm")));
+                    dataRow.createCell(10).setCellValue(String.valueOf(row.get("recv_yn_nm"))); 
                 }
 			}
+            // 3. 합계 Row 생성
+            System.out.println(rowIndex);
+
+            Row sumRow = sheet.createRow(rowIndex);
+            sumRow.createCell(0).setCellValue("합계");
+            int[] sumCols = {3,4,5,6,7,8};
+            for (int col : sumCols) {
+                String colLetter = CellReference.convertNumToColString(col);
+                String formula = String.format("SUM(%s2:%s%d)", colLetter, colLetter, rowIndex);
+                Cell sumCell = sumRow.createCell(col);
+                sumCell.setCellFormula(formula);
+                sumCell.setCellStyle(numberStyle);
+            }
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
@@ -340,6 +410,7 @@ public class LoanController {
 		try {
 			SessionVO member = (SessionVO) session.getAttribute("S_USER");
 			loanMstVo.setEnt_user_id(member.getUserId());
+            loanMstVo.setLoan_status("01");             //진행중
 			loanMstVo.setPrinc_amt(loanMstVo.getPrinc_amt().replace(",", ""));
             loanMstVo.setInt_amt(loanMstVo.getInt_amt().replace(",", ""));
             loanMstVo.setTot_loan_amt(loanMstVo.getTot_loan_amt().replace(",", ""));
@@ -385,30 +456,42 @@ public class LoanController {
 
     @RequestMapping(value = "loanMng/procLoanPrepay", method = RequestMethod.POST)
     public @ResponseBody ReturnDataVO callProcLoanPrepay(@ModelAttribute("ProcPrepayVO") @Valid ProcPrepayVO procVo, BindingResult bindingResult, HttpSession session) {
-        ReturnDataVO result = new ReturnDataVO(); 
+        ReturnDataVO result = new ReturnDataVO();  
         try {
+            System.out.println("procVo : " + procVo);
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
-    	    procVo.setPrepay_user_id(member.getUserId());
-            if (loanService.callProcLoanPrepay(procVo)) {
-                if (procVo.getResultCode() == 0) {
-                    result.setResultCode("S000");
-                    result.setResultMsg("PrePay Update successful.");                         
-                } else {
-                    System.out.println("PrePay  Fail");
-                    result.setResultCode("F000");
-                    result.setResultMsg(procVo.getResultMsg());    
-                }
-            } else {
-                System.out.println("PrePay  Fail");
-                result.setResultCode("F000");
-                result.setResultMsg("PrePay update failed.");
-            }
+            procVo.setPrepay_user_id(member.getUserId());            
+            return loanService.callProcLoanPrepay(procVo);             
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("PrePay update failed.");
+            result.setResultMsg("An error occurred while processing the scrap transaction.");
             e.printStackTrace();
+            return result;
         }
-        return result;
+        // try {
+        //     SessionVO member = (SessionVO) session.getAttribute("S_USER");
+    	//     procVo.setPrepay_user_id(member.getUserId());
+        //     if (loanService.callProcLoanPrepay(procVo)) {
+        //         System.out.println(procVo);
+        //         if (procVo.getResultCode() == 0) {
+        //             result.setResultCode("S000");
+        //             result.setResultMsg("PrePay Update successful.");                         
+        //         } else {
+        //             System.out.println("PrePay  Fail");
+        //             result.setResultCode("F000");
+        //             result.setResultMsg(procVo.getResultMsg());    
+        //         }
+        //     } else {
+        //         System.out.println("PrePay  Fail");
+        //         result.setResultCode("F000");
+        //         result.setResultMsg("PrePay update failed.");
+        //     }
+        // } catch (Exception e) {
+        //     result.setResultCode("F000");
+        //     result.setResultMsg("PrePay update failed.");
+        //     e.printStackTrace();
+        // }
+        // return result;
     }
  
 

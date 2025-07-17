@@ -305,7 +305,8 @@
           if (data) {
             $('#frm_loan_mst')[0].reset();
             $('#loan_no').val(data.loan_no);             
-            $('#corp_cd').val(data.corp_no);
+            $('#corp_cd').val(data.corp_cd);
+            
             $('#corp_nm').val(data.corp_nm);
             $('#chain_no').val(data.chain_no);
             $('#loan_type').val(data.loan_type);
@@ -351,7 +352,12 @@
             // }
 
             $('#crud').val('update');
-            $('#btn_delete').show();
+            if (data.loan_sdt > toDay) {
+              $('#btn_delete').show();
+            } else {
+              $('#btn_delete').hide();
+            }
+            // $('#btn_delete').show();
             if (data.loan_status === '01') {
               $('#btn_prepay_view').show();
             } else {
@@ -363,12 +369,12 @@
         });
 
         function fn_frm_loan_mst_clear(){
-          var corp_cd   = $('#corp_cd').val();
+          var corp_cd   = $('#corp_cd').val();          
           var corp_nm   = $('#corp_nm').val();
           var chain_no  = $('#chain_no').val();
           var int_rate  = $('#int_rate').val();
           var delay_rate = $('#delay_rate').val();
-
+          
           $('#frm_loan_mst')[0].reset();
           if(chain_no == ''){
             swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
@@ -376,13 +382,13 @@
           }
           tbl_chain_loan_list.$('tr.selected').removeClass('selected');
           $('#corp_cd').val(corp_cd); 
+          $('#loan_status').val("01"); 
           $('#corp_nm').val(corp_nm); 
           $('#chain_no').val(chain_no); 
           $('#int_rate').val(int_rate); 
           $('#delay_rate').val(delay_rate);
           $('#cont_dt').val(toDay);
-          $('#loan_sdt').val(toDay);
-
+          $('#loan_sdt').val(toDay); 
           $('#cont_dt').prop('readonly', false).removeClass('bg-light');
           $('#princ_amt').prop('readonly', false).removeClass('bg-light');
           $('#int_rate').prop('readonly', false).removeClass('bg-light');
@@ -445,6 +451,14 @@
 
         $('#loan_day').on('input', function () {
           setIntAmtEqualInstallment();
+        });
+
+        $('#princ_amt').on('focus', function () {
+          $(this).select();
+        });
+
+        $('#loan_day').on('focus', function () {
+          $(this).select();
         });
 
         $('#btn_create').click(function () {
@@ -1295,7 +1309,7 @@
                   <div class="col-sm-4">
                     <div class="input-group input-group-sm mb-1">
                       <label class="col-sm-4 col-form-label col-form-label-sm" for="loan_status">진행상태</label> 
-                      <input class="form-control form-control-sm" id="loan_status" type="hidden" name="loan_status" value = '01' readonly="readonly"/>
+                      <input class="form-control form-control-sm" id="loan_status" type="hidden" name="loan_status"  readonly="readonly"/>
                       <input class="form-control form-control-sm bg-light" id="loan_status_nm" type="text" name="loan_status_nm" value="거래중" readonly="readonly"/>
                     </div>
                   </div>

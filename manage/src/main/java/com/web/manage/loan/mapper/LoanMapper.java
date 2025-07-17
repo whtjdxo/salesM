@@ -28,5 +28,5 @@ public interface LoanMapper {
 
     boolean insertLoanRepaySchedule(LoanRepayScheduleVO repaySchedule);
     boolean deleteLoanRepaySchedule(LoanMstVO loanMstVo);
-    boolean callProcLoanPrepay(ProcPrepayVO procVo); 
+    void callProcLoanPrepay(ProcPrepayVO procVo); 
 }
