@@ -18,8 +18,10 @@ import java.util.List;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -46,10 +48,12 @@ import com.web.manage.loan.domain.LoanMstVO;
 import com.web.manage.loan.domain.LoanRepayScheduleVO;
 import com.web.manage.loan.domain.ProcPrepayVO;
 import com.web.manage.loan.service.LoanService;
+import com.web.common.util.ExcelStyleUtil;
 
 import ch.qos.logback.classic.Logger;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+
 
 @Controller
 @RequestMapping("/loan/loan/")
@@ -226,13 +230,22 @@ public class LoanController {
         // HashMap<String, Object> hashmapResult = new HashMap<String, Object>();		
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());        
+        
         try {
             // Create an Excel workbook
             Workbook workbook = new XSSFWorkbook();
             Sheet sheet = workbook.createSheet("List");
+            ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
 
             // Create header row
-            Row headerRow = sheet.createRow(0);
+            Row titleRow = sheet.createRow(0);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 10));
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("상환일정");            
+            titleCell.setCellStyle(excelStyle.getStyle("title"));
+            
+            Row headerRow = sheet.createRow(1);
+
             String[] headers = {
                 "회차"          , "상환예정일"       , "거래전잔액"          ,  "청구원금"        , "청구이자"         , "총청구금액"
                 , "미수원금"    , "미수이자"      , "미수총액"       , "상환일"       , "비고"
@@ -240,15 +253,22 @@ public class LoanController {
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
-            }
+                cell.setCellStyle(excelStyle.getStyle("header"));
 
-            CellStyle numberStyle = workbook.createCellStyle();
-            DataFormat format = workbook.createDataFormat();
-            numberStyle.setDataFormat(format.getFormat("#,##0"));
+                // 각 컬럼 너비 자동 조정
+                sheet.autoSizeColumn(i);                
+                // 한글의 경우 autoSizeColumn이 완벽하지 않을 수 있어 약간의 여백 추가
+                sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
+            } 
+
+            // 모든 컬럼의 너비를 동일하게 설정하고 싶다면
+            // for (int i = 0; i < headers.length; i++) {
+            //     sheet.setColumnWidth(i, 5000); // 고정 너비 설정 (예: 5000)
+            // }
 
 			String loan_no = (String) hashmapParam.get("loan_no"); 
             System.out.println(loan_no);
-            int rowIndex = 1;
+            int rowIndex = 2;
 
 			if ("".equals(loan_no))	{
                 String loanType = (String) hashmapParam.get("loan_type");
@@ -297,33 +317,31 @@ public class LoanController {
 
                     Cell c2 = dataRow.createCell(2);
                     c2.setCellValue(Double.parseDouble(String.valueOf(row.getBalance_amt())));
-                    c2.setCellStyle(numberStyle);
+                    c2.setCellStyle(excelStyle.getStyle("number"));
 
                     Cell c3 = dataRow.createCell(3);
                     c3.setCellValue(Double.parseDouble(String.valueOf(row.getRepay_princ_amt())));
-                    c3.setCellStyle(numberStyle);
+                    c3.setCellStyle(excelStyle.getStyle("number"));
 
                     Cell c4 = dataRow.createCell(4);
                     c4.setCellValue(Double.parseDouble(String.valueOf(row.getRepay_int_amt())));
-                    c4.setCellStyle(numberStyle);
-
+                    c4.setCellStyle(excelStyle.getStyle("number"));
 
                     Cell c5 = dataRow.createCell(5);
                     c5.setCellValue(Double.parseDouble(String.valueOf(row.getRepay_tot_amt())));
-                    c5.setCellStyle(numberStyle);
-
+                    c5.setCellStyle(excelStyle.getStyle("number"));
 
                     Cell c6 = dataRow.createCell(6);
                     c6.setCellValue(Double.parseDouble(String.valueOf(row.getRemain_princ_amt())));
-                    c6.setCellStyle(numberStyle);
+                    c6.setCellStyle(excelStyle.getStyle("number"));
 
                     Cell c7 = dataRow.createCell(7);
                     c7.setCellValue(Double.parseDouble(String.valueOf(row.getRemain_int_amt())));
-                    c7.setCellStyle(numberStyle);
+                    c7.setCellStyle(excelStyle.getStyle("number"));
 
                     Cell c8 = dataRow.createCell(8);
                     c8.setCellValue(Double.parseDouble(String.valueOf(row.getRemain_tot_amt())));
-                    c8.setCellStyle(numberStyle); 
+                    c8.setCellStyle(excelStyle.getStyle("number")); 
                     dataRow.createCell(9).setCellValue(String.valueOf(row.getRecv_dt()));
                     dataRow.createCell(10).setCellValue(String.valueOf(row.getRecv_yn_nm()));  
                 }
@@ -340,33 +358,31 @@ public class LoanController {
 
                     Cell c2 = dataRow.createCell(2);
                     c2.setCellValue(Double.parseDouble(String.valueOf(row.get("balance_amt"))));
-                    c2.setCellStyle(numberStyle);
+                    c2.setCellStyle(excelStyle.getStyle("number"));
 
                     Cell c3 = dataRow.createCell(3);
                     c3.setCellValue(Double.parseDouble(String.valueOf(row.get("repay_princ_amt"))));
-                    c3.setCellStyle(numberStyle);
+                    c3.setCellStyle(excelStyle.getStyle("number"));
 
                     Cell c4 = dataRow.createCell(4);
                     c4.setCellValue(Double.parseDouble(String.valueOf(row.get("repay_int_amt"))));
-                    c4.setCellStyle(numberStyle);
-
+                    c4.setCellStyle(excelStyle.getStyle("number"));
 
                     Cell c5 = dataRow.createCell(5);
                     c5.setCellValue(Double.parseDouble(String.valueOf(row.get("repay_tot_amt"))));
-                    c5.setCellStyle(numberStyle);
-
+                    c5.setCellStyle(excelStyle.getStyle("number"));
 
                     Cell c6 = dataRow.createCell(6);
                     c6.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_princ_amt"))));
-                    c6.setCellStyle(numberStyle);
+                    c6.setCellStyle(excelStyle.getStyle("number"));
 
                     Cell c7 = dataRow.createCell(7);
                     c7.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_int_amt"))));
-                    c7.setCellStyle(numberStyle);
+                    c7.setCellStyle(excelStyle.getStyle("number"));
 
                     Cell c8 = dataRow.createCell(8);
                     c8.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_tot_amt"))));
-                    c8.setCellStyle(numberStyle); 
+                    c8.setCellStyle(excelStyle.getStyle("number")); 
                     dataRow.createCell(9).setCellValue(String.valueOf(row.get("recv_dt")));
                     dataRow.createCell(10).setCellValue(String.valueOf(row.get("recv_yn_nm"))); 
                 }
@@ -374,16 +390,22 @@ public class LoanController {
             // 3. 합계 Row 생성
             System.out.println(rowIndex);
 
-            Row sumRow = sheet.createRow(rowIndex);
-            sumRow.createCell(0).setCellValue("합계");
+            Row sumRow = sheet.createRow(rowIndex);            
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowIndex, rowIndex, 0, 2));
+            Cell summTitle = sumRow.createCell(0);
+            summTitle.setCellValue("합계");            
+            summTitle.setCellStyle(excelStyle.getStyle("header"));
+
             int[] sumCols = {3,4,5,6,7,8};
             for (int col : sumCols) {
                 String colLetter = CellReference.convertNumToColString(col);
                 String formula = String.format("SUM(%s2:%s%d)", colLetter, colLetter, rowIndex);
                 Cell sumCell = sumRow.createCell(col);
                 sumCell.setCellFormula(formula);
-                sumCell.setCellStyle(numberStyle);
+                sumCell.setCellStyle(excelStyle.getStyle("subTotal")); 
             }
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 10);
+
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
@@ -464,7 +486,7 @@ public class LoanController {
             return loanService.callProcLoanPrepay(procVo);             
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("An error occurred while processing the scrap transaction.");
+            result.setResultMsg("An error occurred while processing the Loan Prepay. [procLoanPrepay]");
             e.printStackTrace();
             return result;
         }
@@ -500,23 +522,34 @@ public class LoanController {
         ReturnDataVO result = new ReturnDataVO(); 
         try {
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
-    	    loanMstVo.setUpt_user_id(member.getUserId());  
-
-            if (loanService.deleteLoanMst(loanMstVo)) {
-                System.out.println("Delete LoanMst  success");
-                result.setResultCode("S000");
-                result.setResultMsg("LoanMst Delete successful.");
-            } else {
-                System.out.println("Delete Loan Master Fail");
-                result.setResultCode("F000");
-                result.setResultMsg("LoanMst Delete failed.");
-            }
+            loanMstVo.setUpt_user_id(member.getUserId());          
+            return loanService.deleteLoanMst(loanMstVo);             
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("LoanMst Delete failed.");
+            result.setResultMsg("An error occurred while processing the Delete Loan. [deleteLoanMst]");
             e.printStackTrace();
+            return result;
         }
-        return result;
+
+        // try {
+        //     SessionVO member = (SessionVO) session.getAttribute("S_USER");
+    	//     loanMstVo.setUpt_user_id(member.getUserId());  
+
+        //     if (loanService.deleteLoanMst(loanMstVo)) {
+        //         System.out.println("Delete LoanMst  success");
+        //         result.setResultCode("S000");
+        //         result.setResultMsg("LoanMst Delete successful.");
+        //     } else {
+        //         System.out.println("Delete Loan Master Fail");
+        //         result.setResultCode("F000");
+        //         result.setResultMsg("LoanMst Delete failed.");
+        //     }
+        // } catch (Exception e) {
+        //     result.setResultCode("F000");
+        //     result.setResultMsg("LoanMst Delete failed.");
+        //     e.printStackTrace();
+        // }
+        // return result;
     }
 	
 

@@ -178,6 +178,7 @@
                 , GET_CODE_NM('LOAN_STATUS', LM.LOAN_STATUS)    AS loan_status_nm
                 , LM.LOAN_TYPE                      AS loan_type
                 , GET_CODE_NM('LOAN_TYPE', LM.LOAN_TYPE)    AS loan_type_nm
+                , GET_LOAN_DELETE_CHK(LM.LOAN_NO)   AS delete_chk
                 , LM.SUB_CODE                       AS sub_code
                 , LM.CONT_DT                        AS cont_dt
                 , LM.PRINC_AMT                      AS princ_amt
@@ -392,7 +393,7 @@
 
     <select id="changeLoanChk" parameterType="com.web.manage.loan.domain.LoanMstVO" resultType="java.util.HashMap">
         SELECT  CASE WHEN IFNULL(SUM(SC.RECV_AMT), 0)  > 0
-                       OR IFNULL(SUM(SC.TRANS_CNT), 0) > 0 THEN 'N' ELSE 'Y' END AS change_chk
+                       OR IFNULL(SUM(SC.TRANS_CNT), 0) > 0 THEN 'Y' ELSE 'N' END AS change_chk
         FROM 	TB_LOAN_MST LM
                 LEFT OUTER JOIN (
                     SELECT	LOAN_NO
@@ -421,6 +422,10 @@
                 , UPT_USER_ID = #{upt_user_id}
          WHERE  LOAN_NO = #{loan_no}
     </update>
+
+    <select id="loanDeleteChk" parameterType="com.web.manage.loan.domain.LoanMstVO" resultType="java.util.HashMap">
+        SELECT  GET_LOAN_DELETE_CHK(#{loan_no} ) as delete_chk 
+    </select> 
 
     <update id="deleteLoanMst" parameterType="com.web.manage.loan.domain.LoanMstVO">
         UPDATE  TB_LOAN_MST

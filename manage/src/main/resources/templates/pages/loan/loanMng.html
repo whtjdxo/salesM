@@ -154,7 +154,11 @@
           tbl_loan_summary.ajax.reload();
           $('#frm_chain_list')[0].reset();
           $('#frm_loan_mst')[0].reset(); 
-          $('#tbl_chain_loan_list').DataTable().clear().draw();
+          $('#frm_counsel_mst')[0].reset(); 
+          
+          tbl_chain_loan_list.ajax.reload();
+          tbl_counsel_list.ajax.reload();
+          // $('#tbl_chain_loan_list').DataTable().clear().draw();
         });
 
         $('#sch_all').change(function () {
@@ -352,12 +356,12 @@
             // }
 
             $('#crud').val('update');
-            if (data.loan_sdt > toDay) {
+            if (data.delete_chk == 'Y') {
               $('#btn_delete').show();
             } else {
               $('#btn_delete').hide();
-            }
-            // $('#btn_delete').show();
+            } 
+
             if (data.loan_status === '01') {
               $('#btn_prepay_view').show();
             } else {
@@ -709,7 +713,6 @@
               var formData = {
               sch_chain_no : $('#chain_no').val()
               , sch_chain_tp : 'LOAN'
-              , sch_chain_cd : $('#sch_chain_cd').val()
               , sch_counsel_sdt : $('#sch_counsel_sdt').val()
               , sch_counsel_edt : $('#sch_counsel_edt').val()
               };

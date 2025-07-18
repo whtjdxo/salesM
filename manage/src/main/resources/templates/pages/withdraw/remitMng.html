@@ -69,7 +69,7 @@
           },
           columns: [              
               {
-                data: 'remit_status',
+                data: 'remit_no',
                 render: function(data, type, row) {
                     if (data === 'T00000') {
                       return '<input type="hidden" class="form-check-input row-checkbox" value="' + row.remit_no + '" disabled">';
@@ -124,7 +124,7 @@
               { targets: 13, width: '120px', className: 'text-right px-1 dt-body-right' },
               { targets: 14, width: '120px', className: 'text-right px-1 dt-body-right' }, 
           ],
-          order: [[3, 'desc']], // 기본 정렬 설정
+          order: [[3, 'asc']], // 기본 정렬 설정
           paging: true,
           lengthChange: false,
           searching: false,
@@ -259,7 +259,7 @@
           } else {
             $('#remit_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.remit_amt))
               .css({ 'color': '', 'font-weight': '' });
-          } 
+          }  
           tbl_remit_list.ajax.reload(); // 상세 리스트 조회
         });
 
@@ -281,9 +281,55 @@
           ConfirmdialogToAjax("execute","/withdraw/withdraw/remitMng/remitCancel", dataParam, fn_remit_result);
         });
 
+        function getSelectedRemitNos() {
+            var selectedRemitNo = [];            
+            // 체크박스가 체크된 행 찾기
+            $('#tbl_remit_summ tbody input.row-checkbox:checked').each(function() {
+                var remitNo = $(this).val();
+                if (remitNo !== 'T00000') { // T00000은 제외 (disabled 처리된 항목)
+                    selectedRemitNo.push(remitNo);
+                }
+            });            
+            return selectedRemitNo.join(','); // 배열을 쉼표로 구분된 문자열로 변환
+        }
         // Excel download button click event
         $('#btn_remit_excel').click(function () {
-          var formData = $('#frm_sch').serializeObject();
+          var formData = $('#frm_sch').serializeObject();         
+
+          $.ajax({
+            url: '/withdraw/withdraw/remitMng/remitSummExcel',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            xhrFields: {
+              responseType: 'blob'
+            },
+            success: function (data, status, xhr) {
+              var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+              var link = document.createElement('a');
+              link.href = window.URL.createObjectURL(blob);
+              link.download = '송금자료.xlsx';
+              link.click();
+            },
+            error: function (xhr, status, error) {
+              alert('Excel download failed.');
+            }
+          });
+        });
+
+        // Excel download button click event
+        $('#btn_bank_excel').click(function () {
+          
+          var selectedRemitNo = getSelectedRemitNos();
+          if (!selectedRemitNo) {
+            alert("선택된 항목이 없습니다.");
+            return;
+          }
+          console.log("remit_no : ", selectedRemitNo);  
+          var formData = {
+            sch_remit_no : selectedRemitNo,
+          }
+          // var formData = $('#frm_sch').serializeObject();
           $.ajax({
             url: '/withdraw/withdraw/remitMng/remitBankExcel',
             type: 'POST',
@@ -296,7 +342,7 @@
               var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
               var link = document.createElement('a');
               link.href = window.URL.createObjectURL(blob);
-              link.download = '송금자료.xlsx';
+              link.download = '송금_우리은행.xlsx';
               link.click();
             },
             error: function (xhr, status, error) {
@@ -555,7 +601,7 @@
               <div class="col-lg-10">
                 <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
                   <div class="row mb-1">
-                    <div class="col-sm-8">
+                    <div class="col-sm-7">
                       <div class="input-group input-group-sm mb-1">
                         <div class="col-sm-3">
                           <input class="form-control form-control-sm" id="sch_remit_dt" type="text" name="sch_remit_dt" istyle="date" maxlength="10" required />
@@ -570,12 +616,13 @@
                         <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
                       </div>
                     </div> 
-                    <div class="col-sm-4 text-end">
-                      <div class="input-group input-group-sm mb-1">
+                    <div class="col-sm-5 text-end">
+                      <!-- <div class="input-group mb-1"> -->
                         <button type="button" class="btn btn-success btn-sm" id="btn_remit_cancel" name="btn_remit_cancel">출금 정산 취소</button>
                         <button type="button" class="btn btn-info btn-sm" id="btn_remit_chain" name="btn_remit_chain">송금 완료 처리</button>
-                        <button type="button" class="btn btn-primary btn-sm" id="btn_remit_excel" name="btn_remit_excel">송금 자료 EXCEL</button>
-                      </div>
+                        <button type="button" class="btn btn-primary btn-sm" id="btn_remit_excel" name="btn_remit_excel">송금자료 EXCEL</button>
+                        <button type="button" class="btn btn-primary btn-sm" id="btn_bank_excel" name="btn_bank_excel">은행용 EXCEL</button>
+                      <!-- </div> -->
                     </div>
                   </div> 
                   <!-- <div class="row mb-1">
@@ -588,7 +635,7 @@
                       <button type="button" class="btn btn-info btn-sm" id="btn_remit_chain" name="btn_remit_chain">송금 완료 처리</button>
                     </div>
                     <div class="col-sm-2 text-end">
-                      <button type="button" class="btn btn-primary btn-sm" id="btn_remit_excel" name="btn_remit_excel">송금 자료 EXCEL</button>
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_bank_excel" name="btn_bank_excel">송금 자료 EXCEL</button>
                     </div>
                   </div> -->
                 </form>                
@@ -795,7 +842,7 @@
         <div class="card-header"> 
           <div class="row flex-between-end">              
             <div class="col-lg-2 align-self-center">
-              <h4 class="mb-0">승인전문 상세 List</h4>
+              <h4 class="mb-0">출금 상세 List</h4>
             </div>     
             <div class="col-lg-10">
               <form id="frm_sch_list" name="frm_sch_list" onsubmit="return false;" novalidate=""> 

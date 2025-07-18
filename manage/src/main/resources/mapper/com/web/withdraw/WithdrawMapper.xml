@@ -461,6 +461,45 @@
                 </choose>                
                 LIMIT  ${start}, ${end}
         </select>
+        <select id="getRemitBankList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                SELECT  SQL_CALC_FOUND_ROWS
+                        RM.CHAIN_NO                                             AS chain_no       
+                        , TC.CHAIN_NM 		                                AS chain_nm
+                        , TC.BIZ_NO                                             AS biz_no
+                        , RM.CORP_CD                                            AS corp_cd
+                        , CO.CORP_NM                                            AS corp_nm
+                        , TC.BBANK_CD                                           AS bbank_cd
+                        , GET_CODE_NM('BANK_CD', TC.BBANK_CD)	                AS bbank_nm
+                        , TC.BBANK_ACCOUNT_NO                                   AS bbank_account_no
+                        , TU.USER_NM                                            AS ceo_nm
+                        , RM.REMIT_NO                                           AS remit_no
+                        , RM.REMIT_STATUS                                       AS remit_status    
+                        , GET_CODE_NM('WD_STATUS', RM.REMIT_STATUS)             AS remit_status_nm
+                        , RM.REMIT_DT	                                        AS remit_dt
+                        , RM.CONF_AMT                                           AS conf_amt        
+                        , RM.CARD_FEE_AMT                                       AS card_fee_amt
+                        , RM.CARD_RESV_AMT                                      AS card_resv_amt
+                        , RM.WD_BASE_AMT                                        AS wd_base_amt        
+                        , RM.SVC_FEE_AMT                                        AS svc_fee_amt
+                        , RM.CRD_FEE_AMT                                        AS crd_fee_amt
+                        , RM.WD_REMIT_AMT                                       AS wd_remit_amt
+                        , RM.EXC_REMIT_AMT                                      AS exc_remit_amt
+                        , RM.TOT_REMIT_AMT                                      AS tot_remit_amt
+                        , RM.SUB_AMT                                            AS sub_amt
+                        , RM.REMIT_AMT                                          AS remit_amt
+                        , RM.MEMO                                               AS memo
+                        , DATE_FORMAT(IFNULL(RM.UPT_DTTM, RM.ENT_DTTM), '%Y-%m-%d %H:%i:%s')	AS upt_dttm
+                        , IFNULL(RM.UPT_USER_ID, RM.ENT_USER_ID)		AS upt_user_id
+                  FROM  TB_REMIT_MST RM
+                        JOIN TB_CHAIN TC ON TC.CHAIN_NO = RM.CHAIN_NO                        
+                                        AND TC.SVC_STAT = 'O'
+                                        AND TC.USE_YN   = 'Y'
+                                        AND TC.REMIT_STAT = 'Y'
+                        JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID  
+                        JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
+                                        AND CO.USE_YN = 'Y'
+                 WHERE	FIND_IN_SET(RM.REMIT_NO, #{sch_remit_no}) 
+        </select>
 
         <select id="getRemitSummaryTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
                 SELECT  SQL_CALC_FOUND_ROWS

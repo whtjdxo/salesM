@@ -266,43 +266,37 @@ public class LoanService {
     }
 
     @Transactional
-    public boolean deleteLoanMst(LoanMstVO loanMstVo ) {
+    public ReturnDataVO deleteLoanMst(LoanMstVO loanMstVo ) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        ReturnDataVO result = new ReturnDataVO();
+        // 삭제가능 여부 체크
         hashmapResult = loanMapper.changeLoanChk(loanMstVo);
         if("N".equals(hashmapResult.get("change_chk"))){
-            return false;
-        } else { 
             try {
-                loanMapper.deleteLoanRepaySchedule(loanMstVo);
-                loanMapper.deleteLoanMst(loanMstVo);             // LoanMaster 미사용으로 변환       
-                return true; 
+                if(loanMapper.deleteLoanRepaySchedule(loanMstVo)){
+                    if (loanMapper.deleteLoanMst(loanMstVo)){
+                        result.setResultCode("S000");
+                        result.setResultMsg("정상 처리되었습니다.");                    
+                    }else {
+                        result.setResultCode("F000");
+                        result.setResultMsg("대출 원장 삭제 중 오류 발생");
+                    };                                 // LoanMaster 미사용으로 변환       
+                } else {
+                    result.setResultCode("F000");
+                    result.setResultMsg("수납스케줄 삭제 중 오류 발생");
+                };                
             } catch (Exception e) {
-                // e.printStackTrace();
                 logger.error(" Delete Loan Info [loan_no : " + loanMstVo.getLoan_no() + " ] Fail " + e.getStackTrace());
+                result.setResultCode("F500");
+                result.setResultMsg("시스템 오류가 발생했습니다: " + e.getMessage());
                 throw new RuntimeException("Loan delete failed", e); // <-- 트랜잭션 롤백 보장
                 // return false;
-            }       
-            //     try {
-            //         int result = loanMapper.deleteLoanRepaySchedule(loanMstVo);
-            //         if (result == 0) {
-            //             // 삭제 대상이 없음. 필요시 로그만.
-            //             System.out.println("Loan Schedule 삭제 할 이터가 없음: loan_no=" + loanMstVo.getLoan_no());
-            //             try {
-            //                 int mRslt = loanMapper.deleteLoanMst(loanMstVo);             // LoanMaster 미사용으로 변환   
-            //                 if(mRslt == 0)  {           
-            //                     return false;
-            //                 }
-            //             } catch (Exception e) {
-            //                 e.printStackTrace();
-            //                 return false;        
-            //             }                                        
-            //         } 
-            //         return true;
-            //     } catch (Exception e) {
-            //         e.printStackTrace();
-            //         return false;
-            //     }       
+            }             
+        } else { 
+            result.setResultCode("F000");
+            result.setResultMsg("차감요청 또는 수납발생 건 으로 삭제할 수 없습니다.");
         }        
+        return result;
     } 
      
     

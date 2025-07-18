@@ -22,6 +22,7 @@ public interface WithdrawMapper {
     boolean changeWdStatus(ProcRemitVO procVo);
 
     List<HashMap<String, Object>> getRemitSummary(HashMap<String, Object> hashmapParam);
+    List<HashMap<String, Object>> getRemitBankList(HashMap<String, Object> hashmapParam);
     HashMap<String, Object> getRemitSummaryTotal(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getRemitList(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getRemitSubRecvList(HashMap<String, Object> hashmapParam);

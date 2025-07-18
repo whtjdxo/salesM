@@ -25,6 +25,8 @@ public interface LoanMapper {
     boolean updateLoanMst(LoanMstVO loanMstVo );
 
     boolean deleteLoanMst(LoanMstVO loanMstVo );
+ 
+    HashMap<String, Object> loanDeleteChk(LoanMstVO loanMstVo);
 
     boolean insertLoanRepaySchedule(LoanRepayScheduleVO repaySchedule);
     boolean deleteLoanRepaySchedule(LoanMstVO loanMstVo);

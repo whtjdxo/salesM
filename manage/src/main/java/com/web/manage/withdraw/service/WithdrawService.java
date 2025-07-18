@@ -85,7 +85,12 @@ public class WithdrawService {
 
     public List<HashMap<String, Object>> getRemitSummary(HashMap<String, Object> hashmapParam) {
         return withdrawMapper.getRemitSummary(hashmapParam);
-    } 
+    }
+    
+    public List<HashMap<String, Object>> getRemitBankList(HashMap<String, Object> hashmapParam) {
+        return withdrawMapper.getRemitBankList(hashmapParam);
+    }
+    
 
     public HashMap<String, Object> getRemitSummaryTotal(HashMap<String, Object> hashmapParam) {
         return withdrawMapper.getRemitSummaryTotal(hashmapParam);
