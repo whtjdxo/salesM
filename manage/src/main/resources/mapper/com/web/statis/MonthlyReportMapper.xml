@@ -282,7 +282,7 @@
                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO 
         <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
 				AND  TC.CORP_CD =  #{sch_corp_cd} 
-	</if>                   
+	    </if>                   
         <choose>
             <when test='userCorpType == "LN"'>
                 AND TC.CORP_CD = #{userCorpCd}

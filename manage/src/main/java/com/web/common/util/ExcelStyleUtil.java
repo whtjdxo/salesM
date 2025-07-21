@@ -103,6 +103,8 @@ public class ExcelStyleUtil {
         return styles.getOrDefault(name, workbook.createCellStyle());
     }
 
+    private final Map<String, CellStyle> borderStyleCache = new HashMap<>();
+
     public void setRegionBorder(Sheet sheet, int startRow, int endRow, int startCol, int endCol) {
         for (int rowIdx = startRow; rowIdx <= endRow; rowIdx++) {
             Row row = sheet.getRow(rowIdx);
@@ -113,16 +115,21 @@ public class ExcelStyleUtil {
                 if (cell == null) cell = row.createCell(colIdx);
 
                 CellStyle originalStyle = cell.getCellStyle();
-                CellStyle newStyle = workbook.createCellStyle();
-                newStyle.cloneStyleFrom(originalStyle);  // 기존 스타일 복사
+                String key = "bordered:" + originalStyle.hashCode();
 
-                newStyle.setBorderTop(BorderStyle.THIN);
-                newStyle.setBorderBottom(BorderStyle.THIN);
-                newStyle.setBorderLeft(BorderStyle.THIN);
-                newStyle.setBorderRight(BorderStyle.THIN);
+                CellStyle cachedStyle = borderStyleCache.get(key);
+                if (cachedStyle == null) {
+                    cachedStyle = workbook.createCellStyle();
+                    cachedStyle.cloneStyleFrom(originalStyle);
+                    cachedStyle.setBorderTop(BorderStyle.THIN);
+                    cachedStyle.setBorderBottom(BorderStyle.THIN);
+                    cachedStyle.setBorderLeft(BorderStyle.THIN);
+                    cachedStyle.setBorderRight(BorderStyle.THIN);
+                    borderStyleCache.put(key, cachedStyle);
+                }
 
-                cell.setCellStyle(newStyle);
+                cell.setCellStyle(cachedStyle);
             }
         }
-    }
+    } 
 }

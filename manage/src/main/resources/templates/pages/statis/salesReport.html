@@ -157,6 +157,7 @@
         // Excel download button click event
         $('#btn_excel').click(function () {
           var formData = $('#frm_sch').serializeObject();
+          $('#globalLoadingBar').show();
           $.ajax({
             url: '/statis/report/salesReport/downExcel',
             type: 'POST',
@@ -174,6 +175,9 @@
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
             }
           });
         }); 

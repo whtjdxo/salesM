@@ -69,9 +69,9 @@
           },
           columns: [              
               {
-                data: 'remit_no',
+                data: 'remit_status',
                 render: function(data, type, row) {
-                    if (data === 'T00000') {
+                  if (data === 'T00000') {
                       return '<input type="hidden" class="form-check-input row-checkbox" value="' + row.remit_no + '" disabled">';
                     // return '<input type="checkbox" class="form-check-input row-checkbox" value="' + row.remit_no + '" disabled style="opacity:0.5;">';
                   } else {
@@ -124,7 +124,7 @@
               { targets: 13, width: '120px', className: 'text-right px-1 dt-body-right' },
               { targets: 14, width: '120px', className: 'text-right px-1 dt-body-right' }, 
           ],
-          order: [[3, 'asc']], // 기본 정렬 설정
+          order: [[0, 'asc']], // 기본 정렬 설정
           paging: true,
           lengthChange: false,
           searching: false,
@@ -295,7 +295,7 @@
         // Excel download button click event
         $('#btn_remit_excel').click(function () {
           var formData = $('#frm_sch').serializeObject();         
-
+          $('#globalLoadingBar').show();
           $.ajax({
             url: '/withdraw/withdraw/remitMng/remitSummExcel',
             type: 'POST',
@@ -313,6 +313,9 @@
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
             }
           });
         });
@@ -329,6 +332,7 @@
           var formData = {
             sch_remit_no : selectedRemitNo,
           }
+          $('#globalLoadingBar').show();
           // var formData = $('#frm_sch').serializeObject();
           $.ajax({
             url: '/withdraw/withdraw/remitMng/remitBankExcel',
@@ -347,6 +351,9 @@
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
             }
           });
         });  
@@ -483,6 +490,7 @@
         // Excel download button click event
         $('#btn_list_excel').click(function () {
           var formData = $('#frm_sch_list').serializeObject();
+          $('#globalLoadingBar').show();
           $.ajax({
             url: '/withdraw/withdraw/remitMng/remitListExcel',
             type: 'POST',
@@ -500,6 +508,9 @@
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
             }
           });
         }); 

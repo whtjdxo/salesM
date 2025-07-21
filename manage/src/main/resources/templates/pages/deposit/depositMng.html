@@ -337,7 +337,7 @@
           // $('#frm_sch')[0].reset();
           $('#frm_sch_card')[0].reset();   
           $('#frm_sch_list')[0].reset();
-
+          $('#deposit_all').prop('checked', false);
           $('#tbl_card_summ').DataTable().clear().draw();
           $('#tbl_depo_resv_list').DataTable().clear().draw();  
         }
@@ -375,7 +375,7 @@
               , { data: 'card_acq_nm' }
               , { data: 'conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
               , { data: 'card_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
-              , { data: 'card_resv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+              // , { data: 'card_resv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
               , { data: 'card_resv_amt_remit', render: $.fn.dataTable.render.number(',', '.', 0, '') }
               , { data: 'depo_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
 
@@ -399,7 +399,7 @@
             , { targets: 4, width: '130px', className: 'text-right px-1 dt-body-right' }
             , { targets: 5, width: '130px', className: 'text-right px-1 dt-body-right' }
             , { targets: 6, width: '130px', className: 'text-right px-1 dt-body-right' }
-            , { targets: 7, width: '130px', className: 'text-right px-1 dt-body-right' }
+            // , { targets: 7, width: '130px', className: 'text-right px-1 dt-body-right' }
           ],
           order: [[1, 'asc']],
           paging: false,
@@ -687,6 +687,7 @@
         // Excel download button click event
         $('#btn_list_excel').click(function () {
           var formData = $('#frm_sch_list').serializeObject();
+          $('#globalLoadingBar').show();
           $.ajax({
             url: '/deposit/deposit/depoMng/depoResvExcel',
             type: 'POST',
@@ -704,6 +705,9 @@
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
             }
           });
         });  
@@ -810,7 +814,7 @@
   </head>
   <div class="content">     
     <div class="row g-1 mb-1">
-      <div class="col-lg-6">
+      <div class="col-lg-7">
         <div class="card" style="height: 600px;">
           <div class="card-header">          
             <div class="row flex-between-end">
@@ -885,7 +889,7 @@
           </div>
         </div>      
       </div>
-      <div class="col-lg-6">
+      <div class="col-lg-5">
         <div class="card" style="height: 600px;">    
           <div class="card-header">            
             <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">
@@ -912,15 +916,15 @@
                         <input type="checkbox" id="check_all_card" class="form-check-input" />
                       </th>
                       <th rowspan="2" class="text-center" style="vertical-align: middle;">카드(매입)사</th>
-                      <th colspan="4" class="text-center">입금 정산</th>
+                      <th colspan="3" class="text-center">입금 정산</th>
                       <th rowspan="2" class="text-center" style="vertical-align: middle;">입금액</th>
-                      <th rowspan="2" class="text-center" style="vertical-align: middle;">미상환액</th>
+                      <th rowspan="2" class="text-center" style="vertical-align: middle;">미입금액</th>
                     </tr>
                     <tr>
                       <th class="text-center">매출액</th>
                       <th class="text-center">카드수수료</th>
                       <th class="text-center">입금예정액</th>
-                      <th class="text-center">상환예정액</th>
+                      <!-- <th class="text-center">상환예정액</th> -->
                     </tr>
                   </thead>
                   <tbody class="list"></tbody>

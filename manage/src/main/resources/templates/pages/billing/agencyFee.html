@@ -156,7 +156,12 @@
 
         // Excel download button click event
         $('#btn_excel').click(function () {
-          var formData = $('#frm_sch').serializeObject();
+          // var formData = $('#frm_sch').serializeObject();
+          var formData = {
+                sch_month : $('#sch_year').val() + '-' + $('#sch_mon').val()
+                , sch_agency_cd : $('#sch_agency_cd').val()
+              }
+          $('#globalLoadingBar').show();
           $.ajax({
             url: '/statis/billing/agencyFee/downExcel',
             type: 'POST',
@@ -169,11 +174,14 @@
               var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
               var link = document.createElement('a');
               link.href = window.URL.createObjectURL(blob);
-              link.download = '영업월보.xlsx';
+              link.download = '수수료현황_' + $('#sch_year').val() + $('#sch_mon').val() + '.xlsx';
               link.click();
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
             }
           });
         }); 
@@ -304,6 +312,7 @@
         $('#btn_list_excel').click(function () {
           // var formData = $('#frm_sch_list').serializeObject();
           var schChainNo = $('#sch_chain_no').val();
+          $('#globalLoadingBar').show();
           if (!schChainNo) {
             alert('가맹점을 선택해주세요');
             return;
@@ -324,11 +333,14 @@
               var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
               var link = document.createElement('a');
               link.href = window.URL.createObjectURL(blob);
-              link.download = '수수료현황_'+ schChainNo + '.xlsx';
+              link.download = '영업수수료_'+ schChainNo + '.xlsx';
               link.click();
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
             }
           });
         }); 

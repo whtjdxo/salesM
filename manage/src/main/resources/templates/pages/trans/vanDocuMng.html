@@ -398,6 +398,7 @@
               schgb_chain_val   : $('#schgb_chain_val').val(), 
               schlist_card_acq  : $('#schlist_card_acq').val() 
           };
+          $('#globalLoadingBar').show();
           $.ajax({
             url: '/trans/trans/vanDocuMng/downloadDocuListExcel',
             type: 'POST',
@@ -415,6 +416,9 @@
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
             }
           });
         }); 

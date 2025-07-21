@@ -25,6 +25,7 @@ import com.web.manage.deposit.service.DepositService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
+import com.web.common.util.ExcelStyleUtil;
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
@@ -290,10 +291,18 @@ public class DepositController {
 
             // Create an Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Docu List");
+            Sheet sheet = workbook.createSheet("List");
+            ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
 
             // Create header row
-            Row headerRow = sheet.createRow(0);
+            Row titleRow = sheet.createRow(0);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("정산 상세 리스트");            
+            titleCell.setCellStyle(excelStyle.getStyle("title"));
+
+            // Create header row
+            Row headerRow = sheet.createRow(1);
             String[] headers = {
                   "정산 번호"       , "정산 상태"       , "매입사"          ,  "카드번호"       , "카드유형"
                 , "구분"           , "승인번호"        , "승인일시"         , "입금예정일"       , "승인금액"
@@ -303,9 +312,14 @@ public class DepositController {
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
+                cell.setCellStyle(excelStyle.getStyle("header"));
+                // 각 컬럼 너비 자동 조정
+                sheet.autoSizeColumn(i);                
+                // 한글의 경우 autoSizeColumn이 완벽하지 않을 수 있어 약간의 여백 추가
+                sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
             }
             // Populate data rows
-            int rowIndex = 1;
+            int rowIndex = 2;
             for (HashMap<String, Object> row : list) {
                 Row dataRow = sheet.createRow(rowIndex++);
                 dataRow.createCell(0).setCellValue(String.valueOf(row.get("wd_no")));
@@ -317,15 +331,38 @@ public class DepositController {
                 dataRow.createCell(6).setCellValue(String.valueOf(row.get("conf_no")));
                 dataRow.createCell(7).setCellValue(String.valueOf(row.get("conf_dttm")));
                 dataRow.createCell(8).setCellValue(String.valueOf(row.get("card_resv_date")));
-                dataRow.createCell(9).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
-                dataRow.createCell(10).setCellValue(Double.parseDouble(String.valueOf(row.get("card_fee_amt"))));
-                dataRow.createCell(11).setCellValue(Double.parseDouble(String.valueOf(row.get("card_resv_amt"))));
-                dataRow.createCell(12).setCellValue(Double.parseDouble(String.valueOf(row.get("svc_fee_amt"))));
-                dataRow.createCell(13).setCellValue(Double.parseDouble(String.valueOf(row.get("wd_base_amt"))));
-                dataRow.createCell(14).setCellValue(Double.parseDouble(String.valueOf(row.get("crd_fee_amt"))));
-                dataRow.createCell(15).setCellValue(Double.parseDouble(String.valueOf(row.get("remit_amt"))));
+                
+                Cell c09 = dataRow.createCell(9);
+                c09.setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
+                c09.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c10 = dataRow.createCell(10);
+                c10.setCellValue(Double.parseDouble(String.valueOf(row.get("card_fee_amt"))));
+                c10.setCellStyle(excelStyle.getStyle("number"));
+                
+                Cell c11 = dataRow.createCell(11);
+                c11.setCellValue(Double.parseDouble(String.valueOf(row.get("card_resv_amt"))));
+                c11.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c12 = dataRow.createCell(12);
+                c12.setCellValue(Double.parseDouble(String.valueOf(row.get("svc_fee_amt"))));
+                c12.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c13 = dataRow.createCell(13);
+                c13.setCellValue(Double.parseDouble(String.valueOf(row.get("wd_base_amt"))));
+                c13.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c14 = dataRow.createCell(14);
+                c14.setCellValue(Double.parseDouble(String.valueOf(row.get("crd_fee_amt"))));
+                c14.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c15 = dataRow.createCell(15);
+                c15.setCellValue(Double.parseDouble(String.valueOf(row.get("remit_amt"))));
+                c15.setCellStyle(excelStyle.getStyle("number")); 
+            
                 dataRow.createCell(16).setCellValue(String.valueOf(row.get("wd_memo")));
             }
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 16);
 
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -528,22 +565,35 @@ public class DepositController {
 
             // Create an Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Docu List");
+            Sheet sheet = workbook.createSheet("List");
+            ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
 
             // Create header row
-            Row headerRow = sheet.createRow(0);
+            Row titleRow = sheet.createRow(0);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("정산 상세 리스트");            
+            titleCell.setCellStyle(excelStyle.getStyle("title"));
+
+            Row headerRow = sheet.createRow(1);
             String[] headers = {
                   "정산 번호"       , "정산 상태"       , "매입사"          ,  "카드번호"       , "카드유형"
                 , "구분"           , "승인번호"        , "승인일시"         , "입금예정일"       , "승인금액"
                 , "카드수수료"      , "입금예정액"       , "서비스수수료"      , "정산 원금"       , "여신수수료"
                 , "출금예정액"      , "비고"
             };
+
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
+                cell.setCellStyle(excelStyle.getStyle("header"));
+                // 각 컬럼 너비 자동 조정
+                sheet.autoSizeColumn(i);                
+                // 한글의 경우 autoSizeColumn이 완벽하지 않을 수 있어 약간의 여백 추가
+                sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
             }
             // Populate data rows
-            int rowIndex = 1;
+            int rowIndex = 2;
             for (HashMap<String, Object> row : list) {
                 Row dataRow = sheet.createRow(rowIndex++);
                 dataRow.createCell(0).setCellValue(String.valueOf(row.get("wd_no")));
@@ -555,16 +605,37 @@ public class DepositController {
                 dataRow.createCell(6).setCellValue(String.valueOf(row.get("conf_no")));
                 dataRow.createCell(7).setCellValue(String.valueOf(row.get("conf_dttm")));
                 dataRow.createCell(8).setCellValue(String.valueOf(row.get("card_resv_date")));
-                dataRow.createCell(9).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
-                dataRow.createCell(10).setCellValue(Double.parseDouble(String.valueOf(row.get("card_fee_amt"))));
-                dataRow.createCell(11).setCellValue(Double.parseDouble(String.valueOf(row.get("card_resv_amt"))));
-                dataRow.createCell(12).setCellValue(Double.parseDouble(String.valueOf(row.get("svc_fee_amt"))));
-                dataRow.createCell(13).setCellValue(Double.parseDouble(String.valueOf(row.get("wd_base_amt"))));
-                dataRow.createCell(14).setCellValue(Double.parseDouble(String.valueOf(row.get("crd_fee_amt"))));
-                dataRow.createCell(15).setCellValue(Double.parseDouble(String.valueOf(row.get("remit_amt"))));
+                Cell c09 = dataRow.createCell(9);
+                c09.setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
+                c09.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c10 = dataRow.createCell(10);
+                c10.setCellValue(Double.parseDouble(String.valueOf(row.get("card_fee_amt"))));
+                c10.setCellStyle(excelStyle.getStyle("number"));
+                
+                Cell c11 = dataRow.createCell(11);
+                c11.setCellValue(Double.parseDouble(String.valueOf(row.get("card_resv_amt"))));
+                c11.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c12 = dataRow.createCell(12);
+                c12.setCellValue(Double.parseDouble(String.valueOf(row.get("svc_fee_amt"))));
+                c12.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c13 = dataRow.createCell(13);
+                c13.setCellValue(Double.parseDouble(String.valueOf(row.get("wd_base_amt"))));
+                c13.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c14 = dataRow.createCell(14);
+                c14.setCellValue(Double.parseDouble(String.valueOf(row.get("crd_fee_amt"))));
+                c14.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c15 = dataRow.createCell(15);
+                c15.setCellValue(Double.parseDouble(String.valueOf(row.get("remit_amt"))));
+                c15.setCellStyle(excelStyle.getStyle("number")); 
+            
                 dataRow.createCell(16).setCellValue(String.valueOf(row.get("wd_memo")));
             }
-
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 16);
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);

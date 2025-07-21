@@ -1031,6 +1031,7 @@
               , loan_day : $('#loan_day').val()
               , loan_sdt : $('#loan_sdt').val()
             };
+          $('#globalLoadingBar').show();  
           $.ajax({
             url: '/loan/loan/loanMng/excelRepaySchdule',
             type: 'POST',
@@ -1048,6 +1049,9 @@
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
             }
           });
         }); 

@@ -341,7 +341,13 @@
 
         // Excel download button click event
         $('#btn_excel').click(function () {
-          var formData = $('#frm_sch').serializeObject();
+          // var formData = $('#frm_sch').serializeObject();
+          var formData = {
+            sch_corp_no   : $('#sch_corp_no').val(), 
+            sch_month     : $('#sch_year').val() + '-' + $('#sch_mon').val(),
+            // sch_chain_no  : $('#sch_chain_no').val() 
+          };
+          $('#globalLoadingBar').show();
           $.ajax({
             url: '/statis/report/monthReport/downExcel',
             type: 'POST',
@@ -359,6 +365,9 @@
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
             }
           });
         }); 
@@ -375,8 +384,7 @@
                 data: function (postData) { 
                     var formData = {
                       sch_corp_no   : $('#sch_corp_no').val(), 
-                      sch_month     : $('#sch_year').val() + '-' + $('#sch_mon').val(),
-                      sch_chain_no  : $('#sch_chain_no').val() 
+                      sch_month     : $('#sch_year').val() + '-' + $('#sch_mon').val() 
                     };
                     // $('#frm_sch_list').serializeObject(); // serializeObject는 jQuery 플러그인일 수 있습니다.
                     Object.assign(postData, formData);
@@ -669,12 +677,14 @@
         $('#btn_list_excel').click(function () {
           // var formData = $('#frm_sch_list').serializeObject();
           var schChainNo = $('#sch_chain_no').val();
+          $('#globalLoadingBar').show();
           if (!schChainNo) {
             alert('가맹점을 선택해주세요');
             return;
           }
           var formData = {
             sch_corp_no   : $('#sch_corp_no').val(), 
+            sch_month     : $('#sch_year').val() + '-' + $('#sch_mon').val(),            
             sch_chain_no : schChainNo
           };
           $.ajax({
@@ -694,6 +704,9 @@
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
             }
           });
         }); 
@@ -715,7 +728,7 @@
                 <div class="row mb-1">
                   <div class="col-sm-2">
                     <div class="input-group input-group-sm mb-1">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_month">여신사</label>              
+                      <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_corp_cd">여신사</label>              
                       <select class="form-select form-control-sm me-1" id="sch_corp_cd" name="sch_corp_cd" style="width: 120px">
                         <option value="">여신사</option>
                       </select>  
@@ -723,7 +736,7 @@
                   </div>
                   <div class="col-sm-4">
                     <div class="input-group input-group-sm mb-1">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_month">정산월</label>                      
+                      <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_year">정산월</label>                      
                         <select class="form-select form-control-sm me-1" id="sch_year" name="sch_year" style="width: 100px">
                           <script>
                             (function() {

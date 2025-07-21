@@ -338,6 +338,7 @@
         // Excel download button click event
         $('#btn_excel').click(function () {
           var formData = $('#frm_sch').serializeObject();
+          $('#globalLoadingBar').show();
           $.ajax({
             url: '/statis/report/dayReport/downExcel',
             type: 'POST',
@@ -355,6 +356,9 @@
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
             }
           });
         }); 
@@ -655,6 +659,8 @@
         $('#btn_list_excel').click(function () {
           // var formData = $('#frm_sch_list').serializeObject();
           var schCloseDate = $('#sch_close_date').val();
+          $('#globalLoadingBar').show();
+
           if (!schCloseDate) {
             alert('정산 마감일을 선택해주세요');
             return;
@@ -680,6 +686,9 @@
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            }, 
+            complete: function () {
+              $('#globalLoadingBar').hide();
             }
           });
         }); 

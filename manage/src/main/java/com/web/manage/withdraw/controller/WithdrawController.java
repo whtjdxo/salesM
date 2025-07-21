@@ -591,7 +591,11 @@ public class WithdrawController {
                 Row dataRow = sheet.createRow(rowIndex++);                
                 dataRow.createCell(0).setCellValue(String.valueOf(row.get("bbank_nm")));            // 은행명
                 dataRow.createCell(1).setCellValue(String.valueOf(row.get("bbank_account_no")));    // 계좌번호
-                dataRow.createCell(2).setCellValue(String.valueOf(row.get("remit_amt")));           // 송금액 
+                
+                Cell c02 = dataRow.createCell(2);
+                c02.setCellValue(Double.parseDouble(String.valueOf(row.get("remit_amt"))));
+                c02.setCellStyle(excelStyle.getStyle("number")); 
+                
                 dataRow.createCell(3).setCellValue(String.valueOf(row.get("ceo_nm")));              // 예금주:대표자명
                 dataRow.createCell(4).setCellValue("");                                                 // 빈칸
                 dataRow.createCell(5).setCellValue("");                                                 // 빈칸

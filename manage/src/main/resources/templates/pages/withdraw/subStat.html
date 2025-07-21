@@ -213,6 +213,7 @@
         // Excel download button click event
         $('#btn_list_excel').click(function () {
           var formData = $('#frm_sch').serializeObject();
+          $('#globalLoadingBar').show();
           $.ajax({
             url: '/withdraw/subtract/subStat/downExcelSubSumm',
             type: 'POST',
@@ -230,6 +231,10 @@
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            }
+            , complete: function () {
+              // 🔴 로딩바 숨기기 (성공/실패 관계없이)
+              $('#globalLoadingBar').hide();
             }
           });
         });  

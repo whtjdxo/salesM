@@ -669,6 +669,7 @@
         // Excel download button click event
         $('#btn_list_excel').click(function () {
           var formData = $('#frm_sch_list').serializeObject();
+          $('#globalLoadingBar').show();
           $.ajax({
             url: '/withdraw/withdraw/wdMng/wdResvListExcel',
             type: 'POST',
@@ -677,7 +678,7 @@
             xhrFields: {
               responseType: 'blob'
             },
-            success: function (data, status, xhr) {
+            success: function (data, status, xhr) {              
               var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
               var link = document.createElement('a');
               link.href = window.URL.createObjectURL(blob);
@@ -686,6 +687,10 @@
             },
             error: function (xhr, status, error) {
               alert('Excel download failed.');
+            },
+            complete: function () {
+              // 🔴 로딩바 숨기기 (성공/실패 관계없이)
+              $('#globalLoadingBar').hide();
             }
           });
         }); 

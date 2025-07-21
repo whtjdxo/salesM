@@ -30,6 +30,7 @@ import com.web.manage.trans.domain.VanDocuVO;
 import jakarta.validation.Valid;
 
 import com.web.common.util.DateUtil;
+import com.web.common.util.ExcelStyleUtil;
 import com.web.common.util.StringUtil;
 import com.web.common.util.ValidateUtil;
 import com.web.config.interceptor.AuthInterceptor;
@@ -357,16 +358,32 @@ public class VanDocuController {
             // Create an Excel workbook
             Workbook workbook = new XSSFWorkbook();
             Sheet sheet = workbook.createSheet("Docu List");
+            ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
 
             // Create header row
-            Row headerRow = sheet.createRow(0);
-            String[] headers = {"일련번호", "VAN", "발급사", "매입사", "카드번호", "카드유형", "구분", "승인번호", "승인일시", "승인금액", "취소", "원거래일", "사전정산", "정산상태", "가맹점명", "가맹점명"};
+            Row titleRow = sheet.createRow(0);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("매출 상세 리스트");            
+            titleCell.setCellStyle(excelStyle.getStyle("title"));
+
+            // Create header row
+            Row headerRow = sheet.createRow(1); 
+            String[] headers = {"일련번호"      , "VAN"         , "발급사"          , "매입사"      , "카드번호"
+                                , "카드유형"    , "구분"        , "승인번호"        , "승인일시"        , "승인금액"
+                                , "취소"        , "원거래일"    , "사전정산"        , "정산상태"        
+                                };
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
+                cell.setCellStyle(excelStyle.getStyle("header"));
+                // 각 컬럼 너비 자동 조정
+                sheet.autoSizeColumn(i);                
+                // 한글의 경우 autoSizeColumn이 완벽하지 않을 수 있어 약간의 여백 추가
+                sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
             }
             // Populate data rows
-            int rowIndex = 1;
+            int rowIndex = 2;
             for (HashMap<String, Object> row : list) {
                 Row dataRow = sheet.createRow(rowIndex++);
                 dataRow.createCell(0).setCellValue(String.valueOf(row.get("docu_seq")));
@@ -378,12 +395,18 @@ public class VanDocuController {
                 dataRow.createCell(6).setCellValue(String.valueOf(row.get("conf_gb_nm")));
                 dataRow.createCell(7).setCellValue(String.valueOf(row.get("conf_no")));
                 dataRow.createCell(8).setCellValue(String.valueOf(row.get("conf_dttm")));
-                dataRow.createCell(9).setCellValue(String.valueOf(row.get("conf_amt")));
+
+                Cell cell = dataRow.createCell(9);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                
                 dataRow.createCell(10).setCellValue(String.valueOf(row.get("cncl_yn")));
                 dataRow.createCell(11).setCellValue(String.valueOf(row.get("org_conf_dt")));
                 dataRow.createCell(12).setCellValue(String.valueOf(row.get("proc_fg_nm")));
                 dataRow.createCell(13).setCellValue(String.valueOf(row.get("wd_status_nm")));
             }
+            // 테두리 그리기
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 13);
 
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

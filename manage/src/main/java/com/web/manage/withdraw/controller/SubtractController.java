@@ -29,6 +29,7 @@ import com.web.manage.trans.domain.TransProcessVO;
 import jakarta.validation.Valid;
 
 import com.web.common.util.DateUtil;
+import com.web.common.util.ExcelStyleUtil;
 import com.web.common.util.StringUtil;
 import com.web.common.util.ValidateUtil;
 import com.web.config.interceptor.AuthInterceptor;
@@ -431,10 +432,18 @@ public class SubtractController {
 
             // Create an Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Docu List");
+            Sheet sheet = workbook.createSheet("차감현황");
+            ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
 
             // Create header row
-            Row headerRow = sheet.createRow(0);
+            Row titleRow = sheet.createRow(0);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("차감현황");            
+            titleCell.setCellStyle(excelStyle.getStyle("title"));
+
+            // Create header row
+            Row headerRow = sheet.createRow(1);
             String[] headers = {
                 "가맹점 명", "사업자번호",
                 "출금차감 건", "출금차감 발생금액", "출금차감 차감금액", "출금차감 미차감액",
@@ -449,42 +458,123 @@ public class SubtractController {
                 cell.setCellValue(headers[i]);
             }
             // Populate data rows
-            int rowIndex = 1;
+            int rowIndex = 2;
             for (HashMap<String, Object> row : list) {
                 Row dataRow = sheet.createRow(rowIndex++);
                 dataRow.createCell(0).setCellValue(String.valueOf(row.get("chain_nm")));
-                dataRow.createCell(1).setCellValue(String.valueOf(row.get("biz_no")));
+                dataRow.createCell(1).setCellValue(String.valueOf(row.get("biz_no")));                
+                
+                // dataRow.createCell(2).setCellValue(String.valueOf(row.get("count_o")));
+                Cell cell = dataRow.createCell(2);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("count_o"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
 
-                dataRow.createCell(2).setCellValue(String.valueOf(row.get("count_o")));
-                dataRow.createCell(3).setCellValue(String.valueOf(row.get("occur_amt_o")));
-                dataRow.createCell(4).setCellValue(String.valueOf(row.get("recv_amt_o")));
-                dataRow.createCell(5).setCellValue(String.valueOf(row.get("remain_amt_o")));
+                // dataRow.createCell(3).setCellValue(String.valueOf(row.get("occur_amt_o")));
+                cell = dataRow.createCell(3);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("occur_amt_o"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
 
-                dataRow.createCell(6).setCellValue(String.valueOf(row.get("count_i")));
-                dataRow.createCell(7).setCellValue(String.valueOf(row.get("occur_amt_i")));
-                dataRow.createCell(8).setCellValue(String.valueOf(row.get("recv_amt_i")));
-                dataRow.createCell(9).setCellValue(String.valueOf(row.get("remain_amt_i")));
+                // dataRow.createCell(4).setCellValue(String.valueOf(row.get("recv_amt_o")));
+                cell = dataRow.createCell(4);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("recv_amt_o"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
 
-                dataRow.createCell(10).setCellValue(String.valueOf(row.get("count_l")));
-                dataRow.createCell(11).setCellValue(String.valueOf(row.get("occur_amt_l")));
-                dataRow.createCell(12).setCellValue(String.valueOf(row.get("recv_amt_l")));
-                dataRow.createCell(13).setCellValue(String.valueOf(row.get("remain_amt_l")));
+                // dataRow.createCell(5).setCellValue(String.valueOf(row.get("remain_amt_o")));
+                cell = dataRow.createCell(5);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_amt_o"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
 
-                dataRow.createCell(14).setCellValue(String.valueOf(row.get("count_m")));
-                dataRow.createCell(15).setCellValue(String.valueOf(row.get("occur_amt_m")));
-                dataRow.createCell(16).setCellValue(String.valueOf(row.get("recv_amt_m")));
-                dataRow.createCell(17).setCellValue(String.valueOf(row.get("remain_amt_m")));
+                // dataRow.createCell(6).setCellValue(String.valueOf(row.get("count_i")));
+                cell = dataRow.createCell(6);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("count_i"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
 
-                dataRow.createCell(18).setCellValue(String.valueOf(row.get("count_etc")));
-                dataRow.createCell(19).setCellValue(String.valueOf(row.get("occur_amt_etc")));
-                dataRow.createCell(20).setCellValue(String.valueOf(row.get("recv_amt_etc")));
-                dataRow.createCell(21).setCellValue(String.valueOf(row.get("remain_amt_etc")));
+                // dataRow.createCell(7).setCellValue(String.valueOf(row.get("occur_amt_i")));
+                cell = dataRow.createCell(7);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("occur_amt_i"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
 
-                dataRow.createCell(22).setCellValue(String.valueOf(row.get("tot_cnt")));
-                dataRow.createCell(23).setCellValue(String.valueOf(row.get("occur_amt_tot")));
-                dataRow.createCell(24).setCellValue(String.valueOf(row.get("recv_amt_tot")));
-                dataRow.createCell(25).setCellValue(String.valueOf(row.get("remain_amt_tot")));
+                // dataRow.createCell(8).setCellValue(String.valueOf(row.get("recv_amt_i")));
+                cell = dataRow.createCell(8);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("recv_amt_i"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+
+                // dataRow.createCell(9).setCellValue(String.valueOf(row.get("remain_amt_i")));
+                cell = dataRow.createCell(9);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_amt_i"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+
+                // dataRow.createCell(10).setCellValue(String.valueOf(row.get("count_l")));
+                cell = dataRow.createCell(10);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("count_l"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+
+                // dataRow.createCell(11).setCellValue(String.valueOf(row.get("occur_amt_l")));
+                cell = dataRow.createCell(11);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("occur_amt_l"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(12).setCellValue(String.valueOf(row.get("recv_amt_l")));
+                cell = dataRow.createCell(12);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("recv_amt_l"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(13).setCellValue(String.valueOf(row.get("remain_amt_l")));
+                cell = dataRow.createCell(13);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_amt_l"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+
+                // dataRow.createCell(14).setCellValue(String.valueOf(row.get("count_m")));
+                cell = dataRow.createCell(14);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("count_m"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(15).setCellValue(String.valueOf(row.get("occur_amt_m")));
+                cell = dataRow.createCell(15);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("occur_amt_m"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(16).setCellValue(String.valueOf(row.get("recv_amt_m")));
+                cell = dataRow.createCell(16);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("recv_amt_m"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(17).setCellValue(String.valueOf(row.get("remain_amt_m")));
+                cell = dataRow.createCell(17);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_amt_m"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+
+                // dataRow.createCell(18).setCellValue(String.valueOf(row.get("count_etc")));
+                cell = dataRow.createCell(18);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("count_etc"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(19).setCellValue(String.valueOf(row.get("occur_amt_etc")));
+                cell = dataRow.createCell(19);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("occur_amt_etc"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(20).setCellValue(String.valueOf(row.get("recv_amt_etc")));
+                cell = dataRow.createCell(20);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("recv_amt_etc"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(21).setCellValue(String.valueOf(row.get("remain_amt_etc")));
+                cell = dataRow.createCell(21);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_amt_etc"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+
+                // dataRow.createCell(22).setCellValue(String.valueOf(row.get("tot_cnt")));
+                cell = dataRow.createCell(22);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("tot_cnt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(23).setCellValue(String.valueOf(row.get("occur_amt_tot")));
+                cell = dataRow.createCell(23);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("occur_amt_tot"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(24).setCellValue(String.valueOf(row.get("recv_amt_tot")));
+                cell = dataRow.createCell(24);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("recv_amt_tot"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(25).setCellValue(String.valueOf(row.get("remain_amt_tot")));
+                cell = dataRow.createCell(25);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_amt_tot"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
             }
+            // 테두리 그리기
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 25);
 
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

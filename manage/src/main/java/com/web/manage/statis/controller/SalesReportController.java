@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
+import com.web.common.util.ExcelStyleUtil;
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
@@ -103,12 +105,23 @@ public class SalesReportController {
             hashmapParam.put("end", "9999");
             List<HashMap<String, Object>> list = salesReportService.getSalesSummary(hashmapParam);
 
+            String closeChain= hashmapParam.get("sch_chain_no") != null ? hashmapParam.get("sch_chain_no").toString() : "";
+
             // Create an Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Docu List");
+            Sheet sheet = workbook.createSheet("List");
+
+            ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
 
             // Create header row
-            Row headerRow = sheet.createRow(0);
+            Row titleRow = sheet.createRow(0);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("매출현황");            
+            titleCell.setCellStyle(excelStyle.getStyle("title"));
+
+            // Create header row
+            Row headerRow = sheet.createRow(1);
             String[] headers = {
                 "NO", "정산 일자"
                 // 출금마감 - 매출
@@ -119,11 +132,16 @@ public class SalesReportController {
             
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
-                cell.setCellValue(headers[i]);
+                cell.setCellValue(headers[i]); 
+                cell.setCellStyle(excelStyle.getStyle("header"));
+                // 각 컬럼 너비 자동 조정
+                sheet.autoSizeColumn(i);                
+                // 한글의 경우 autoSizeColumn이 완벽하지 않을 수 있어 약간의 여백 추가
+                sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
             }
              
             // Populate data rows
-            int rowIndex = 1;
+            int rowIndex = 2;
             for (HashMap<String, Object> row : list) {
                 Row dataRow = sheet.createRow(rowIndex++);
                 int colIndex = 0;
@@ -131,22 +149,60 @@ public class SalesReportController {
                 dataRow.createCell(colIndex++).setCellValue(rowIndex - 1);                
                 // 2. 출금
                 dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("close_date", "").toString());
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_conf_amt")))); 
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_wd_base_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_svc_fee_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_crd_fee_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_sales_total"))));
 
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("dp_conf_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("db_bank_in_base_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("op_bank_in_svc_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("op_bank_in_crd_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("op_sales_total"))));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_conf_amt"))));
+                Cell cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("rm_conf_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number")); 
+
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_wd_base_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("rm_wd_base_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_svc_fee_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("rm_svc_fee_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_crd_fee_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("rm_crd_fee_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("rm_sales_total"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("rm_sales_total"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("dp_conf_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("dp_conf_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("db_bank_in_base_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("db_bank_in_base_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("op_bank_in_svc_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("op_bank_in_svc_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("op_bank_in_crd_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("op_bank_in_crd_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("op_sales_total"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("op_sales_total"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
 
                 // 12. 총 사용액
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("tot_use_amt"))));
-                 
-            }    
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("tot_use_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("tot_use_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));                
+            }           
+            
+            // 테두리 그리기
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 12);
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);

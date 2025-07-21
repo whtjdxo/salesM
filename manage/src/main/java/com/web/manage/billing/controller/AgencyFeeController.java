@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.SessionVO;
+import com.web.common.util.ExcelStyleUtil;
 import com.web.manage.billing.service.AgencyFeeService; 
 
 import jakarta.servlet.http.HttpSession;
@@ -147,9 +149,17 @@ public class AgencyFeeController {
             // Create an Excel workbook
             Workbook workbook = new XSSFWorkbook();
             Sheet sheet = workbook.createSheet("Docu List");
+            ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
 
             // Create header row
-            Row headerRow = sheet.createRow(0);
+            Row titleRow = sheet.createRow(0);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("수수료 현황");            
+            titleCell.setCellStyle(excelStyle.getStyle("title"));
+
+            // Create header row
+            Row headerRow = sheet.createRow(1);
             String[] headers = {
                 "NO", "대리점 명", "가맹점 명", "대표자 명"                
                 , "승인건수", "승인금액","정산 원금액", "정산 수수료", "여신수수료", "비즈론수수료"
@@ -159,10 +169,15 @@ public class AgencyFeeController {
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
+                cell.setCellStyle(excelStyle.getStyle("header"));
+                // 각 컬럼 너비 자동 조정
+                sheet.autoSizeColumn(i);                
+                // 한글의 경우 autoSizeColumn이 완벽하지 않을 수 있어 약간의 여백 추가
+                sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
             }
              
             // Populate data rows
-            int rowIndex = 1;
+            int rowIndex = 2;
             for (HashMap<String, Object> row : list) {
                 Row dataRow = sheet.createRow(rowIndex++);
                 int colIndex = 0;
@@ -173,18 +188,65 @@ public class AgencyFeeController {
                 dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("chain_nm", "").toString());
                 dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("ceo_nm", "").toString());
 
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_cnt")))); 
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_base_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_svc_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_crd_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("biz_crd_amt"))));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_cnt")))); 
+                Cell cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("conf_cnt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));                 
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_base_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_base_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_svc_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_svc_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_crd_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_crd_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("biz_crd_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("biz_crd_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
 
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_svc_fee"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_crd_fee"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_loan_fee"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_tot_fee"))));                  
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_svc_fee"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("agent_svc_fee"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_crd_fee"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("agent_crd_fee"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_loan_fee"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("agent_loan_fee"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_tot_fee"))));                  
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("agent_tot_fee"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
             }    
+            Row sumRow = sheet.createRow(rowIndex);            
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowIndex, rowIndex, 0, 3));
+            Cell summTitle = sumRow.createCell(0);
+            summTitle.setCellValue("합계");            
+            summTitle.setCellStyle(excelStyle.getStyle("header"));
+
+            int[] sumCols = {4,5,6,7,8,9,10,11,12};
+            for (int col : sumCols) {
+                String colLetter = CellReference.convertNumToColString(col);
+                String formula = String.format("SUM(%s2:%s%d)", colLetter, colLetter, rowIndex);
+                Cell sumCell = sumRow.createCell(col);
+                sumCell.setCellFormula(formula);
+                sumCell.setCellStyle(excelStyle.getStyle("subTotal")); 
+            }
+            
+            // 테두리 그리기
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 13);
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
@@ -219,9 +281,17 @@ public class AgencyFeeController {
             // Create an Excel workbook
             Workbook workbook = new XSSFWorkbook();
             Sheet sheet = workbook.createSheet("Docu List");
+            ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
 
             // Create header row
-            Row headerRow = sheet.createRow(0);
+            Row titleRow = sheet.createRow(0);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("수수료 현황");            
+            titleCell.setCellStyle(excelStyle.getStyle("title"));
+
+            // Create header row
+            Row headerRow = sheet.createRow(1);
             String[] headers = {
                 "NO", "정산일"
                 , "승인건수", "승인금액","정산 원금액", "정산 수수료", "여신수수료", "비즈론수수료"
@@ -231,10 +301,15 @@ public class AgencyFeeController {
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
+                cell.setCellStyle(excelStyle.getStyle("header"));
+                // 각 컬럼 너비 자동 조정
+                sheet.autoSizeColumn(i);                
+                // 한글의 경우 autoSizeColumn이 완벽하지 않을 수 있어 약간의 여백 추가
+                sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
             }
              
             // Populate data rows
-            int rowIndex = 1;
+            int rowIndex = 2;
             for (HashMap<String, Object> row : list) {
                 Row dataRow = sheet.createRow(rowIndex++);
                 int colIndex = 0;
@@ -242,18 +317,66 @@ public class AgencyFeeController {
                 dataRow.createCell(colIndex++).setCellValue(rowIndex - 1);                
                 // 2. 출금
                 dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("adjust_date", "").toString());
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_cnt")))); 
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_base_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_svc_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_crd_amt"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("biz_crd_amt"))));
 
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_svc_fee"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_crd_fee"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_loan_fee"))));
-                dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_tot_fee"))));                 
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_cnt")))); 
+                Cell cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("conf_cnt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));                                 
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));                 
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_base_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_base_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));                 
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_svc_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_svc_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));                 
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_crd_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_crd_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));                 
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("biz_crd_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("biz_crd_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));                 
+
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_svc_fee"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("agent_svc_fee"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));                 
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_crd_fee"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("agent_crd_fee"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));                 
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_loan_fee"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("agent_loan_fee"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));                 
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_tot_fee"))));                 
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("agent_tot_fee"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));                 
             }    
+            Row sumRow = sheet.createRow(rowIndex);            
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowIndex, rowIndex, 0, 1));
+            Cell summTitle = sumRow.createCell(0);
+            summTitle.setCellValue("합계");            
+            summTitle.setCellStyle(excelStyle.getStyle("header"));
+
+            int[] sumCols = {2,3,4,5,6,7,8,9,10,11};
+            for (int col : sumCols) {
+                String colLetter = CellReference.convertNumToColString(col);
+                String formula = String.format("SUM(%s2:%s%d)", colLetter, colLetter, rowIndex);
+                Cell sumCell = sumRow.createCell(col);
+                sumCell.setCellFormula(formula);
+                sumCell.setCellStyle(excelStyle.getStyle("subTotal")); 
+            }
+            
+            // 테두리 그리기
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 11);
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
