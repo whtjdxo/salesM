@@ -8,7 +8,7 @@
     <!-- ===============================================-->
     <!--    Document Title-->
     <!-- ===============================================-->
-    <title>Login</title>
+    <title>매출정산 관리시스템</title>
 
     <!-- ===============================================-->
     <!--    Favicons-->
@@ -23,6 +23,7 @@
     <meta name="theme-color" content="#ffffff" />
     <script src="/js/config.js"></script>
     <script src="/vendors/simplebar/simplebar.min.js"></script>
+    <script src="/vendors/jquery/jquery.min.js"></script>
     <script src="/js/ajaxCommon.js"></script>
 
     <!-- ===============================================-->
@@ -50,50 +51,69 @@
         userLinkRTL.setAttribute('disabled', true);
       }
 
-      window.onload = function () {
-        var userId = document.querySelector('#userId');
-        var userPwd = document.querySelector('#userPwd');
-        var login = document.querySelector('#login');
+      $(document).ready(function () {
+        // ✅ 페이지 로드 시 저장된 ID 세팅
+        var savedId = localStorage.getItem("savedUserId");
+        if (savedId) {
+          $("#userId").val(savedId);
+          $("#rememberId").prop("checked", true);
+        }
 
-        userId.onkeydown = function (e) {
-          if (e.keyCode == 13) {
-            userPwd.focus();
-          }
-        };
-        userPwd.onkeydown = function (e) {
-          if (e.keyCode == 13) {
-            login.click();
-          }
-        };
+        // ✅ 로그인 버튼 클릭 시 처리
+        $("#btnLogin").on("click", function () {
+          var userId = $("#userId").val().trim();
+          var userPwd = $("#userPwd").val().trim();
+          var remember = $("#rememberId").is(":checked");
 
-        login.onclick = async function () {
-          if (userId.value == '') {
-            alert('아이디를 입력해주세요');
-            userId.focus();
+          if (userId === "") {
+            alert("아이디를 입력해주세요");
+            $("#userId").focus();
             return;
           }
-          if (userPwd.value == '') {
-            alert('비밀번호를 입력해주세요');
-            userPwd.focus();
+          if (userPwd === "") {
+            alert("비밀번호를 입력해주세요");
+            $("#userPwd").focus();
             return;
           }
-          const response = await fetch('/chkLogin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: userId.value, userPwd: userPwd.value }),
-            cache: 'no-cache',
-          });
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          const data = await response.json();
-          if (data.resultCode == '00') {
-            location.href = '/main';
+
+          // ✅ localStorage 저장/삭제
+          if (remember) {
+            localStorage.setItem("savedUserId", userId);
           } else {
-            alert('아이디 또는 비밀번호가 일치하지 않습니다.');
+            localStorage.removeItem("savedUserId");
           }
-        };
-      };
+
+          // ✅ AJAX 로그인 처리 (예시)
+          $.ajax({
+            url: "/chkLogin",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ userId: userId, userPwd: userPwd }),
+            success: function (data) {
+              if (data.resultCode === "00") {
+                location.href = "/main";
+              } else {
+                alert("아이디 또는 비밀번호가 일치하지 않습니다.");
+              }
+            },
+            error: function () {
+              alert("로그인 요청 실패");
+            }
+          });
+        });
+
+        $("#userId").on("keydown", function (e) {
+          if (e.key === "Enter") {
+            $("#btnLogin").click();
+          }
+        });
+
+        $("#userPwd").on("keydown", function (e) {
+          if (e.key === "Enter") {
+            $("#btnLogin").click();
+          }
+        });
+      });
     </script>
   </head>
 
@@ -130,13 +150,13 @@
                   <div class="row flex-between-center">
                     <div class="col-auto">
                       <div class="form-check mb-0">
-                        <input class="form-check-input" type="checkbox" id="basic-checkbox" checked="checked" />
-                        <label class="form-check-label mb-0" for="basic-checkbox">Remember me</label>
+                        <input class="form-check-input" type="checkbox" id="rememberId" checked="checked" />
+                        <label class="form-check-label mb-0" for="rememberId">Remember me</label>
                       </div>
                     </div>
                   </div>
                   <div class="mb-3">
-                    <button class="btn btn-primary d-block w-100 mt-3" type="button" name="login" id="login">Login</button>
+                    <button class="btn btn-primary d-block w-100 mt-3" type="button" name="btnLogin" id="btnLogin">Login</button>
                   </div>
                 </form>
               </div>

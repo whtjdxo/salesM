@@ -77,6 +77,7 @@
                 , { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { data: 'issue_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { data: 'remain_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
+                , { data: 'remit_over_stat' }
               ],
             columnDefs: [           
             { targets: 0, width: '150px', className: 'text-center' }
@@ -84,6 +85,7 @@
             , { targets: 1, width: '120px', className: 'text-right' }
             , { targets: 2, width: '120px', className: 'text-right' }
             , { targets: 3, width: '120px', className: 'text-right' }
+            , { targets: 4, width: '80px', className: 'text-center' }
           ],  
           order: [[1, 'desc']],
           paging: true,
@@ -92,9 +94,9 @@
           ordering: true,
           autoWidth: false,
           responsive: true,
-          scrollCollapse: true,
+          scrollCollapse: false,
           pageLength: 20,
-          scrollY: '580px',
+          scrollY: '600px',
           info: false,
           language: {
             emptyTable: '데이터가 없습니다.',
@@ -165,13 +167,23 @@
             $(this).addClass('selected');
           }
           var data = tbl_exc_summary.row(this).data();
+
           if (data) {            
+              
             $('#frm_sch_exc')[0].reset();
             $('#frm_exc_mst')[0].reset();       
             $('#sch_exc_sdt').val(data.min_exc_date);
             $('#sch_exc_edt').val(data.max_exc_date);
             $('#sch_chain_no').val(data.chain_no); 
             $('#chain_no').val(data.chain_no);                        
+            if (data.remit_over_stat === 'Y') {
+              $('#btn_exceed_ready').show();
+              $('#btn_exceed_ready_all').show();
+
+            } else {
+              $('#btn_exceed_ready').hide();
+              $('#btn_exceed_ready_all').hide();              
+            } 
             tbl_exc_list.ajax.reload();            
           }
           fn_frm_exc_mst_clear();      
@@ -248,9 +260,9 @@
             ordering: true,
             autoWidth: false,
             responsive: true,
-            scrollCollapse: true,
+            scrollCollapse: false,
             pageLength: 10,
-            scrollY: '450px',
+            scrollY: '290px',
             info: false,
             language: {
               emptyTable: '데이터가 없습니다.',
@@ -263,8 +275,8 @@
                 var api = this.api();
                 const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
                 const colMap = {
-                    3: 'occur_amt',
-                    4: 'remain_amt', 
+                    4: 'occur_amt',
+                    5: 'remain_amt', 
                 };
                 Object.entries(colMap).forEach(([colIdx, key]) => {
                     const footer = api.column(Number(colIdx)).footer();
@@ -355,12 +367,17 @@
             });
  
             $('#exc_status').val(data.exc_status); 
+            if(data.exc_status == '500000') {
+              $('#exc_status').prop('disabled', true);
+            } else {
+              $('#exc_status').prop('disabled', false);
+            }
             $('#exc_date').val(data.exc_date);
             $('#exc_memo').val(data.exc_memo);
 
-            $('#occur_amt').val(data.occur_amt);           
-            $('#issue_amt').val(data.issue_amt);
-            $('#remain_amt').val(data.remain_amt);             
+            $('#occur_amt').val(Number(data.occur_amt).toLocaleString());
+            $('#issue_amt').val(Number(data.issue_amt).toLocaleString());
+            $('#remain_amt').val(Number(data.remain_amt).toLocaleString());
 
             if (data.exc_status == '500000'){
               // $('#btn_exceed_ready').hide();
@@ -556,12 +573,14 @@
                     <th class="text-center">등록금액</th>
                     <th class="text-center">과입액</th>
                     <th class="text-center">미출금액</th>
+                    <th class="text-center">출금</th>
                   </tr>
                 </thead>                
                 <tbody class="list"></tbody>
                 <tfoot>
                   <tr>
                     <th class="text-center">총계</th>
+                    <th class="text-right px-2"></th>
                     <th class="text-right px-2"></th>
                     <th class="text-right px-2"></th>
                     <th class="text-right px-2"></th>
@@ -646,7 +665,7 @@
                       <th colspan="4" class="text-center">총계</th>
                       <th class="text-right px-2"></th>
                       <th class="text-right px-2"></th> 
-                      <th colspan="2" class="text-center"></th>
+                      <th colspan="2" class="text-center"></th>                      
                     </tr>
                   </tfoot>
                 </table>
