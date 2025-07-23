@@ -26,9 +26,12 @@ public interface ExceedMapper {
 
     String getNewExcNo();    
     boolean insertExceedMst(ExceedMstVO exceedMstVo);
-    boolean updateExceedMst(ExceedMstVO exceedMstVo);   
+    int updateExceedMst(ExceedMstVO exceedMstVo);   
 
-    boolean setExceedReady(ProcExceedVO procVo);
-    boolean setExceedReadyAll(ProcExceedVO procVo);   
+    int setExceedReady(ProcExceedVO procVo);
+    int setExceedReadyAll(ProcExceedVO procVo);   
+
+    int setExceedCancel(ProcExceedVO procVo);
+    int setExceedCancelAll(ProcExceedVO procVo);   
 }
 

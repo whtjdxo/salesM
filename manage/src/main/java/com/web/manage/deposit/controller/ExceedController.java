@@ -216,71 +216,78 @@ public class ExceedController {
             exceedMstVo.setOccur_amt(exceedMstVo.getOccur_amt().replace(",", "") );
             exceedMstVo.setIssue_amt(exceedMstVo.getIssue_amt().replace(",", "") );
             exceedMstVo.setRemain_amt(exceedMstVo.getRemain_amt().replace(",", "") );
-
-            if (exceedService.updateExceedMst(exceedMstVo)) {
-                System.out.println("Update Exceed  success");
-                result.setResultCode("S000");
-                result.setResultMsg("Exceed Update successful.");     
+            
+            return exceedService.updateExceedMst(exceedMstVo);
                 
-            } else {
-                System.out.println("UpdateExceed  Fail");
-                result.setResultCode("F000");
-                result.setResultMsg("Exceed update failed.");
-            }
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("Exceed update failed.");
+            result.setResultMsg("An error occurred while processing the scrap transaction.");
             e.printStackTrace();
-        }
-        return result;
+            return result;
+        } 
     }
 
     @RequestMapping(value = "excMng/setExceedReady", method = RequestMethod.POST)
     public @ResponseBody ReturnDataVO setExceedReady(@ModelAttribute("ProcExceedVO") @Valid ProcExceedVO procVo, HttpSession session ){
         ReturnDataVO result = new ReturnDataVO(); 
         try {
+            System.out.println("procVo : " + procVo);
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
-            procVo.setUserId(member.getUserId()); 
-            if (exceedService.setExceedReady(procVo)) {
-                System.out.println("Update Exceed  success");
-                result.setResultCode("S000");
-                result.setResultMsg("Exceed Update successful.");     
-                
-            } else {
-                System.out.println("UpdateExceed  Fail");
-                result.setResultCode("F000");
-                result.setResultMsg("Exceed update failed.");
-            }
+            procVo.setUserId(member.getUserId());            
+            return exceedService.setExceedReady(procVo);             
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("Exceed update failed.");
+            result.setResultMsg("An error occurred while processing the scrap transaction.");
             e.printStackTrace();
-        }
-        return result;
+            return result;
+        }  
     }
 
     @RequestMapping(value = "excMng/setExceedReadyAll", method = RequestMethod.POST)
     public @ResponseBody ReturnDataVO setExceedReadyAll(@ModelAttribute("ProcExceedVO") @Valid ProcExceedVO procVo, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO(); 
         try {
+            System.out.println("procVo : " + procVo);
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
-    	    procVo.setUserId(member.getUserId()); 
-
-            if (exceedService.setExceedReadyAll(procVo)) {
-                System.out.println("Update Exceed  success");
-                result.setResultCode("S000");
-                result.setResultMsg("Exceed Update successful.");     
-                
-            } else {
-                System.out.println("UpdateExceed  Fail");
-                result.setResultCode("F000");
-                result.setResultMsg("Exceed update failed.");
-            }
+            procVo.setUserId(member.getUserId());            
+            return exceedService.setExceedReadyAll(procVo);             
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("Exceed update failed.");
+            result.setResultMsg("An error occurred while processing the scrap transaction.");
             e.printStackTrace();
+            return result;
         }
-        return result;
+    }
+
+    @RequestMapping(value = "excMng/setExceedCancel", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO setExceedCancel(@ModelAttribute("ProcExceedVO") @Valid ProcExceedVO procVo, HttpSession session ){
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            System.out.println("procVo : " + procVo);
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            procVo.setUserId(member.getUserId());            
+            return exceedService.setExceedCancel(procVo);             
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("An error occurred while processing the scrap transaction.");
+            e.printStackTrace();
+            return result;
+        }
+    }
+
+    @RequestMapping(value = "excMng/setExceedCancelAll", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO setExceedCancelAll(@ModelAttribute("ProcExceedVO") @Valid ProcExceedVO procVo, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {
+            System.out.println("procVo : " + procVo);
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            procVo.setUserId(member.getUserId());            
+            return exceedService.setExceedCancelAll(procVo);             
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("An error occurred while processing the scrap transaction.");
+            e.printStackTrace();
+            return result;
+        }
     }
 }

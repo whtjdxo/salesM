@@ -235,9 +235,9 @@
 				JOIN TB_CHAIN TC ON TC.CHAIN_NO = EM.CHAIN_NO
 								AND TC.USE_YN = 'Y'
 								AND TC.REMIT_OVER_STAT = 'Y'
-           SET  EXC_STATUS       	= '100000'
-				, UPT_USER_ID       = #{userId}
-               	, UPT_DTTM         	= NOW()
+           SET  EM.EXC_STATUS       	= '100000'
+				, EM.UPT_USER_ID       = #{userId}
+               	, EM.UPT_DTTM         	= NOW()
          WHERE 	FIND_IN_SET(EM.EXC_NO, #{excNo})
 		   AND 	EM.CHAIN_NO 		= #{chainNo}
 		   AND 	EM.EXC_STATUS 		= '000000'
@@ -248,11 +248,36 @@
 				JOIN TB_CHAIN TC ON TC.CHAIN_NO = EM.CHAIN_NO
 								AND TC.USE_YN = 'Y'
 								AND TC.REMIT_OVER_STAT = 'Y'
-           SET  EXC_STATUS       	= '100000'
-				, UPT_USER_ID       = #{userId}
-               	, UPT_DTTM         	= NOW()
+           SET  EM.EXC_STATUS       	= '100000'
+				, EM.UPT_USER_ID       = #{userId}
+               	, EM.UPT_DTTM         	= NOW()
          WHERE 	EM.CHAIN_NO 		= #{chainNo}
 		   AND 	EM.EXC_STATUS 		= '000000'
+    </update>
+
+	<update id="setExceedCancel" parameterType="com.web.manage.deposit.domain.ProcExceedVO">
+        UPDATE 	TB_EXCEED_MST	EM
+				<!-- JOIN TB_CHAIN TC ON TC.CHAIN_NO = EM.CHAIN_NO
+								AND TC.USE_YN = 'Y'
+								AND TC.REMIT_OVER_STAT = 'Y' -->
+           SET  EM.EXC_STATUS       	= '000000'
+				, EM.UPT_USER_ID       = #{userId}
+               	, EM.UPT_DTTM         	= NOW()
+         WHERE 	FIND_IN_SET(EM.EXC_NO, #{excNo})
+		   AND 	EM.CHAIN_NO 		= #{chainNo}
+		   AND 	EM.EXC_STATUS 		= '100000'
+    </update>
+
+	<update id="setExceedCancelAll" parameterType="com.web.manage.deposit.domain.ProcExceedVO">
+        UPDATE 	TB_EXCEED_MST	EM
+				<!-- JOIN TB_CHAIN TC ON TC.CHAIN_NO = EM.CHAIN_NO
+								AND TC.USE_YN = 'Y'
+								AND TC.REMIT_OVER_STAT = 'Y' -->
+           SET  EM.EXC_STATUS       	= '000000'
+				, EM.UPT_USER_ID       = #{userId}
+               	, EM.UPT_DTTM         	= NOW()
+         WHERE 	EM.CHAIN_NO 		= #{chainNo}
+		   AND 	EM.EXC_STATUS 		= '100000'
     </update>
 
 </mapper>

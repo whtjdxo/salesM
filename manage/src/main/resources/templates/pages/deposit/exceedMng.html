@@ -175,14 +175,18 @@
             $('#sch_exc_sdt').val(data.min_exc_date);
             $('#sch_exc_edt').val(data.max_exc_date);
             $('#sch_chain_no').val(data.chain_no); 
+            $('#chain_remit_over_stat').val(data.remit_over_stat); 
             $('#chain_no').val(data.chain_no);                        
             if (data.remit_over_stat === 'Y') {
               $('#btn_exceed_ready').show();
               $('#btn_exceed_ready_all').show();
-
+              $('#btn_exceed_cancel').show();
+              $('#btn_exceed_cancel_all').show();
             } else {
               $('#btn_exceed_ready').hide();
-              $('#btn_exceed_ready_all').hide();              
+              $('#btn_exceed_ready_all').hide();         
+              $('#btn_exceed_cancel').hide();
+              $('#btn_exceed_cancel_all').hide();              
             } 
             tbl_exc_list.ajax.reload();            
           }
@@ -226,7 +230,7 @@
                       data: 'exc_no',
                         render: function(data, type, row) {
                           // exc_status가 '500000'>> 출금완료 이면 '-' 표시, 아니면 체크박스
-                            if (row.exc_status === '500000' || row.exc_status === '100000') {
+                            if (row.exc_status === '500000' ) {           //  || row.exc_status === '100000'
                             return '-';
                           }
                           return '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '">';
@@ -460,7 +464,27 @@
             if (!val.checkValidity()) {
               checked = false;
             }
-          });          
+          });
+          
+          if ($('#chain_remit_over_stat').val() == 'N') {
+            if($('#exc_status').val() != '000000') {
+              swal('실패', "진행상태 변경 불가 - 과입 출금 정지 가맹점입니다.", 'error');
+              checked = false;
+              return;
+          }  
+          
+          if ($('#issue_amt').val() > 0) {
+              swal('실패', "출금 금액이 존재하면 사용여부를 '아니요'로 설정할 수 없습니다.", 'error');
+              checked = false;
+              return;
+            }
+          } else {
+            if ($('#issue_amt').val() <= 0) {
+              swal('실패', "출금 금액이 존재해야 합니다.", 'error');
+              checked = false;
+              return;
+            }
+          }
           if (checked) {
             ConfirmdialogToAjax('update', '/deposit/exceed/excMng/updateExceedMst', $('#frm_exc_mst').serialize(), fn_return_result);
           }  
@@ -526,6 +550,42 @@
             chainNo    : $('#sch_chain_no').val() 
           }    
           ConfirmdialogToAjax('execute', '/deposit/exceed/excMng/setExceedReadyAll', dataParam, fn_return_result);
+        }); 
+
+
+        $('#btn_exceed_cancel').click(function () {
+          if (!$('#sch_chain_no').val()) {
+            swal('실패', '가맹점을 먼저 선택해주세요.', 'error');
+            return;
+          }
+          var selectedExcNo = [];
+          // Iterate through checked checkboxes in the current page
+          tbl_exc_list.rows({ page: 'current' }).nodes().to$().find('.row-checkbox:checked').each(function () {
+            selectedExcNo.push($(this).val());
+          });
+          
+          var dataParam ="";          
+          if (selectedExcNo.length === 0) {
+            swal('실패', '출금 취소 항목을 선택해주세요.', 'error');
+            return;
+          }
+          dataParam ={              
+            chainNo   : $('#sch_chain_no').val(),
+            excNo     : selectedExcNo.join(','),
+          }    
+          ConfirmdialogToAjax('execute', '/deposit/exceed/excMng/setExceedCancel', dataParam, fn_return_result);
+        }); 
+
+        $('#btn_exceed_cancel_all').click(function () {
+          if (!$('#sch_chain_no').val()) {
+            swal('실패', '가맹점을 먼저 선택해주세요.', 'error');
+            return;
+          }
+           
+          dataParam ={              
+            chainNo    : $('#sch_chain_no').val() 
+          }    
+          ConfirmdialogToAjax('execute', '/deposit/exceed/excMng/setExceedCancelAll', dataParam, fn_return_result);
         }); 
            
       });
@@ -636,11 +696,19 @@
             </div>
           </div>
           <div class="card-body pt-0 px-0" style="padding-top: 0px">
-            <div class="min-vh-50">              
-              <div class="d-flex justify-content-between align-items-center mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">
-                <div>
-                  <button class="btn btn-success me-2" id="btn_exceed_ready">출금대기 </button> 
-                  <button class="btn btn-primary me-2" id="btn_exceed_ready_all">모두 출금대기 </button> 
+            <div class="min-vh-50"> 
+              <div class="row mb-1">
+                <div class="col-sm-6">
+                  <div class="d-flex justify-content-start align-items-center">
+                    <button class="btn btn-success me-2" id="btn_exceed_ready">출금대기</button> 
+                    <button class="btn btn-primary me-2" id="btn_exceed_ready_all">모두 출금대기</button> 
+                  </div>
+                </div>
+                <div class="col-sm-6">  
+                  <div class="d-flex justify-content-start align-items-center">
+                    <button class="btn btn-success me-2" id="btn_exceed_cancel">출금대기 취소</button> 
+                    <button class="btn btn-primary me-2" id="btn_exceed_cancel_all">모두 출금대기 취소</button> 
+                  </div>
                 </div>
               </div>
               <div class="table-responsive scrollbar">
@@ -681,7 +749,8 @@
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_no">관리번호</label> 
                         <input class="form-control form-control-sm" id="chain_no" type="hidden" name="chain_no" readonly="readonly"/>
-                        <input class="form-control form-control-sm bg-light" id="exc_no" type="text" name="exc_no" readonly="readonly"/>
+                        <input class="form-control form-control-sm" id="chain_remit_over_stat" type="hidden" name="chain_remit_over_stat" readonly="readonly"/>
+                        <input class="form-control form-control-sm bg-light" id="exc_no" type="text" name="exc_no" readonly="readonly"/>                        
                       </div>
                     </div>
                     <div class="col-sm-3">

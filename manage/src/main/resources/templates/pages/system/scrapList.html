@@ -133,8 +133,8 @@
                 <div class="row mb-1">  
                   <div class="col-sm-3">
                     <div class="input-group input-group-sm px-3">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_gubun">구분</label>
-                      <select class="form-select form-control-sm" id="sch_gubun" name="sch_gubun" style="width: 150px">
+                      <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_gubun">구분</label>
+                      <select class="form-select form-control-sm" id="sch_gubun" name="sch_gubun" style="width: 120px">
                         <option value="">선 택</option>
                         <option value="APRV">승인(매출)정보</option>
                         <option value="BANK">은행 입금 정보</option>
@@ -142,23 +142,31 @@
                       </select>
                     </div>
                   </div>
-                  <div class="col-sm-4">
-                    <div class="input-group">
-                      <div class="input-group input-group-sm mb-1 me-1">
-                        <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_van_cd">스크랩 대상</label>
-                        <select class="form-select form-control-sm" id="sch_van_cd" name="sch_van_cd" style="width: 150px">
-                          <option value="">선 택</option> 
-                        </select>
-                      </div> 
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1 me-1">
+                      <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_van_cd">스크랩 대상</label>
+                      <select class="form-select form-control-sm" id="sch_van_cd" name="sch_van_cd" style="width: 150px">
+                        <option value="">선 택</option> 
+                      </select>
+                    </div> 
+                  </div>
+                  <div class="col-sm-2">
+                    <div class="input-group input-group-sm px-3">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="sch_rslt">결과</label>
+                      <select class="form-select form-control-sm" id="sch_rslt" name="sch_rslt" style="width: 100px">
+                        <option value="">전체</option>
+                        <option value="Y">정상</option>
+                        <option value="N">오류</option>
+                      </select>
                     </div> 
                   </div>
                   <div class="col-sm-3">
-                    <div class="input-group input-group-sm px-3">
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_chain_nm">가맹점 명</label>
+                    <div class="input-group input-group-sm mb-1 me-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="sch_chain_nm">가맹점 명</label>
                       <input type="text" class="form-control form-control-sm" id="sch_chain_nm" name="sch_chain_nm" placeholder="가맹점 명" style="width: 150px">
                     </div>
                   </div>
-                  <div class="col-sm-2">
+                  <div class="col-sm-1">
                     <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
                   </div>  
                 </div>

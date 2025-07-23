@@ -61,16 +61,99 @@ public class ExceedService {
     public boolean insertExceedMst(ExceedMstVO exceedMstVo ) {
         return exceedMapper.insertExceedMst(exceedMstVo); 
     }
-    public boolean updateExceedMst(ExceedMstVO exceedMstVo ) {
-        return exceedMapper.updateExceedMst(exceedMstVo); 
+    public ReturnDataVO updateExceedMst(ExceedMstVO exceedMstVo ) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            int updated = exceedMapper.updateExceedMst(exceedMstVo);         
+            if (updated >= 0) {             // 오류가 아닌 이상 update 가 0 이상이면 성공
+                result.setResultCode("S000");
+                result.setResultMsg("정상 처리되었습니다.");
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg("데이터 변경에 실패했습니다.");
+                return result;
+            } 
+        } catch (Exception e) {
+            result.setResultCode("F500");
+            result.setResultMsg("시스템 오류가 발생했습니다: " + e.getMessage()); 
+        }
+        return result;  
     }
 
-    public boolean setExceedReady(ProcExceedVO procVo) {
-        return exceedMapper.setExceedReady(procVo); 
+    public ReturnDataVO setExceedReady(ProcExceedVO procVo) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            int updated = exceedMapper.setExceedReady(procVo);         
+            if (updated >= 0) {             // 오류가 아닌 이상 update 가 0 이상이면 성공
+                result.setResultCode("S000");
+                result.setResultMsg(updated + "건이 Ready 상태로 변경되었습니다.");
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg("데이터 변경에 실패했습니다.");
+                return result;
+            } 
+        } catch (Exception e) {
+            result.setResultCode("F500");
+            result.setResultMsg("시스템 오류가 발생했습니다: " + e.getMessage()); 
+        }
+        return result; 
+    } 
+
+    public ReturnDataVO setExceedReadyAll(ProcExceedVO procVo ) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            int updated = exceedMapper.setExceedReadyAll(procVo);         
+            if (updated >= 0) {             // 오류가 아닌 이상 update 가 0 이상이면 성공
+                result.setResultCode("S000");
+                result.setResultMsg(updated + "건이 Ready 상태로 변경되었습니다.");
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg("데이터 변경에 실패했습니다.");
+                return result;
+            } 
+        } catch (Exception e) {
+            result.setResultCode("F500");
+            result.setResultMsg("시스템 오류가 발생했습니다: " + e.getMessage()); 
+        }
+        return result; 
     }
 
-    public boolean setExceedReadyAll(ProcExceedVO procVo ) {
-        return exceedMapper.setExceedReadyAll(procVo); 
+    public ReturnDataVO setExceedCancel(ProcExceedVO procVo) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            int updated = exceedMapper.setExceedCancel(procVo);         
+            if (updated >= 0) {             // 오류가 아닌 이상 update 가 0 이상이면 성공
+                result.setResultCode("S000");
+                result.setResultMsg(updated + "건이 미출금 상태로 변경되었습니다.");
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg("데이터 변경에 실패했습니다.");
+                return result;
+            } 
+        } catch (Exception e) {
+            result.setResultCode("F500");
+            result.setResultMsg("시스템 오류가 발생했습니다: " + e.getMessage()); 
+        }
+        return result; 
+    }
+
+    public ReturnDataVO setExceedCancelAll(ProcExceedVO procVo ) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            int updated = exceedMapper.setExceedCancelAll(procVo);         
+            if (updated >= 0) {             // 오류가 아닌 이상 update 가 0 이상이면 성공
+                result.setResultCode("S000");
+                result.setResultMsg(updated + "건이 미출금 상태로 변경되었습니다.");
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg("데이터 변경에 실패했습니다.");
+                return result;
+            } 
+        } catch (Exception e) {
+            result.setResultCode("F500");
+            result.setResultMsg("시스템 오류가 발생했습니다: " + e.getMessage()); 
+        }
+        return result; 
     }
 
 }
