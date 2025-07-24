@@ -382,10 +382,10 @@
 
         <update id="changeWdStatus" parameterType="com.web.manage.withdraw.domain.ProcRemitVO">
                 UPDATE TB_WITHDRAW
-                   SET  WD_STATUS       = #{wdStatus},
-                        CARD_BUY_FLAG   = CASE WHEN #{wdStatus} = 'W00000' THEN 'Y' ELSE CARD_BUY_FLAG END
-                        UPT_USER_ID     = #{userId},
-                        UPT_DTTM        = NOW()
+                   SET  WD_STATUS       = #{wdStatus}
+                        , CARD_BUY_FLAG   = CASE WHEN #{wdStatus} = 'W00000' THEN 'Y' ELSE CARD_BUY_FLAG END
+                        , UPT_USER_ID     = #{userId}
+                        , UPT_DTTM        = NOW()
                 WHERE   FIND_IN_SET(WD_NO, #{wdNo})  
 	</update>
 

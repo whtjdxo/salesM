@@ -194,6 +194,64 @@ public class ScrapController {
                 .body(jString);
     }
 
+    @RequestMapping(value = "/getScrapCardSalesList.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public @ResponseBody ResponseEntity<String> getScrapCardSalesList(
+                                                  @RequestParam("scrapGb") String scrapGb
+                                                , @RequestParam("chainNo") String chainNo
+                                                , @RequestParam("userId") String userId
+                                                , @RequestParam("apiAuthKey") String apiAuthKey
+                                                , @RequestParam("authKey") String authKey
+                                                ) {         		
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>(); 
+        ScrapUserVO scrapUserVo = new ScrapUserVO();
+        ScrapCompVO scrapCompVO = new ScrapCompVO(); 
+		List<HashMap<String, Object>> resultList = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        String jString = null;
+        // -- 사용자 인증키 체크
+
+        scrapUserVo.setUserId(userId);
+        scrapUserVo.setUserAuthKey(apiAuthKey); 
+
+		if (scrapService.getUserAuthKeyCheck(scrapUserVo) <= 0){
+            hashmapResult.put("repCd", "9001");
+            hashmapResult.put("repMsg", "User AuthKey Check Fail~");
+            hashmapResult.put("apiAuthKey", ""); 
+            jString = gson.toJson(hashmapResult);
+            return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);                  
+        } 
+
+        scrapCompVO.setScrapGb(scrapGb);
+        scrapCompVO.setChainNo(chainNo);
+        scrapCompVO.setUserId(userId);
+        scrapCompVO.setApiAuthKey(apiAuthKey);
+        scrapCompVO.setAuthKey(authKey); 
+        
+        try {
+            resultList = scrapService.getScrapCardSalesList(scrapCompVO);
+            
+            hashmapResult.put("repCd", "0000");
+            hashmapResult.put("repMsg", "Get Data List"); 
+            hashmapResult.put("repData", resultList);
+            System.out.println("resultList : " + resultList);
+            // hashmapResult.put("repData", gson.toJson(list));            
+        } catch (Exception e) {
+            e.printStackTrace();
+            hashmapResult.put("repCd", "9100");
+            hashmapResult.put("repMsg", "Get Data List Fail"); 
+            hashmapResult.put("repData", null);
+        }
+
+        jString = gson.toJson(hashmapResult);
+        return ResponseEntity
+                .ok()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(jString);
+    }
+
 
     @RequestMapping(value = "/scrapApiUploadVanData.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public @ResponseBody ResponseEntity<String> scrapUploadVanData(@RequestParam("vanCd") String vanCd

@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.web.manage.api.domain.ScrapBankDataVO;
+import com.web.manage.api.domain.ScrapCardSalesDataVO;
 import com.web.manage.api.domain.ScrapCompVO;
 import com.web.manage.api.domain.ScrapDeliDataVO;
 import com.web.manage.api.domain.ScrapErrorLogVO;
@@ -24,12 +25,14 @@ public interface ScrapMapper {
 
     public List<HashMap<String, Object>> getVanChainList(ScrapCompVO scrapCompVO);
     public List<HashMap<String, Object>> getBankChainList(ScrapCompVO scrapCompVO);
-
+    public List<HashMap<String, Object>> getScrapCardSalesList(ScrapCompVO scrapCompVO);
     boolean scrapUploadVanData(ScrapVanDataVO scrapVanDataVO);
     boolean scrapUploadDeliData(ScrapDeliDataVO    scrapDeliDataVO);
     boolean scrapUploadBankData(ScrapBankDataVO scrapBankDataVO);
 
     boolean scrapUploadKsolutionData(ScrapKsolutionVO scrapKsolutionVO);
+
+    boolean scrapUploadCardSalesData(ScrapCardSalesDataVO scrapCradSalesData);
 
     void callProcTransVanDocu(ScrapProcTransVO procVo);
     void callProcTransDeliDocu(ScrapProcTransVO procVo);

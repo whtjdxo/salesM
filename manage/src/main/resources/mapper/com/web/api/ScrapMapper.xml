@@ -147,6 +147,29 @@
                         ) VT                                                                    
                 ORDER  BY VT.CHAIN_NO        
         </select>
+
+        <select id="getScrapCardSalesList" parameterType="com.web.manage.api.domain.ScrapCompVO" resultType="java.util.HashMap">
+                SELECT 	TC.CHAIN_NO 		AS chainNo      
+                        , TC.CHAIN_NM  		AS chainNm 
+                        , TC.CARDSALES_ID       AS cardSalesId          
+                        , TC.CARDSALES_PWD      AS cardSalesPwd
+                FROM    TB_CHAIN TC   
+                WHERE 	TC.SVC_STAT IN ('O', 'R')     
+                AND 	TC.CARDSALES_ID IS NOT NULL
+                AND 	TC.USE_YN = 'Y'    
+                <if test="chainNo != null and chainNo != ''">			
+                        AND   TC.CHAIN_NO = #{chainNo}
+                </if>
+                AND  NOT EXISTS(
+                                SELECT 1 
+                                  FROM TB_SCRAP_LOG SL          
+                                 WHERE SL.CHAIN_NO  = TC.CHAIN_NO       
+                                   AND SL.SCRAP_GB  IN ('CS')
+                                   AND SL.VAN_CD    = 'CARDSALES'
+                                   AND SL.LAST_SCRAP_DTTM &gt;= DATE_SUB(NOW(), INTERVAL 90 MINUTE)
+                        )                                       
+                ORDER 	BY TC.CHAIN_NO  
+	</select> 
                  
 
 	<insert id="scrapUploadVanData" parameterType="com.web.manage.api.domain.ScrapVanDataVO">
@@ -189,6 +212,22 @@
                         , #{remark}		, #{outAmt}		, #{inAmt}		, #{remainAmt}		, #{centerNm}
                         , NOW()
                 )
+        </insert> 
+
+        <insert id="scrapUploadCardSalesData" parameterType="com.web.manage.api.domain.ScrapCardSalesDataVO">
+                INSERT INTO TB_SCRAP_CS_SALES_DATA
+                (
+                        BCID			, MID			, APP_NO		, CARD_COMPANY		, CARD_TYPE		, CARD_NO
+                        , ISTM_MONTH	        , APP_AMOUNT	        , FEE_AMOUNT	        , PAY_AMOUNT		, DDATE			, DTIME
+                        , DCHECK		, PDATE			, PAYDAY		, SCRAP_DTM		, SITE_ID
+                        , USE_YN		, ENT_DTTM
+                ) VALUES (
+                        #{bcid}#		, #{mid}#		, #{appNo}#		, #{cardCompany}#	, #{cardType}#	        , #{cardNo}#
+                        , #{istmMonth}#	, #{appAmount}#	, #{feeAmount}#	, #{payAmount}#		, #{ddate}#		, #{dtime}#
+                        , #{dcheck}#		, #{pdate}#		, #{payday}#		, #{scrapDtm}#		, #{siteId}#
+                        , 'Y'			, NOW()							
+                )	
+                 
         </insert> 
 
         <insert id="scrapUploadKsolutionData" parameterType="com.web.manage.api.domain.ScrapKsolutionVO">
