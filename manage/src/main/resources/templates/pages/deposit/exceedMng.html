@@ -242,7 +242,7 @@
                   , { data: 'exc_date' }
                   , { data: 'exc_status_nm' }
                   , { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
-                  , { data: 'issue_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                  , { data: 'remain_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                   , { data: 'exc_memo' }                  
                   , { data: 'remit_dt' }
                 ],
@@ -631,7 +631,7 @@
                     <th class="text-center">가맹점명</th>
                     <!-- <th class="text-center">사업자번호</th> -->
                     <th class="text-center">등록금액</th>
-                    <th class="text-center">과입액</th>
+                    <th class="text-center">출금액</th>
                     <th class="text-center">미출금액</th>
                     <th class="text-center">출금</th>
                   </tr>
@@ -666,11 +666,11 @@
                       <div class="input-group input-group-sm mb-1 me-1">
                         <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_exc_sdt">발생일</label>
                         <input class="form-control form-control-sm" id="sch_chain_no" type="hidden" name="sch_chain_no" readonly="readonly"/>
-                        <div class="col-sm-4">
+                        <div class="col-sm-5">
                           <input class="form-control form-control-sm " id="sch_exc_sdt" type="text" name="sch_exc_sdt" istyle="date" maxlength="10" required />
                         </div>   
-                        <span class="input-group-text">~</span>
-                        <div class="col-sm-4">
+                        <!-- <span class="input-group-text">~</span> -->
+                        <div class="col-sm-5">
                           <input class="form-control form-control-sm" id="sch_exc_edt" type="text" name="sch_exc_edt" istyle="date" maxlength="10" required />
                         </div>   
                       </div>
@@ -679,10 +679,10 @@
                   <div class="col-sm-6">
                     <div class="input-group input-group-sm px-3">
                       <!-- <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_reg_sdate">차감유형</label> -->
-                      <select class="form-select form-control-sm" id="sch_exc_type" name="sch_exc_type" style="width: 120px">
+                      <select class="form-select form-control-sm" id="sch_exc_type" name="sch_exc_type" style="width: 100px">
                         <option value="">선 택</option>
                       </select>                    
-                      <select class="form-select form-control-sm" id="sch_exc_code" name="sch_exc_code" style="width: 150px">
+                      <select class="form-select form-control-sm" id="sch_exc_code" name="sch_exc_code" style="width: 120px">
                         <option value="">선택</option> 
                       </select>                    
                       <select class="form-select form-control-sm" id="sch_exc_status" name="sch_exc_status" style="width: 100px">

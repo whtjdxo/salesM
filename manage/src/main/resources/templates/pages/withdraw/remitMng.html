@@ -421,6 +421,7 @@
             },          
             { data: 'wd_no' },
             { data: 'wd_status_nm' },
+            { data: 'van_cd_nm' },
             { data: 'card_acq_nm' },
             { data: 'card_no' },
             { data: 'card_type_nm' },
@@ -442,21 +443,22 @@
             { targets: 0, width: '60px', className: 'text-center' },            
             { targets: 1, width: '120px', className: 'text-left' },
             { targets: 2, width: '80px', className: 'text-center' },
-            { targets: 3, width: '80px', className: 'text-center' },
-            { targets: 4, width: '150px', className: 'text-center' },
-            { targets: 5, width: '80px', className: 'text-center' },
+            { targets: 3, width: '100px', className: 'text-center' },
+            { targets: 4, width: '80px', className: 'text-center' },
+            { targets: 5, width: '150px', className: 'text-center' },
             { targets: 6, width: '80px', className: 'text-center' },
-            { targets: 7, width: '100px', className: 'text-center' },
-            { targets: 8, width: '150px', className: 'text-center' },
-            { targets: 9, width: '120px', className: 'text-center' },
+            { targets: 7, width: '80px', className: 'text-center' },
+            { targets: 8, width: '100px', className: 'text-center' },
+            { targets: 9, width: '150px', className: 'text-center' },
             { targets: 10, width: '120px', className: 'text-center' },
-            { targets: 11, width: '100px', className: 'text-end' },
-            { targets: 12, width: '120px', className: 'text-end' },
-            { targets: 13, width: '100px', className: 'text-end' },
-            { targets: 14, width: '120px', className: 'text-end' },
-            { targets: 15, width: '100px', className: 'text-end' },
-            { targets: 16, width: '120px', className: 'text-end' },
-            { targets: 17, width: '100px', className: 'text-center' },            
+            { targets: 11, width: '120px', className: 'text-center' },
+            { targets: 12, width: '100px', className: 'text-end' },
+            { targets: 13, width: '120px', className: 'text-end' },
+            { targets: 14, width: '100px', className: 'text-end' },
+            { targets: 15, width: '120px', className: 'text-end' },
+            { targets: 16, width: '100px', className: 'text-end' },
+            { targets: 17, width: '120px', className: 'text-end' },
+            { targets: 18, width: '100px', className: 'text-center' },            
           ],
           order: [[1, 'desc']],
           paging: true,
@@ -629,9 +631,9 @@
                     </div> 
                     <div class="col-sm-5 text-end">
                       <!-- <div class="input-group mb-1"> -->
-                        <button type="button" class="btn btn-success btn-sm" id="btn_remit_cancel" name="btn_remit_cancel">출금 정산 취소</button>
-                        <button type="button" class="btn btn-info btn-sm" id="btn_remit_chain" name="btn_remit_chain">송금 완료 처리</button>
-                        <button type="button" class="btn btn-primary btn-sm" id="btn_remit_excel" name="btn_remit_excel">송금자료 EXCEL</button>
+                        <button type="button" class="btn btn-success btn-sm" id="btn_remit_cancel" name="btn_remit_cancel">출금 취소</button>
+                        <button type="button" class="btn btn-info btn-sm" id="btn_remit_chain" name="btn_remit_chain">송금 처리</button>
+                        <button type="button" class="btn btn-primary btn-sm" id="btn_remit_excel" name="btn_remit_excel">송금 EXCEL</button>
                         <button type="button" class="btn btn-primary btn-sm" id="btn_bank_excel" name="btn_bank_excel">은행용 EXCEL</button>
                       <!-- </div> -->
                     </div>
@@ -884,29 +886,30 @@
           </div>          
         </div>
         <div class="card-body pt-0 px-0" style="padding-top: 0px">
-          <div class="table-responsive scrollbar">
-            <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_remit_list">  
+          <div class="table-responsive scrollbar" style="overflow-x: auto; min-width: 1800px;">
+            <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_remit_list" style="min-width: 2160px; border-collapse: collapse;">
               <thead>
-                  <tr>
-                    <th class="text-center">No</th> 
-                    <th class="text-center">정산 번호</th> 
-                    <th class="text-center">정산 상태</th>
-                    <th class="text-center">매입사</th>
-                    <th class="text-center">카드번호</th>
-                    <th class="text-center">카드유형</th>
-                    <th class="text-center">구분</th>
-                    <th class="text-center">승인번호</th>
-                    <th class="text-center">승인일시</th>
-                    <th class="text-center">입금예정일</th>
-                    <th class="text-center">승인금액</th>                    
-                    <th class="text-center">카드수수료</th>
-                    <th class="text-center">입금예정액</th>
-                    <th class="text-center">서비스수수료</th>
-                    <th class="text-center">정산 원금</th>
-                    <th class="text-center">여신수수료</th>
-                    <th class="text-center">송금예정액</th>
-                    <th class="text-center">비고</th>
-                  </tr>  
+                <tr>
+                  <th class="text-center">No</th> 
+                  <th class="text-center">정산 번호</th> 
+                  <th class="text-center">정산 상태</th>
+                  <th class="text-center">VAN</th>
+                  <th class="text-center">매입사</th>
+                  <th class="text-center">카드번호</th>
+                  <th class="text-center">카드유형</th>
+                  <th class="text-center">구분</th>
+                  <th class="text-center">승인번호</th>
+                  <th class="text-center">승인일시</th>
+                  <th class="text-center">입금예정일</th>
+                  <th class="text-center">승인금액</th>                    
+                  <th class="text-center">카드수수료</th>
+                  <th class="text-center">입금예정액</th>
+                  <th class="text-center">서비스수수료</th>
+                  <th class="text-center">정산 원금</th>
+                  <th class="text-center">여신수수료</th>
+                  <th class="text-center">송금예정액</th>
+                  <th class="text-center">비고</th>
+                </tr>  
               </thead>
               <tbody class="list"></tbody>
             </table>

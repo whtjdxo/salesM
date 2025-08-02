@@ -155,6 +155,21 @@ public class WithdrawService {
         }
         return result; 
     }
+
+    public List<HashMap<String, Object>> getURSummary(HashMap<String, Object> hashmapParam) {
+        return withdrawMapper.getURSummary(hashmapParam);
+    }
+    public HashMap<String, Object> getURSummaryTotal(HashMap<String, Object> hashmapParam) {
+        return withdrawMapper.getURSummaryTotal(hashmapParam);
+    }
+    
+    public List<HashMap<String, Object>> getURCardSummary(HashMap<String, Object> hashmapParam) {
+        return withdrawMapper.getURCardSummary(hashmapParam);
+    }
+
+    public List<HashMap<String, Object>> getUnRemitList(HashMap<String, Object> hashmapParam) {
+        return withdrawMapper.getUnRemitList(hashmapParam);
+    }
  
 }
 

@@ -75,7 +75,7 @@
                 , { data: 'biz_no' }                
                 , { data: 'conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { data: 'card_resv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
-                , { data: 'card_resv_amt_remit', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                // , { data: 'card_resv_amt_remit', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { data: 'depo_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { 
                   data: 'depo_gap_amt_remit', 
@@ -123,9 +123,9 @@
                 const colMap = {
                     3: 'conf_amt',
                     4: 'card_resv_amt',
-                    5: 'card_resv_amt_remit',
-                    6: 'depo_amt',
-                    7: 'depo_gap_amt_remit', 
+                    // 5: 'card_resv_amt_remit',
+                    5: 'depo_amt',
+                    6: 'depo_gap_amt_remit', 
                 };
 
                 Object.entries(colMap).forEach(([colIdx, key]) => {
@@ -814,7 +814,7 @@
   </head>
   <div class="content">     
     <div class="row g-1 mb-1">
-      <div class="col-lg-7">
+      <div class="col-lg-6">
         <div class="card" style="height: 600px;">
           <div class="card-header">          
             <div class="row flex-between-end">
@@ -838,17 +838,17 @@
                     </div> 
                   </div> 
                   <div class="row mb-1">
-                    <div class="col-sm-5">                      
+                    <div class="col-sm-3">                      
                     </div>
-                    <div class="col-sm-2">
-                      <input type="checkbox" id="sch_deposit_chk" class="form-check-input" checked/>
-                      <label for="sch_deposit_chk" class="form-check-label">정산가맹점 만</label>
+                    <div class="col-sm-3">
+                      <!-- <input type="checkbox" id="sch_deposit_chk" class="form-check-input" checked/>
+                      <label for="sch_deposit_chk" class="form-check-label">정산가맹점 만</label> -->
                     </div>
-                    <div class="col-sm-2">
+                    <div class="col-sm-3">
                       <input type="checkbox" id="deposit_all" class="form-check-input" />
                       <label for="deposit_all" class="form-check-label">모두 입금처리</label>
                     </div>
-                    <div class="col-sm-3">
+                    <div class="col-sm-3 text-end">
                       <button type="button" class="btn btn-success btn-sm" id="btn_deposit" name="btn_deposit">입금 처리</button>                      
                     </div>
                   </div>
@@ -868,9 +868,9 @@
                     <th class="text-center">사업자 번호</th>
                     <th class="text-center">매출액</th>
                     <th class="text-center">입금 예정액</th>
-                    <th class="text-center">상환 예정액</th>
+                    <!-- <th class="text-center">상환 예정액</th> -->
                     <th class="text-center">입  금  액</th>
-                    <th class="text-center">미상환액</th> 
+                    <th class="text-center">미입금액</th> 
                   </tr>
                 </thead>
                 <tbody class="list"></tbody>
@@ -881,7 +881,7 @@
                     <th class="text-right px-2"></th>
                     <th class="text-right px-2"></th>                     
                     <th class="text-right px-2"></th>
-                    <th class="text-right px-2"></th>
+                    <!-- <th class="text-right px-2"></th> -->
                   </tr>
                 </tfoot>
               </table>
@@ -889,7 +889,7 @@
           </div>
         </div>      
       </div>
-      <div class="col-lg-5">
+      <div class="col-lg-6">
         <div class="card" style="height: 600px;">    
           <div class="card-header">            
             <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">

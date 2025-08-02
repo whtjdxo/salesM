@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>사전정산 관리</title>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script> 
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />    
+    <!-- DataTables Select CSS 추가 -->
+    <link rel="stylesheet" href="/css/custom-salesm.css" />
+
+    <script th:inline="none">      
+      $(document).ready(function () {           
+        $('#frm_sch').onLoadFunction();      
+        $('#frm_sch_card').onLoadFunction();      
+        $('#frm_sch_list').onLoadFunction();      
+
+        // Set default values for sch_reg_sdt and sch_reg_edt        
+        var yesterday  = returnDate('yesterday');
+        var toDay = returnDate('today');
+        $('#sch_conf_sdt').val(yesterday); 
+        $('#sch_conf_edt').val(toDay);
+        $('#change_work_date').val(toDay);
+
+        // callAjax('/common/getCreditCorpList', "", fn_corp_list_setting);
+        // function fn_corp_list_setting(data) {
+        //   codeSetting('CORP_CD', data.data, '#sch_corp_no', '여신사', '', ''); 
+        // }
+
+        // callAjax('/common/getAgencyList', "", fn_agency_list_setting);
+        // function fn_agency_list_setting(data) {
+        //   codeSetting('AGENCY_CD', data.data, '#sch_agency_cd', '대리점', '', ''); 
+        // }  
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('WD_STATUS') AND CODE LIKE 'W%' AND CHK_CD2 = 'M'", fn_wd_status_setting);      
+        function fn_wd_status_setting(data) {
+          codeSetting('WD_STATUS', data.data, '#change_wd_status', '진행상태', '', '');  
+        }
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('VAN_CD')", fn_corp_van_setting);      
+        function fn_corp_van_setting(data) {
+          codeSetting('VAN_CD', data.data, '#sch_list_van', 'VAN', '', '');  
+        }
+
+        $('#btn_search').click(function () {   
+          fn_default_clear();
+          tbl_wd_summ.ajax.reload();
+        });  
+
+        $('#btn_list_search').click(function () {   
+          tbl_unremit_list.ajax.reload();
+        }); 
+
+        var tbl_wd_summ = $('#tbl_wd_summ').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true, // select 옵션은 DataTables Select 확장이 필요할 수 있습니다. 여기서는 체크박스 동작과 직접 관련은 적습니다.
+            responsive: true,
+            ajax: {
+                url: '/withdraw/withdraw/unRemit/urSummary',
+                contentType: 'application/json',
+                dataType: 'JSON',
+                type: 'POST',
+                data: function (postData) {
+                    var formData = $('#frm_sch').serializeObject(); // serializeObject는 jQuery 플러그인일 수 있습니다.
+                    for (var key in formData) {
+                        postData[key] = formData[key];
+                    }
+                    return JSON.stringify(postData); 
+                    // Object.assign(postData, formData);
+                    // return JSON.stringify(postData);
+                },
+                dataSrc: function (json) {
+                    // totalSummary 저장
+                    totalSumm = json.totalSumm || {};
+                    return json.data;
+                },
+                // 서버 에러 처리 등 추가 가능
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                    // 사용자에게 에러 메시지 표시 등
+                }
+            },
+            columns: [
+                {
+                    data: 'chain_no',
+                    render: function(data, type, row) {
+                        // 각 행의 체크박스 생성. 고유 값(여기서는 chain_no)을 value로 사용
+                        return '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '">';
+                    },
+                    orderable: false,
+                    className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
+                }
+                , { data: 'chain_nm' }                 
+                , { data: 'conf_dt' }
+                , { data: 'work_date' }
+                , { data: 'conf_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'cncl_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'cncl_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'unremit_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'unremit_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
+            ],
+            columnDefs: [
+                { targets: 0, width: '50px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
+                { targets: 1, width: '130px', className: 'text-left px-1' },
+                { targets: 2, width: '100px', className: 'text-left px-1' },
+                { targets: 3, width: '100px', className: 'text-left px-1' },                
+                { targets: 4, width: '80px', className: 'text-right px-1 dt-body-right' }, // 숫자 데이터는 오른쪽 정렬이 일반적
+                { targets: 5, width: '110px', className: 'text-right px-1 dt-body-right' },
+                { targets: 6, width: '80px', className: 'text-right px-1 dt-body-right' },
+                { targets: 7, width: '110px', className: 'text-right px-1 dt-body-right' },
+                { targets: 8, width: '80px', className: 'text-right px-1 dt-body-right' },
+                { targets: 9, width: '110px', className: 'text-right px-1 dt-body-right' },                
+            ],
+            order: [[1, 'desc']], // 기본 정렬 설정
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            info: false, // 필요에 따라 true로 변경
+            autoWidth: false,
+            // responsive: true, // 이미 위에서 설정됨
+            // scrollCollapse: true,
+            scrollY: '300px',
+            pageLength: 20,
+            language: {
+                emptyTable: '데이터가 없습니다.',
+                zeroRecords: '일치하는 데이터가 없습니다.',
+                loadingRecords: '로딩중...',
+                processing: '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">처리중...</span></div>', // 로딩/처리중 시각적 표시 개선
+            },
+            footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+                const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+                const colMap = {
+                    4: 'conf_cnt',
+                    5: 'conf_amt',
+                    6: 'cncl_cnt',
+                    7: 'cncl_amt',
+                    8: 'unremit_cnt',
+                    9: 'unremit_amt',
+                };
+
+                Object.entries(colMap).forEach(([colIdx, key]) => {
+                    const footer = api.column(Number(colIdx)).footer();
+                    if (footer) {
+                        const val = totalSumm[key] || 0;
+                        $(footer).html(renderNumber(val));
+                    }
+                });
+            },
+            
+        }); 
+ 
+        $('#tbl_wd_summ').on('click', 'tr', function (e) {          
+          if ($(this).hasClass('selected')) {
+              $(this).removeClass('selected');
+          } else {
+              tbl_wd_summ.$('tr.selected').removeClass('selected');
+              $(this).addClass('selected');
+          } 
+          // 수정된 부분: 클릭된 셀 정보 가져오기
+          var clickedCell = $(e.target).closest('td');
+          var clickedColumnIndex = clickedCell.index();
+          
+          var row = tbl_wd_summ.row(this).data(); 
+          $('#frm_sch_card')[0].reset();             
+          
+          $('#sch_card_chain_no').val(row.chain_no);
+          $('#sch_list_chain_no').val(row.chain_no);   // list 검색 조건
+
+          $('#sch_card_conf_dt').val(row.conf_dt);   // 카드 작업일 설정
+          $('#sch_list_conf_dt').val(row.conf_dt);   // risk 작업일 설정 
+          
+          $('#tbl_card_summ').DataTable().ajax.reload(); 
+          if ($('#sch_list_chain_no').val() && $('#sch_list_conf_dt').val()) {
+            tbl_unremit_list.ajax.reload();
+          } 
+          
+          var tmpForm = {
+            sch_chain_no : row.chain_no,
+          }
+          callAjax('/common/getChainVanList', tmpForm, fn_corp_van_setting);
+        });
+         
+        function fn_remit_result(data){ 
+          Swal.fire({
+            title: '성공',
+            text: '작업을 정상적으로 완료하였습니다.',
+            icon: 'success'
+          });
+          fn_default_clear();
+          tbl_wd_summ.ajax.reload();
+        }
+
+        function fn_default_clear(){
+          // $('#frm_sch')[0].reset();
+          $('#frm_sch_card')[0].reset();   
+          $('#frm_sch_list')[0].reset();
+          $('#sch_card_chain_no').val('');
+          $('#sch_card_conf_dt').val('');
+          $('#sch_list_chain_no').val('');
+          $('#sch_list_conf_dt').val('');
+          $('#sch_list_card_acq').val('');  
+          tbl_card_summ.ajax.reload(); 
+          tbl_unremit_list.ajax.reload();  
+        }
+
+        // sch_list_wd_status 라디오 버튼 클릭 시 이벤트 처리
+        $('input[name="sch_list_wd_status"]').on('change', function () {
+          // alert('검색 조건이 변경되었습니다. 리스트를 새로고침합니다.');
+          tbl_unremit_list.ajax.reload();          
+        });
+        
+        var tbl_card_summ = $('#tbl_card_summ').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          responsive: true,
+          ajax: {
+            url: '/withdraw/withdraw/unRemit/urCardSummary',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',
+            data: function (postData) {
+              formData = $('#frm_sch_card').serializeObject(); 
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
+            },
+          },
+          columns: [
+            { data: 'card_acq_nm' },
+            { data: 'conf_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'cncl_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'cncl_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'unremit_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'unremit_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+          ],
+          columnDefs: [            
+            { targets: 0, width: '120px', className: 'text-left' },
+            { targets: 1, width: '90px', className: 'text-end' },
+            { targets: 2, width: '130px', className: 'text-end' },
+            { targets: 3, width: '90px', className: 'text-end' },
+            { targets: 4, width: '130px', className: 'text-end' },
+            { targets: 5, width: '90px', className: 'text-end' },
+            { targets: 6, width: '130px', className: 'text-end' },
+          ],
+          order: [[1, 'asc']],
+          paging: false,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          autoWidth: false,
+          responsive: true,
+          // scrollCollapse: true,
+          // pageLength: 15,
+          scrollY: '315px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
+        });
+
+        var tbl_unremit_list = $('#tbl_unremit_list').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          responsive: true,
+          ajax: {
+            url: '/withdraw/withdraw/unRemit/unRemitList',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',
+            data: function (postData) {
+              formData = $('#frm_sch_list').serializeObject();
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
+            },
+          }, 
+          columns: [
+            {
+              data: null,
+              render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+              },                    
+            }, 
+            {
+              data: 'wd_no',
+              render: function(data, type, row) {
+                  // 각 행의 체크박스 생성. 고유 값(여기서는 wd_no)을 value로 사용
+                  return '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '">';
+              },
+              orderable: false,
+              className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
+            },
+            { data: 'wd_no' },
+            { data: 'wd_status_nm' },
+            { data: 'van_cd_nm' },
+            { data: 'card_acq_nm' },
+            { data: 'card_no' },
+            { data: 'card_type_nm' },
+            { data: 'conf_gb_nm' },
+            { data: 'conf_no' },
+            { data: 'conf_dttm' },
+            { data: 'card_resv_date' },
+            { data: 'conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'card_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'card_resv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'svc_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'wd_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'crd_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'remit_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'wd_memo' },
+          ],
+          columnDefs: [
+            { targets: 0, width: '60px', className: 'text-center' },
+            { targets: 1, width: '40px', className: 'text-center' },
+            { targets: 2, width: '130px', className: 'text-left' },
+            { targets: 3, width: '100px', className: 'text-left' },
+            { targets: 4, width: '90px', className: 'text-center' },
+            { targets: 5, width: '90px', className: 'text-center' },
+            { targets: 6, width: '150px', className: 'text-center' },
+            { targets: 7, width: '80px', className: 'text-center' },
+            { targets: 8, width: '100px', className: 'text-center' },
+            { targets: 9, width: '120px', className: 'text-center' },
+            { targets: 10, width: '160px', className: 'text-center' },
+            { targets: 11, width: '120px', className: 'text-center' },
+            { targets: 12, width: '100px', className: 'text-end' },
+            { targets: 13, width: '120px', className: 'text-end' },
+            { targets: 14, width: '100px', className: 'text-end' },
+            { targets: 15, width: '120px', className: 'text-end' },
+            { targets: 16, width: '100px', className: 'text-end' },
+            { targets: 17, width: '120px', className: 'text-end' },
+            { targets: 18, width: '120px', className: 'text-end' },
+            { targets: 19, width: '100px', className: 'text-center' },            
+          ],
+          order: [[2, 'desc']],
+          paging: true,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          autoWidth: true,
+          responsive: true,
+          scrollCollapse: true,
+          pageLength: 100,
+          scrollY: '580px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
+          
+          // =============================================================
+            // 중요: 테이블이 다시 그려질 때마다 체크박스 상태를 업데이트
+            // =============================================================
+          drawCallback: function( settings ) {
+              // 1. 헤더 체크박스 상태 초기화 (선택 사항: 페이지 넘길 때마다 초기화할지 결정)
+              // $('#check_all_list').prop('checked', false); // 필요하다면 주석 해제
+
+              // 2. 현재 페이지의 모든 행 체크박스가 선택되었는지 확인하여 헤더 체크박스 상태 업데이트
+              updateCheckAllListState();
+          }
+        });
+
+        // --- 전체 선택/해제 체크박스 클릭 이벤트 ---
+        $('#check_all_list').on('click', function(){
+            var isChecked = this.checked;
+            // 현재 페이지의 모든 행 체크박스를 찾아서 상태 변경
+            tbl_unremit_list.rows({ page: 'current' }).nodes().to$().find('.row-checkbox').prop('checked', isChecked);
+        });
+
+        // --- 각 행의 체크박스 클릭 이벤트 (이벤트 위임 사용) ---
+        $('#tbl_unremit_list tbody').on('click', '.row-checkbox', function(){
+            // 개별 체크박스 클릭 시 '전체 선택' 체크박스 상태 업데이트
+            updateCheckAllListState();
+        });
+
+        $('#tbl_unremit_list').on('click', 'tr', function () {            
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+            $(this).find('.row-checkbox').prop('checked', false);
+          } else {
+            $(this).addClass('selected');
+            $(this).find('.row-checkbox').prop('checked', true);
+          }
+        });
+
+        // --- '전체 선택' 체크박스 상태 업데이트 함수 ---
+        function updateCheckAllListState() {
+            var $rowCheckboxes = tbl_unremit_list.rows({ page: 'current' }).nodes().to$().find('.row-checkbox');
+            var totalCheckboxes = $rowCheckboxes.length;
+            var checkedCheckboxes = $rowCheckboxes.filter(':checked').length;
+
+            // 모든 체크박스가 선택되었는지 확인
+            var allChecked = totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes;
+            $('#check_all_list').prop('checked', allChecked);
+
+            // 하나라도 선택된 경우 vs 모두 선택되지 않은 경우 (선택 사항: indeterminate 상태 구현)
+            if (checkedCheckboxes > 0 && checkedCheckboxes < totalCheckboxes) {
+                $('#check_all_list').prop('indeterminate', true); // 일부만 선택되었을 때 중간 상태 표시
+            } else {
+                $('#check_all_list').prop('indeterminate', false);
+            }
+        }
+        
+        $('#tbl_card_summ').on('click', 'tr', function () {            
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+          } else {
+            $(this).addClass('selected');
+          }
+
+          var row = tbl_card_summ.row(this).data();
+          var currentValue = $('#sch_list_card_acq').val();
+          var newValue = row.card_acq;
+          
+          if (currentValue.includes(newValue)) {
+            // Remove the value if it already exists
+            var updatedValue = currentValue.split(',').filter(function (value) {
+              return value !== newValue;
+            }).join(',');
+            $('#sch_list_card_acq').val(updatedValue);
+          } else {
+            // Add the value if it doesn't exist
+            if (currentValue) {
+              $('#sch_list_card_acq').val(currentValue + ',' + newValue);
+            } else {
+              $('#sch_list_card_acq').val(newValue);
+            }
+          } 
+
+          if ($('#sch_list_chain_no').val() && $('#sch_list_conf_dt').val()) {
+            tbl_unremit_list.ajax.reload();
+          } 
+        });   
+
+
+        // Change event for change_gb dropdown
+        $('#change_gb').on('change', function () {
+          var selectedValue = $(this).val();
+          if (selectedValue === 'WORK_DATE') {
+            $('#div_work_date').show();
+            $('#div_wd_status').hide();
+          } else if (selectedValue === 'WD_STATUS') {
+            $('#div_work_date').hide();
+            $('#div_wd_status').show();
+          }
+        });
+ 
+        $('#btn_list_change').click(function () {          
+          var selectedWdNo = [];
+            // Iterate through checked checkboxes in the current page
+          tbl_unremit_list.rows({ page: 'current' }).nodes().to$().find('.row-checkbox:checked').each(function () {
+          selectedWdNo.push($(this).val());
+          });
+
+          if (selectedWdNo.length === 0) {
+            alert('변경 건을 선택해주세요');
+            return;
+          }
+
+          var dataParam = {
+            wdNo: selectedWdNo.join(','),
+            wdStatus: $('#change_wd_status').val(),
+            workDate: $('#change_work_date').val(),
+          };
+
+          var changeGb = $('#change_gb').val();
+          if (changeGb === 'WORK_DATE') {
+            var workDate = $('#change_work_date').val();
+            if (!workDate) {
+              alert('변경 작업일을 입력하세요.');
+              return;
+            }
+            if (workDate < toDay ){
+              alert('변경일은 금일 이후로 변경 가능합니다.');
+              return;
+            }
+            
+            ConfirmdialogToAjax("execute", "/withdraw/withdraw/unRemit/changeWorkDate", dataParam, fn_change_result);
+          } else if (changeGb === 'WD_STATUS') {
+            var wdStatus = $('#change_wd_status').val();
+            if (!wdStatus) {
+              alert('진행 상태를 선택하세요.');
+              return;
+            }
+            ConfirmdialogToAjax("execute", "/withdraw/withdraw/unRemit/changeWdStatus", dataParam, fn_change_result);
+          }   
+        });
+
+        function fn_change_result(data){
+          swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+          fn_default_clear();
+          tbl_wd_summ.ajax.reload();
+        }
+        
+        // Excel download button click event
+        $('#btn_list_excel').click(function () {
+          var formData = $('#frm_sch_list').serializeObject();
+          $('#globalLoadingBar').show();
+          $.ajax({
+            url: '/withdraw/withdraw/unRemit/unRemitListExcel',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            xhrFields: {
+              responseType: 'blob'
+            },
+            success: function (data, status, xhr) {              
+              var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+              var link = document.createElement('a');
+              link.href = window.URL.createObjectURL(blob);
+              link.download = '정산 상세 리스트.xlsx';
+              link.click();
+            },
+            error: function (xhr, status, error) {
+              alert('Excel download failed.');
+            },
+            complete: function () {
+              // 🔴 로딩바 숨기기 (성공/실패 관계없이)
+              $('#globalLoadingBar').hide();
+            }
+          });
+        });
+      });
+    </script>
+  </head>
+  <div class="content">     
+    <div class="row g-1 mb-1">
+      <div class="col-lg-7">
+        <div class="card" style="height: 560px;">
+          <div class="card-header">          
+            <div class="row flex-between-end">
+              <div class="col-lg-2 align-self-center">
+                <h4 class="mb-0">미출금 내역</h4>
+              </div>            
+              <div class="col-lg-10">
+                <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
+                  <div class="row mb-0">
+                    <div class="col-sm-12">
+                      <div class="input-group input-group-sm mb-1">
+                        <div class="col-sm-7">
+                          <div class="input-group">
+                            <div class="input-group input-group-sm mb-1 me-1">
+                              <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_conf_sdt">승인일</label>
+                              <div class="col-sm-4">
+                                <input class="form-control form-control-sm " id="sch_conf_sdt" type="text" name="sch_conf_sdt" istyle="date" maxlength="10" required />
+                              </div>   
+                              <span class="input-group-text">~</span>
+                              <div class="col-sm-4">
+                                <input class="form-control form-control-sm" id="sch_conf_edt" type="text" name="sch_conf_edt" istyle="date" maxlength="10" required />
+                              </div>   
+                            </div>
+                          </div> 
+                        </div>   
+                        <!-- <select class="form-select form-control-sm me-1" id="sch_corp_no" name="sch_corp_no" style="width: 75px">
+                          <option value="">여신사</option>
+                        </select> -->
+                        <!-- <select class="form-select form-control-sm me-1" id="sch_agency_cd" name="sch_agency_cd" style="width: 75px">
+                          <option value="">대리점</option>
+                        </select> -->
+                        <div class="col-sm-5">
+                          <div class="input-group input-group-sm mb-1 me-1">
+                            <select class="form-select form-control-sm me-1" id="schgb_chain" name="schgb_chain" style="width: 75px">
+                              <option value="schgb_chain_nm">가맹점 명</option>
+                              <option value="schgb_biz_no">사업자 번호</option>
+                            </select>
+                            <input type="text" class="form-control form-control-sm me-1" id="schgb_chain_val" name="schgb_chain_val" style="width:100px" />                        
+                            <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
+                          </div>
+                        </div>
+                        
+                      </div>
+                    </div> 
+                  </div>
+                </form>                
+              </div>
+            </div>          
+          </div>
+          <div class="card-body pt-0 px-0" style="padding-top: 0px">
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_wd_summ">  
+                <thead>
+                  <tr>
+                    <th class="text-center">
+                        <input type="checkbox" id="check_all" class="form-check-input" />
+                    </th>
+                    <th class="text-center">가맹점 명</th>
+                    <th class="text-center">승인일</th>
+                    <th class="text-center">정산일</th>
+                    <th class="text-center">승인 건</th>
+                    <th class="text-center">승인 금액</th>
+                    <th class="text-center">취소 건</th>
+                    <th class="text-center">취소 금액</th>                
+                    <th class="text-center">미출금 건</th>  
+                    <th class="text-center">미출금 액</th> 
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody>
+                <tfoot>
+                  <tr>
+                    <th colspan="4" class="text-center">총계</th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                  </tr>
+                </tfoot>
+                
+              </table>
+            </div>
+          </div>
+        </div>      
+      </div>
+      <div class="col-lg-5">
+        <div class="card" style="height: 560px;">    
+          <div class="card-header">            
+            <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">
+              <input class="form-control form-control-sm" id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly" />
+              <input class="form-control form-control-sm" id="sch_card_conf_dt" type="hidden" name="sch_card_conf_dt"/>
+            </form>          
+          </div>
+          <div class="card-body pt-0 px-0" style="padding-top: 0px">
+            <div class="table-responsive scrollbar">              
+              <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_card_summ">
+                <thead>
+                  <tr>  
+                    <th class="text-center">카드(매입)사</th>
+                    <th class="text-center">승인 건</th>
+                    <th class="text-center">승인 금액</th>
+                    <th class="text-center">취소 건</th>
+                    <th class="text-center">취소 금액</th>   
+                    <th class="text-center">미출금 건</th>
+                    <th class="text-center">미출금 금액</th>
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody>
+              </table>
+            </div>
+          </div> 
+        </div>      
+      </div>        
+    </div>     
+    <div class="row g-1 mb-1">
+      <div class="card">
+        <div class="card-header"> 
+          <div class="row flex-between-end">              
+            <div class="col-lg-1 align-self-center">
+              <h4 class="mb-0">상세 List</h4>
+            </div>     
+            <div class="col-lg-11">
+              <form id="frm_sch_list" name="frm_sch_list" onsubmit="return false;" novalidate=""> 
+                <input id="sch_list_chain_no"  type="hidden" name="sch_list_chain_no" />
+                <input id="sch_list_chain_nm"  type="hidden" name="sch_list_chain_nm" />
+                <input id="sch_list_conf_dt" type="hidden" name="sch_list_conf_dt"/>
+                <input id="sch_list_card_acq"  type="hidden" name="sch_list_card_acq" />
+                <div class="row mb-1">
+                  <div class="col-sm-8">
+                    <div class="input-group input-group-sm mb-1">
+                      <!-- <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="sch_list_wd_status" id="sch_list_wd_status_all" value="A" checked>
+                        <label class="form-check-label" for="sch_list_wd_status_all">전체</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="sch_list_wd_status" id="sch_list_wd_status_y" value="Y">
+                        <label class="form-check-label" for="sch_list_wd_status_y">정산확정</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="sch_list_wd_status" id="sch_list_wd_status_n" value="N">
+                        <label class="form-check-label" for="sch_list_wd_status_n">미확정</label>
+                      </div> -->
+                      <div class="col-sm-2">
+                        <input class="form-control form-control-sm me-1" id="sch_list_conf_sdt" type="text" name="sch_list_conf_sdt" istyle="date" maxlength="10" required />
+                      </div>   
+                      <span class="input-group-text">~</span>
+                      <div class="col-sm-2">
+                        <input class="form-control form-control-sm me-1" id="sch_list_conf_edt" type="text" name="sch_list_conf_edt" istyle="date" maxlength="10" required />
+                      </div>
+                     
+                      <select class="form-select form-control-sm me-1" id="sch_list_van" name="sch_list_van" style="width: 90px">
+                        <option value="">전체</option>
+                      </select>                    
+                      <select class="form-select form-control-sm me-1" id="sch_list_gb" name="sch_list_gb" style="width: 90px">
+                        <option value="sch_list_gb_conf_no">승인 번호</option>
+                        <option value="sch_list_gb_card_no">카드 번호</option>
+                        <option value="sch_list_gb_conf_amt">승인 금액</option>
+                      </select>
+                      <input type="text" class="form-control form-control-sm me-1" id="sch_list_gb_conf_val" name="sch_list_gb_conf_val" style="width:90px" />                        
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_list_search" name="btn_list_search">조회</button> 
+                    </div>
+                  </div> 
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <!-- <label class="col-sm-2 col-form-label col-form-label-sm" for="change_wd_status">변경 처리</label>                        -->
+                      <div class="col-sm-4">
+                        <select class="form-select form-control-sm me-1" id="change_gb" name="change_gb">
+                          <option value="WD_STATUS">상태변경</option>
+                          <option value="WORK_DATE">출금일</option>
+                        </select>
+                      </div>                      
+                      <div class="col-sm-5" id="div_wd_status">
+                        <select class="form-select form-control-sm me-1" id="change_wd_status" name="change_wd_status" >
+                          <option value="">선택</option>   
+                        </select>
+                      </div>                      
+                      <div class="col-sm-5" id="div_work_date" style="display:none;">
+                        <input class="form-control form-control-sm me-1" id="change_work_date" type="text" name="change_work_date" istyle="date" maxlength="10" placeholder="변경 작업일" />
+                      </div>  
+                      <div class="col-sm-2">
+                        <button type="button" class="btn btn-info btn-sm" id="btn_list_change" name="btn_list_change">변경</button>
+                      </div>
+                    </div>                    
+                  </div>
+                  <div class="col-sm-1">
+                    <div class="col-sm-1 text-end"> 
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_list_excel" name="btn_list_excel">Excel</button> 
+                    </div>                           
+                  </div>
+                </div> 
+              </form>
+            </div>
+          </div>          
+        </div>
+        <div class="card-body pt-0 px-0" style="padding-top: 0px">
+          <div class="table-responsive scrollbar" style="overflow-x: auto; min-width: 1800px;">
+            <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_unremit_list" style="min-width: 2160px; border-collapse: collapse;">
+              <thead>
+                  <tr>
+                    <th class="text-center">No</th> 
+                    <th class="text-center">
+                      <input type="checkbox" id="check_all_list" class="form-check-input" />
+                    </th>
+                    <th class="text-center">정산 번호</th> 
+                    <th class="text-center">정산 상태</th>
+                    <th class="text-center">VAN</th>
+                    <th class="text-center">매입사</th>
+                    <th class="text-center">카드번호</th>
+                    <th class="text-center">카드유형</th>
+                    <th class="text-center">구분</th>
+                    <th class="text-center">승인번호</th>
+                    <th class="text-center">승인일시</th>
+                    <th class="text-center">입금예정일</th>
+                    <th class="text-center">승인금액</th>                    
+                    <th class="text-center">카드수수료</th>
+                    <th class="text-center">입금예정액</th>
+                    <th class="text-center">서비스수수료</th>
+                    <th class="text-center">정산 원금</th>
+                    <th class="text-center">여신수수료</th>
+                    <th class="text-center">출금예정액</th>
+                    <th class="text-center">비고</th>
+                  </tr>  
+              </thead>
+              <tbody class="list"></tbody>
+            </table>
+          </div>
+        </div>        
+      </div>     
+    </div>    
+  </div>
+</html>

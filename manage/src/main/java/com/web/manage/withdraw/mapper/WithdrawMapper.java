@@ -29,5 +29,11 @@ public interface WithdrawMapper {
     
     void callProcRemitCancel(ProcRemitVO procVo);
     void callProcRemitSend(ProcRemitVO procVo);
+
+
+    List<HashMap<String, Object>> getURSummary(HashMap<String, Object> hashmapParam);
+    HashMap<String, Object> getURSummaryTotal(HashMap<String, Object> hashmapParam);
+    List<HashMap<String, Object>> getURCardSummary(HashMap<String, Object> hashmapParam);    
+    List<HashMap<String, Object>> getUnRemitList(HashMap<String, Object> hashmapParam);
 }
 

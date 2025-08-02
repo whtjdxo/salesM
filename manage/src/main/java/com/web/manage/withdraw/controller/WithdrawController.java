@@ -66,6 +66,11 @@ public class WithdrawController {
         return "pages/withdraw/remitMng";
     }
 
+    @RequestMapping("unRemit/view")
+    public String unRemitView() {
+        return "pages/withdraw/unRemitList";
+    }
+
     @RequestMapping("wdMng/wdSummary")    
     public @ResponseBody String getWDSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
@@ -781,7 +786,7 @@ public class WithdrawController {
             // Create header row
             Row headerRow = sheet.createRow(1); 
             String[] headers = {
-                  "정산 번호"       , "정산 상태"       , "매입사"          ,  "카드번호"       , "카드유형"
+                  "정산 번호"       , "정산 상태"       , "VAN"         , "매입사"          ,  "카드번호"       , "카드유형"
                 , "구분"           , "승인번호"        , "승인일시"         , "입금예정일"       , "승인금액"
                 , "카드수수료"      , "입금예정액"       , "서비스수수료"      , "정산 원금"       , "여신수수료"
                 , "출금예정액"      , "비고"
@@ -801,45 +806,46 @@ public class WithdrawController {
                 Row dataRow = sheet.createRow(rowIndex++);
                 dataRow.createCell(0).setCellValue(String.valueOf(row.get("wd_no")));
                 dataRow.createCell(1).setCellValue(String.valueOf(row.get("wd_status_nm")));
-                dataRow.createCell(2).setCellValue(String.valueOf(row.get("card_acq_nm")));
-                dataRow.createCell(3).setCellValue(String.valueOf(row.get("card_no")));
-                dataRow.createCell(4).setCellValue(String.valueOf(row.get("card_type_nm")));
-                dataRow.createCell(5).setCellValue(String.valueOf(row.get("conf_gb_nm")));
-                dataRow.createCell(6).setCellValue(String.valueOf(row.get("conf_no")));
-                dataRow.createCell(7).setCellValue(String.valueOf(row.get("conf_dttm")));
-                dataRow.createCell(8).setCellValue(String.valueOf(row.get("card_resv_date")));
+                dataRow.createCell(2).setCellValue(String.valueOf(row.get("van_cd_nm")));
+                dataRow.createCell(3).setCellValue(String.valueOf(row.get("card_acq_nm")));
+                dataRow.createCell(4).setCellValue(String.valueOf(row.get("card_no")));
+                dataRow.createCell(5).setCellValue(String.valueOf(row.get("card_type_nm")));
+                dataRow.createCell(6).setCellValue(String.valueOf(row.get("conf_gb_nm")));
+                dataRow.createCell(7).setCellValue(String.valueOf(row.get("conf_no")));
+                dataRow.createCell(8).setCellValue(String.valueOf(row.get("conf_dttm")));
+                dataRow.createCell(9).setCellValue(String.valueOf(row.get("card_resv_date")));
 
-                Cell c9 = dataRow.createCell(9);
+                Cell c9 = dataRow.createCell(10);
                 c9.setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
                 c9.setCellStyle(excelStyle.getStyle("number"));
-                
-                Cell c10 = dataRow.createCell(10);
+
+                Cell c10 = dataRow.createCell(11);
                 c10.setCellValue(Double.parseDouble(String.valueOf(row.get("card_fee_amt"))));
                 c10.setCellStyle(excelStyle.getStyle("number"));
 
-                Cell c11 = dataRow.createCell(11);
+                Cell c11 = dataRow.createCell(12);
                 c11.setCellValue(Double.parseDouble(String.valueOf(row.get("card_resv_amt"))));
                 c11.setCellStyle(excelStyle.getStyle("number"));
 
-                Cell c12 = dataRow.createCell(12);
+                Cell c12 = dataRow.createCell(13);
                 c12.setCellValue(Double.parseDouble(String.valueOf(row.get("svc_fee_amt"))));
                 c12.setCellStyle(excelStyle.getStyle("number"));
 
-                Cell c13 = dataRow.createCell(13);
+                Cell c13 = dataRow.createCell(14);
                 c13.setCellValue(Double.parseDouble(String.valueOf(row.get("wd_base_amt"))));
                 c13.setCellStyle(excelStyle.getStyle("number"));
 
-                Cell c14 = dataRow.createCell(14);
+                Cell c14 = dataRow.createCell(15);
                 c14.setCellValue(Double.parseDouble(String.valueOf(row.get("crd_fee_amt"))));
                 c14.setCellStyle(excelStyle.getStyle("number"));
 
-                Cell c15 = dataRow.createCell(15);
+                Cell c15 = dataRow.createCell(16);
                 c15.setCellValue(Double.parseDouble(String.valueOf(row.get("remit_amt"))));
                 c15.setCellStyle(excelStyle.getStyle("number"));
- 
-                dataRow.createCell(16).setCellValue(String.valueOf(row.get("wd_memo")));
+
+                dataRow.createCell(17).setCellValue(String.valueOf(row.get("wd_memo")));
             }
-            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 16);
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 17);
 
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -893,6 +899,246 @@ public class WithdrawController {
             return result;
         }
         // return result;
+    }
+
+
+    @RequestMapping("unRemit/urSummary")    
+    public @ResponseBody String getURSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> totalSumm      = new HashMap<String, Object>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = withdrawService.getURSummary(hashmapParam);
+            int records = withdrawService.getQueryTotalCnt();
+
+            totalSumm= withdrawService.getURSummaryTotal(hashmapParam);
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);            
+            hashmapResult.put("totalSumm", totalSumm); 
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    }  
+
+    @RequestMapping("unRemit/urCardSummary")    
+    public @ResponseBody String getURCardSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            // System.out.println(hashmapParam);
+
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = withdrawService.getURCardSummary(hashmapParam);
+            int records = withdrawService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    } 
+
+    @RequestMapping("unRemit/unRemitList")    
+    public @ResponseBody String getUnRemitList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null;  
+
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam); 
+
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = withdrawService.getUnRemitList(hashmapParam);
+            int records = withdrawService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    } 
+
+    @RequestMapping(value = "unRemit/unRemitListExcel", method = RequestMethod.POST)
+    public ResponseEntity<byte[]> unRemitListExcel(@RequestBody HashMap<String, Object> hashmapParam) {
+        try {
+            // Fetch data for the Excel file
+            hashmapParam.put("sidx", "");
+            hashmapParam.put("sord", "");
+            hashmapParam.put("start", "0");
+            hashmapParam.put("end", "9999");
+            List<HashMap<String, Object>> list = withdrawService.getUnRemitList(hashmapParam);
+
+            // Create an Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("List");
+            ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
+
+            // Create header row
+            Row titleRow = sheet.createRow(0);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("정산 상세 리스트");            
+            titleCell.setCellStyle(excelStyle.getStyle("title"));
+
+            // Create header row
+            Row headerRow = sheet.createRow(1);
+            String[] headers = {
+                  "정산 번호"       , "정산 상태"       , "매입사"          , "VAN"             ,  "카드번호"       , "카드유형"
+                , "구분"           , "승인번호"        , "승인일시"         , "입금예정일"       , "승인금액"
+                , "카드수수료"      , "입금예정액"       , "서비스수수료"     , "정산 원금"       , "여신수수료"
+                , "출금예정액"      , "비고"
+            };
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(excelStyle.getStyle("header"));
+                // 각 컬럼 너비 자동 조정
+                sheet.autoSizeColumn(i);                
+                // 한글의 경우 autoSizeColumn이 완벽하지 않을 수 있어 약간의 여백 추가
+                sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
+            }
+            // Populate data rows
+            int rowIndex = 2;
+            for (HashMap<String, Object> row : list) {
+                Row dataRow = sheet.createRow(rowIndex++);
+                dataRow.createCell(0).setCellValue(String.valueOf(row.get("wd_no")));
+                dataRow.createCell(1).setCellValue(String.valueOf(row.get("wd_status_nm")));
+                dataRow.createCell(2).setCellValue(String.valueOf(row.get("card_acq_nm")));
+                dataRow.createCell(3).setCellValue(String.valueOf(row.get("van_cd_nm")));
+                dataRow.createCell(4).setCellValue(String.valueOf(row.get("card_no")));
+                dataRow.createCell(5).setCellValue(String.valueOf(row.get("card_type_nm")));
+                dataRow.createCell(6).setCellValue(String.valueOf(row.get("conf_gb_nm")));
+                dataRow.createCell(7).setCellValue(String.valueOf(row.get("conf_no")));
+                dataRow.createCell(8).setCellValue(String.valueOf(row.get("conf_dttm")));
+                dataRow.createCell(9).setCellValue(String.valueOf(row.get("card_resv_date")));
+                
+                Cell c10 = dataRow.createCell(10);
+                c10.setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
+                c10.setCellStyle(excelStyle.getStyle("number"));
+                
+                Cell c11 = dataRow.createCell(11);
+                c11.setCellValue(Double.parseDouble(String.valueOf(row.get("card_fee_amt"))));
+                c11.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c12 = dataRow.createCell(12);
+                c12.setCellValue(Double.parseDouble(String.valueOf(row.get("card_resv_amt"))));
+                c12.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c13 = dataRow.createCell(13);
+                c13.setCellValue(Double.parseDouble(String.valueOf(row.get("svc_fee_amt"))));
+                c13.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c14 = dataRow.createCell(14);
+                c14.setCellValue(Double.parseDouble(String.valueOf(row.get("wd_base_amt"))));
+                c14.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c15 = dataRow.createCell(15);
+                c15.setCellValue(Double.parseDouble(String.valueOf(row.get("crd_fee_amt"))));
+                c15.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c16 = dataRow.createCell(16);
+                c16.setCellValue(Double.parseDouble(String.valueOf(row.get("remit_amt"))));
+                c16.setCellStyle(excelStyle.getStyle("number"));
+                
+                dataRow.createCell(17).setCellValue(String.valueOf(row.get("wd_memo")));
+            }
+            // 테두리 그리기
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 17);
+
+            // Write workbook to a byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            workbook.close();
+
+            // Set response headers
+            HttpHeaders hHeaders = new HttpHeaders();
+            hHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            hHeaders.setContentDispositionFormData("attachment", "withdraw.xlsx");
+
+            return ResponseEntity.ok()
+                    .headers(hHeaders)
+                    .body(outputStream.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
     }
 
 }
