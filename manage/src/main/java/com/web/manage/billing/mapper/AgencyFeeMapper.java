@@ -16,4 +16,6 @@ public interface AgencyFeeMapper {
     List<HashMap<String, Object>> getAgencyFeeList(HashMap<String, Object> hashmapParam);
 
     HashMap<String, Object> getAgencyFeeListTotal(HashMap<String, Object> hashmapParam); 
+
+    List<HashMap<String, Object>> getChainTaxExcel(HashMap<String, Object> hashmapParam);    
 }

@@ -185,6 +185,37 @@
             }
           });
         }); 
+
+        $('#btn_tax_excel').click(function () {
+          // var formData = $('#frm_sch_list').serializeObject();
+          var formData = {
+                sch_month : $('#sch_year').val() + '-' + $('#sch_mon').val()
+                , sch_agency_cd : $('#sch_agency_cd').val()
+              }
+          $('#globalLoadingBar').show(); 
+          $.ajax({
+            url: '/statis/billing/agencyFee/downTaxExcel',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            xhrFields: {
+              responseType: 'blob'
+            },
+            success: function (data, status, xhr) {
+              var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+              var link = document.createElement('a');
+              link.href = window.URL.createObjectURL(blob);
+              link.download = '세금계산서_'+ $('#sch_year').val() + $('#sch_mon').val() + '.xlsx';
+              link.click();
+            },
+            error: function (xhr, status, error) {
+              alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
+            }
+          });
+        }); 
         
         var tbl_chain_fee_list = $('#tbl_chain_fee_list').DataTable({
             processing: true,
@@ -333,7 +364,7 @@
               var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
               var link = document.createElement('a');
               link.href = window.URL.createObjectURL(blob);
-              link.download = '영업수수료_'+ schChainNo + '.xlsx';
+              link.download = '영업수수료_'+ sch_month + '.xlsx';
               link.click();
             },
             error: function (xhr, status, error) {
@@ -343,7 +374,7 @@
               $('#globalLoadingBar').hide();
             }
           });
-        }); 
+        });
         
       }); 
     
@@ -404,7 +435,8 @@
                   <div class="col-sm-2">                    
                   </div>
                   <div class="col-sm-3 text-end">
-                    <button type="button" class="btn btn-success btn-sm" id="btn_excel" name="btn_excel">Excel 출력</button>                      
+                    <button type="button" class="btn btn-success btn-sm" id="btn_excel" name="btn_excel">Excel 출력</button>
+                    <button type="button" class="btn btn-success btn-sm" id="btn_tax_excel" name="btn_tax_excel">세금계산서 Excel</button>
                   </div>
                 </div>
               </form>                
@@ -467,7 +499,7 @@
                 <input type="hidden" id="sch_chain_no" name="sch_chain_no">
                 <input type="hidden" id="sch_chain_nm" name="sch_chain_nm">
                 <div class="col-sm">
-                  <button type="button" class="btn btn-success btn-sm" id="btn_list_excel" name="btn_list_excel">상세 내역 Excel</button>                      
+                  <button type="button" class="btn btn-success btn-sm" id="btn_list_excel" name="btn_list_excel">상세 Excel</button>
                 </div>
               </form>                
             </div>

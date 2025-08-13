@@ -226,4 +226,77 @@
 				 AND  AF.CHAIN_NO   = #{sch_chain_no}  
   </select>
 
+
+  <select id="getChainTaxExcel" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        <!-- getChainTaxExcel -->
+        SELECT	DATE_FORMAT(LAST_DAY(DATE(CONCAT('2025-07', '-01'))), '%Y-%m-%d') AS tax_dt
+                , VT.CHAIN_NO                                       AS chain_no
+                , TC.BIZ_NO											AS biz_no
+                , TC.CHAIN_NM										AS chain_nm
+                , TU.USER_NM  										AS boss_nm
+                , CONCAT(TC.CHAIN_ADDR, ' ',  IFNULL(TC.CHAIN_ADDR_DTL, '')) AS chain_addr
+                , IFNULL(TC.EMAIL, '')								AS email
+                , IFNULL(TC.UPTAE, '') 								AS uptae
+                , IFNULL(TC.UPJONG, '') 							AS upjong
+                , IFNULL(RESV_SVC_AMT, 0)							AS svc_amt
+                , ROUND(IFNULL(RESV_SVC_AMT, 0) / 1.1) 				AS svc_sales_amt
+                , IFNULL(RESV_SVC_AMT, 0) - (ROUND(IFNULL(RESV_SVC_AMT, 0) / 1.1)) AS svc_vat_amt	
+        FROM	(
+                    SELECT 	CHAIN_NO 
+                            , IFNULL(SUM(CONF_CNT), 0) 				AS CONF_CNT 
+                            , IFNULL(SUM(CONF_AMT), 0)	 			AS CONF_AMT 
+                            , IFNULL(SUM(ORG_CARD_RESV_AMT), 0) 	AS ORG_CARD_RESV_AMT 
+                            , IFNULL(SUM(RESV_BASE_AMT), 0) 		AS RESV_BASE_AMT 
+                            , IFNULL(SUM(RESV_SVC_AMT), 0) 			AS RESV_SVC_AMT 
+                            , IFNULL(SUM(RESV_CRD_AMT), 0) 			AS RESV_CRD_AMT 
+                            , IFNULL(SUM(BANK_IN_AMT), 0) 			AS BANK_IN_AMT 
+                            , IFNULL(SUM(BANK_IN_BASE_AMT), 0) 		AS BANK_IN_BASE_AMT 
+                            , IFNULL(SUM(BANK_IN_SVC_AMT), 0) 		AS BANK_IN_SVC_AMT 
+                            , IFNULL(SUM(BANK_IN_CRD_AMT), 0) 		AS BANK_IN_CRD_AMT 
+                            , IFNULL(SUM(EXC_AMT), 0) 				AS EXC_AMT 
+                            , IFNULL(SUM(SUB_BASE_AMT), 0) 			AS SUB_BASE_AMT
+                            , IFNULL(SUM(SUB_SVC_AMT), 0) 			AS SUB_SVC_AMT
+                            , IFNULL(SUM(SUB_CRD_AMT), 0) 			AS SUB_CRD_AMT
+                            , IFNULL(SUM(SUB_AMT), 0) 				AS SUB_AMT
+                            , IFNULL(SUM(BIZ_CRD_AMT), 0) 			AS BIZ_CRD_AMT
+                            , IFNULL(ROUND(SUM(AGENCY_SVC_FEE)), 0) AS AGENCY_SVC_FEE
+                            , IFNULL(ROUND(SUM(AGENCY_CRD_FEE)), 0) AS AGENCY_CRD_FEE
+                            , IFNULL(ROUND(SUM(AGENCY_LOAN_FEE)), 0) AS AGENCY_LOAN_FEE
+                            , IFNULL(ROUND(SUM(AGENCY_SVC_FEE)), 0)
+                                + IFNULL(ROUND(SUM(AGENCY_CRD_FEE)), 0) 
+                                + IFNULL(ROUND(SUM(AGENCY_LOAN_FEE)), 0) 		AS AGENCY_TOT_FEE 
+                    FROM 	VW_AGENCY_FEE_LIST
+                    WHERE 	ADJUST_DATE BETWEEN CONCAT(#{sch_month}, '-01')
+                                                AND DATE_FORMAT(LAST_DAY(DATE(CONCAT(#{sch_month}, '-01'))), '%Y-%m-%d')
+                <if test="sch_agency_cd != null and sch_agency_cd != ''"> 
+                        AND  AGENCY_CD =  #{sch_agency_cd} 
+                </if>                                       
+                    GROUP 	BY CHAIN_NO    	
+                ) VT 
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = VT.CHAIN_NO
+            <choose>
+                <when test='userCorpType == "LN"'>
+                    AND TC.CORP_CD = #{userCorpCd}
+                </when>
+                <when test='userCorpType == "OP"'>
+                    AND 1 = 1
+                </when>
+                <when test='userCorpType == "AG"'>
+                    AND TC.AGENCY_CD = #{userCorpCd}
+                </when>
+                <otherwise>
+                    AND  1 = 0
+                </otherwise>
+            </choose>                      
+                JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID                         
+        <choose>
+            <when test="sidx != '' and sidx != null ">
+                    ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                    ORDER BY 1
+            </otherwise>
+        </choose> 
+        LIMIT  ${start}, ${end}
+  </select>
 </mapper>

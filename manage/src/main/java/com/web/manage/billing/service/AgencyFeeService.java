@@ -39,4 +39,8 @@ public class AgencyFeeService {
     public HashMap<String, Object> getAgencyFeeListTotal(HashMap<String, Object> hashmapParam) {
         return agencyFeeMapper.getAgencyFeeListTotal(hashmapParam);
     }
+
+    public List<HashMap<String, Object>> getChainTaxExcel(HashMap<String, Object> hashmapParam) {
+        return agencyFeeMapper.getChainTaxExcel(hashmapParam); 
+    }
 }
