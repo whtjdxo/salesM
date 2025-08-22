@@ -121,32 +121,34 @@
     <!-- ===============================================-->
     <!--    Main Content-->
     <!-- ===============================================-->
-    <main class="main" id="top">
-      <div class="container" data-layout="container">
-        <script>
-          var isFluid = JSON.parse(localStorage.getItem('isFluid'));
-          if (isFluid) {
-            var container = document.querySelector('[data-layout]');
-            container.classList.remove('container');
-            container.classList.add('container-fluid');
-          }
-        </script>
-        <div class="row flex-center min-vh-100 py-6">
+    <main class="main" id="top" style="background: url('/img/op_login_bg.png') no-repeat center center; background-size: cover; width: 100%; height: 100%; margin: 0 auto;">
+      <div class="container" data-layout="container" style="height: 100%;">
+      <script>
+        var isFluid = JSON.parse(localStorage.getItem('isFluid'));
+        if (isFluid) {
+        var container = document.querySelector('[data-layout]');
+        container.classList.remove('container');
+        container.classList.add('container-fluid');
+        }
+      </script>
+        <div class="row flex-center min-vh-100 py-6" style="height: 100%;">
           <div class="col-sm-10 col-md-8 col-lg-6 col-xl-5 col-xxl-4">
             <div class="card">
               <div class="card-body p-4 p-sm-5">
+                <div class="text-center mb-4">
+                  <img class="d-block mx-auto mb-4" src="/img/logo.png" alt="Logo" style="max-width: 100%; height: auto;" />
+                  <!-- <h3>매출정산 관리시스템</h3> -->
+                </div>
                 <div class="row flex-between-center mb-2">
                   <div class="col-auto">
-                    <h5>Log in</h5>
+                  <h5>Log in</h5>
                   </div>
                 </div>
                 <form id="loginForm" name="loginForm" class="needs-validation" novalidate="">
                   <div class="mb-3">
-                    <input class="form-control" type="text" name="userId" id="userId" placeholder="사용자 아이디" required="" />
-                  </div>
+                  <input class="form-control" type="text" name="userId" id="userId" placeholder="사용자 아이디" required="" /></div>
                   <div class="mb-3">
-                    <input class="form-control" type="password" name="userPwd" id="userPwd" placeholder="비밀번호" required="" />
-                  </div>
+                  <input class="form-control" type="password" name="userPwd" id="userPwd" placeholder="비밀번호" required="" /></div>
                   <div class="row flex-between-center">
                     <div class="col-auto">
                       <div class="form-check mb-0">
@@ -159,7 +161,7 @@
                     <button class="btn btn-primary d-block w-100 mt-3" type="button" name="btnLogin" id="btnLogin">Login</button>
                   </div>
                 </form>
-              </div>
+                </div>
             </div>
           </div>
         </div>
