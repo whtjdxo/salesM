@@ -15,12 +15,12 @@
       $(document).ready(function () {
         function resetPreviewArea() {
           $('#tbl_preview tbody').html('');
-          $('#preview_area').css('display', 'none');
+          $('#fileview_area').css('display', 'none');
         }
         callAjax('/common/totalCodelist', "code_grp_cd=('BOARD_TP')", fn_code_setting);
 
         function fn_code_setting(data) {
-          codeSetting('BOARD_TP', data.data, '#srch_brd_tp,#board_tp', '1', '', '');
+          codeSetting('BOARD_TP', data.data, '#sch_board_tp,#board_tp', '게시구분', '', '');          
         }
 
         tinymce.init({
@@ -28,30 +28,48 @@
           height: '357',
           menubar: false,
         });
-        var table = $('#board').DataTable({
+
+        var tbl_board = $('#tbl_board').DataTable({
           processing: true,
           serverSide: true,
           select: true,
+          responsive: true,
           ajax: {
             url: '/manage/system/board/list',
             contentType: 'application/json',
             dataType: 'JSON',
             type: 'POST',
-            data: function (d) {
-              return JSON.stringify(d);
+            data: function (postData) {
+              formData = $('#frm_sch').serializeObject();
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
             },
-          },
-          columns: [{ data: 'brd_tp_nm' }, { data: 'title' }, { data: 'ent_dttm' }, { data: 'ent_user_id' }, { data: 'view_cnt' }],
-          order: [[3, 'desc']],
+          }, 
+          columns: [             
+            { data: 'brd_tp_nm' },
+            { data: 'title' },
+            { data: 'ent_dttm' },
+            { data: 'ent_user_id' },
+            { data: 'view_cnt' }, 
+          ],
+          columnDefs: [
+            { targets: 0, width: '100px', className: 'text-center' },
+            { targets: 1, width: '200px', className: 'text-center' },
+            { targets: 2, width: '120px', className: 'text-left' },
+            { targets: 3, width: '100px', className: 'text-left' },
+            { targets: 4, width: '90px', className: 'text-center' },            
+          ], 
+          order: [[2, 'desc']],
           paging: true,
           lengthChange: false,
           searching: false,
           ordering: true,
           autoWidth: false,
           responsive: true,
-          scrollCollapse: true,
-          pageLength: 20,
-          scrollY: '550px',
+          scrollCollapse: false,
+          pageLength: 25,
+          scrollY: '610px',
+          info: false, 
           language: {
             emptyTable: '데이터가 없습니다.',
             search: '검색:',
@@ -61,119 +79,291 @@
           },
         });
 
-        $('#board').on('click', 'tr', function () {
+        $('#tbl_board').on('click', 'tr', function () {
            if ($(this).hasClass('selected')) {
               $(this).removeClass('selected');
           } else {
-              table.$('tr.selected').removeClass('selected');              
+              tbl_board.$('tr.selected').removeClass('selected');              
               $(this).addClass('selected');
           } 
 
           $('#frm_board_info').clearForm();
-          var row = table.row(this).data();
+          var row = tbl_board.row(this).data();
           $("input:radio[name='use_yn']").prop('checked', false);
           $("input:radio[name='use_yn'][value='" + row.use_yn + "']").prop('checked', true);
 
           $('#frm_board_info').autoMapping(row);
           tinymce.activeEditor.setContent(row.conts);
+
+          if (row.file_cnt > 0) { 
+            $('#fileview_area').css('display', 'inline');
+            tbl_file.ajax.reload();
+          } else {
+            $('#fileview_area').css('display', 'none');
+          } 
+          
           $('#btn_board_update').show();
           $('#btn_board_create').hide();
         });
 
         $('#btn_board_clear').click(function () {
           $('#frm_board_info').clearForm();
+          $('#fileview_area').css('display', 'none');
 
-          $('input:radio[name=use_yn]').prop('checked', false);
+          // $('input:radio[name=use_yn]').prop('checked', false);
+          $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
 
           tinymce.activeEditor.setContent('');
 
           $('#btn_board_update').hide();
           $('#btn_board_create').show();
+        }); 
+        
+        $('#btn_search').click(function () {
+          $('#frm_board_info').clearForm();
+          tbl_board.ajax.reload(); 
         });
 
-        var forms = document.querySelectorAll('.needs-validation');
-
-        // Loop over them and prevent submission
-        Array.prototype.slice.call(forms).forEach(function (form) {
-          form.addEventListener(
-            'submit',
-            function (event) {
-              if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-                return false;
-              }
-              Swal.fire({
-                title: '저장 하시겠습니까?',
-                showCancelButton: true,
-                icon: 'question',
-                confirmButtonColor: '#DD6B55',
-                confirmButtonText: '예',
-                cancelButtonText: '아니요',
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  if ($('#board_upload').val() == '') {
-                    $('#board_upload').prop('disabled', true);
-                  }
-                  $('#frm_board_info').ajaxForm({
-                    dataType: 'json',
-                    type: 'POST',
-                  });
-
-                  $('#frm_board_info').ajaxSubmit({
-                    success: function (data) {
-                      if (data.resultCode == 'S000') {
-                        $('#frm_board_info').clearForm();
-                        $('#brd_status').val('create');
-                        resetPreviewArea();
-                        $('#tbl_board_list').trigger('reloadGrid');
-                        swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
-                      } else {
-                        swal('실패', '작업수행에 실패하였습니다.', 'error');
-                      }
-                    },
-                    error: function (jqXHR, textStatus, errorThrown) {
-                      swal('실패', '작업수행에 실패하였습니다.', 'error');
-                    },
-                  });
-                } else if (result.isDismissed) {
-                  return false;
-                }
-              });
-            },
-            false
-          );
-        });
         $('#btn_board_create').click(function () {
           $('#brd_status').val('create');
-          $('#frm_board_info').attr('action', '/manage/system/board/boardCreate');
-          $('#frm_board_info').submit();
+          // $('#frm_board_info').attr('action', '/manage/system/board/boardCreate');
+          // $('#frm_board_info').submit();
+          var form = $('#frm_board_info');
+          var checked = true;
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          });
+          if (checked) { 
+            if (!confirm("저장하시겠습니까?")) {              
+              return;
+            }
+            var formData = new FormData($('#frm_board_info')[0]);
+            $.ajax({
+              url: '/manage/system/board/boardCreate',
+              type: 'POST',
+              data: formData,
+              processData: false,
+              contentType: false,
+              success: function (response) {
+                fn_return_board(response);
+              },
+              error: function (xhr, status, error) {
+                Swal.fire('실패', '저장 중 오류가 발생했습니다.', 'error');
+              }
+            }); 
+          }
         });
 
         $('#btn_board_update').click(function () {
           $('#brd_status').val('update');
-          $('#frm_board_info').attr('action', '/manage/system/board/boardUpdate');
-          $('#frm_board_info').submit();
+          var form = $('#frm_board_info');
+          var checked = true;
+          var board_seq = $('#board_seq').val();
+          if(board_seq == '') {
+            swal('실패', "게시글을 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          }
+          $.each(form, function (i, val) {
+            if (!val.checkValidity()) {
+              checked = false;
+            }
+          });
+          if (checked) {
+            swal({
+              title: "수정하시겠습니까?",
+              text: "입력하신 내용으로 저장합니다.",
+              icon: "warning",
+              buttons: true,
+              dangerMode: true,
+            }).then((willSave) => {
+              if (willSave) {
+                var formData = new FormData($('#frm_board_info')[0]);
+                $.ajax({
+                  url: '/manage/system/board/boardUpdate',
+                  type: 'POST',
+                  data: formData,
+                  processData: false,
+                  contentType: false,
+                  success: function (response) {
+                    fn_return_board(response);
+                  },
+                  error: function (xhr, status, error) {
+                    swal('실패', resultMsg, 'error');
+                  }
+                });
+              }
+            });
+            return;
+          }
         });
 
         function fn_return_board(data) {
           var resultCode = data.resultCode;
           var resultMsg = data.resultMsg;
           $('#frm_board_info')[0].reset();
-          editor.html.set('');
-
-          var aca_id = $('#aca_id').val();
-
+          // editor.html.set(''); 
+          tinymce.activeEditor.setContent('');
           if (resultCode == 'S000') {
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
-
-            $('#tbl_board_list').setGridParam({ url: '/manage/system/board/boardMstListRetrieve', page: 1, datatype: 'json' }).trigger('reloadGrid');
+            tbl_board.ajax.reload();
+            // $('#tbl_board').setGridParam({ url: '/manage/system/board/list', page: 1, datatype: 'json' }).trigger('reloadGrid');
           }
+        } 
+        // --------------------------------------------------------------- frm_board_info 정보 처리 ---------------------------------------------------
+        var tbl_file = $('#tbl_file').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true,           
+            ajax: {
+              url: '/manage/system/board/boardFileList',
+              contentType: 'application/json',
+              dataType: 'JSON',
+              type: 'POST',
+              data: function (postData) {
+                formData = $('#frm_board_info').serializeObject();
+                Object.assign(postData, formData);
+                return JSON.stringify(postData);
+              },
+            },
+            columns: [
+                  { data: 'origin_file_nm' }                
+                , {
+                    data: null,
+                    render: function(data, type, row) {
+                      if (row.file_path) {
+                        return '<a href="' + row.file_path + '" download="' + row.origin_file_nm + '" class="btn btn-success btn-xs" style="padding: 0.1rem 0.3rem; font-size: 0.80rem;">다운로드</a>';
+                      }
+                      return '';
+                    }
+                  }
+                , { 
+                    data: null,
+                    render: function(data, type, row) {
+                    return '<button type="button" class="btn btn-danger btn-xs btn-file-delete" data-file-seq="' + row.file_seq + '" style="padding: 0.1rem 0.3rem; font-size: 0.80rem;">삭제</button>';
+                    } 
+                  }
+              ],
+            columnDefs: [
+            { targets: 0, width: '300px', className: 'text-center' },
+            { targets: 1, width: '90px', className: 'text-right' },
+            { targets: 2, width: '90px', className: 'text-center' }, 
+            ],
+            order: [[0, 'desc']],
+            paging: false,
+            lengthChange: false,
+            searching: false,
+            ordering: false,
+            responsive: false,
+            autoWidth: false,
+            scrollX: true ,
+            scrollCollapse: true,
+            // pageLength: 5,
+            scrollY: '100px',
+            info: false,
+            language: {
+              emptyTable: '데이터가 없습니다.',
+              search: '검색:',
+              zeroRecords: '일치하는 데이터가 없습니다.',
+              loadingRecords: '로딩중...',
+              processing: '처리중...',
+            }, 
+        }); 
+
+        $(document).on('click', '.btn-file-delete', function() {
+          var fileSeq = $(this).data('file-seq');
+          var boardSeq = $('#board_seq').val();
+          if (!boardSeq) {
+            swal('경고', '게시글 정보가 없습니다.', 'warning');
+            return;
+          } 
+          Swal.fire({
+            title: '삭제 확인',
+            text: '선택한 파일을 삭제하시겠습니까?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '예',
+            cancelButtonText: '아니오',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              $.ajax({
+                url: '/manage/system/board/deleteFile',
+                type: 'POST',
+                data: {
+                  board_seq: boardSeq,
+                  file_seq: fileSeq
+                },
+                success: function (data) {
+                  Swal.fire('성공', '파일이 삭제되었습니다.', 'success');
+                  tbl_file.ajax.reload();
+                },
+                error: function () {
+                  Swal.fire('오류', '파일 삭제에 실패하였습니다.', 'error');
+                }
+              });
+            }
+          });
+        });
+
+        // $('#tbl_file').on('click', 'tr', function () {
+        //   if ($(this).hasClass('selected')) {
+        //     $(this).removeClass('selected');
+        //   } else {
+        //     tbl_file.$('tr.selected').removeClass('selected');
+        //     $(this).addClass('selected');
+        //   } 
+        // });      
+
+        function fn_file_return_result(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg; 
+          if (resultCode == 'S000') { 
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+            tbl_card.ajax.reload();                 
+          } else {
+            swal('실패', resultMsg, 'error');
+          }
+        } 
+
+        function deleteFile(fileSeq){
+          var boardSeq = $('#board_seq').val();
+          if (!boardSeq) {
+            swal('경고', '게시글 정보가 없습니다.', 'warning');
+            return;
+          }
+
+          swal({
+            title: '삭제 확인',
+            text: '선택한 파일을 삭제하시겠습니까?',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+          }).then((willDelete) => {
+            if (willDelete) {
+              $.ajax({
+                url: '/manage/system/board/file/delete',
+                type: 'POST',
+                data: {
+                  boardSeq: boardSeq,
+                  fileSeq: fileSeq
+                },
+                success: function (data) {
+                  fn_file_return_result(data);
+                },
+                error: function (xhr, status, error) {
+                  swal('오류', '파일 삭제에 실패하였습니다.', 'error');
+                }
+              });
+            }
+          });
         }
 
-        $('#board_upload').change(function (e) {
+        $('#file_upload').change(function (e) {
           var files = e.target.files;
-
           console.log(files.length);
           if (files.length > 0) {
             var uploadFile = $(this);
@@ -192,59 +382,47 @@
 
             var reader = new FileReader();
             reader.readAsDataURL(files[0]);
-
             reader.onloadend = function () {
               if (files.length > 1) {
                 filename = filename + ' 외 ' + (files.length - 1) + '개';
               }
-
               $('#upload_file').val(filename);
             };
           }
-        });
+        }); 
+        
       });
     </script>
   </head>
-  <div class="content">
-    <!-- <div class="card mb-3" style="height: 85px">
-      <div class="bg-holder d-none d-lg-block bg-card"></div>
-      <div class="card-body position-relative">
-        <div class="row">
-          <div class="col-lg-8">
-            <h4>게시판 관리</h4>
-            <nav style="--falcon-breadcrumb-divider: '»'" aria-label="breadcrumb">
-              <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/main">Home</a></li>
-                <li class="breadcrumb-item active" aria-current="page">운영관리</li>
-                <li class="breadcrumb-item active" aria-current="page">시스템</li>
-                <li class="breadcrumb-item active nav-item dropdown dropdown-hover" aria-current="page">
-                  <a class="nav-link dropdown-toggle link-primary d-block" href="#" aria-haspopup="true" data-bs-toggle="dropdown" aria-expanded="false">게시판관리</a>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item link-600 fw-medium" href="#">메뉴관리</a></li>
-                    <li><a class="dropdown-item link-600 fw-medium" href="#">권한관리</a></li>
-                    <li><a class="dropdown-item link-600 fw-medium link-body-emphasis" href="#">게시판관리</a></li>
-                    <li><a class="dropdown-item link-600 fw-medium" href="#">코드관리</a></li>
-                  </ul>
-                </li>
-              </ol>
-            </nav>
-          </div>
-        </div>
-      </div>
-    </div> -->
+  <div class="content">     
     <div class="row g-3 mb-3">
       <div class="col-lg-6">
         <div class="card">
           <div class="card-header">
             <div class="row flex-between-end">
-              <div class="col-auto align-self-center">
-                <h5 class="mb-0">게시글 목록</h5>
-              </div>
+              <div class="col-lg-4 align-self-center">
+                <h4 class="mb-0">게시글 목록</h4>
+              </div>    
+              <div class="col-lg-8">
+                <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate="">
+                  <div class="input-group input-group-sm px-3">                    
+                    <select class="form-select form-control-sm" id="sch_board_tp" name="sch_board_tp" style="width: 75px">
+                      <option value="">게시구분</option>                
+                    </select>
+                    <select class="form-select form-control-sm" id="sch_tp" name="sch_tp" style="width: 75px">
+                      <option value="sch_tp_title">제목</option>                
+                      <option value="sch_tp_conts">내용</option>
+                    </select>
+                    <input type="text" class="form-control form-control-sm" id="sch_tp_val" name="sch_tp_val"  />
+                    <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span>
+                  </div>
+                </form>
+              </div> 
             </div>
           </div>
           <div class="card-body pt-0 px-0" style="padding-top: 0px">
             <div class="table-responsive scrollbar">
-              <table class="table table-striped table-sm fs-9 mb-0" id="board">
+              <table class="table table-striped table-sm fs-9 mb-0" id="tbl_board">
                 <thead>
                   <tr>
                     <th>게시판 구분</th>
@@ -272,68 +450,78 @@
           <div class="card-body">
             <div class="min-vh-50">
               <form class="needs-validation" id="frm_board_info" name="frm_board_info" onsubmit="return false;" method="post" enctype="multipart/form-data" novalidate="">
-                <input type="hidden" id="p_aca_id" name="p_aca_id" value="${session.S_USER.p_aca_id}" />
-                <input type="hidden" id="aca_id" name="aca_id" value="${session.S_USER.aca_id}" />
                 <input type="hidden" id="board_seq" name="board_seq" />
-                <input type="hidden" id="brd_status" name="brd_status" />
-                <div class="row mb-3">
-                  <label class="col-sm-2 col-form-label col-form-label-sm" for="brd_tp">게시 구분</label>
-                  <div class="col-sm-10">
-                    <select class="form-select form-select-sm" id="board_tp" placeholder="" name="board_tp" required>
-                      <option value="">선택</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="row mb-3">
-                  <label class="col-sm-2 col-form-label col-form-label-sm" for="title">제목</label>
-                  <div class="col-sm-10">
-                    <input class="form-control form-control-sm" id="title" type="text" name="title" required />
-                  </div>
-                </div>
-                <div class="row mb-3">
-                  <label class="col-sm-2 col-form-label col-form-label-sm" for="board_upload">파일</label>
-                  <div class="col-sm-10">
-                    <input class="form-control form-control-sm" id="board_upload" type="file" name="board_upload" novalidate multiple="multiple" />
-                  </div>
-                  <a id="board_file_view" style="display: none" target="_blank">
-                    <label class="btn btn-success w-10" style="color: #fff; background-color: #3276b1; border-color: #2c699d; float: left; margin-left: 5px"> <i class="fa fa-file-image-o"></i> 미리보기 </label>
-                  </a>
-                  <div class="form-group" id="preview_area" style="display: none">
-                    <label class="col-md-2 control-label">첨부파일</label>
-                    <div class="col-md-10">
-                      <table class="table table-striped" id="tbl_preview">
-                        <thead>
-                          <th style="width: 10%; text-align: center"></th>
-                          <th style="width: 50%; text-align: center">파일명</th>
-                          <th style="width: 20%; text-align: center">미리보기</th>
-                          <th style="width: 20%; text-align: center">다운로드</th>
-                        </thead>
-                        <tbody></tbody>
-                      </table>
+                <input type="hidden" id="brd_status" name="brd_status" />                
+                <div class="row mb-2">                  
+                  <div class="col-sm-8">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-3 col-form-label col-form-label-sm" for="brd_tp">게시 구분</label>
+                      <div class="col-sm-9">
+                        <select class="form-select form-select-sm" id="board_tp" placeholder="" name="board_tp" required>
+                          <option value="">선택</option>
+                        </select>
+                      </div>   
+                    </div>
+                  </div>                
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-3 col-form-label col-form-label-sm" for="use_yn">사용여부</label>
+                      <div class="col-sm-9">
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" id="use_yn_y" type="radio" name="use_yn" value="Y" required />
+                          <label class="form-check-label" for="use_yn_y">예</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" id="use_yn_n" type="radio" name="use_yn" value="N" required />
+                          <label class="form-check-label" for="use_yn_n">아니요</label>
+                        </div>
+                      </div>     
+                    </div>                    
+                  </div>                  
+                </div>      
+                <div class="row mb-2">  
+                  <div class="col-sm-8">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-3 col-form-label col-form-label-sm" for="title">제목</label>
+                      <div class="col-sm-9">
+                        <input class="form-control form-control-sm" id="title" type="text" name="title" required />
+                      </div>   
                     </div>
                   </div>
-                </div>
-                <div class="mb-3">
-                  <label class="col-form-label col-form-label-sm" for="conts">내용</label>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <input class="form-control form-control-sm bg-light" id="ent_user_id" type="text" name="ent_user_id" readonly  />
+                      <input class="form-control form-control-sm bg-light" id="ent_dttm" type="text" name="ent_dttm" readonly />
+                    </div>
+                  </div>                
+                </div>            
+                <div class="row mb-3">
+                  <!-- <label class="col-form-label col-form-label-sm" for="conts">내용</label> -->
                   <textarea class="tinymce d-none" id="conts" name="conts"></textarea>
                 </div>
+                
                 <div class="row mb-3">
-                  <label class="col-sm-2 col-form-label col-form-label-sm" for="use_yn">사용여부</label>
+                  <label class="col-sm-2 col-form-label col-form-label-sm" for="file_upload">파일</label>
                   <div class="col-sm-10">
-                    <div class="form-check form-check-inline">
-                      <input class="form-check-input" id="use_yn_y" type="radio" name="use_yn" value="Y" required />
-                      <label class="form-check-label" for="use_yn_y">예</label>
+                    <input class="form-control form-control-sm" id="file_upload" type="file" name="file_upload" novalidate multiple="multiple" />
+                    <div class="form-group" id="fileview_area" style="display: none">
+                      <div class="col-md-12">
+                        <table class="table table-striped table-sm fs-9 mb-0" id="tbl_file">
+                          <thead>
+                            <th style="width: 300px; text-align: center">파일명</th>
+                            <th style="width: 90px; text-align: center">다운로드</th>
+                            <th style="width: 90px; text-align: center">삭제</th>
+                          </thead>
+                          <tbody></tbody>
+                        </table>
+                      </div>
                     </div>
-                    <div class="form-check form-check-inline">
-                      <input class="form-check-input" id="use_yn_n" type="radio" name="use_yn" value="N" required />
-                      <label class="form-check-label" for="use_yn_n">아니요</label>
-                    </div>
-                  </div>
+                  </div>                  
                 </div>
                 <p class="text-end pb-0 mb-0 pd-0">
-                  <button class="btn btn-info text-end" id="btn_board_clear"><i class="fa fa-check"></i>신규</button>
-                  <button class="btn btn-primary text-end" id="btn_board_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
-                  <button class="btn btn-primary text-end" id="btn_board_create"><i class="fa fa-paste"></i>저장</button>
+                  <button type="button" "btn btn-info text-end" id="btn_board_clear"><i class="fa fa-check"></i>신규</button>
+                  <button type="button" "btn btn-primary text-end" id="btn_board_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                  <button type="button" "btn btn-primary text-end" id="btn_board_create"><i class="fa fa-paste"></i>저장</button>
                 </p>
               </form>
             </div>

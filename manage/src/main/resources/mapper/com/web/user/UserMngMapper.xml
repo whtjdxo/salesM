@@ -66,8 +66,8 @@
 
     <select id="getUserIdDupChk" parameterType="java.util.HashMap" resultType="int">
 	SELECT  COUNT(1)
-          FROM  tb_user
-         WHERE  user_id = #{user_id}
+          FROM  TB_USER
+         WHERE  USER_ID = #{user_id}
 	</select>    
 
     <insert id="userCreate" parameterType="com.web.manage.user.domain.UserVO">

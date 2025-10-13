@@ -93,16 +93,17 @@ public class UserMngController {
 		return list;
     }
 
-    @RequestMapping(value = "/getUserIdDupChk", method = RequestMethod.POST)
-    public @ResponseBody ReturnDataVO UserIdDupChk(@RequestBody String user_id) {
+    @RequestMapping(value = "/getUserIdDupChk", method = RequestMethod.POST)    
+    public @ResponseBody ReturnDataVO UserIdDupChk(@RequestParam("user_id") String user_id) {
+        // System.out.println("Checking duplicate USER ID: " + user_id); 
         ReturnDataVO result = new ReturnDataVO();
         try {
             if (userMngService.getUserIdDupChk(user_id) == 0) {
                 result.setResultCode("S000");
-                result.setResultMsg("Available USER ID.");
+                result.setResultMsg("사용가능 한 ID 입니다.");
             } else {
                 result.setResultCode("F000");
-                result.setResultMsg("Duplicate USER ID.");
+                result.setResultMsg("사용중인 ID 입니다.");
             }
         } catch (Exception e) {
             result.setResultCode("F000");

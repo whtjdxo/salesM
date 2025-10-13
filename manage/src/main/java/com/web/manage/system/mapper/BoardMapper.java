@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.web.manage.system.domain.BoardVO;
+import com.web.manage.system.domain.BoardFileVO;
 
 import jakarta.validation.Valid;
 
@@ -17,9 +18,9 @@ public interface BoardMapper {
 	
 	int getParentTotalCnt(String aca_id);
 	
-	List<HashMap<String, Object>> boardMstListRetrieve(HashMap<String, Object> hashmapParam);
+	List<HashMap<String, Object>> getBoardList(HashMap<String, Object> hashmapParam);
 	
-	List<HashMap<String, Object>> getSelectBoardFileList(HashMap<String, Object> hashmapParam);
+	List<HashMap<String, Object>> getBoardFileList(HashMap<String, Object> hashmapParam);
 	
 	String createBoardSeq();
 	
@@ -28,7 +29,9 @@ public interface BoardMapper {
 	int generateFileSeq();
 	
 	int insertBoardFileInfo(BoardVO vo);
-	
+
+	int deleteBoardFile(BoardFileVO vo);
+
 	int boardCreate(@Valid BoardVO boardVO);
 
 	int boardUpdate(@Valid BoardVO boardVO);

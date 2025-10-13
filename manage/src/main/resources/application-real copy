@@ -6,7 +6,7 @@ spring.datasource.url=jdbc:log4jdbc:mysql://172.30.1.39:3306/db_salesm?jdbcCompl
 spring.datasource.username=salesm
 spring.datasource.password=aocnfwjdtks@2025
 
-server.port=8080
+server.port=9110
 
 server.servlet.session.timeout = 7200
 spring.servlet.multipart.enabled=true

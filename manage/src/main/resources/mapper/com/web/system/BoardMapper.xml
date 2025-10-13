@@ -5,43 +5,36 @@
 	<select id="getQueryTotalCnt" resultType="int">
 		SELECT FOUND_ROWS()
 	</select>
-
-	<select id="getParentTotalCnt" parameterType="string" resultType="int">
-		SELECT COUNT(1)
-		FROM tlb_user
-		WHERE USER_GB_CD = '03'
-		AND aca_id = #{aca_id}
-	</select>
-
-	<select id="boardMstListRetrieve" parameterType="hashMap" resultType="hashMap">
-		SELECT SQL_CALC_FOUND_ROWS
-			   tb.board_seq
-			 , tb.board_tp
-			 , GET_CODE_NM('BOARD_TP', BOARD_TP) as brd_tp_nm
-			 , tb.view_corp 
-			 , tb.title 
-			 , tb.conts 
-			 , tb.use_yn 
-			 , tb.popup_yn 
-			 , IFNULL(tb.view_cnt, 0) as view_cnt
-			 , DATE_FORMAT(tb.ent_dttm, '%Y-%m-%d') as ent_dttm
-			 , tb.ent_user_id as ent_user_id
-			 , DATE_FORMAT(tb.upt_dttm, '%Y-%m-%d') as upt_dttm
-			 , tb.upt_user_id as upt_user_id			 
-		FROM 	
-			tb_board tb
-	
-		WHERE 1 = 1
+ 
+	<select id="getBoardList" parameterType="hashMap" resultType="hashMap">
+		SELECT 	SQL_CALC_FOUND_ROWS
+				tb.board_seq
+				, tb.board_tp
+				, GET_CODE_NM('BOARD_TP', BOARD_TP) as brd_tp_nm
+				, tb.view_corp 
+				, tb.title 
+				, tb.conts 
+				, tb.use_yn 
+				, tb.popup_yn 
+				, IFNULL(tb.view_cnt, 0) as view_cnt
+				, DATE_FORMAT(tb.ent_dttm, '%Y-%m-%d') as ent_dttm
+				, tb.ent_user_id as ent_user_id
+				, DATE_FORMAT(tb.upt_dttm, '%Y-%m-%d') as upt_dttm
+				, tb.upt_user_id as upt_user_id
+				, (SELECT COUNT(1) FROM TB_BOARD_FILE WHERE BOARD_SEQ = tb.board_seq) as file_cnt
+		FROM 	TB_BOARD tb
+		WHERE 	1 = 1
 		 
-		<if test="srch_brd_tp != '' and srch_brd_tp != null">
-			AND tb.board_tp = #{srch_brd_tp}
+		<if test="sch_board_tp != '' and sch_board_tp != null">
+			AND tb.board_tp = #{sch_board_tp}
 		</if>
-		<if test="srch_tp != ''">
-			<if test="srch_tp == '01'">
-				AND tb.title LIKE CONCAT('%',#{srch_tp_inp},'%')
+		
+		<if test="sch_tp != ''">
+			<if test="sch_tp == '01'">
+				AND tb.title LIKE CONCAT('%',#{sch_tp_val},'%')
 			</if>
-			<if test="srch_tp == '02'">
-				AND tb.conts LIKE CONCAT('%',#{srch_tp_inp},'%')
+			<if test="sch_tp == '02'">
+				AND tb.conts LIKE CONCAT('%',#{sch_tp_val},'%')
 			</if>
 		</if>
 		<choose>
@@ -52,21 +45,27 @@
 				ORDER BY tb.ent_dttm DESC
 			</otherwise>
 		</choose>
-		LIMIT ${start}, ${end}
+		<!-- LIMIT ${start}, ${end} -->
 	</select>
 	
-	<select id="getSelectBoardFileList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	<select id="getBoardFileList" resultType="java.util.HashMap">
 	/* BoardMapper.getSelectBoardFileList */
-		SELECT
-			BOARD_SEQ AS board_seq
-			, FILE_NM AS file_nm
-			, ALL_FILE_NM AS all_file_nm
-			, FILE_SEQ AS file_seq
-			, FILE_PATH AS file_path
-		FROM
-			TB_BOARD_FILE
-		WHERE
-			BOARD_SEQ = ${brd_seq}	
+		SELECT 	BOARD_SEQ 			AS board_seq
+				, FILE_SEQ 			AS file_seq		
+				, FILE_NM 			AS file_nm
+				, ORIGIN_FILE_NM 	AS origin_file_nm				
+				, FILE_PATH 		AS file_path
+		FROM 	TB_BOARD_FILE
+		WHERE 	1= 1
+		<choose>
+			<when test="board_seq != '' and board_seq != null ">
+				AND BOARD_SEQ = #{board_seq}
+			</when>
+			<otherwise>
+				AND BOARD_SEQ = 'x'
+			</otherwise>
+		</choose>		
+		ORDER 	BY FILE_SEQ
 	</select>
 	
 	<select id="createBoardSeq" resultType="java.lang.String">
@@ -76,41 +75,30 @@
 	
 	<select id="getChkFileSeq" parameterType="com.web.manage.system.domain.BoardVO" resultType="java.lang.Integer">
 	/* BoardMapper.getChkFileSeq */
-		SELECT IF(COUNT(1), 0, 1) FROM TB_BOARD_FILE WHERE BOARD_SEQ = ${brd_seq}
+		SELECT 	IFNULL(COUNT(1), 0) + 1 AS FSEQ
+		  FROM 	TB_BOARD_FILE 
+		 WHERE 	BOARD_SEQ = #{board_seq}
 	</select>
 	
 	<select id="generateFileSeq" resultType="java.lang.Integer">
 	/* BoardMapper.generateFileSeq */
-		SELECT GET_JOB_SEQ('TB_BOARD_FILE')
+		SELECT GET_JOB_SEQ('TB_BOARD_FILE', 'FILE_SEQ')
 	</select>
 	
 	<insert id="insertBoardFileInfo" parameterType="com.web.manage.system.domain.BoardVO">
 	/* BoardMapper.insertBoardFileInfo */
-		INSERT INTO TB_BOARD_FILE
-		(
-			BOARD_SEQ
-			, FILE_SEQ
-			, FILE_NM
-			, ALL_FILE_NM
-			, FILE_PATH
-		)
-		SELECT
-			${board_seq}
-			, ${file_seq}
-			, #{file_name}
-			, #{origin_file_name}
-			, #{file_path}
-		FROM DUAL
-		ON DUPLICATE KEY UPDATE 
-			FILE_NM = #{file_name}
-			, ALL_FILE_NM = #{origin_file_name}
-			, FILE_PATH = #{file_path}
+		INSERT 	INTO TB_BOARD_FILE (
+				BOARD_SEQ		, FILE_SEQ			, FILE_NM		, ORIGIN_FILE_NM		, FILE_PATH
+		) VALUES (	
+				#{board_seq}	, #{file_seq}		, #{file_nm}	, #{origin_file_nm}		, #{file_path}
+		) 
 	</insert>
 
 	<insert id="boardCreate" parameterType="com.web.manage.system.domain.BoardVO">
 		INSERT INTO tb_board
 		(
-			BOARD_SEQ		, board_tp
+			BOARD_SEQ		
+			, board_tp
 			<if test='view_corp != null and view_corp != ""'>
 			, view_corp
 			</if>
@@ -146,7 +134,14 @@
 			, upt_dttm = NOW()
 			, upt_user_id = #{user_id}
 		WHERE
-			board_seq = ${board_seq}
+			board_seq = #{board_seq}
 	</update>
+	
+	<delete id="deleteBoardFile" parameterType="com.web.manage.system.domain.BoardFileVO">
+		DELETE 
+		  FROM TB_BOARD_FILE
+		 WHERE BOARD_SEQ 	= #{board_seq}
+		   AND FILE_SEQ  	= #{file_seq}
+	</delete>
 
 </mapper>
