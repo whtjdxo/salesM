@@ -60,8 +60,9 @@ public class CodeController implements Serializable{
     	HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
 		try {
 			PageingVO pageing = new PageingVO();
-			pageing.setPageingVO(hashmapParam);
-			if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+            pageing.setPageingVO(hashmapParam);  
+
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
                 int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
                 hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
                 hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
@@ -71,9 +72,20 @@ public class CodeController implements Serializable{
             } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
+            int records = 0;			 
 
 			resultList =  mapper.getGroupCodeRetrieve(hashmapParam);
-			hashmapResult.put("data", resultList);
+			records = mapper.getQueryTotalCnt();
+
+			pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", resultList);
+
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -4,6 +4,10 @@
     <select id="getQueryTotalCnt" resultType="int">
 		SELECT FOUND_ROWS()
 	</select> 
+
+	<select id="getNewChainDepositNo" resultType="String">
+		SELECT FOUND_ROWS()
+	</select> 
 	
     <select id="getDepositSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
         SELECT 	SQL_CALC_FOUND_ROWS
@@ -589,6 +593,86 @@
 			</otherwise>
 		</choose>                 
 	</select>
+
+	
+	<select id="getChainMnulDepositList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	SQL_CALC_FOUND_ROWS
+		   		DL.DEPOSIT_NO							AS deposit_no
+				, DL.CHAIN_NO							AS chain_no
+				, DL.GUBUN								AS gubun
+				, CONCAT(BANK_IN_DATE, ' ', DL.BANK_IN_TM)  AS bank_in_dttm
+				, DL.BANK_IN_DATE 						AS bank_in_date
+				, DL.BANK_IN_TM							AS bank_in_tm				
+				, DL.CARD_ACQ 							AS send_corp 
+				, GET_CODE_NM('CARD_ACQ', DL.CARD_ACQ) 	AS send_corp_nm
+				, DL.BANK_CD							AS bank_cd
+				, GET_CODE_NM('BANK_CD', DL.BANK_CD)	AS bank_cd_nm	
+				, DL.IN_AMT								AS in_amt
+				, DL.ADJUST_YN 							AS adjust_yn
+-- 				, DL.ENT_USER_ID						AS ent_user_id
+		  FROM 	TB_CHAIN_DEPOSIT_LIST DL
+			   	JOIN TB_CHAIN TC ON TC.CHAIN_NO = DL.CHAIN_NO 				   	
+		 WHERE	DL.GUBUN = 'MNUL'
+		   AND	DL.BANK_IN_DATE	= #{sch_date} 
+		   AND  DL.CHAIN_NO 	= #{sch_chain_no}
+		   AND	DL.IN_AMT > 0
+		<choose>
+			<when test="sidx != '' and sidx != null ">
+				ORDER BY ${sidx} ${sord}
+			</when>
+			<otherwise>
+				ORDER BY 1
+			</otherwise>
+		</choose>                 
+	</select>
+
+	<select id="getChainDepoInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT  CORP_CD, ABANK_CD, ABANK_ACCOUNT_NO  
+		  FROM TB_CHAIN TC
+		 WHERE  TC.CHAIN_NO 	= #{chain_no}		
+	</select>
+
+	<insert id="insertMnulChainDeposit" parameterType="com.web.manage.deposit.domain.DepositVO">
+        INSERT INTO TB_CHAIN_DEPOSIT_LIST (
+            DEPOSIT_NO		, CHAIN_NO		, BANK_CD			, BANK_IN_DATE		, BANK_IN_TM
+			, CARD_ACQ		, IN_AMT		, OUT_AMT			, REMAIN_AMT		, BANK_IN_REAL_DATE
+			, ADJUST_YN		, GUBUN			, ENT_USER_ID		, ENT_DTTM
+        ) VALUES (
+            #{deposit_no}	, #{chain_no} 	, #{bank_cd} 		, DATE_FORMAT(NOW(), '%Y-%m-%d')	, DATE_FORMAT(NOW(), '%H:%i:%s') 
+			, #{card_acq} 	, #{in_amt} 	, 0 				, #{remain_amt} 	, #{bank_in_real_date}
+			,'N'  			, #{gubun}		, #{ent_user_id}	, NOW()
+        ) 
+    </insert>
+
+	<insert id="insertMnulCreitDeposit" parameterType="java.util.HashMap">
+        INSERT INTO TB_CREDIT_DEPOSIT_LIST (
+            DEPOSIT_NO			, CORP_CD			, BANK_IN_DATE		, BANK_IN_TM	
+			, IO_GB				, IN_AMT			, TRANS_CODE		, TRANS_COMP	
+			, UPLOAD_GUBUN		, BK_DIV			, ENT_DTTM			, ENT_USER_ID
+        ) VALUES (
+            GET_JOB_SEQ('TB_CREDIT_DEPOSIT_LIST', 'DEPOSIT_NO') 
+			, #{corp_cd} 		, DATE_FORMAT(NOW(), '%Y-%m-%d')		, DATE_FORMAT(NOW(), '%H:%i:%s')
+			, 'I'				, #{in_amt} 		, '0000'			, #{chain_no}	
+			, 'MNUL'			, #{chain_deposit_no}					, NOW()				, #{ent_user_id}
+		)
+    </insert>
+
+	<delete id="deleteMnulChainDeposit" parameterType="java.util.HashMap">
+        DELETE FROM TB_CHAIN_DEPOSIT_LIST
+		 WHERE  BANK_IN_DATE	= #{bank_in_date} 
+		   AND  CHAIN_NO 		= #{chain_no} 
+		   AND  GUBUN			= 'MNUL'
+		   AND 	ADJUST_YN 		= 'N'
+		   AND  DEPOSIT_NO		= #{deposit_no}
+    </delete>
+
+	<delete id="deletetMnulCreitDeposit" parameterType="java.util.HashMap">
+        DELETE TB_CREDIT_DEPOSIT_LIST 
+		 WHERE  BANK_IN_DATE	= #{bank_in_date} 
+		   AND  TRANS_COMP 		= #{chain_no} 
+		   AND  UPLOAD_GUBUN	= 'MNUL' 
+		   AND  BK_DIV			= #(chain_deposit_no}
+    </delete>
 
 	<select id="getChainDepositTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
 		SELECT 	IFNULL(SUM(DL.IN_AMT), 0) 	AS in_amt

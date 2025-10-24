@@ -24,6 +24,10 @@ public interface DepositMapper {
     List<HashMap<String, Object>> getDepoAdjustSummary(HashMap<String, Object> hashmapParam);
     HashMap<String, Object> getDepoAdjustSummTotal(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getChainDepositList(HashMap<String, Object> hashmapParam);
+    List<HashMap<String, Object>> getChainMnulDepositList(HashMap<String, Object> hashmapParam);
+
+    String getNewChainDepositNo();   
+    String getNewCreditDepositNo();   
     HashMap<String, Object> getChainDepositTotal(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getCreditDepositList(HashMap<String, Object> hashmapParam);
     HashMap<String, Object> getCreditDepositTotal(HashMap<String, Object> hashmapParam);

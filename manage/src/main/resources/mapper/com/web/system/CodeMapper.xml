@@ -6,14 +6,14 @@
 		SELECT FOUND_ROWS()
 	</select>
 	<select id="getGroupCodeRetrieve" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-		SELECT code_grp_cd                       AS "code_grp_cd"
-			 , code_grp_nm                       AS "code_grp_nm"
-			 , TRIM(use_yn)                      AS "use_yn"
+		SELECT CODE_GRP_CD                       AS code_grp_cd
+			 , CODE_GRP_NM                       AS code_grp_nm
+			 , TRIM(use_yn)                      AS use_yn
 			 , CASE use_yn WHEN 'Y' THEN '사용'
 						   WHEN 'N' THEN '미사용'
-			   ELSE NULL END                     AS "use_yn_nm"
-		FROM tb_code
-		WHERE code = 'CODE'
+			   ELSE NULL END                     AS use_yn_nm
+		FROM  TB_CODE
+		WHERE CODE = 'CODE'
 		<if test="srch_gr_tp != ''">
 			<if test="srch_gr_tp == 'srch_gr_code'">
 				AND code_grp_cd LIKE CONCAT('%',#{srch_gr_val},'%')
@@ -33,6 +33,7 @@
 				ORDER BY ord_no DESC
 			</otherwise>
 		</choose>
+		LIMIT  ${start}, ${end}
 	</select>
 
 	<select id="getLowerCodeRetrieve" parameterType="java.util.HashMap" resultType="java.util.HashMap">
@@ -86,6 +87,7 @@
 				ORDER BY ord_no ASC
 			</otherwise>
 		</choose>
+		LIMIT  ${start}, ${end}
 	</select>
 
 	<insert id="groupCodeCreate" parameterType="com.web.manage.system.domain.GroupCodeVO">

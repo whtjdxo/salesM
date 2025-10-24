@@ -109,6 +109,10 @@ public class DepositService {
         return depositMapper.getChainDepositList(hashmapParam);
     }
 
+    public List<HashMap<String, Object>> getChainMnulDepositList(HashMap<String, Object> hashmapParam) {
+        return depositMapper.getChainMnulDepositList(hashmapParam);
+    }
+
     public HashMap<String, Object> getChainDepositTotal(HashMap<String, Object> hashmapParam) {
         return depositMapper.getChainDepositTotal(hashmapParam);
     }

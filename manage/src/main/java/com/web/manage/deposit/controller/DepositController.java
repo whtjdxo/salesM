@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.web.manage.deposit.domain.DepositVO;
+import com.web.manage.deposit.domain.ExceedMstVO;
 import com.web.manage.deposit.domain.ProcDepositVO;
 import com.web.manage.deposit.service.DepositService;
 
@@ -278,6 +281,82 @@ public class DepositController {
 
         return jString;  
     }
+
+    @RequestMapping(value = "depoMng/mnulDepositList", method = RequestMethod.POST)
+    public @ResponseBody String mnulDepositList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> totalSumm = new HashMap<String, Object>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        // System.out.println(" ................... getChainDepositList ");
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);  
+
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+            int records = 0;
+
+            
+            list = depositService.getChainMnulDepositList(hashmapParam);
+            records = depositService.getQueryTotalCnt();
+            totalSumm = depositService.getChainDepositTotal(hashmapParam);
+            
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+            hashmapResult.put("totalSumm", totalSumm); 
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    }
+
+
+    // @RequestMapping(value = "depoMng/insertMnulDeposit", method = RequestMethod.POST)    
+    // public @ResponseBody ReturnDataVO insertMnulDeposit(@ModelAttribute("DepositVO") @Valid DepositVO depositVo, BindingResult bindingResult, HttpSession session) {
+    //     ReturnDataVO result = new ReturnDataVO(); 
+    //     try {            
+    //         SessionVO member = (SessionVO) session.getAttribute("S_USER");
+    // 	    depositVo.setEnt_user_id(member.getUserId());
+
+    //         // depositVo.setDeposit_no(depositService.getnew("DEPOSIT_NO_SEQ"));
+
+    //         if (depositService.insertMnulDeposit(depositVo)) {
+    //             System.out.println("Exceed Amt Create success");
+    //             result.setResultCode("S000");
+    //             result.setResultMsg("Exceed Amt creation successful.");
+    //         } else {
+    //             System.out.println("Exceed Amt fail");
+    //             result.setResultCode("F000");
+    //             result.setResultMsg("Exceed Amt creation Failed");
+    //         }
+    //     } catch (Exception e) {
+    //         result.setResultCode("F000");
+    //         result.setResultMsg("Exceed Amt creation Failed");
+    //         e.printStackTrace();
+    //     }
+    //     return result;
+    // }
 
     @RequestMapping(value = "depoMng/depoResvExcel", method = RequestMethod.POST)
     public ResponseEntity<byte[]> getDepoResvExcel(@RequestBody HashMap<String, Object> hashmapParam) {
