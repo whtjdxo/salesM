@@ -6,7 +6,9 @@
 		SELECT FOUND_ROWS()
 	</select>
 	<select id="getGroupCodeRetrieve" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-		SELECT CODE_GRP_CD                       AS code_grp_cd
+		/*CodeMapper.getGroupCodeRetrieve*/
+		SELECT SQL_CALC_FOUND_ROWS
+				CODE_GRP_CD                       AS code_grp_cd
 			 , CODE_GRP_NM                       AS code_grp_nm
 			 , TRIM(use_yn)                      AS use_yn
 			 , CASE use_yn WHEN 'Y' THEN '사용'
@@ -37,28 +39,35 @@
 	</select>
 
 	<select id="getLowerCodeRetrieve" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-		SELECT SQL_CALC_FOUND_ROWS
-			   code                                      AS "code"
-			 , code_grp_cd                               AS "code_grp_cd"
-			 , code_grp_nm                               AS "code_grp_nm"
-			 , code_nm                                   AS "code_nm"
-			 , ord_no                                    AS "ord_no"
-			 , TRIM(view_yn)                             AS "view_yn"
-			 , CASE view_yn WHEN 'Y' THEN '노출'
-							WHEN 'N' THEN '비노출'
-			   ELSE NULL END                             AS "view_yn_nm"
-			 , TRIM(use_yn)                              AS "use_yn"
-			 , CASE use_yn WHEN 'Y' THEN '사용'
-						   WHEN 'N' THEN '미사용'
-			   ELSE NULL END                             AS "use_yn_nm"
-			 , DATE_FORMAT(ent_dttm, '%Y-%m-%m %H:%i:%s')AS "ent_dttm"
-			 , DATE_FORMAT(upt_dttm, '%Y-%m-%m %H:%i:%s')AS "upt_dttm"
-			 , upt_user_id                               AS "upt_user_id"
-			 , rmks                                      AS "rmks"
-			 , chk_cd1									 AS "chk_cd1"
-			 , chk_cd2									 AS "chk_cd2"
-		  FROM tb_code
-		 WHERE 1 =1
+		/*CodeMapper.getLowerCodeRetrieve*/
+		SELECT 	SQL_CALC_FOUND_ROWS
+				TC.CODE                                      		AS "code"
+				, TC.CODE_NM                                   		AS "code_nm"
+				, GC.GRP_CD                               			AS "code_grp_cd"
+				, GC.GRP_NM                               			AS "code_grp_nm"
+				, IFNULL(TC.ORD_NO, 1)                         		AS "ord_no"
+				, TRIM(TC.VIEW_YN)                             		AS "view_yn"
+				, CASE TC.VIEW_YN WHEN 'Y' THEN '노출'
+						WHEN 'N' THEN '비노출'
+					ELSE NULL END                             		AS "view_yn_nm"
+				, TRIM(TC.USE_YN)                              		AS "use_yn"
+				, CASE TC.USE_YN WHEN 'Y' THEN '사용'
+								WHEN 'N' THEN '미사용'
+					ELSE NULL END                             		AS "use_yn_nm"
+				, DATE_FORMAT(TC.ENT_DTTM, '%Y-%m-%m %H:%i:%s')    	AS "ent_dttm"
+				, DATE_FORMAT(TC.UPT_DTTM, '%Y-%m-%m %H:%i:%s')    	AS "upt_dttm"
+				, IFNULL(TC.UPT_USER_ID, ENT_USER_ID)              	AS "upt_user_id"
+				, TC.RMKS                                          	AS "rmks"
+				, TC.CHK_CD1                                       	AS "chk_cd1"
+				, TC.CHK_CD2                                       	AS "chk_cd2"
+		FROM    TB_CODE TC
+				JOIN (
+					SELECT 	CODE_GRP_CD GRP_CD
+							, CODE_NM GRP_NM
+						FROM 	TB_CODE 
+						WHERE 	CODE = 'CODE'
+				) GC ON GC.GRP_CD = TC.CODE_GRP_CD
+		WHERE 1 =1
 		 <choose >
 		 	<when test="srch_clas_code != ''">
 				AND code_grp_cd = #{srch_clas_code}
@@ -86,8 +95,7 @@
 			<otherwise>
 				ORDER BY ord_no ASC
 			</otherwise>
-		</choose>
-		LIMIT  ${start}, ${end}
+		</choose>		
 	</select>
 
 	<insert id="groupCodeCreate" parameterType="com.web.manage.system.domain.GroupCodeVO">
