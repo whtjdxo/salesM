@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.web.manage.deposit.domain.DepositExcelRowDataVO;
 import com.web.manage.deposit.domain.ProcDepositVO;
+import com.web.manage.deposit.domain.ProcTransDepositVO;
 
 @Mapper
 public interface DepositMapper {
@@ -35,4 +37,9 @@ public interface DepositMapper {
     List<HashMap<String, Object>> getDepoAdjustList(HashMap<String, Object> hashmapParam);
 
     void callProcDepoAdjustCancel(ProcDepositVO procVo);
+
+    String getCorpAccountNo(String corpCd);
+
+    boolean excelUploadBankData(DepositExcelRowDataVO excelRowdataVo);
+    void callProcTransDepositBatch(ProcTransDepositVO procTransDepositVo);
 }

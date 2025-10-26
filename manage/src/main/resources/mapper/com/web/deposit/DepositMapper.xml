@@ -724,16 +724,54 @@
 		   AND	DL.IN_AMT > 0
 	</select>
 
+	<select id="getCorpAccoutnNo" parameterType="String" resultType="String">	
+		SELECT  ACCOUNT_NO
+		  FROM 	(
+					SELECT  ABANK_ACCOUNT 	AS ACCOUNT_NO
+					FROM 	TB_CHAIN
+					WHERE 	CHAIN_NO = #{corpCd}
+					UNION 	ALL  
+					SELECT 	ACCOUNT_NO 
+					FROM 	TB_CORP
+					WHERE 	CORP_CD = #{corpCd}
+		  		) VT
+		LIMTI	1				
+	</select>
+
 	<update id="callProcDepoAdjustCancel" parameterType="com.web.manage.deposit.domain.ProcDepositVO" statementType="CALLABLE">
 		{ 
-				CALL PRC_DEPOSIT_ADJUST_CANCEL(
-						#{adjustDate, mode=IN, jdbcType=VARCHAR} 
-						, #{chainNo, mode=IN, jdbcType=VARCHAR}
-						, #{cardAcq, mode=IN, jdbcType=VARCHAR}
-						, #{userId, mode=IN, jdbcType=VARCHAR}
-						, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-						, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
-				) 
+			CALL PRC_DEPOSIT_ADJUST_CANCEL(
+				#{adjustDate, mode=IN, jdbcType=VARCHAR} 
+				, #{chainNo, mode=IN, jdbcType=VARCHAR}
+				, #{cardAcq, mode=IN, jdbcType=VARCHAR}
+				, #{userId, mode=IN, jdbcType=VARCHAR}
+				, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+				, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+			) 
+		}
+	</update>
+
+	<insert id="excelUploadBankData" parameterType="com.web.manage.deposit.domain.DepositExcelRowDataVO">
+			INSERT INTO TB_SCRAP_BANK_DATA
+			(
+				CHAIN_NO		, BANK_CD		, ACCOUNT_NO	, TRADE_DTTM		, TRADE_GB	
+				, REMARK		, OUT_AMT		, IN_AMT		, REMAIN_AMT		, CENTER_NM
+				, STATUS 		, ENT_DTTM		, INSERT_GB
+			) VALUES (
+				#{corpCd}		, #{bankCd}		, #{accountNo}	, #{tradeDttm}		, #{tradeGb}				 
+				, #{remark}		, #{outAmt}		, #{inAmt}		, #{remainAmt}		, #{centerNm}
+				, 'S'			, NOW()			, 'EXCEL'
+			)
+	</insert> 
+
+	<update id="callProcTransDepositBatch" parameterType="com.web.manage.deposit.domain.ProcTransDepositVO" statementType="CALLABLE">
+		{ 
+			CALL PRC_SCRAP_TRANS_BANK_DEPOSIT(
+					#{chainNo, mode=IN, jdbcType=VARCHAR}
+				, #{userId, mode=IN, jdbcType=VARCHAR}
+				, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+				, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+			) 
 		}
 	</update>
 

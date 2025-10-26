@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+<head>
+  <title>전문 관리</title>
+  <script src="/vendors/tinymce/tinymce.min.js"></script>
+  <script src="/vendors/datatables.net/dataTables.min.js"></script>
+  <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+  <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+  <script src="/vendors/dropzone/dropzone-min.js"></script>
+  <script src="/js/jquery.form.js"></script>
+
+  <!-- ✅ XLSX (SheetJS) 추가 -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />    
+  <link rel="stylesheet" href="/css/custom-salesm.css" />
+
+    <script th:inline="none">      
+      $(document).ready(function () {
+
+        $('#btn_upload').hide(); // 초기에는 업로드 버튼 숨김 
+
+        callAjax('/common/getChainList', "", fn_chain_list_setting);
+        function fn_chain_list_setting(data) {
+          codeSetting('CHAIN_NO', data.data, '#corp_cd', '1', '', '');
+        }
+        function fn_corp_list_setting(data) {
+          codeSetting('CORP_CD', data.data, '#corp_cd', '1', '', '');
+        }
+        
+        $('#corp_type').change(function() {
+          var corpType = $('#corp_type').val();
+          if (corpType === '') {
+            alert('구분을 선택해주세요.');
+            return false;
+          } else if (corpType === 'CH') {
+            callAjax('/common/getChainList', "", fn_chain_list_setting);
+          } else if (corpType === 'LN') {
+            callAjax('/common/getCreditCorpList', { 'corp_type': corpType }, fn_corp_list_setting);
+          }          
+        }); 
+
+        // DataTable 초기화
+        $('#tbl_upload_data').DataTable({
+            "paging": false,
+            "searching": false,
+            "info": false,
+            "ordering": false,
+            "scrollY": "600px",
+            "scrollCollapse": true,
+            "language": {
+                "emptyTable": "데이터가 없습니다."
+            }
+        });        
+        
+        // Clear file input when clicked
+        $('#excel_file').on('click', function() {
+            $(this).val('');
+            $('#listBody').empty();
+            $('#btn_upload').hide();
+        });
+        $('#excel_file').on('change', function() {
+            const fileInput = $(this)[0];
+            const fileName = fileInput.files[0] ? fileInput.files[0].name : '';
+            console.log('Selected file:', fileName);
+            const file = fileInput.files[0]; 
+            
+            if (fileName) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+
+                displayData(jsonData);
+                };
+                reader.readAsArrayBuffer(file);  
+                
+            } else {
+                alert('파일 선택이 취소되었습니다.');
+            }
+        });
+
+        function displayData(data) {
+            const tbody = document.getElementById('listBody');
+            var   uploadChk = true;
+            tbody.innerHTML = '';
+            var   dataRow = $('#data_row').val() ? parseInt($('#data_row').val())  : 2; // 기본값 3번째 줄 (인덱스 2)
+
+            // 헤더 제외하고 데이터 처리
+            for (let i = dataRow; i < data.length; i++) {
+                const row = data[i];
+                if (row.length > 0 && row[4] >= '0') {
+                    // 데이터 유효성 검사 및 처리
+                    var checkResult = validateRow(row);
+                    const tr = document.createElement('tr');
+                    if (checkResult !== '정상') {
+                        tr.style.backgroundColor = '#f8f9fa';
+                        uploadChk = false;
+                    }
+                    tr.innerHTML = `
+                        <td>${row[0].replace('.','-').replace('.','-') || ''}</td>
+                        <td>${row[1] || ''}</td>
+                        <td>${row[2] || ''}</td>
+                        <td>${row[3] || ''}</td>
+                        <td>${row[4] || ''}</td>
+                        <td>${row[5] || ''}</td>
+                        <td>${row[6] || ''}</td>
+                        <td>${checkResult || ''}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            } 
+
+            if (uploadChk) {
+                alert('모든 데이터가 정상입니다. 업로드를 진행합니다.');
+                $('#btn_upload').show();
+            } else {
+                alert('일부 데이터에 오류가 있습니다. 오류를 확인해주세요.');
+                $('#btn_upload').hide();
+            }   
+        } 
+
+        function validateRow(row) {
+            // 모든 필드가 채워져 있는지 확인
+            // for (let i = 0; i < row.length; i++) {
+            //     if (row[i] === undefined || row[i] === null || row[i] === '') {
+            //         return '데이터 누락';
+            //     }                
+            // }
+            
+            // datetime 형식 검증 (yyyy-mm-dd hh:mm:ss)
+            const tradeDate = row[0].replace('.','-').replace('.','-'); // 엑셀에서 날짜가 .으로 구분되어 올 수 있어 변환
+            const datetimeRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;            
+            if (!datetimeRegex.test(tradeDate)) {
+                return '날짜 형식 오류 (yyyy-mm-dd hh:mm:ss)';
+            }            
+            // 실제 날짜 유효성 검사
+            const dateObj = new Date(tradeDate);
+            if (isNaN(dateObj.getTime())) {
+                return '유효하지 않은 날짜';
+            } 
+            // 오늘 날짜인지 확인
+            const today = new Date();
+            const inputDate = new Date(tradeDate);
+
+            // 날짜만 비교 (시간 제외)
+            const todayStr = today.toISOString().split('T')[0];
+            const inputDateStr = inputDate.toISOString().split('T')[0];
+
+            if (inputDateStr !== todayStr) {
+                return '오늘 날짜가 아닙니다';
+            }
+            return '정상';
+        }
+      });
+
+      $('#btn_upload').click(function () {
+            if (!$('#corp_type').val()) {
+                alert('구분을 선택해주세요.');
+                return false;
+            }
+            if (!$('#corp_cd').val()) {
+                alert('회사를 선택해주세요.');
+                return false;
+            }
+            const formData = new FormData($('#frm_sch')[0]);
+            // 테이블 데이터를 FormData에 추가
+            const tableRows = $('#tbl_upload_data tbody tr');
+            const tableData = [];
+            tableRows.each(function(index) {
+                const row = $(this);
+                const rowData = {
+                    tradeDttm: row.find('td').eq(0).text(),
+                    tradeGb: row.find('td').eq(1).text(),
+                    remark: row.find('td').eq(2).text(),
+                    outAmt: row.find('td').eq(3).text(),
+                    inAmt: row.find('td').eq(4).text(),
+                    remainAmt: row.find('td').eq(5).text(),
+                    centerNm: row.find('td').eq(6).text()
+                };
+                tableData.push(rowData);
+            });
+            formData.append('excelData', JSON.stringify(tableData));
+            $.ajax({
+                url: '/deposit/upload/uploadExcel',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    alert('업로드가 완료되었습니다.');
+                },
+                error: function (error) {
+                    alert('업로드 중 오류가 발생했습니다.');
+                }
+            });
+        });
+    </script>
+</head>
+<div class="content">         
+    <div class="row g-1 mb-1">
+        <div class="card">
+            <div class="card-header"> 
+                <div class="row flex-between-end">
+                    <div class="col-lg-2 align-self-center">
+                        <h4 class="mb-0">입금 전문 관리</h4>
+                    </div>
+                    <div class="col-lg-10">
+                        <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
+                        <div class="row mb-1">  
+                            <div class="col-sm-4">
+                                <div class="input-group">
+                                    <div class="input-group input-group-sm mb-1 me-1">
+                                        <label class="col-sm-3 col-form-label col-form-label-sm" for="corp_type">구분</label>
+                                        <div class="col-sm-4">
+                                            <select class="form-select form-control-sm me-1" id="corp_type" name="corp_type">
+                                                <option value="CH" selected>가맹점</option>
+                                                <option value="LN">여신사</option>
+                                            </select>
+                                        </div> 
+                                        <div class="col-sm-5">
+                                            <select class="form-select form-control-sm me-1" id="corp_cd" name="corp_cd">
+                                                <option value="">선택</option>
+                                            </select>
+                                        </div>                             
+                                    </div> 
+                                </div>
+                            </div>
+                            <div class="col-sm-2">
+                                <div class="input-group input-group-sm mb-1 me-1">
+                                    <label class="col-sm-3 col-form-label col-form-label-sm" for="bank_cd">은행</label>
+                                    <div class="col-sm-4">
+                                        <select class="form-select form-control-sm me-1" id="bank_cd" name="bank_cd">
+                                            <option value="20" selected>우리은행</option>
+                                            <option value="04">경남은행</option>
+                                        </select>
+                                    </div>                      
+                                </div>
+                            </div>
+                            <div class="col-sm-2">
+                                <div class="input-group input-group-sm mb-1">
+                                    <label class="col-sm-5 col-form-label col-form-label-sm" for="data_row">데이터 Row</label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control" id="data_row" name="data_row" value="3" />
+                                    </div>                                 
+                                </div>
+                            </div> 
+                            <div class="col-sm-4">
+                                <div class="input-group input-group-sm mb-1">
+                                    <input type="file" class="form-control" id="excel_file" name="file" accept=".xlsx, .xls" />
+                                    <button type="button" class="btn btn-primary" id="btn_upload" name="btn_upload">Upload</button> 
+                                </div>
+                            </div> 
+                        </div> 
+                        </form>
+                    </div> 
+                </div>
+            </div> 
+            <div class="card-body pt-0 px-0" style="padding-top: 0px">
+                <div class="table-responsive scrollbar">
+                    <table class="table table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_upload_data">
+                        <thead>
+                            <tr>
+                                <th class="text-center">거래일시</th> 
+                                <th class="text-center">적요</th>
+                                <th class="text-center">기재내용</th>
+                                <th class="text-center">찾으신금액</th>
+                                <th class="text-center">맡기신금액</th>
+                                <th class="text-center">거래후잔액</th>
+                                <th class="text-center">취급점</th> 
+                                <th class="text-center">데이터 확인</th> 
+                            </tr>
+                        </thead>
+                        <tbody class="list" id="listBody"></tbody>
+                    </table>
+                </div>
+            </div> 
+        </div>
+    </div> 
+</div>
+</html>

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.web.manage.deposit.domain.DepositExcelDataVO;
 import com.web.manage.deposit.domain.DepositVO;
 import com.web.manage.deposit.domain.ExceedMstVO;
 import com.web.manage.deposit.domain.ProcDepositVO;
@@ -39,7 +40,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.ss.usermodel.*; 
 
 @Controller
-@RequestMapping("/deposit/deposit/")
+@RequestMapping("/deposit/")
 public class DepositController {
 
     @Autowired
@@ -48,16 +49,21 @@ public class DepositController {
     @Autowired
    private CommonService commonService; 
 
-    @RequestMapping("depoMng/view")
+    @RequestMapping("deposit/depoMng/view")
     public String view() {
         return "pages/deposit/depositMng";
     }
-    @RequestMapping("depoList/view")
-    public String listview() {
+    @RequestMapping("deposit/depoList/view")
+    public String depoListview() {
         return "pages/deposit/depositList";
     }
 
-    @RequestMapping(value = "depoMng/depositSummary", method = RequestMethod.POST)
+    @RequestMapping("upload/depoExcelUpload/view")
+    public String depoExcelUploadview() {
+        return "pages/deposit/depoExcelUpload";
+    }
+
+    @RequestMapping(value = "deposit/depoMng/depositSummary", method = RequestMethod.POST)
     public @ResponseBody String getDepositSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -104,7 +110,7 @@ public class DepositController {
         return jString;  
     }
 
-    @RequestMapping(value = "depoMng/depoCardSummary", method = RequestMethod.POST)
+    @RequestMapping(value = "deposit/depoMng/depoCardSummary", method = RequestMethod.POST)
     public @ResponseBody String getDepoCardSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -151,7 +157,7 @@ public class DepositController {
         return jString;  
     }
 
-    @RequestMapping(value="depoMng/chainDepositStatus", method = RequestMethod.POST)
+    @RequestMapping(value="deposit/depoMng/chainDepositStatus", method = RequestMethod.POST)
 	public @ResponseBody ReturnDataVO totalCodelist(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session){
 		HashMap<String, Object> depoStatus = new HashMap<String, Object>();
 		ReturnDataVO result = new ReturnDataVO();
@@ -167,7 +173,7 @@ public class DepositController {
 		return result;
 	}
 
-    @RequestMapping(value = "depoMng/chainDepositStatus2", method = RequestMethod.POST)
+    @RequestMapping(value = "deposit/depoMng/chainDepositStatus2", method = RequestMethod.POST)
     public @ResponseBody String getChainDepositStatus(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();         
         HashMap<String, Object> depoStatus = new HashMap<String, Object>();
@@ -187,7 +193,7 @@ public class DepositController {
         return jString;  
     }
 
-    @RequestMapping(value = "depoMng/depoResvList", method = RequestMethod.POST)
+    @RequestMapping(value = "deposit/depoMng/depoResvList", method = RequestMethod.POST)
     public @ResponseBody String getDepoResvList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -229,7 +235,7 @@ public class DepositController {
         return jString;  
     }
 
-    @RequestMapping(value = "depoMng/depositList", method = RequestMethod.POST)
+    @RequestMapping(value = "deposit/depoMng/depositList", method = RequestMethod.POST)
     public @ResponseBody String getDepositList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -282,7 +288,7 @@ public class DepositController {
         return jString;  
     }
 
-    @RequestMapping(value = "depoMng/mnulDepositList", method = RequestMethod.POST)
+    @RequestMapping(value = "deposit/depoMng/mnulDepositList", method = RequestMethod.POST)
     public @ResponseBody String mnulDepositList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -329,36 +335,9 @@ public class DepositController {
         }
 
         return jString;  
-    }
+    } 
 
-
-    // @RequestMapping(value = "depoMng/insertMnulDeposit", method = RequestMethod.POST)    
-    // public @ResponseBody ReturnDataVO insertMnulDeposit(@ModelAttribute("DepositVO") @Valid DepositVO depositVo, BindingResult bindingResult, HttpSession session) {
-    //     ReturnDataVO result = new ReturnDataVO(); 
-    //     try {            
-    //         SessionVO member = (SessionVO) session.getAttribute("S_USER");
-    // 	    depositVo.setEnt_user_id(member.getUserId());
-
-    //         // depositVo.setDeposit_no(depositService.getnew("DEPOSIT_NO_SEQ"));
-
-    //         if (depositService.insertMnulDeposit(depositVo)) {
-    //             System.out.println("Exceed Amt Create success");
-    //             result.setResultCode("S000");
-    //             result.setResultMsg("Exceed Amt creation successful.");
-    //         } else {
-    //             System.out.println("Exceed Amt fail");
-    //             result.setResultCode("F000");
-    //             result.setResultMsg("Exceed Amt creation Failed");
-    //         }
-    //     } catch (Exception e) {
-    //         result.setResultCode("F000");
-    //         result.setResultMsg("Exceed Amt creation Failed");
-    //         e.printStackTrace();
-    //     }
-    //     return result;
-    // }
-
-    @RequestMapping(value = "depoMng/depoResvExcel", method = RequestMethod.POST)
+    @RequestMapping(value = "deposit/depoMng/depoResvExcel", method = RequestMethod.POST)
     public ResponseEntity<byte[]> getDepoResvExcel(@RequestBody HashMap<String, Object> hashmapParam) {
         try {
             // Fetch data for the Excel file
@@ -463,7 +442,7 @@ public class DepositController {
     }
 
 
-    @RequestMapping(value = "depoMng/changeResvDate", method = RequestMethod.POST)
+    @RequestMapping(value = "deposit/depoMng/changeResvDate", method = RequestMethod.POST)
     public @ResponseBody ReturnDataVO callProcChangeResvDate(@ModelAttribute("ProcDepositVO") @Valid ProcDepositVO procVo, HttpSession session) {
 
         ReturnDataVO result = new ReturnDataVO(); 
@@ -481,7 +460,7 @@ public class DepositController {
  
     }
 
-    @RequestMapping(value = "depoMng/procDepositAdjust", method = RequestMethod.POST)
+    @RequestMapping(value = "deposit/depoMng/procDepositAdjust", method = RequestMethod.POST)
     public @ResponseBody ReturnDataVO callProcDepositAdjust(@ModelAttribute("ProcDepositVO") @Valid ProcDepositVO procVo, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO(); 
         try {
@@ -497,7 +476,7 @@ public class DepositController {
         }
     }
 
-    @RequestMapping(value = "depoList/depoAdjustSummary", method = RequestMethod.POST)
+    @RequestMapping(value = "deposit/depoList/depoAdjustSummary", method = RequestMethod.POST)
     public @ResponseBody String getDepoAdjustSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -544,7 +523,7 @@ public class DepositController {
         return jString;  
     }
 
-    @RequestMapping(value = "depoList/depoAdjustCardSummary", method = RequestMethod.POST)
+    @RequestMapping(value = "deposit/depoList/depoAdjustCardSummary", method = RequestMethod.POST)
     public @ResponseBody String getDepoAdjustCardSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -590,7 +569,7 @@ public class DepositController {
         return jString;  
     }
 
-    @RequestMapping(value = "depoList/depoAdjustList", method = RequestMethod.POST)
+    @RequestMapping(value = "deposit/depoList/depoAdjustList", method = RequestMethod.POST)
     public @ResponseBody String getDepoAdjustList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -632,7 +611,7 @@ public class DepositController {
         return jString;  
     }
 
-    @RequestMapping(value = "depoList/depoAdjustExcel", method = RequestMethod.POST)
+    @RequestMapping(value = "deposit/depoList/depoAdjustExcel", method = RequestMethod.POST)
     public ResponseEntity<byte[]> getDepoAdjustExcel(@RequestBody HashMap<String, Object> hashmapParam) {
         try {
             // Fetch data for the Excel file
@@ -734,7 +713,7 @@ public class DepositController {
         }
     }
 
-    @RequestMapping(value = "depoList/procDepoAdjustCancel", method = RequestMethod.POST)
+    @RequestMapping(value = "deposit/depoList/procDepoAdjustCancel", method = RequestMethod.POST)
     public @ResponseBody ReturnDataVO callProcDepoAdjustCancel(@ModelAttribute("ProcDepositVO") @Valid ProcDepositVO procVo, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO(); 
         try {
@@ -748,5 +727,31 @@ public class DepositController {
             e.printStackTrace();
             return result;
         }
+    }
+
+    @RequestMapping(value = "upload/uploadExcel", method = RequestMethod.POST)    
+    public @ResponseBody ReturnDataVO uploadExcelData(@ModelAttribute("DepositExcelVO") @Valid DepositExcelDataVO excelVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO(); 
+        try {            
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            excelVo.setEnt_user_id(member.getUserId());
+
+            // depositVo.setDeposit_no(depositService.getnew("DEPOSIT_NO_SEQ"));
+
+            if (depositService.uploadExcelData(excelVo)) {
+                System.out.println("Exceed Amt Create success");
+                result.setResultCode("S000");
+                result.setResultMsg("Exceed Amt creation successful.");
+            } else {
+                System.out.println("Exceed Amt fail");
+                result.setResultCode("F000");
+                result.setResultMsg("Exceed Amt creation Failed");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("Exceed Amt creation Failed");
+            e.printStackTrace();
+        }
+        return result;
     }
 }
