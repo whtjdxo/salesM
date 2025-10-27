@@ -364,6 +364,66 @@ function ConfirmdialogToAjax(text, target, form, callback) {
   });
 }
 
+
+function ConfirmdialogToJsonAjax(text, target, form, callback) {
+  if (text == "create") {
+    text = "등록하시겠습니까?";
+  } else if (text == "update") {
+    text = "수정하시겠습니까?";
+  } else if (text == "delete") {
+    text = "삭제하시겠습니까?";
+  } else if (text == "execute") {
+    text = "실행하시겠습니까?";  
+  }
+  Swal.fire({
+    title: text,
+    showCancelButton: true,
+    icon: "question",
+    confirmButtonColor: "#DD6B55",
+    confirmButtonText: "예",
+    cancelButtonText: "아니요",
+  }).then(async (result) => {
+    if (result.isDismissed) return;
+    LoadingBar.show("처리 중입니다...");
+    try {
+      const response = await fetch(target, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form), // 🔥 JSON 문자열로 전송
+        cache: "no-cache",
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+
+      if (data.resultCode === "F001") {
+        location.replace("/login");
+      } else if (data.resultCode === "S000") {
+        // alert("처리되었습니다.");
+        callback(data);      
+      } else {
+        swal("실패", data.resultMsg, "error");
+      }
+    } catch (error) {
+      swal("실패", "작업수행에 실패하였습니다.", "error");
+      console.error("Detailed error:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      throw error;
+    } finally {
+      LoadingBar.hide();
+    }
+    window.onkeydown = null;
+    window.onfocus = null;
+  });
+}
 HTMLFormElement.prototype.serializeObject = function () {
   const obj = {};
   const formData = new FormData(this);

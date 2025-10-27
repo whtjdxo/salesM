@@ -368,11 +368,11 @@
             return;
           } 
           var form = $('#frm_sub_mst');          
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          }); 
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           
           if (checked) {
             ConfirmdialogToAjax('create', '/withdraw/subtract/subMng/insertSubMst', $('#frm_sub_mst').serialize(), fn_return_result);
@@ -394,11 +394,11 @@
             checked = false;
             return;
           }
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });          
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }       
           if (checked) {
             ConfirmdialogToAjax('update', '/withdraw/subtract/subMng/updateSubMst', $('#frm_sub_mst').serialize(), fn_return_result);
           }  
@@ -496,11 +496,11 @@
             checked = false;
             return;
           }
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          }); 
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           // 대체 차감의 경우 체크
           var selectedRecvType = $('input[name="mng_recv_type"]:checked').val();          
           if(selectedRecvType == 'O20000') {

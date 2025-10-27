@@ -100,11 +100,11 @@
           var formData = $('#center_add_form').serialize();
           var form = $('#center_add_form');
           var checked = true;
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           if (checked) {
             var crud = $('#crud').val();
 

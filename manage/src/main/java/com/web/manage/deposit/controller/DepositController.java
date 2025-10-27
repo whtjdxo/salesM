@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -729,27 +730,30 @@ public class DepositController {
         }
     }
 
-    @RequestMapping(value = "upload/uploadExcel", method = RequestMethod.POST)    
-    public @ResponseBody ReturnDataVO uploadExcelData(@ModelAttribute("DepositExcelVO") @Valid DepositExcelDataVO excelVo, BindingResult bindingResult, HttpSession session) {
+    // @RequestMapping(value = "upload/uploadExcel", method = RequestMethod.POST)    
+    // public @ResponseBody ReturnDataVO uploadExcelData(@ModelAttribute("DepositExcelVO") @Valid DepositExcelDataVO excelVo, BindingResult bindingResult, HttpSession session) {
+    @PostMapping("upload/uploadExcel")
+    @ResponseBody
+    public ReturnDataVO uploadExcelData(@RequestBody DepositExcelDataVO excelVo, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO(); 
         try {            
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
             excelVo.setEnt_user_id(member.getUserId());
 
             // depositVo.setDeposit_no(depositService.getnew("DEPOSIT_NO_SEQ"));
-
+            // System.out.println("excelVo : " + excelVo);
             if (depositService.uploadExcelData(excelVo)) {
-                System.out.println("Exceed Amt Create success");
+                System.out.println("Deposit Data Excel Upload  Create success");
                 result.setResultCode("S000");
-                result.setResultMsg("Exceed Amt creation successful.");
+                result.setResultMsg("Deposit Data Excel Upload creation successful.");
             } else {
                 System.out.println("Exceed Amt fail");
                 result.setResultCode("F000");
-                result.setResultMsg("Exceed Amt creation Failed");
+                result.setResultMsg("Deposit Data Excel Upload  creation Failed");
             }
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("Exceed Amt creation Failed");
+            result.setResultMsg("Deposit Data Excel Upload creation Failed");
             e.printStackTrace();
         }
         return result;

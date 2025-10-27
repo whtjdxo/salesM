@@ -160,15 +160,25 @@ public class DepositService {
     @Transactional
     public boolean uploadExcelData(DepositExcelDataVO excelDataVo) {        
         try {
+            if(excelDataVo.getExcelData() == null || excelDataVo.getExcelData().size() == 0) {
+                throw new RuntimeException("No data to upload.");
+            } 
+            // 회사 계좌번호 조회
+            HashMap<String, Object> hparam = new HashMap<>();
+            hparam.put("corpCd", excelDataVo.getCorp_cd());
+            hparam.put("corpType", excelDataVo.getCorp_type());
+            String corpAccountNo = depositMapper.getCorpAccountNo(hparam);
+
             for (DepositExcelRowDataVO rowData : excelDataVo.getExcelData()) {
                 rowData.setCorpCd(excelDataVo.getCorp_cd());
-                rowData.setCorpTp(excelDataVo.getCorp_tp());
+                rowData.setCorpType(excelDataVo.getCorp_type());
                 rowData.setBankCd(excelDataVo.getBank_cd());
-                rowData.setEntUserId(excelDataVo.getEnt_user_id());
+                rowData.setEntUserId(excelDataVo.getEnt_user_id());                
+                rowData.setAccountNo(corpAccountNo);
+                rowData.setInAmt("".equals(rowData.getInAmt()) ? "0" : rowData.getInAmt().replace(",", ""));
+                rowData.setOutAmt("".equals(rowData.getOutAmt()) ? "0" : rowData.getOutAmt().replace(",", ""));
+                rowData.setRemainAmt("".equals(rowData.getRemainAmt()) ? "0" : rowData.getRemainAmt().replace(",", ""));
 
-                String AccountNo = depositMapper.getCorpAccountNo(rowData.getCorpCd());
-                rowData.setAccountNo(AccountNo);
-                
                 if (!depositMapper.excelUploadBankData(rowData)) {
                     throw new RuntimeException("Deposit Manual Excel Data  insertion failed.");
                 }

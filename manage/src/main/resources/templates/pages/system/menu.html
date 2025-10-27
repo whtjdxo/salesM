@@ -133,6 +133,14 @@
     수정일		수정자		수정내용
     */
       $('#btn_menu_create').click(function () {
+      
+        var form = $('#frm_menu_info');
+        var checked = true;
+        if (!form[0].checkValidity()) {
+          form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+          checked = false;
+          return;
+        }
         $('#menu_state').val('create');
         ConfirmdialogToAjax('create', '/manage/system/menu/menuCreate', $('#frm_menu_info').serialize(), fn_return_menuCreate);
       });
@@ -145,6 +153,13 @@
     */
       $('#btn_menu_update').click(function () {
         $('#menu_state').val('update');
+        var form = $('#frm_menu_info');
+        var checked = true;
+        if (!form[0].checkValidity()) {
+          form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+          checked = false;
+          return;
+        }
         ConfirmdialogToAjax('update', '/manage/system/menu/menuUpdate', $('#frm_menu_info').serialize(), fn_return_menuUpdate);
       });
 

@@ -144,11 +144,11 @@
           $('#crud').val('create');
           var form = $('#frm_corp_info');
           var checked = true;
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           if (checked) {
             ConfirmdialogToAjax('create', '/base/organ/corpMng/corpCreate', $('#frm_corp_info').serialize(), fn_return_result);
           } 
@@ -158,11 +158,11 @@
           $('#crud').val('update');
           var form = $('#frm_corp_info');
           var checked = true;
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           if (checked) {
             ConfirmdialogToAjax('update', '/base/organ/corpMng/corpUpdate', $('#frm_corp_info').serialize(), fn_return_result);
           }

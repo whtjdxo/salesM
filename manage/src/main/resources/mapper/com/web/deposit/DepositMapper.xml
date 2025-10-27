@@ -724,18 +724,20 @@
 		   AND	DL.IN_AMT > 0
 	</select>
 
-	<select id="getCorpAccoutnNo" parameterType="String" resultType="String">	
+	<select id="getCorpAccountNo" parameterType="java.util.HashMap" resultType="String">	
 		SELECT  ACCOUNT_NO
 		  FROM 	(
-					SELECT  ABANK_ACCOUNT 	AS ACCOUNT_NO
+					SELECT  ABANK_ACCOUNT_NO 	AS ACCOUNT_NO
 					FROM 	TB_CHAIN
 					WHERE 	CHAIN_NO = #{corpCd}
+					  AND   'CH' = #{corpType}
 					UNION 	ALL  
 					SELECT 	ACCOUNT_NO 
 					FROM 	TB_CORP
 					WHERE 	CORP_CD = #{corpCd}
+					  AND   'LN' = #{corpType}
 		  		) VT
-		LIMTI	1				
+		LIMIT	1				
 	</select>
 
 	<update id="callProcDepoAdjustCancel" parameterType="com.web.manage.deposit.domain.ProcDepositVO" statementType="CALLABLE">

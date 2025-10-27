@@ -38,7 +38,7 @@ public interface DepositMapper {
 
     void callProcDepoAdjustCancel(ProcDepositVO procVo);
 
-    String getCorpAccountNo(String corpCd);
+    String getCorpAccountNo(HashMap<String, Object> hashmapParam);
 
     boolean excelUploadBankData(DepositExcelRowDataVO excelRowdataVo);
     void callProcTransDepositBatch(ProcTransDepositVO procTransDepositVo);

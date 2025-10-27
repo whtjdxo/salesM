@@ -195,11 +195,11 @@
           var checked = true;
           var form = $('#frm_map_code');
           
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          }); 
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           
           if (checked) {
             ConfirmdialogToAjax('create', '/trans/trans/vanDocuMng/insertMapCode', $('#frm_map_code').serialize(), fn_return_result);
@@ -216,11 +216,11 @@
             checked = false;
             return;
           }
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });          
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }         
           if (checked) {
             ConfirmdialogToAjax('update', '/trans/trans/vanDocuMng/updateMapCode', $('#frm_map_code').serialize(), fn_return_result);
           }  

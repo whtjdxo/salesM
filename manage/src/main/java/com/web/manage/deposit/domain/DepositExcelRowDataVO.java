@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class DepositExcelRowDataVO { 
-    private String corpTp;
+    private String corpType;
     private String corpCd;    
     private String bankCd;
     private String accountNo;

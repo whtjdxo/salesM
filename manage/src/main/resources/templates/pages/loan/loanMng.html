@@ -474,11 +474,11 @@
             return;
           } 
           var form = $('#frm_loan_mst');
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          }); 
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
 
           if (checked) {
             ConfirmdialogToAjax('create', '/loan/loan/loanMng/insertLoanMst', $('#frm_loan_mst').serialize(), fn_return_result);
@@ -806,11 +806,11 @@
         $('#btn_counsel_update').click(function () {
           var form = $('#frm_counsel_mst');
           var checked = true;
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          }); 
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
 
           if (checked) { 
             var formData = {
@@ -829,11 +829,11 @@
         $('#btn_counsel_create').click(function () {
           var form = $('#frm_counsel_mst');
           var checked = true;
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          }); 
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
 
           if (checked) { 
             var formData = {

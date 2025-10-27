@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/css/custom-salesm.css" />
 
     <script th:inline="none">      
-      $(document).ready(function () {
+    $(document).ready(function () {
 
         $('#btn_upload').hide(); // 초기에는 업로드 버튼 숨김 
 
@@ -59,6 +59,7 @@
             $('#listBody').empty();
             $('#btn_upload').hide();
         });
+
         $('#excel_file').on('change', function() {
             const fileInput = $(this)[0];
             const fileName = fileInput.files[0] ? fileInput.files[0].name : '';
@@ -115,7 +116,7 @@
             } 
 
             if (uploadChk) {
-                alert('모든 데이터가 정상입니다. 업로드를 진행합니다.');
+                alert('모든 데이터가 정상입니다. 업로드가 가능합니다.');
                 $('#btn_upload').show();
             } else {
                 alert('일부 데이터에 오류가 있습니다. 오류를 확인해주세요.');
@@ -123,14 +124,7 @@
             }   
         } 
 
-        function validateRow(row) {
-            // 모든 필드가 채워져 있는지 확인
-            // for (let i = 0; i < row.length; i++) {
-            //     if (row[i] === undefined || row[i] === null || row[i] === '') {
-            //         return '데이터 누락';
-            //     }                
-            // }
-            
+        function validateRow(row) {            
             // datetime 형식 검증 (yyyy-mm-dd hh:mm:ss)
             const tradeDate = row[0].replace('.','-').replace('.','-'); // 엑셀에서 날짜가 .으로 구분되어 올 수 있어 변환
             const datetimeRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;            
@@ -143,20 +137,15 @@
                 return '유효하지 않은 날짜';
             } 
             // 오늘 날짜인지 확인
-            const today = new Date();
-            const inputDate = new Date(tradeDate);
-
-            // 날짜만 비교 (시간 제외)
-            const todayStr = today.toISOString().split('T')[0];
-            const inputDateStr = inputDate.toISOString().split('T')[0];
-
-            if (inputDateStr !== todayStr) {
+            var toDay = returnDate('today');  
+            var rowDate = tradeDate.split(' ')[0];
+            console.log('toDay , rowDate :', toDay, rowDate);
+            if (toDay !== rowDate) {
                 return '오늘 날짜가 아닙니다';
-            }
+            }             
             return '정상';
         }
-      });
-
+      
       $('#btn_upload').click(function () {
             if (!$('#corp_type').val()) {
                 alert('구분을 선택해주세요.');
@@ -166,7 +155,6 @@
                 alert('회사를 선택해주세요.');
                 return false;
             }
-            const formData = new FormData($('#frm_sch')[0]);
             // 테이블 데이터를 FormData에 추가
             const tableRows = $('#tbl_upload_data tbody tr');
             const tableData = [];
@@ -182,22 +170,29 @@
                     centerNm: row.find('td').eq(6).text()
                 };
                 tableData.push(rowData);
-            });
-            formData.append('excelData', JSON.stringify(tableData));
-            $.ajax({
-                url: '/deposit/upload/uploadExcel',
-                type: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function (response) {
-                    alert('업로드가 완료되었습니다.');
-                },
-                error: function (error) {
-                    alert('업로드 중 오류가 발생했습니다.');
-                }
-            });
+            }); 
+            const formData = {
+                corp_type: $('#corp_type').val(),
+                corp_cd: $('#corp_cd').val(),
+                bank_cd: $('#bank_cd').val(),
+                ent_user_id: $('#ent_user_id').val(),
+                excelData: tableData
+            }; 
+            ConfirmdialogToJsonAjax('create', '/deposit/upload/uploadExcel', formData, fn_return_result);
+            
         });
+
+        function fn_return_result(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg;   
+          
+          if (resultCode == 'S000') {                               
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');       
+          } else {  
+            swal('실패', resultMsg, 'error');
+          }
+        } 
+    });
     </script>
 </head>
 <div class="content">         
@@ -232,18 +227,18 @@
                             <div class="col-sm-2">
                                 <div class="input-group input-group-sm mb-1 me-1">
                                     <label class="col-sm-3 col-form-label col-form-label-sm" for="bank_cd">은행</label>
-                                    <div class="col-sm-4">
+                                    <div class="col-sm-9">
                                         <select class="form-select form-control-sm me-1" id="bank_cd" name="bank_cd">
-                                            <option value="20" selected>우리은행</option>
-                                            <option value="04">경남은행</option>
+                                            <option value="020" selected>우리은행</option>
+                                            <option value="039">경남은행</option>
                                         </select>
                                     </div>                      
                                 </div>
                             </div>
                             <div class="col-sm-2">
                                 <div class="input-group input-group-sm mb-1">
-                                    <label class="col-sm-5 col-form-label col-form-label-sm" for="data_row">데이터 Row</label>
-                                    <div class="col-sm-7">
+                                    <label class="col-sm-7 col-form-label col-form-label-sm" for="data_row">데이터 Row</label>
+                                    <div class="col-sm-5">
                                         <input type="text" class="form-control" id="data_row" name="data_row" value="3" />
                                     </div>                                 
                                 </div>

@@ -187,13 +187,14 @@
 
         $('#btn_save').click(function () {
           $('#crud').val('create');
-          var form = $('#frm_agency_info');
+          
           var checked = true;
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
+          var form = document.getElementById('frm_agency_info');
+          if (!form.checkValidity()) {
+            form.reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           if (checked) {
             ConfirmdialogToAjax('create', '/base/organ/agencyMng/InsertAgency', $('#frm_agency_info').serialize(), fn_return_result);
           } 
@@ -201,13 +202,14 @@
 
         $('#btn_update').click(function () {
           $('#crud').val('update');
-          var form = $('#frm_agency_info');
+          
           var checked = true;
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
+          var form = document.getElementById('frm_agency_info');
+          if (!form.checkValidity()) {
+            form.reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           if (checked) {
             ConfirmdialogToAjax('update', '/base/organ/agencyMng/UpdateAgency', $('#frm_agency_info').serialize(), fn_return_result);
           }

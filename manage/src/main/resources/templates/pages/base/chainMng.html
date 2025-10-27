@@ -348,13 +348,14 @@
 
         $('#btn_save').click(function () {
           $('#crud').val('create');
-          var form = $('#frm_chain_info');
+          
           var checked = true;
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
+          var form = document.getElementById('frm_chain_info');
+          if (!form.checkValidity()) {
+            form.reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
 
           var idDupChk = $('#ceo_id_dup_chk').val();
           if(idDupChk == "N" || idDupChk ==''){
@@ -368,7 +369,7 @@
 
         $('#btn_update').click(function () {
           $('#crud').val('update');
-          var form = $('#frm_chain_info');
+          
           var checked = true;
           var chain_no = $('#chain_no').val();
           if(chain_no == '') {
@@ -377,11 +378,12 @@
             return;
           }
 
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
+          var form = document.getElementById('frm_chain_info');
+          if (!form.checkValidity()) {
+            form.reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           
           if (checked) {
             ConfirmdialogToAjax('update', '/base/organ/chainMng/updateChain', $('#frm_chain_info').serialize(), fn_return_result);
@@ -396,13 +398,13 @@
             swal('확인', "가맹점을 먼저 선택해주세요.", 'error');
             checked = false;
             return;
+          } 
+          var form = document.getElementById('frm_cont_info');
+          if (!form.checkValidity()) {
+            form.reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
           }
-          var form = $('#frm_cont_info');
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
 
           if (checked) {
             ConfirmdialogToAjax('update', '/base/organ/chainMng/updateChainCont', $('#frm_cont_info').serialize(), fn_return_result);
@@ -566,8 +568,7 @@
         });
         
         $('#btn_van_create').click(function () {    
-          $('#crud').val('create');      
-          var form = $('#frm_van_info');
+          $('#crud').val('create');       
           var checked = true;
           var chain_no = $('#van_chain_no').val();
           var idDupChk = $('#van_id_dup_chk').val();
@@ -577,11 +578,12 @@
             return;
           }
 
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
+          var form = document.getElementById('frm_van_info');
+          if (!form.checkValidity()) {
+            form.reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
 
           if(idDupChk=='N' || idDupChk == ''){
             swal('확인', "VAN ID 중복체크를 해주세요.", 'error');
@@ -611,11 +613,12 @@
             return;
           }
 
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
+          var form = document.getElementById('frm_van_info');
+          if (!form.checkValidity()) {
+            form.reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           
           if (checked) {
             ConfirmdialogToAjax('update', '/base/organ/chainMng/updateChainVan', $('#frm_van_info').serialize(), fn_van_return_result);
@@ -793,12 +796,11 @@
             checked = false;
             return;
           }
-
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           if(idDupChk=='N' || idDupChk == ''){
             swal('확인', "가맹점 번호 중복 체크를 해주세요.", 'error');
             checked = false;
@@ -826,11 +828,11 @@
             return;
           }
 
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           
           if (checked) {
             ConfirmdialogToAjax('update', '/base/organ/chainMng/updateChainCard', $('#frm_card_info').serialize(), fn_card_return_result);
@@ -944,11 +946,11 @@
             return;
           }
 
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });          
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }       
           if (checked) {
             ConfirmdialogToAjax('create', '/base/organ/chainMng/insertLinkChain', $('#frm_link_chain').serialize(), fn_link_return_result);
           } 
@@ -965,11 +967,11 @@
             return;
           }
 
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           
           if (checked) {
             ConfirmdialogToAjax('update', '/base/organ/chainMng/updateLinkChain', $('#frm_link_chain').serialize(), fn_link_return_result);
@@ -1091,11 +1093,11 @@
             checked = false;
             return;
           }
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          });
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           if (checked) {
             var formData = new FormData($('#frm_file_info')[0]);
             $.ajax({
@@ -1132,11 +1134,11 @@
             checked = false;
             return;
           } 
-          $.each(form, function (i, val) {
-            if (!val.checkValidity()) {
-              checked = false;
-            }
-          }); 
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
+            checked = false;
+            return;
+          }
           if (checked) {
             ConfirmdialogToAjax('delete', '/base/organ/chainMng/deleteChainFile', $('#frm_file_info').serialize(), fn_file_return_result);
           }

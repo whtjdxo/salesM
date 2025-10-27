@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class DepositExcelDataVO {
-    private String corp_tp;
+    private String corp_type;
     private String corp_cd;
     private String bank_cd;
     private String ent_user_id;
