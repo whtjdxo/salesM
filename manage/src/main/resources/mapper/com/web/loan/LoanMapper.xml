@@ -35,7 +35,7 @@
                 , TC.CRD_FEE_RATE                   as int_rate
                 , TC.CRD_DELAY_RATE                 as delay_rate
                 , TC.TOT_LIMIT_AMT                  as tot_limit_amt
-                , TC.TOT_USE_AMT                    as tot_use_amt
+                , IFNULL(TC.TOT_USE_AMT, 0)         as tot_use_amt
                 , IFNULL(LM.MIN_CONT_DT, DATE_FORMAT(NOW(), '%Y-%m-%d')) as min_cont_dt
                 , IFNULL(LM.MAX_CONT_DT, DATE_FORMAT(NOW(), '%Y-%m-%d')) as max_cont_dt
                 , IFNULL(LM.BIZ_LOAN_AMT, 0)        AS biz_loan_amt
@@ -183,9 +183,9 @@
                 , LM.CONT_DT                        AS cont_dt
                 , LM.PRINC_AMT                      AS princ_amt
                 , LM.INT_RATE                       AS int_rate
-                , LM.LOAN_SDT                       AS loan_sdt
+                , IFNULL(LM.LOAN_SDT, '')           AS loan_sdt
                 , LM.LOAN_DAY                       AS loan_day
-                , LM.LOAN_EDT                       AS loan_edt
+                , IFNULL(LM.LOAN_EDT, '')           AS loan_edt
                 , IFNULL(LM.LOAN_EXPR_DT, '')       AS loan_expr_dt
                 , LM.INT_AMT                        AS int_amt
                 , LM.TOT_LOAN_AMT                   AS tot_loan_amt                
@@ -216,7 +216,7 @@
                 , IFNULL(LM.UPT_USER_ID, LM.ENT_USER_ID )                       AS upt_user_id
         FROM    TB_LOAN_MST LM
                 LEFT OUTER JOIN (
-                    SELECT  LOAN_NO
+                    SELECT  LRS.LOAN_NO
                     		, COUNT(1)											AS SC_CNT
                     		, SUM(CASE WHEN RECV_YN = 'Y' THEN 1 ELSE NULL END) AS RECV_CNT
                     		, SUM(CASE WHEN RECV_YN = 'Y' THEN NULL ELSE 1 END) AS UNRECV_CNT                    		
@@ -230,9 +230,12 @@
                             , SUM(CASE WHEN SC_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END) 	AS PRE_INC_AMT
                             , SUM(CASE WHEN SC_DATE &gt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_PRINC_AMT ELSE NULL END)  AS POST_PRINC_AMT
                             , SUM(CASE WHEN SC_DATE &gt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END)  	AS POST_INT_AMT 
-                      FROM  TB_LOAN_REPAY_SCHEDULE
-                     WHERE  USE_YN = 'Y' 
-                     GROUP  BY LOAN_NO
+                      FROM  TB_LOAN_REPAY_SCHEDULE LRS
+                            JOIN TB_LOAN_MST TLM ON TLM.LOAN_NO = LRS.LOAN_NO
+                                            AND TLM.CHAIN_NO = #{sch_chain_no}
+                                            AND TLM.USE_YN = 'Y'
+                     WHERE  LRS.USE_YN = 'Y' 
+                     GROUP  BY LRS.LOAN_NO
                 ) SC ON SC.LOAN_NO = LM.LOAN_NO         
                 LEFT OUTER JOIN (
                 	SELECT 	LOAN_NO
@@ -286,7 +289,7 @@
                 , IFNULL(SUM(DLY.DELAY_CNT), 0)         AS delay_cnt                
         FROM 	TB_LOAN_MST LM     
                 LEFT OUTER JOIN (
-                    SELECT  LOAN_NO
+                    SELECT  LRS.LOAN_NO
                     		, COUNT(1)											AS SC_CNT
                     		, SUM(CASE WHEN RECV_YN = 'Y' THEN 1 ELSE NULL END) AS RECV_CNT
                     		, SUM(CASE WHEN RECV_YN = 'Y' THEN NULL ELSE 1 END) AS UNRECV_CNT                    		
@@ -300,9 +303,12 @@
                             , SUM(CASE WHEN SC_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END) 	AS PRE_INC_AMT
                             , SUM(CASE WHEN SC_DATE &gt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_PRINC_AMT ELSE NULL END)  AS POST_PRINC_AMT
                             , SUM(CASE WHEN SC_DATE &gt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END)  	AS POST_INT_AMT 
-                      FROM  TB_LOAN_REPAY_SCHEDULE
-                     WHERE  USE_YN = 'Y' 
-                     GROUP  BY LOAN_NO
+                      FROM  TB_LOAN_REPAY_SCHEDULE LRS
+                            JOIN TB_LOAN_MST TLM ON TLM.LOAN_NO = LRS.LOAN_NO
+                                            AND TLM.CHAIN_NO = #{sch_chain_no}
+                                            AND TLM.USE_YN = 'Y'
+                     WHERE  LRS.USE_YN = 'Y' 
+                     GROUP  BY LRS.LOAN_NO
                 ) SC ON SC.LOAN_NO = LM.LOAN_NO         
                 LEFT OUTER JOIN (
                 	SELECT 	LOAN_NO

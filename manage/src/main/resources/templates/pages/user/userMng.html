@@ -19,8 +19,8 @@
         var isListClick = false; // 리스트 클릭 여부
         $('#frm_user_info').onLoadFunction();        
 
-        callAjax('/common/totalCodelist', "code_grp_cd=('AUTH_GRP_CD')", fn_code_setting);
-        function fn_code_setting(data) {
+        callAjax('/common/totalCodelist', "code_grp_cd=('AUTH_GRP_CD') AND chk_cd1 = '" + $('#corp_type').val() + "'", fn_auth_code_setting);
+        function fn_auth_code_setting(data) {
           codeSetting('AUTH_GRP_CD', data.data, '#auth_grp_cd', '1', '', '');
         }
 
@@ -104,6 +104,12 @@
             $('#corp_cd').val(data.corp_cd).prop('selected', true);
           });
           
+          callAjax('/common/totalCodelist', "code_grp_cd=('AUTH_GRP_CD') AND chk_cd1 = '" + data.corp_type + "'", fn_auth_code_setting)
+          .then(() => {
+            $('#auth_grp_cd').val(data.auth_grp_cd).prop('selected', true);
+          });
+          
+
           $('#user_nm').val(data.user_nm);
           $('#user_id').val(data.user_id);
           $('#hp_no').val(data.hp_no);
@@ -129,12 +135,13 @@
         });
  
         $('#corp_type').change(function () {
-            if (isListClick) return; // 리스트 클릭 상태일 때는 무시
-            var corp_type = $('#corp_type').val();  
-            if (corp_type != '') {
-              callAjaxCombo('/base/user/userMng/getCorpList', "corp_type="+corp_type, '#corp_cd', '1', '');
-            }
-          });
+          if (isListClick) return; // 리스트 클릭 상태일 때는 무시
+          var corp_type = $('#corp_type').val();  
+          if (corp_type != '') {
+            callAjaxCombo('/base/user/userMng/getCorpList', "corp_type="+corp_type, '#corp_cd', '1', '');
+            callAjax('/common/totalCodelist', "code_grp_cd=('AUTH_GRP_CD') AND chk_cd1 = '" + corp_type + "'", fn_auth_code_setting);
+          }
+        });
 
         $('#btn_clear').click(function () {
           $('#frm_user_info').clearForm();

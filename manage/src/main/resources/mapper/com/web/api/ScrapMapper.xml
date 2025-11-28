@@ -135,7 +135,7 @@
                                 , DEPOSITOR     	AS ACCOUNT_NM                               
                           FROM 	TB_CORP CR                                                      
                          WHERE  USE_YN = 'Y'       
-                           AND 	CORP_TYPE = 'LN'
+                           AND 	CORP_TYPE = 'OP'
                            AND 	BANK_CD 	  = #{bankCd}                                   
                            AND  NOT EXISTS(                                                     
                                         SELECT 1 FROM TB_SCRAP_LOG SL                        
