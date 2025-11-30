@@ -96,8 +96,8 @@
 		<if test="sch_exc_code != null and sch_exc_code != ''"> 
 			AND  EM.EXC_CODE = #{sch_exc_code}  
 		</if>
-		<if test="sch_status != null and sch_status != ''"> 
-			AND  EM.EXC_STATUS = #{sch_status}  
+		<if test="sch_exc_status != null and sch_exc_status != ''"> 
+			AND  EM.EXC_STATUS = #{sch_exc_status}  
 		</if>
 		
 		<choose>

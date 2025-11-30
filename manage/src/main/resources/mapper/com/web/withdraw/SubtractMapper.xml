@@ -41,6 +41,9 @@
                                         , SUM(SM.REMAIN_SVC_AMT) 	AS REMAIN_SVC_AMT
                                         , SUM(SM.REMAIN_CRD_AMT) 	AS REMAIN_CRD_AMT    
                                   FROM 	TB_SUB_MST SM
+                                        JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO 
+                                                        AND TC.USE_YN = 'Y'
+                                                        AND TC.SVC_STAT IN ('O', 'R')
                                  WHERE  SM.USE_YN = 'Y'
                                  <if test="sch_all == null or sch_all == ''">
                                         AND	SUB_STATUS IN ('000000', '100000', '900000')
@@ -110,6 +113,9 @@
                                         , SUM(SM.REMAIN_SVC_AMT) 	AS REMAIN_SVC_AMT
                                         , SUM(SM.REMAIN_CRD_AMT) 	AS REMAIN_CRD_AMT    
                                   FROM 	TB_SUB_MST SM
+								  		JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO 
+                                                        AND TC.USE_YN = 'Y'
+                                                        AND TC.SVC_STAT IN ('O', 'R')
                                  WHERE  SM.USE_YN = 'Y'
                                  <if test="sch_all == null or sch_all == ''">
                                         AND	SUB_STATUS IN ('000000', '100000', '900000')
@@ -129,17 +135,17 @@
                         SM.SUB_NO                                       AS sub_no
                         , SM.CHAIN_NO                                   AS chain_no       
                         , SM.SUB_STATUS                                 AS sub_status        
-                        , GET_CODE_NM('SUB_STATUS', SM.SUB_STATUS) 	AS sub_status_nm
+                        , GET_CODE_NM('SUB_STATUS', SM.SUB_STATUS) 		AS sub_status_nm
                         , SM.CHAIN_NO                                   AS chain_no    
-                        , TC.CHAIN_NM			                AS chain_nm
+                        , TC.CHAIN_NM			                		AS chain_nm
                         , GET_CODE_NM('SVC_STAT', TC.SVC_STAT)          AS svc_stat_nm
                         , SM.REG_DATE                                   AS reg_date
-                        , SM.RESV_DATE                                  AS resv_date
+                        , IFNULL(SM.RESV_DATE, '')                      AS resv_date
                         , SM.SUB_TYPE                                   AS sub_type    
                         , GET_CODE_NM('SUB_TYPE', SM.SUB_TYPE) 	        AS sub_type_nm
                         , SM.SUB_CODE                                   AS sub_code
                         , GET_CODE_NM('SUB_CODE', SM.SUB_CODE) 	        AS sub_code_nm
-                        , SM.SUB_MEMO                   AS sub_memo                        
+                        , IFNULL(SM.SUB_MEMO, '')                   	AS sub_memo                        
                         , IFNULL(SM.OCCUR_AMT, 0)       AS occur_amt
                         , IFNULL(SM.OCCUR_BASE_AMT, 0)  AS occur_base_amt
                         , IFNULL(SM.OCCUR_SVC_AMT, 0)   AS occur_svc_amt                

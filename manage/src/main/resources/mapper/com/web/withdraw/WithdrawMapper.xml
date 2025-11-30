@@ -7,104 +7,115 @@
 	</select>
   
         <select id="getWDSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+                /*WithdrawMapper.getWdSummary*/
                 SELECT  SQL_CALC_FOUND_ROWS
                         TC.CHAIN_NO				AS chain_no
                         , GET_RISK_GRADE(TC.CHAIN_NO)           AS risk_grade
-                        , ST.RATE_PER_AVG                       AS rate_per_avg
-                        , ST.RATE_PER_PREDAY                    AS rate_per_preday
-                        , TC.CHAIN_NM				AS chain_nm
-                        , TC.BIZ_NO			        AS biz_no
-                        , TC.REMIT_STAT				AS remit_stat
-                        , VW.WORK_DATE				AS work_date        
-                        , IFNULL(VW.TOT_CNT, 0) 		AS tot_cnt
-                        , IFNULL(VW.TOT_AMT, 0) 		AS tot_amt
-                        , IFNULL(VW.CONF_CNT, 0) 		AS conf_cnt
-                        , IFNULL(VW.CNCL_CNT, 0) 		AS cncl_cnt
-                        , IFNULL(VW.CONF_AMT, 0) 		AS conf_amt
-                        , IFNULL(VW.CNCL_AMT, 0) 		AS cncl_amt
+                        , IFNULL((SELECT RATE_PER_AVG FROM VW_SALES_TRANSITION ST WHERE ST.CHAIN_NO = VW.CHAIN_NO LIMIT 1), 0)	AS rate_per_avg
+                        , IFNULL((SELECT RATE_PER_PREDAY FROM VW_SALES_TRANSITION ST WHERE ST.CHAIN_NO = VW.CHAIN_NO LIMIT 1), 0)	AS rate_per_preday  
+                        , TC.CHAIN_NM				            AS chain_nm
+                        , TC.BIZ_NO			                    AS biz_no
+                        , TC.REMIT_STAT				            AS remit_stat
+                        , VW.WORK_DATE				            AS work_date        
+                        , IFNULL(VW.TOT_CNT, 0) 		        AS tot_cnt
+                        , IFNULL(VW.TOT_AMT, 0) 		        AS tot_amt
+                        , IFNULL(VW.CONF_CNT, 0) 		        AS conf_cnt
+                        , IFNULL(VW.CNCL_CNT, 0) 		        AS cncl_cnt
+                        , IFNULL(VW.CONF_AMT, 0) 		        AS conf_amt
+                        , IFNULL(VW.CNCL_AMT, 0) 		        AS cncl_amt
                         , IFNULL(VW.REMIT_CONF_CNT, 0)          AS remit_conf_cnt
                         , IFNULL(VW.REMIT_CONF_AMT, 0)          AS remit_conf_amt
                         , IFNULL(VW.CNCL_DAY_CNT, 0) 	        AS cncl_day_cnt
                         , IFNULL(VW.CNCL_DAY_AMT, 0) 	        AS cncl_day_amt
                         , IFNULL(VW.CNCL_PRE_CNT, 0) 	        AS cncl_pre_cnt
                         , IFNULL(VW.CNCL_PRE_AMT, 0) 	        AS cncl_pre_amt
-                        , IFNULL(VW.RCOUNT, 0) 			AS rcount
-                        , IFNULL(VW.ERRCOUNT, 0) 		AS error_cnt
-                        , IFNULL(VW.RESV_AMT, 0) 		AS resv_amt
-                        , IFNULL(VW.UNRESV_AMT, 0) 		AS unresv_amt
-                        , IFNULL(CARD_FEE_AMT, 0) 	        AS card_fee_amt
+                        , IFNULL(VW.RCOUNT, 0) 			        AS rcount
+                        , IFNULL(VW.ERRCOUNT, 0) 		        AS error_cnt
+                        , IFNULL(VW.RESV_AMT, 0) 		        AS resv_amt
+                        , IFNULL(VW.UNRESV_AMT, 0) 		        AS unresv_amt
+                        , IFNULL(CARD_FEE_AMT, 0) 	            AS card_fee_amt
                         , IFNULL(CARD_RESV_AMT, 0)              AS card_resv_amt
-                        , IFNULL(WD_BASE_AMT, 0) 	        AS wd_base_amt
+                        , IFNULL(WD_BASE_AMT, 0) 	            AS wd_base_amt
                         , IFNULL(SVC_FEE_AMT, 0)                AS svc_fee_amt
                         , IFNULL(CRD_FEE_AMT, 0)                AS crd_fee_amt
-                        , IFNULL(VW.EXC_AMT, 0) 		AS exc_amt
-                        , IFNULL(SR.SUB_AMT, 0)		        AS sub_amt
-                        , IFNULL(GREATEST( 
+                        , IFNULL(VW.EXC_AMT, 0) 		        AS exc_amt
+                        , IFNULL((
+                        			SELECT 	SUM(SM.REMAIN_AMT) 						AS SUB_AMT
+								      FROM	TB_SUB_MST SM   
+								 	 WHERE  RESV_DATE &lt;= DATE_FORMAT(NOW() , '%Y-%m-%d')
+								       AND 	SM.SUB_STATUS IN ('000000', '100000')
+								   	   AND  SM.USE_YN = 'Y'
+								       AND  SM.CHAIN_NO = VW.CHAIN_NO
+                                 ), 0)							AS sub_amt
+                        , IFNULL(GREATEST(
                                 IFNULL(VW.WD_BASE_AMT, 0) + IFNULL(VW.EXC_AMT, 0)
-                                - ( IFNULL(SVC_FEE_AMT, 0) + IFNULL(SR.SUB_AMT, 0))
-                                , 0), 0)	                AS remit_amt
+                                - ( IFNULL(SVC_FEE_AMT, 0) 
+                                	+ IFNULL((
+												SELECT 	SUM(SM.REMAIN_AMT) 						AS SUB_AMT
+											      FROM	TB_SUB_MST SM   
+											 	 WHERE  RESV_DATE &lt;= DATE_FORMAT(NOW() , '%Y-%m-%d')
+											       AND 	SM.SUB_STATUS IN ('000000', '100000')
+											   	   AND  SM.USE_YN = 'Y'
+											       AND  SM.CHAIN_NO = VW.CHAIN_NO ), 0)
+                                  )
+                                , 0), 0)                        AS remit_amt
                 FROM	(
-                                SELECT 	CHAIN_NO, WORK_DATE 
-                                        , IFNULL(SUM(TOT_CNT), 0) 		AS TOT_CNT					  					 
-                                        , IFNULL(SUM(TOT_AMT), 0) 		AS TOT_AMT
-                                        , IFNULL(SUM(CONF_CNT), 0) 	        AS CONF_CNT					  					 
-                                        , IFNULL(SUM(CNCL_CNT), 0) 	        AS CNCL_CNT
-                                        , IFNULL(SUM(CONF_AMT), 0) 	        AS CONF_AMT				  					 
-                                        , IFNULL(SUM(CNCL_AMT), 0) 	        AS CNCL_AMT
-                                        , IFNULL(SUM(REMIT_CONF_CNT), 0)	AS REMIT_CONF_CNT
-                                        , IFNULL(SUM(REMIT_CONF_AMT), 0)	AS REMIT_CONF_AMT                    
-                                        , IFNULL(SUM(CNCL_DAY_CNT), 0)	        AS CNCL_DAY_CNT
-                                        , IFNULL(SUM(CNCL_DAY_AMT), 0)	        AS CNCL_DAY_AMT
-                                        , IFNULL(SUM(CNCL_PRE_CNT), 0)	        AS CNCL_PRE_CNT
-                                        , IFNULL(SUM(CNCL_PRE_AMT), 0)	        AS CNCL_PRE_AMT                    
-                                        , IFNULL(SUM(RCOUNT), 0) 		AS RCOUNT
-                                        , IFNULL(SUM(ERRCOUNT), 0) 	        AS ERRCOUNT
-                                        , IFNULL(SUM(RESV_AMT), 0) 	        AS RESV_AMT
-                                        , IFNULL(SUM(UNRESV_AMT), 0) 	        AS UNRESV_AMT
-                                        , IFNULL(SUM(CARD_FEE_AMT), 0) 	        AS CARD_FEE_AMT
-                                        , IFNULL(SUM(CARD_RESV_AMT), 0)         AS CARD_RESV_AMT
-                                        , IFNULL(SUM(WD_BASE_AMT), 0) 	        AS WD_BASE_AMT
-                                        , IFNULL(SUM(SVC_FEE_AMT), 0)           AS SVC_FEE_AMT
-                                        , IFNULL(SUM(CRD_FEE_AMT), 0)           AS CRD_FEE_AMT
-                                        , IFNULL(SUM(EXC_AMT), 0) 		AS EXC_AMT
-                                  FROM	VW_WITHDRAW_RESV_LIST                                
-                                WHERE 	WORK_DATE = #{sch_work_date} 
-                                GROUP	BY CHAIN_NO, WORK_DATE 
+                            SELECT  WL.CHAIN_NO, WORK_DATE
+                                    , IFNULL(SUM(TOT_CNT), 0)               AS TOT_CNT
+                                    , IFNULL(SUM(TOT_AMT), 0)               AS TOT_AMT
+                                    , IFNULL(SUM(CONF_CNT), 0)              AS CONF_CNT
+                                    , IFNULL(SUM(CNCL_CNT), 0)              AS CNCL_CNT
+                                    , IFNULL(SUM(CONF_AMT), 0)              AS CONF_AMT
+                                    , IFNULL(SUM(CNCL_AMT), 0)              AS CNCL_AMT
+                                    , IFNULL(SUM(REMIT_CONF_CNT), 0)        AS REMIT_CONF_CNT
+                                    , IFNULL(SUM(REMIT_CONF_AMT), 0)        AS REMIT_CONF_AMT
+                                    , IFNULL(SUM(CNCL_DAY_CNT), 0)          AS CNCL_DAY_CNT
+                                    , IFNULL(SUM(CNCL_DAY_AMT), 0)          AS CNCL_DAY_AMT
+                                    , IFNULL(SUM(CNCL_PRE_CNT), 0)          AS CNCL_PRE_CNT
+                                    , IFNULL(SUM(CNCL_PRE_AMT), 0)          AS CNCL_PRE_AMT
+                                    , IFNULL(SUM(RCOUNT), 0)                AS RCOUNT
+                                    , IFNULL(SUM(ERRCOUNT), 0)              AS ERRCOUNT
+                                    , IFNULL(SUM(RESV_AMT), 0)              AS RESV_AMT
+                                    , IFNULL(SUM(UNRESV_AMT), 0)            AS UNRESV_AMT
+                                    , IFNULL(SUM(CARD_FEE_AMT), 0)          AS CARD_FEE_AMT
+                                    , IFNULL(SUM(CARD_RESV_AMT), 0)         AS CARD_RESV_AMT
+                                    , IFNULL(SUM(WD_BASE_AMT), 0)           AS WD_BASE_AMT
+                                    , IFNULL(SUM(SVC_FEE_AMT), 0)           AS SVC_FEE_AMT
+                                    , IFNULL(SUM(CRD_FEE_AMT), 0)           AS CRD_FEE_AMT
+                                    , IFNULL(SUM(EXC_AMT), 0)               AS EXC_AMT
+                              FROM  VW_WITHDRAW_RESV_LIST WL
+                                    JOIN TB_CHAIN TC ON TC.CHAIN_NO = WL.CHAIN_NO
+                                                    AND TC.SVC_STAT = 'O'
+                                                    AND TC.USE_YN   = 'Y'
+                                                    AND TC.REMIT_STAT = 'Y'
+                                                    AND TC.CONT_TP = 'REMIT'                                                            
+                                    <if test="sch_agency_cd != ''"> 
+                                            AND  TC.AGENCY_CD = #{sch_agency_cd} 
+                                    </if>
+                                    <if test="sch_corp_no != null and sch_corp_no != ''"> 
+                                            AND  TC.CORP_CD = #{sch_corp_no} 
+                                    </if> 
+                                    <if test="sch_chain_val != ''">
+                                        <choose>
+                                            <when test="sch_chain_gb == 'schgb_biz_no'">
+                                                    AND  TC.BIZ_NO  = #{sch_chain_val}
+                                            </when> 
+                                            <when test="sch_chain_gb == 'schgb_chain_nm'">
+                                                    AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_val}, '%')
+                                            </when>
+                                        </choose>
+                                    </if> 
+                            WHERE 	WORK_DATE = #{sch_work_date} 
+                            GROUP	BY WL.CHAIN_NO, WORK_DATE 
                         ) VW  
-                        LEFT OUTER JOIN (	SELECT  CHAIN_NO, SUM(SUB_AMT) AS SUB_AMT
-                                                FROM 	VW_WD_SUB_RESV_LIST
-                                                GROUP 	BY CHAIN_NO
-                                        ) SR ON SR.CHAIN_NO = VW.CHAIN_NO
-                        LEFT OUTER JOIN VW_SALES_TRANSITION ST ON ST.CHAIN_NO = VW.CHAIN_NO 
                         JOIN TB_CHAIN TC ON TC.CHAIN_NO = VW.CHAIN_NO
-                                        AND TC.SVC_STAT = 'O'
-                                        AND TC.USE_YN   = 'Y'
-                                        AND TC.REMIT_STAT = 'Y'
-                                        AND TC.CONT_TP = 'REMIT'
-                                        <if test="sch_agency_cd != ''"> 
-                                                AND  TC.AGENCY_CD = #{sch_agency_cd} 
-                                        </if>
-                                        <if test="sch_corp_no != null and sch_corp_no != ''"> 
-                                                AND  TC.CORP_CD = #{sch_corp_no} 
-                                        </if> 
-                                        <if test="sch_chain_val != ''">
-                                                <choose>
-                                                        <when test="sch_chain_gb == 'schgb_biz_no'">
-                                                                AND  TC.BIZ_NO  = #{sch_chain_val}
-                                                        </when> 
-                                                        <when test="sch_chain_gb == 'schgb_chain_nm'">
-                                                                AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_val}, '%')
-                                                        </when>
-                                                </choose>
-                                        </if> 
-                                        
                 <choose>
-                        <when test="sidx != '' and sidx != null ">
-                                ORDER BY ${sidx} ${sord}
-                        </when>
-                        <otherwise>
-                                ORDER BY 1
-                        </otherwise>
+                    <when test="sidx != '' and sidx != null ">
+                        ORDER BY ${sidx} ${sord}
+                    </when>
+                    <otherwise>
+                        ORDER BY 1
+                    </otherwise>
                 </choose>                
                 LIMIT  ${start}, ${end}
         </select>
@@ -130,68 +141,56 @@
                         , IFNULL(SUM(WD_BASE_AMT), 0) 	        AS wd_base_amt
                         , IFNULL(SUM(SVC_FEE_AMT), 0)           AS svc_fee_amt
                         , IFNULL(SUM(CRD_FEE_AMT), 0)           AS crd_fee_amt
-                        , IFNULL(SUM(VW.EXC_AMT), 0) 		AS exc_amt
-                        , IFNULL(SUM(SR.SUB_AMT), 0)		AS sub_amt
-                        , IFNULL(GREATEST( SUM(
-                                (IFNULL(VW.WD_BASE_AMT, 0) + IFNULL(VW.EXC_AMT, 0))
-                              - (IFNULL(SVC_FEE_AMT, 0) + IFNULL(SR.SUB_AMT, 0))
-                                ), 0), 0)                        AS remit_amt
+                        , IFNULL(SUM(VW.EXC_AMT), 0) 		AS exc_amt                         
                 FROM	(
-                                SELECT 	CHAIN_NO, WORK_DATE 
-                                        , IFNULL(SUM(TOT_CNT), 0) 		AS TOT_CNT					  					 
-                                        , IFNULL(SUM(TOT_AMT), 0) 		AS TOT_AMT
-                                        , IFNULL(SUM(CONF_CNT), 0) 	        AS CONF_CNT					  					 
-                                        , IFNULL(SUM(CNCL_CNT), 0) 	        AS CNCL_CNT
-                                        , IFNULL(SUM(CONF_AMT), 0) 	        AS CONF_AMT				  					 
-                                        , IFNULL(SUM(CNCL_AMT), 0) 	        AS CNCL_AMT
-                                        , IFNULL(SUM(REMIT_CONF_CNT), 0)	AS REMIT_CONF_CNT
-                                        , IFNULL(SUM(REMIT_CONF_AMT), 0)	AS REMIT_CONF_AMT                    
-                                        , IFNULL(SUM(CNCL_DAY_CNT), 0)	        AS CNCL_DAY_CNT
-                                        , IFNULL(SUM(CNCL_DAY_AMT), 0)	        AS CNCL_DAY_AMT
-                                        , IFNULL(SUM(CNCL_PRE_CNT), 0)	        AS CNCL_PRE_CNT
-                                        , IFNULL(SUM(CNCL_PRE_AMT), 0)	        AS CNCL_PRE_AMT                    
-                                        , IFNULL(SUM(RCOUNT), 0) 		AS RCOUNT
-                                        , IFNULL(SUM(ERRCOUNT), 0) 	        AS ERRCOUNT
-                                        , IFNULL(SUM(RESV_AMT), 0) 	        AS RESV_AMT
-                                        , IFNULL(SUM(UNRESV_AMT), 0) 	        AS UNRESV_AMT
-                                        , IFNULL(SUM(CARD_FEE_AMT), 0) 	        AS CARD_FEE_AMT
-                                        , IFNULL(SUM(CARD_RESV_AMT), 0)         AS CARD_RESV_AMT
-                                        , IFNULL(SUM(WD_BASE_AMT), 0) 	        AS WD_BASE_AMT
-                                        , IFNULL(SUM(SVC_FEE_AMT), 0)           AS SVC_FEE_AMT
-                                        , IFNULL(SUM(CRD_FEE_AMT), 0)           AS CRD_FEE_AMT
-                                        , IFNULL(SUM(EXC_AMT), 0) 		AS EXC_AMT
-                                  FROM	VW_WITHDRAW_RESV_LIST                                
-                                WHERE 	WORK_DATE = #{sch_work_date} 
-                                GROUP	BY CHAIN_NO, WORK_DATE 
-                        ) VW  
-                        LEFT OUTER JOIN (	
-                                                SELECT  CHAIN_NO, SUM(SUB_AMT) AS SUB_AMT
-                                                  FROM 	VW_WD_SUB_RESV_LIST
-                                                 GROUP 	BY CHAIN_NO
-                                        ) SR ON SR.CHAIN_NO = VW.CHAIN_NO
-                        JOIN TB_CHAIN TC ON TC.CHAIN_NO = VW.CHAIN_NO
-                                        AND TC.SVC_STAT = 'O'
-                                        AND TC.USE_YN   = 'Y'
-                                        AND TC.REMIT_STAT = 'Y'
-                                        AND TC.CONT_TP = 'REMIT'
-                                        <if test="sch_agency_cd != ''"> 
-                                                AND  TC.AGENCY_CD = #{sch_agency_cd} 
-                                        </if>
-                                        <if test="sch_corp_no != null and sch_corp_no != ''"> 
-                                                AND  TC.CORP_CD = #{sch_corp_no} 
-                                        </if> 
-                                        <if test="sch_chain_val != ''">
-                                                <choose>
-                                                        <when test="sch_chain_gb == 'schgb_biz_no'">
-                                                                AND  TC.BIZ_NO  = #{sch_chain_val}
-                                                        </when> 
-                                                        <when test="sch_chain_gb == 'schgb_chain_nm'">
-                                                                AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_val}, '%')
-                                                        </when>
-                                                </choose>
-                                        </if> 
-                                        
-                 
+                            SELECT 	WL.CHAIN_NO, WORK_DATE 
+                                    , IFNULL(SUM(TOT_CNT), 0) 		AS TOT_CNT					  					 
+                                    , IFNULL(SUM(TOT_AMT), 0) 		AS TOT_AMT
+                                    , IFNULL(SUM(CONF_CNT), 0) 	        AS CONF_CNT					  					 
+                                    , IFNULL(SUM(CNCL_CNT), 0) 	        AS CNCL_CNT
+                                    , IFNULL(SUM(CONF_AMT), 0) 	        AS CONF_AMT				  					 
+                                    , IFNULL(SUM(CNCL_AMT), 0) 	        AS CNCL_AMT
+                                    , IFNULL(SUM(REMIT_CONF_CNT), 0)	AS REMIT_CONF_CNT
+                                    , IFNULL(SUM(REMIT_CONF_AMT), 0)	AS REMIT_CONF_AMT                    
+                                    , IFNULL(SUM(CNCL_DAY_CNT), 0)	        AS CNCL_DAY_CNT
+                                    , IFNULL(SUM(CNCL_DAY_AMT), 0)	        AS CNCL_DAY_AMT
+                                    , IFNULL(SUM(CNCL_PRE_CNT), 0)	        AS CNCL_PRE_CNT
+                                    , IFNULL(SUM(CNCL_PRE_AMT), 0)	        AS CNCL_PRE_AMT                    
+                                    , IFNULL(SUM(RCOUNT), 0) 		AS RCOUNT
+                                    , IFNULL(SUM(ERRCOUNT), 0) 	        AS ERRCOUNT
+                                    , IFNULL(SUM(RESV_AMT), 0) 	        AS RESV_AMT
+                                    , IFNULL(SUM(UNRESV_AMT), 0) 	        AS UNRESV_AMT
+                                    , IFNULL(SUM(CARD_FEE_AMT), 0) 	        AS CARD_FEE_AMT
+                                    , IFNULL(SUM(CARD_RESV_AMT), 0)         AS CARD_RESV_AMT
+                                    , IFNULL(SUM(WD_BASE_AMT), 0) 	        AS WD_BASE_AMT
+                                    , IFNULL(SUM(SVC_FEE_AMT), 0)           AS SVC_FEE_AMT
+                                    , IFNULL(SUM(CRD_FEE_AMT), 0)           AS CRD_FEE_AMT
+                                    , IFNULL(SUM(EXC_AMT), 0) 		AS EXC_AMT
+                              FROM	VW_WITHDRAW_RESV_LIST WL         
+                                    JOIN TB_CHAIN TC ON TC.CHAIN_NO = WL.CHAIN_NO
+                                                    AND TC.SVC_STAT = 'O'
+                                                    AND TC.USE_YN   = 'Y'
+                                                    AND TC.REMIT_STAT = 'Y'
+                                                    AND TC.CONT_TP = 'REMIT'
+                                    <if test="sch_agency_cd != ''"> 
+                                            AND  TC.AGENCY_CD = #{sch_agency_cd} 
+                                    </if>
+                                    <if test="sch_corp_no != null and sch_corp_no != ''"> 
+                                            AND  TC.CORP_CD = #{sch_corp_no} 
+                                    </if> 
+                                    <if test="sch_chain_val != ''">
+                                            <choose>
+                                                    <when test="sch_chain_gb == 'schgb_biz_no'">
+                                                            AND  TC.BIZ_NO  = #{sch_chain_val}
+                                                    </when> 
+                                                    <when test="sch_chain_gb == 'schgb_chain_nm'">
+                                                            AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_val}, '%')
+                                                    </when>
+                                            </choose>
+                                    </if>                        
+                            WHERE 	WL.WORK_DATE = #{sch_work_date} 
+                            GROUP	BY WL.CHAIN_NO, WORK_DATE 
+                        ) VW
         </select>
 
         <select id="getWDChainSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
@@ -637,18 +636,18 @@
                         , IFNULL(SR.RECV_BASE_AMT, 0)			AS recv_base_amt
                         , IFNULL(SR.RECV_SVC_AMT, 0)			AS recv_svc_amt
                         , IFNULL(SR.RECV_CRD_AMT, 0)			AS recv_crd_amt
-                        , SM.REMAIN_AMT					AS remain_amt
-                        , SM.REMAIN_BASE_AMT 				AS remain_base_amt
-                        , SM.REMAIN_SVC_AMT				AS remain_svc_amt
-                        , SM.REMAIN_CRD_AMT				AS remain_crd_amt
-                        , SM.SUB_MEMO                                   AS sub_memo
+                        , SM.REMAIN_AMT					        AS remain_amt
+                        , SM.REMAIN_BASE_AMT 				    AS remain_base_amt
+                        , SM.REMAIN_SVC_AMT				        AS remain_svc_amt
+                        , SM.REMAIN_CRD_AMT				        AS remain_crd_amt
+                        , IFNULL(SM.SUB_MEMO, '')               AS sub_memo
                   FROM  TB_SUB_MST SM 
                         JOIN (
                                 SELECT SUB_NO, REMIT_NO
-                                                , SUM(RECV_AMT) 	AS RECV_AMT
-                                                , SUM(RECV_BASE_AMT) AS RECV_BASE_AMT 
-                                                , SUM(RECV_SVC_AMT)		AS RECV_SVC_AMT 
-                                                , SUM(RECV_CRD_AMT)		AS RECV_CRD_AMT   
+                                        , SUM(RECV_AMT) 	AS RECV_AMT
+                                        , SUM(RECV_BASE_AMT) AS RECV_BASE_AMT 
+                                        , SUM(RECV_SVC_AMT)		AS RECV_SVC_AMT 
+                                        , SUM(RECV_CRD_AMT)		AS RECV_CRD_AMT   
                                 FROM 	TB_SUB_RECEIVE
                                 WHERE 	REMIT_NO = #{sch_sub_recv_remit_no}
                                 GROUP 	BY SUB_NO, REMIT_NO 
