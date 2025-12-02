@@ -8,6 +8,8 @@
     <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
     <script src="/vendors/dropzone/dropzone-min.js"></script>
     <script src="/js/jquery.form.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/decimal.js@10.4.3/decimal.min.js"></script>
+
     <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />
 
     <!-- DataTables Select CSS 추가 -->
@@ -88,9 +90,9 @@
                 // 사용자에게 에러 메시지 표시 등
             }
           },
-            columns: [
+            columns: [               
                 { data: 'chain_nm' }
-                , { data: 'biz_no' }
+                // , { data: 'biz_no' }
                 , { data: 'ceo_nm' }
                 , { data: 'tot_use_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { data: 'biz_loan_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
@@ -99,20 +101,22 @@
                 , { data: 'remain_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
                 , { data: 'svc_stat_nm' }
                 , { data: 'remit_stat_nm' }
+                , { data: 'chain_no', visible: false }
               ],
             columnDefs: [
-             { targets: 0, width: '120px', className: 'text-left' }
-            , { targets: 1, width: '120px', className: 'text-center' }
-            , { targets: 2, width: '70px', className: 'text-center' }
+             { targets: 0, width: '160px', className: 'text-left' }
+            // , { targets: 1, width: '120px', className: 'text-center' }
+            , { targets: 1, width: '70px', className: 'text-center' }
+            , { targets: 2, width: '110px', className: 'text-right' }
             , { targets: 3, width: '110px', className: 'text-right' }
-            , { targets: 4, width: '110px', className: 'text-right' }
-            , { targets: 5, width: '100px', className: 'text-right' }
-            , { targets: 6, width: '90px', className: 'text-right' }
-            , { targets: 7, width: '110px', className: 'text-right' }
+            , { targets: 4, width: '100px', className: 'text-right' }
+            , { targets: 5, width: '90px', className: 'text-right' }
+            , { targets: 6, width: '110px', className: 'text-right' }
+            , { targets: 7, width: '50px', className: 'text-center' }
             , { targets: 8, width: '50px', className: 'text-center' }
-            , { targets: 9, width: '50px', className: 'text-center' }
+            // , { targets: 9, width: '50px', className: 'text-center' }
           ],
-          order: [[0, 'asc']],
+          order: [[9, 'desc']],
           paging: true,
           lengthChange: false,
           searching: false,
@@ -134,11 +138,11 @@
                 var api = this.api();
                 const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
                 const colMap = {
-                    3: 'tot_use_amt',
-                    4: 'biz_loan_amt',
-                    5: 'spot_loan_amt',
-                    6: 'etc_loan_amt',
-                    7: 'remain_amt',
+                    2: 'tot_use_amt',
+                    3: 'biz_loan_amt',
+                    4: 'spot_loan_amt',
+                    5: 'etc_loan_amt',
+                    6: 'remain_amt',
                 };
                 Object.entries(colMap).forEach(([colIdx, key]) => {
                     const footer = api.column(Number(colIdx)).footer();
@@ -148,7 +152,7 @@
                     }
                 }); 
             },
-        });
+        }); 
 
         $('#btn_search').click(function () {
           tbl_loan_summary.ajax.reload();
@@ -159,6 +163,12 @@
           tbl_chain_loan_list.ajax.reload();
           tbl_counsel_list.ajax.reload();
           // $('#tbl_chain_loan_list').DataTable().clear().draw();
+        });
+
+        $("#sch_chain_nm").on("keydown", function (e) {
+          if (e.key === "Enter") {
+            $("#btn_search").click();
+          }
         });
 
         $('#sch_all').change(function () {
@@ -406,9 +416,10 @@
           $('#btn_prepay_view').hide();
           $('#btn_create').show();
         }
+ 
 
         /**
-         * 원리금 균등상환 방식으로 이자액, 총액 계산  -- 일수
+         * 원리금 균등상환 방식으로 이자액, 총액 계산 (일수 / 금융권 표준 로직)
          */
         function setIntAmtEqualInstallment() {
           var loanType = $('#loan_type').val();
@@ -420,30 +431,88 @@
           var totAmt = 0;
 
           if (principal > 0 && annualRate > 0 && days > 0) {
+
             var dailyRate = annualRate / 365 / 100; // 일 이자율
-            if (loanType == 'L02001') {           //스팟을 제외한 모든대출 원리금 균등
-              intAmt = Math.floor(principal * dailyRate * days); // 이자에서 소수점 버림
+
+            // 스팟 제외 (L02001이 스팟인가? 기존 코드 기준 그대로 유지)
+            if (loanType == 'L02001') {
+              // 스팟이면 단순이자 방식
+              intAmt = Math.floor(principal * dailyRate * days); // 내림
               totAmt = principal + intAmt;
             } else {
-              var pow = Math.pow(1 + dailyRate, days);
-              var dailyPayment = principal * dailyRate * pow / (pow - 1); // 원리금 균등 일 납입금
-              dailyPayment = Math.round(dailyPayment); // 일 납입금은 반올림 처리
-
-              var remainPrincipal = principal;
-              intAmt = 0;
-
-              for (var i = 0; i < days; i++) {
-                var interest = Math.floor(remainPrincipal * dailyRate); // 이자에서 소수점 버림
-                var principalPayment = dailyPayment - interest;
-                remainPrincipal -= principalPayment;
-                intAmt += interest;
-              }
-              totAmt = principal + intAmt;
+              const result = calcDailyEqualPayment(principal, annualRate, days);
+              intAmt = result.totalInterest;
+              totAmt = result.totalPayment;
+              console.log("일납입금:", result.dailyPayment);
+              console.log("총이자:", result.totalInterest);
+              console.log("총상환액:", result.totalPayment);             
             }
           }
+
           $('#int_amt').val(intAmt.toLocaleString());
           $('#tot_loan_amt').val(totAmt.toLocaleString());
-        } 
+        }
+
+        Decimal.set({ precision: 40, rounding: Decimal.ROUND_HALF_UP });
+
+        function calcDailyEqualPayment(principal, annualRatePercent, days) {
+          var P = new Decimal(principal);
+          var annualRate = new Decimal(annualRatePercent).div(100); // 20 -> 0.20
+          var r = annualRate.div(365); // 일이율
+
+          // (1 + r)^n
+          var onePlusR = r.plus(1);
+          var pow = onePlusR.pow(days);
+
+          // 일납입금 계산 (소수 유지, 마지막에만 반올림)
+          // A = P * r * pow / (pow - 1)
+          var dailyPaymentCalc = P.mul(r).mul(pow).div(pow.minus(1));
+          // console.log("일납입금(소수):", dailyPaymentCalc.toString());  
+          // 출력용(원 단위 반올림) — 여기서만 버림 금융권에서는 일납입금을 DOWN 처리하는게 일반적임.
+          var dailyPayment = dailyPaymentCalc.toDecimalPlaces(0, Decimal.ROUND_DOWN);
+
+          var remain = P;
+          var totalInterest = new Decimal(0);
+          var schedule = [];
+
+          for (var i = 1; i <= days; i++) {
+            // 이자 = 잔액 * r  -> 반올림 (금융권 표준)
+            var interest = remain.mul(r).toDecimalPlaces(0, Decimal.ROUND_DOWN);
+
+            // 원금 = (정수 반올림된) 일납입금 - (반올림된) 이자
+            var principalPayment = dailyPayment.minus(interest);
+
+            // 마지막 회차 보정: 잔액을 정확히 0으로 만들기
+            if (i === days) {
+              // 남은 잔액(정수) 만큼 마지막 원금에 더해서 0으로 만든다.
+              // remain은 소수 자릿수 없이 정확하도록 유지됨.
+              principalPayment = principalPayment.plus(remain);
+            }
+
+            // 잔액 차감 (정수 단위)
+            remain = remain.minus(principalPayment);
+
+            // 누적 이자
+            totalInterest = totalInterest.plus(interest);
+
+            schedule.push({
+              seq: i,
+              interest: interest.toNumber(),
+              principal: principalPayment.toNumber(),
+              payment: (i === days) ? principalPayment.plus(interest).toNumber() : dailyPayment.toNumber(),
+              remain: remain.toNumber()
+            });
+          }
+
+          return {
+            dailyPaymentCalc: Number(dailyPaymentCalc.toString()), // 소수값(참고용)
+            dailyPayment: Number(dailyPayment.toString()),         // 반올림된 일납입금
+            totalInterest: Number(totalInterest.toString()),
+            totalPayment: Number(P.plus(totalInterest).toString()),
+            schedule: schedule
+          };
+        }
+
 
         $('#princ_amt').on('input', function () {
           setIntAmtEqualInstallment();
@@ -947,20 +1016,31 @@
                 }
               },
               { data: 'recv_dt' },
-              { data: 'recv_yn_nm' },
+              {
+                data: 'recv_yn_nm', 
+                render: function(data, type, row) {
+                  const today = new Date();
+                  const scDate = new Date(row.sc_date);
+
+                  if (scDate <= today && row.sub_trans_yn === 'N') {
+                    return data + '&nbsp;&nbsp;<button type="button" class="btn btn-warning btn-sm btn-subtrans" data-sc-seq="' + row.sc_seq + '">차감</button>';
+                  }
+                  return data;
+                }
+              },
             ],
             columnDefs: [
-              { targets: 0, width: '70px', className: 'text-center' },
-              { targets: 1, width: '100px', className: 'text-center' },
-              { targets: 2, width: '110px', className: 'text-end' },
-              { targets: 3, width: '110px', className: 'text-end' },
-              { targets: 4, width: '100px', className: 'text-end' },
-              { targets: 5, width: '110px', className: 'text-end' },
-              { targets: 6, width: '110px', className: 'text-end' },
-              { targets: 7, width: '100px', className: 'text-end' },
-              { targets: 8, width: '110px', className: 'text-end' },
-              { targets: 9, width: '100px', className: 'text-center' },
-              { targets: 10, width: '100px', className: 'text-center' },
+              { targets: 0, width: '50px', className: 'text-center' },
+              { targets: 1, width: '90px', className: 'text-center' },
+              { targets: 2, width: '100px', className: 'text-end' },
+              { targets: 3, width: '100px', className: 'text-end' },
+              { targets: 4, width: '90px', className: 'text-end' },
+              { targets: 5, width: '100px', className: 'text-end' },
+              { targets: 6, width: '100px', className: 'text-end' },
+              { targets: 7, width: '90px', className: 'text-end' },
+              { targets: 8, width: '100px', className: 'text-end' },
+              { targets: 9, width: '90px', className: 'text-center' },
+              { targets: 10, width: '120px', className: 'text-center' },
             ],
             order: [[0, 'asc']],
             paging: false,
@@ -1002,6 +1082,39 @@
           // document.querySelector('body > :not(#modal_schedule)').inert = true;
         });
 
+        $(document).on('click', '.btn-subtrans', function() {
+          const sc_seq = $(this).data('sc-seq');
+          fn_send_sub_trans(sc_seq);
+        });
+
+        function fn_send_sub_trans(sc_seq) {
+          if ($('#loan_no').val() == '') {
+            swal('실패', "대출건을 먼저 선택해주세요.", 'error');
+            return;
+          }
+          if(!sc_seq) {
+            swal('실패', "차감 전송할 상환 스케줄을 선택해주세요.", 'error');
+            return;
+          }
+          var formData = {
+              loan_no : $('#loan_no').val()
+              , sc_seq : sc_seq
+          };          
+          ConfirmdialogToAjax('execute', '/loan/loan/loanMng/sendSubTrans', formData, fn_sub_trans_result); 
+        }
+
+        function fn_sub_trans_result(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg;
+
+          if (resultCode == 'S000') {
+            swal('성공', '차감 전송을 정상적으로 완료하였습니다.', 'success');            
+            $('#tbl_modal_schedule').DataTable().ajax.reload(); 
+          } else { 
+            swal('실패', resultMsg, 'error');
+          }
+        }
+
         // tbl_modal_schedule row click event
         $('#tbl_modal_schedule').on('click', 'tr', function () {
           if ($(this).hasClass('selected')) {
@@ -1020,7 +1133,7 @@
           } 
           document.querySelector('body > :not(#modal_schedule)').inert = false;
           return true; // 모달 닫기 허용
-        });
+        }); 
 
         $('#btn_schedule_excel').click(function () {
           var formData = {
@@ -1102,7 +1215,7 @@
                 <thead>
                   <tr>
                     <th rowspan="2" class="text-center">가맹점명</th>
-                    <th rowspan="2" class="text-center">사업자번호</th>
+                    <!-- <th rowspan="2" class="text-center">사업자번호</th> -->
                     <th rowspan="2" class="text-center">대표자</th>
                     <th rowspan="2" class="text-center">즉결잔고</th>
                     <th colspan="3" class="text-center">대출</th>
@@ -1119,7 +1232,7 @@
                 <tbody class="list"></tbody>
                 <tfoot>
                   <tr>
-                    <th colspan="3" class="text-center">총계</th>
+                    <th colspan="2" class="text-center">총계</th>
                     <th class="text-right px-2"></th>
                     <th class="text-right px-2"></th>
                     <th class="text-right px-2"></th>
@@ -1454,9 +1567,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <!-- <div class="table-responsive scrollbar">
-            <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_modal_schedule"> -->
-          <div class="table-responsive scrollbar" style="overflow-x: auto; min-width: 900px;">
+          <div class="table-responsive scrollbar" style="overflow-x: auto; min-width: 1050px;">
             <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_modal_schedule" style="min-width: 1050px; border-collapse: collapse;">
               <thead class="bg-200">
                 <tr>
@@ -1476,7 +1587,7 @@
               <tbody class="list"></tbody> 
               <tfoot>
                 <tr>
-                  <th colspan="3" class="text-center">총계</th>
+                  <th colspan="2" class="text-center">총계</th>
                   <th class="text-right px-2"></th> 
                   <th class="text-right px-2"></th> 
                   <th class="text-right px-2"></th>

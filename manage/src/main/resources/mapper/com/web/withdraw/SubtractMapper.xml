@@ -217,7 +217,7 @@
                         , GET_CODE_NM('SUB_TYPE', SM.SUB_TYPE) 	        AS sub_type_nm
                         , SM.SUB_CODE                                   AS sub_code
                         , GET_CODE_NM('SUB_CODE', SM.SUB_CODE) 	        AS sub_code_nm
-                        , SM.SUB_MEMO                   AS sub_memo                        
+                        , IFNULL(SM.SUB_MEMO, '')                       AS sub_memo                        
                         , IFNULL(SM.OCCUR_AMT, 0)       AS occur_amt
                         , IFNULL(SM.OCCUR_BASE_AMT, 0)  AS occur_base_amt
                         , IFNULL(SM.OCCUR_SVC_AMT, 0)   AS occur_svc_amt                
@@ -452,7 +452,7 @@
                         , SM.REG_DATE                           AS reg_date
                         , GET_CODE_NM('SUB_TYPE',SM.SUB_TYPE)  	AS sub_type_nm
                         , GET_CODE_NM('SUB_CODE',SM.SUB_CODE)  	AS sub_code_nm
-                        , SM.SUB_MEMO                           AS sub_memo
+                        , IFNULL(SM.SUB_MEMO, '')               AS sub_memo
                         , SM.SUB_STATUS                         AS sub_status
                         , GET_CODE_NM('SUB_STATUS',SM.SUB_STATUS) AS sub_status_nm
                         , SM.OCCUR_AMT                          AS occur_amt

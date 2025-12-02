@@ -88,7 +88,7 @@
             },
             columns: [
                 {
-                    data: null,
+                    data: 'chain_no',
                     render: function (data, type, row, meta) {
                       return meta.row + meta.settings._iDisplayStart + 1;
                     },                    
@@ -241,7 +241,7 @@
               { targets: 54, width: '130px', className: 'text-right px-1 dt-body-right' },
               { targets: 55, width: '130px', className: 'text-right px-1 dt-body-right' }
             ], 
-            order: [[1, 'desc']], // 기본 정렬 설정
+            order: [[0, 'desc']], // 기본 정렬 설정
             paging: false,
             lengthChange: false,
             searching: false,

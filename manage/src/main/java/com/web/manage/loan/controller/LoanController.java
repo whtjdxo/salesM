@@ -47,6 +47,7 @@ import com.web.manage.common.service.CommonService;
 import com.web.manage.loan.domain.LoanMstVO;
 import com.web.manage.loan.domain.LoanRepayScheduleVO;
 import com.web.manage.loan.domain.ProcPrepayVO;
+import com.web.manage.loan.domain.ProcSubTransVO;
 import com.web.manage.loan.service.LoanService;
 import com.web.common.util.ExcelStyleUtil;
 
@@ -476,6 +477,22 @@ public class LoanController {
         return result;
     }
 
+    @RequestMapping(value = "loanMng/sendSubTrans", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO sendSubTrans(@ModelAttribute("ProcSubTransVO") @Valid ProcSubTransVO procVo, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO();  
+        try {
+            System.out.println("procVo : " + procVo);
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            procVo.setUser_id(member.getUserId());            
+            return loanService.callProcLoanSendSubTrans(procVo);             
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("An error occurred while processing the Loan Prepay. [procLoanPrepay]");
+            e.printStackTrace();
+            return result;
+        }
+    }
+
     @RequestMapping(value = "loanMng/procLoanPrepay", method = RequestMethod.POST)
     public @ResponseBody ReturnDataVO callProcLoanPrepay(@ModelAttribute("ProcPrepayVO") @Valid ProcPrepayVO procVo, BindingResult bindingResult, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO();  
@@ -489,31 +506,7 @@ public class LoanController {
             result.setResultMsg("An error occurred while processing the Loan Prepay. [procLoanPrepay]");
             e.printStackTrace();
             return result;
-        }
-        // try {
-        //     SessionVO member = (SessionVO) session.getAttribute("S_USER");
-    	//     procVo.setPrepay_user_id(member.getUserId());
-        //     if (loanService.callProcLoanPrepay(procVo)) {
-        //         System.out.println(procVo);
-        //         if (procVo.getResultCode() == 0) {
-        //             result.setResultCode("S000");
-        //             result.setResultMsg("PrePay Update successful.");                         
-        //         } else {
-        //             System.out.println("PrePay  Fail");
-        //             result.setResultCode("F000");
-        //             result.setResultMsg(procVo.getResultMsg());    
-        //         }
-        //     } else {
-        //         System.out.println("PrePay  Fail");
-        //         result.setResultCode("F000");
-        //         result.setResultMsg("PrePay update failed.");
-        //     }
-        // } catch (Exception e) {
-        //     result.setResultCode("F000");
-        //     result.setResultMsg("PrePay update failed.");
-        //     e.printStackTrace();
-        // }
-        // return result;
+        }  
     }
  
 

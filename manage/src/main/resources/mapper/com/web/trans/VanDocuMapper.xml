@@ -238,7 +238,7 @@
                                 <when test="schgb_chain == 'schgb_biz_no'">
                                         AND TC.BIZ_NO  = #{schgb_chain_val}
                                 </when>
-                                <when test="schgb_chain == 'schgb_chanin_nm'">
+                                <when test="schgb_chain == 'schgb_chain_nm'">
                                         AND TC.CHAIN_NM LIKE CONCAT('%', #{schgb_chain_val}, '%')
                                 </when>
                         </choose>
@@ -336,7 +336,7 @@
                                 <when test="schgb_chain == 'schgb_biz_no'">
                                         AND TC.BIZ_NO  = #{schgb_chain_val}
                                 </when>
-                                <when test="schgb_chain == 'schgb_chanin_nm'">
+                                <when test="schgb_chain == 'schgb_chain_nm'">
                                         AND TC.CHAIN_NM LIKE CONCAT('%', #{schgb_chain_val}, '%')
                                 </when>
                         </choose>
@@ -365,7 +365,7 @@
                         <when test="schgb_chain == 'schgb_biz_no'">
                                 AND TC.BIZ_NO  = #{schgb_chain_val}
                         </when>
-                        <when test="schgb_chain == 'schgb_chanin_nm'">
+                        <when test="schgb_chain == 'schgb_chain_nm'">
                                 AND TC.CHAIN_NM LIKE CONCAT('%', #{schgb_chain_val}, '%')
                         </when>
                 </choose>

@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class ProcPrepayVO {
-    private String  prepay_loan_no;
+    private String  prepay_loan_no; 
     private String  prepay_recv_date;
     private String  prepay_memo;
     private String  prepay_user_id;

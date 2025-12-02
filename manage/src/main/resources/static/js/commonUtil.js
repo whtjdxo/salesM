@@ -637,10 +637,11 @@ function returnDate(dfval) {
     returnVal = converDateString(weekEndDate);
   } else if (dfval == 'yesterday') {
     var now = new Date();
+    now.setDate(now.getDate() - 1);
     var year = now.getFullYear();
     var mon = addZero(eval(now.getMonth() + 1));
-    var day = addZero(now.getDate() - 1);
-    var chan_val = year + '-' + mon + '-' + day;
+    var day = addZero(now.getDate());
+    var chan_val = year + '-' + mon + '-' + day;    
     returnVal = chan_val;
   } else if (dfval == 'weekAgo') {
     var weekAgo = new Date(Date.parse(new Date()) - 7 * 1000 * 60 * 60 * 24);

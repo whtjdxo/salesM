@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.web.manage.loan.domain.LoanMstVO;
 import com.web.manage.loan.domain.LoanRepayScheduleVO;
 import com.web.manage.loan.domain.ProcPrepayVO;
+import com.web.manage.loan.domain.ProcSubTransVO;
 
 @Mapper
 public interface LoanMapper {
@@ -22,7 +23,7 @@ public interface LoanMapper {
     boolean insertLoanMst(LoanMstVO loanMstVo );
 
     HashMap<String, Object> changeLoanChk(LoanMstVO loanMstVo);
-    boolean updateLoanMst(LoanMstVO loanMstVo );
+    boolean updateLoanMst(LoanMstVO loanMstVo );    
 
     boolean deleteLoanMst(LoanMstVO loanMstVo );
  
@@ -31,4 +32,6 @@ public interface LoanMapper {
     boolean insertLoanRepaySchedule(LoanRepayScheduleVO repaySchedule);
     boolean deleteLoanRepaySchedule(LoanMstVO loanMstVo);
     void callProcLoanPrepay(ProcPrepayVO procVo); 
+
+    void callProcLoanSendSubTrans(ProcSubTransVO procVo);
 }

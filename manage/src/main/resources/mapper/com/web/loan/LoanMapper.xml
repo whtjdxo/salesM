@@ -475,4 +475,16 @@
 		}
 	</update>
 
+    <update id="callProcLoanSendSubTrans" parameterType="com.web.manage.loan.domain.ProcSubTransVO" statementType="CALLABLE">
+		{ 
+				CALL PRC_LOAN_SEND_SUB_TRANS(
+						#{loan_no       , mode=IN, jdbcType=VARCHAR} 
+						, #{sc_seq      , mode=IN, jdbcType=VARCHAR}
+                        , #{user_id     , mode=IN, jdbcType=VARCHAR}
+						, #{resultCode  , mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+						, #{resultMsg   , mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+				) 
+		}
+	</update> 
+
 </mapper>

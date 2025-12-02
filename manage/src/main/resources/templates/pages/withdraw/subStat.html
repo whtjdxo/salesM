@@ -96,6 +96,7 @@
                     { data: 'occur_amt_tot', render: $.fn.dataTable.render.number(',', '.', 0, '') },
                     { data: 'recv_amt_tot', render: $.fn.dataTable.render.number(',', '.', 0, '') },
                     { data: 'remain_amt_tot', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                    , { data: 'chain_no', visible: false }
               ],
             columnDefs: [           
                 { targets: 0, width: '200px', className: 'text-left px-1' }
@@ -131,7 +132,7 @@
                 , { targets: 24, width: '120px', className: 'text-right px-1' }
                 , { targets: 25, width: '120px', className: 'text-right px-1' }                
               ],
-          order: [[1, 'desc']],
+          order: [[26, 'desc']],
             paging: true,
             lengthChange: false,
             searching: false,
