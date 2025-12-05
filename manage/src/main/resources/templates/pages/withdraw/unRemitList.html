@@ -88,10 +88,11 @@
             columns: [
                 {
                     data: 'chain_no',
-                    render: function(data, type, row) {
+                    render: function(data, type, row, meta) {
                         // 각 행의 체크박스 생성. 고유 값(여기서는 chain_no)을 value로 사용
-                        return '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '">';
-                    },
+                        rowno = meta.row + meta.settings._iDisplayStart + 1;
+                        return '<span>' + rowno + '&nbsp;<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '"></span>';
+                    }, 
                     orderable: false,
                     className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
                 }

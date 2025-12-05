@@ -28,8 +28,9 @@
         // $('#sch_list_conf_date').val(toDay);
         $('#change_resv_date').val(toDay);
 
-        $('#btn_search').click(function () {   
+        $('#btn_search').click(function () {             
           tbl_depo_resv_summ.ajax.reload();
+          fn_default_clear();
         });  
 
         $('#btn_list_search').click(function () {   
@@ -64,9 +65,10 @@
             columns: [
               {
                   data: 'chain_no',
-                  render: function(data, type, row) {
-                      // 각 행의 체크박스 생성. 고유 값(여기서는 chain_no)을 value로 사용
-                      return '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '">';
+                  render: function(data, type, row, meta) {
+                        // 각 행의 체크박스 생성. 고유 값(여기서는 chain_no)을 value로 사용
+                        rowno = meta.row + meta.settings._iDisplayStart + 1;
+                        return '<span>' + rowno + '&nbsp;<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '"></span>';
                   },
                   orderable: false,
                   className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
@@ -89,15 +91,28 @@
                   return formatted;
                 }
               } 
+              , { 
+                data: 'credit_amt', 
+                render: function(data, type, row) {
+                  var formatted = $.fn.dataTable.render.number(',', '.', 0, '').display(data);
+                  if (row.credit_gap_amt >= 10000) {
+                    return '<span style="color: red; font-weight: bold;">' + formatted + '</span>';
+                  } else if (row.credit_gap_amt > 1000) {
+                    return '<span style="color: blue;">' + formatted + '</span>';
+                  }
+                  return formatted;
+                }
+              } 
             ],
             columnDefs: [
                 { targets: 0, width: '40px', className: 'text-center dt-body-center' } // 중앙 정렬 확인
                 , { targets: 1, width: '160px', className: 'text-left px-1' }
-                , { targets: 2, width: '110px', className: 'text-left px-1' } // DataTables 권장 클래스
-                , { targets: 3, width: '130px', className: 'text-right px-1 dt-body-right' }
-                , { targets: 4, width: '130px', className: 'text-right px-1 dt-body-right' }
-                , { targets: 5, width: '130px', className: 'text-right px-1 dt-body-right' }                
-                , { targets: 6, width: '130px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 2, width: '100px', className: 'text-center px-1' }  
+                , { targets: 3, width: '110px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 4, width: '110px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 5, width: '110px', className: 'text-right px-1 dt-body-right' }                
+                , { targets: 6, width: '110px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 7, width: '110px', className: 'text-right px-1 dt-body-right' }
             ],
             order: [[0, 'desc']], // 기본 정렬 설정
             paging: true,
@@ -125,6 +140,7 @@
                     // 5: 'card_resv_amt_remit',
                     5: 'depo_amt',
                     6: 'depo_gap_amt_remit', 
+                    7: 'credit_amt',
                 };
 
                 Object.entries(colMap).forEach(([colIdx, key]) => {
@@ -213,6 +229,8 @@
           
           $('#sch_card_chain_no').val(row.chain_no);
           $('#sch_list_chain_no').val(row.chain_no);   // list 검색 조건
+
+          $('#select_chain_nm').text(row.chain_nm ); // 가맹점명 설정
           
           $('#sch_card_resv_date').val($('#sch_resv_date').val());   // 카드 작업일 설정
           $('#sch_list_resv_date').val($('#sch_resv_date').val());   // list 작업일 설정           
@@ -225,6 +243,12 @@
 					  sch_depo_date	 : $('#sch_card_resv_date').val(),
           }      
           callAjaxJson('/deposit/deposit/depoMng/chainDepositStatus', formData, fn_chainDepoStatus);
+
+          var formData ={
+            select_chain_no   : row.chain_no, 
+					  sch_resv_date	 : $('#sch_resv_date').val(),
+          }      
+          callAjax('/deposit/deposit/depoMng/getSearchConfDate', formData, fn_list_search_date_setting);
 
           if ($('#sch_list_chain_no').val() && $('#sch_list_resv_date').val()) {
             tbl_depo_resv_list.ajax.reload();
@@ -256,6 +280,12 @@
           $('#crd_remit_fee_amt').val(depoStatus.crd_remit_fee_amt ? $.fn.dataTable.render.number(',', '.', 0, '').display(depoStatus.crd_remit_fee_amt) : '0');
           $('#crd_unremit_sub_amt').val(depoStatus.crd_unremit_sub_amt ? $.fn.dataTable.render.number(',', '.', 0, '').display(depoStatus.crd_unremit_sub_amt) : '0');
           $('#crd_exc_amt').val(depoStatus.crd_exc_amt ? $.fn.dataTable.render.number(',', '.', 0, '').display(depoStatus.crd_exc_amt) : '0');            
+        }
+
+        function fn_list_search_date_setting(data){
+          var searchDate = data.data || {};          
+          $('#sch_list_conf_sdt').val(searchDate.conf_sdt);
+          $('#sch_list_conf_edt').val(searchDate.conf_edt);          
         }
 
         $('#btn_deposit').click(function () {
@@ -332,13 +362,28 @@
           tbl_depo_resv_summ.ajax.reload();
         }
 
-        function fn_default_clear(){
-          // $('#frm_sch')[0].reset();
-          $('#frm_sch_card')[0].reset();   
-          $('#frm_sch_list')[0].reset();
-          $('#deposit_all').prop('checked', false);
-          $('#tbl_card_summ').DataTable().clear().draw();
-          $('#tbl_depo_resv_list').DataTable().clear().draw();  
+        function fn_default_clear(){           
+          fn_card_clear();
+          fn_list_clear(); 
+          $('#select_chain_nm').text('매입사별 입금 예정 리스트');
+          $('#deposit_all').prop('checked', false); 
+        }
+
+        function fn_card_clear(){
+          $('#frm_sch_card')[0].reset();
+          $('#sch_card_chain_no').val('');
+          $('#sch_card_resv_date').val('');
+          $('#sch_depo_gb').val(''); 
+          tbl_card_summ.ajax.reload();
+        }
+
+        function fn_list_clear(){ 
+          $('#frm_sch_card')[0].reset();
+          $('#sch_list_chain_no').val('');
+          $('#sch_list_chain_nm').val('');
+          $('#sch_list_resv_date').val('');
+          $('#sch_list_card_acq').val(''); 
+          tbl_depo_resv_list.ajax.reload();
         }
         
         var tbl_card_summ = $('#tbl_card_summ').DataTable({
@@ -485,7 +530,6 @@
             }
           } 
           // console.log('currentValue : ' + $('#sch_list_card_acq').val() );
-
           if ($('#sch_list_chain_no').val() && $('#sch_list_resv_date').val()) {
             tbl_depo_resv_list.ajax.reload();
           } 
@@ -668,8 +712,8 @@
             alert('변경 작업일을 입력하세요.');
             return;
           }
-          if (resvDate <= toDay ){
-            alert('변경일은 익일 이후로 변경 가능합니다.');
+          if (resvDate < toDay ){
+            alert('변경일은 금일 이후로 변경 가능합니다.');
             return;
           }
           
@@ -949,6 +993,7 @@
                     <!-- <th class="text-center">상환 예정액</th> -->
                     <th class="text-center">입  금  액</th>
                     <th class="text-center">미입금액</th> 
+                    <th class="text-center">여신사 입금액</th> 
                   </tr>
                 </thead>
                 <tbody class="list"></tbody>
@@ -959,7 +1004,7 @@
                     <th class="text-right px-2"></th>
                     <th class="text-right px-2"></th>                     
                     <th class="text-right px-2"></th>
-                    <!-- <th class="text-right px-2"></th> -->
+                    <th class="text-right px-2"></th>
                   </tr>
                 </tfoot>
               </table>
@@ -971,13 +1016,13 @@
         <div class="card" style="height: 600px;">    
           <div class="card-header">            
             <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">
-              <input id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly" />
-              <input id="sch_card_resv_date" type="hidden" name="sch_card_resv_date"/>
-              <input id="sch_depo_gb"         type="hidden" name="sch_depo_gb" />
+              <input id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly"  value=""/>
+              <input id="sch_card_resv_date" type="hidden" name="sch_card_resv_date" value=""/>
+              <input id="sch_depo_gb"         type="hidden" name="sch_depo_gb"  value=""/>
             </form>
             <div class="row flex-between-end">              
               <div class="col-lg-10 align-self-center">
-                <h5 class="mb-0">매입사별 입금 예정 리스트</h5>
+                <h5 class="mb-0"><span id="select_chain_nm" style="color: blue;"></span> 매입사별 입금 예정 리스트</h5>
               </div> 
               <div class="col-sm-2">
                 <button type="button" class="btn btn-success btn-sm" id="btn_deposit_card" name="btn_deposit_card">입금 처리</button>                      
@@ -1047,7 +1092,7 @@
               </div>
               <div class="col-sm-4">
                 <div class="input-group input-group-sm mb-1">
-                  <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_unremit_sub_amt">미송금</label>
+                  <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_unremit_sub_amt">차감</label>
                   <div class="col-sm-8">
                     <input class="form-control form-control-sm text-end bg-light" id="crd_unremit_sub_amt" type="text" name="crd_unremit_sub_amt" value="0" readonly />
                   </div>
@@ -1070,23 +1115,30 @@
       <div class="card">
         <div class="card-header"> 
           <div class="row flex-between-end">              
-            <div class="col-lg-2 align-self-center">
-              <h5 class="mb-0">승인전문 상세 List</h5>
+            <div class="col-lg-1 align-self-center">
+              <h5 class="mb-0">상세 List</h5>
             </div>     
-            <div class="col-lg-10">
+            <div class="col-lg-11">
               <form id="frm_sch_list" name="frm_sch_list" onsubmit="return false;" novalidate=""> 
-                <input id="sch_list_chain_no"   type="hidden" name="sch_list_chain_no" />
-                <input id="sch_list_chain_nm"   type="hidden" name="sch_list_chain_nm" />
-                <input id="sch_list_resv_date"  type="hidden" name="sch_list_resv_date"/>
-                <input id="sch_list_card_acq"   type="hidden" name="sch_list_card_acq" /> 
-                
+                <input id="sch_list_chain_no"   type="hidden" name="sch_list_chain_no" value=""/>
+                <input id="sch_list_chain_nm"   type="hidden" name="sch_list_chain_nm" value="" />
+                <input id="sch_list_resv_date"  type="hidden" name="sch_list_resv_date" value=""/>
+                <input id="sch_list_card_acq"   type="hidden" name="sch_list_card_acq" value="" />
                 <div class="row mb-1">
-                  <div class="col-sm-5">
+                  <div class="col-sm-3">
                     <div class="input-group input-group-sm mb-1"> 
-                      <!-- <div class="col-sm-3">
-                        <input class="form-control form-control-sm" id="sch_list_conf_date" type="text" name="sch_list_conf_date" istyle="date" maxlength="10" required />
-                      </div>  -->
-                      <select class="form-select form-control-sm me-1" id="sch_remit_yn" name="sch_remit_yn" style="width: 120px">
+                      <div class="col-sm-5">
+                        <input class="form-control form-control-sm me-1" id="sch_list_conf_sdt" type="text" name="sch_list_conf_sdt" istyle="date" maxlength="10" required />
+                      </div>   
+                      <span class="input-group-text">~</span>
+                      <div class="col-sm-5">
+                        <input class="form-control form-control-sm me-1" id="sch_list_conf_edt" type="text" name="sch_list_conf_edt" istyle="date" maxlength="10" required />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1"> 
+                      <select class="form-select form-control-sm me-1" id="sch_remit_yn" name="sch_remit_yn" style="width: 90px">
                         <option value="A">전체</option>
                         <option value="Y">정산확정</option>
                         <option value="N">미확정</option>
@@ -1100,10 +1152,10 @@
                       <button type="button" class="btn btn-primary btn-sm" id="btn_list_search" name="btn_list_search">조회</button> 
                     </div>
                   </div> 
-                  <div class="col-sm-5">
+                  <div class="col-sm-4">
                     <div class="input-group input-group-sm mb-1">
-                      <div class="col-sm-4"></div>
-                      <label class="col-sm-2 col-form-label col-form-label-sm" for="change_resv_date">입금예정일 변경</label>                       
+                      <div class="col-sm-3"></div>
+                      <label class="col-sm-3 col-form-label col-form-label-sm" for="change_resv_date">입금예정일 변경</label>                       
                       <div class="col-sm-4">
                         <div id="div_deposit_date">
                           <input class="form-control form-control-sm" id="change_resv_date" type="text" name="change_resv_date" istyle="date" maxlength="10" placeholder="변경 작업일" />  
@@ -1112,7 +1164,7 @@
                       <button type="button" class="btn btn-info btn-sm" id="btn_list_change" name="btn_list_change">변경</button>                                              
                     </div>                             
                   </div>
-                  <div class="col-sm-2 text-end"> 
+                  <div class="col-sm-1 text-end"> 
                     <button type="button" class="btn btn-primary btn-sm" id="btn_list_excel" name="btn_list_excel">Excel</button> 
                   </div>    
                 </div> 

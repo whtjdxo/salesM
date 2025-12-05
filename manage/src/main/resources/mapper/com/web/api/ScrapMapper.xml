@@ -255,33 +255,33 @@
 
         <update id="callProcTransDeliDocu" parameterType="com.web.manage.api.domain.ScrapProcTransVO" statementType="CALLABLE">
 		{ 
-                        CALL PRC_SCRAP_TRANS_DELI_DOCU(
-                                        #{chainNo, mode=IN, jdbcType=VARCHAR}
-                                        , #{userId, mode=IN, jdbcType=VARCHAR}
-                                        , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-                                        , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
-                        ) 
+            CALL PRC_SCRAP_TRANS_DELI_DOCU(
+                #{chainNo, mode=IN, jdbcType=VARCHAR}
+                , #{userId, mode=IN, jdbcType=VARCHAR}
+                , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+            ) 
 		}
 	</update>
 
         <update id="callProcTransBankDeposit" parameterType="com.web.manage.api.domain.ScrapProcTransVO" statementType="CALLABLE">
 		{ 
-                        CALL PRC_SCRAP_TRANS_BANK_DEPOSIT(
-                                        #{chainNo, mode=IN, jdbcType=VARCHAR}
-                                        , #{userId, mode=IN, jdbcType=VARCHAR}
-                                        , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-                                        , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
-                        ) 
+            CALL PRC_SCRAP_TRANS_BANK_DEPOSIT(
+                #{chainNo, mode=IN, jdbcType=VARCHAR}
+                , #{userId, mode=IN, jdbcType=VARCHAR}
+                , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+            ) 
 		}
 	</update>
 
         <update id="callProcTransKsolution" parameterType="com.web.manage.api.domain.ScrapProcTransVO" statementType="CALLABLE">
 		{ 
-                        CALL PRC_SCRAP_TRANS_KSOLUTION_DATA(
-                                        #{userId, mode=IN, jdbcType=VARCHAR}
-                                        , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-                                        , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
-                        ) 
+            CALL PRC_SCRAP_TRANS_KSOLUTION_DATA(
+                #{userId, mode=IN, jdbcType=VARCHAR}
+                , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+            ) 
 		}
 	</update>
 

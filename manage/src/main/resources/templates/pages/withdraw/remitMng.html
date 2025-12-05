@@ -38,6 +38,12 @@
           tbl_remit_summ.ajax.reload();
         });  
 
+        $('#sch_chain_nm').keypress(function(e) {
+          if (e.which === 13) { // Enter key
+            $('#btn_search').click();
+          }
+        });
+
         $('#btn_list_search').click(function () {   
           tbl_remit_list.ajax.reload();
         }); 
@@ -69,14 +75,15 @@
           },
           columns: [              
               {
-                data: 'remit_status',
-                render: function(data, type, row) {
+                data: 'remit_status',                
+                render: function(data, type, row, meta) {
+                  rowno = meta.row + meta.settings._iDisplayStart + 1;
                   if (data === 'T00000') {
-                      return '<input type="hidden" class="form-check-input row-checkbox" value="' + row.remit_no + '" disabled">';
+                      return '<span>' + rowno + '&nbsp;<input type="hidden" class="form-check-input row-checkbox" value="' + row.remit_no + '" disabled"></span>';
                     // return '<input type="checkbox" class="form-check-input row-checkbox" value="' + row.remit_no + '" disabled style="opacity:0.5;">';
                   } else {
-                    return '<input type="checkbox" class="form-check-input row-checkbox" value="' + row.remit_no + '">';
-                  }
+                    return '<span>' + rowno + '&nbsp;<input type="checkbox" class="form-check-input row-checkbox" value="' + row.remit_no + '"></span>';
+                  }                         
                 },
                 orderable: false,
                 className: 'text-center dt-body-center'
@@ -104,11 +111,11 @@
 
           ],
           columnDefs: [
-              { targets: 0, width: '40px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
+              { targets: 0, width: '50px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
               { targets: 1, width: '160px', className: 'text-left px-1' },
               { targets: 2, width: '110px', className: 'text-center px-1' },
-              { targets: 3, width: '90px', className: 'text-center px-1' },
-              { targets: 4, width: '90px', className: 'text-center px-1' }, 
+              { targets: 3, width: '80px', className: 'text-center px-1' },
+              { targets: 4, width: '80px', className: 'text-center px-1' }, 
 
               { targets: 5, width: '110px', className: 'text-right px-1 dt-body-right' },
 
@@ -328,7 +335,7 @@
             alert("선택된 항목이 없습니다.");
             return;
           }
-          console.log("remit_no : ", selectedRemitNo);  
+          // console.log("remit_no : ", selectedRemitNo);  
           var formData = {
             sch_remit_no : selectedRemitNo,
           }
@@ -388,7 +395,7 @@
         function fn_remit_result(data){ 
           swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
           fn_default_clear();
-          tbl_remit_summ.ajax.reload();
+          tbl_remit_summ.ajax.reload(null, false);
         }
 
         function fn_default_clear(){ 
@@ -625,7 +632,7 @@
                         <select class="form-select form-control-sm me-1" id="sch_agency_cd" name="sch_agency_cd" style="width: 75px">
                           <option value="">대리점</option>
                         </select>                      
-                        <input type="text" class="form-control form-control-sm me-1" id="schgb_chain_val" name="schgb_chain_val" style="width:100px" />
+                        <input type="text" class="form-control form-control-sm me-1" id="sch_chain_nm" name="sch_chain_nm" style="width:100px" />
                         <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
                       </div>
                     </div> 

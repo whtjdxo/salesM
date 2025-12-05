@@ -118,7 +118,7 @@
                 , TA.CRD_FEE_RATE									AS agency_crd_fee
                 , TA.LOAN_FEE_RATE									AS agency_loan_fee 
         FROM 	TB_CHAIN	TC
-                JOIN TB_AGENCY TA ON TA.AGENCY_CD  = TC.AGENCY_CD  		
+                STRAIGHT_JOIN TB_AGENCY TA ON TA.AGENCY_CD  = TC.AGENCY_CD  		
                 LEFT OUTER JOIN (
                     SELECT 	TRANS_COMP			AS CHAIN_NO
                             , SUM(IN_AMT)		AS CRD_IN_AMT
@@ -138,7 +138,7 @@
                     AND	WORK_DATE 	= #{close_date}
                     GROUP  BY CHAIN_NO
                 ) WD ON WD.CHAIN_NO = TC.CHAIN_NO	   	
-                JOIN (
+                STRAIGHT_JOIN (
                     SELECT 	T1.CHAIN_NO
                             , IFNULL(SUM(T1.ADJUST_CNT)	, 0)	AS REMIT_CNT
                             , IFNULL(SUM(T1.CONF_AMT)     	, 0)	AS CONF_AMT
@@ -233,8 +233,7 @@
                             , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02002', 'L06002', 'L07002' ) THEN T2.RECV_CRD_AMT 	ELSE NULL END) 	AS RECV_SPOT_DELAY_CRD_AMT	  				
                             , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02002', 'L06002', 'L07002') THEN T2.MRECV_CRD_AMT 	ELSE NULL END) 	AS MRECV_SPOT_DELAY_CRD_AMT
                             , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L01001', 'L01002', 'L01004',  'L02001', 'L02002', 'L06001', 'L06002', 'L07001', 'L07002', 'L02004', 'L06004', 'L07004') THEN NULL ELSE T2.RECV_AMT END)	AS RECV_LOAN_ETC_AMT
-                    FROM 	TB_SUB_MST T1
-                            JOIN (
+                    FROM 	(
                                 SELECT SUB_NO
                                         , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN NULL ELSE RECV_AMT END) 			AS RECV_AMT
                                         , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN NULL ELSE RECV_BASE_AMT END) 	AS RECV_BASE_AMT
@@ -247,32 +246,33 @@
                                 FROM	TB_SUB_RECEIVE
                                 WHERE	RECV_DATE 		= #{close_date}
                                 GROUP	BY SUB_NO
-                            ) T2 ON T2.SUB_NO = T1.SUB_NO
-                    WHERE	T1.SHIFT_FLAG 	= 'N'
+                            ) T2 
+                            JOIN TB_SUB_MST T1 ON T1.SUB_NO = T2.SUB_NO
+                                                AND T1.SHIFT_FLAG 	= 'N'
                     GROUP 	BY T1.CHAIN_NO
                 ) SM ON SM.CHAIN_NO = TC.CHAIN_NO 
                 LEFT OUTER JOIN (
                     SELECT 	CHAIN_NO
                             , SUM(OCCUR_BASE_AMT)  AS REMIT_TRANS_FEE
                     FROM 	TB_SUB_MST
-                    WHERE  REG_DATE =    #{close_date}
-                    AND	SUB_CODE = 'I06001'
+                    WHERE   REG_DATE =    #{close_date}
+                    AND	    SUB_CODE = 'I06001'
                     GROUP	BY CHAIN_NO
                 ) NS ON NS.CHAIN_NO = TC.CHAIN_NO
                 LEFT OUTER JOIN (
                     SELECT 	CHAIN_NO, TOT_USE_AMT
                     FROM 	TB_DAY_CLOSE_REPORT
-                    WHERE  CLOSE_DATE IN (
-                                            SELECT 	MAX(CLOSE_DATE) CLOSE_DATE
-                                            FROM 	TB_DAY_CLOSE_REPORT
-                                            WHERE	CLOSE_DATE =  GET_PRE_WORKDAY(#{close_date})
-                                        )
+                    WHERE   CLOSE_DATE IN (
+                                SELECT 	MAX(CLOSE_DATE) CLOSE_DATE
+                                FROM 	TB_DAY_CLOSE_REPORT
+                                WHERE	CLOSE_DATE =  GET_PRE_WORKDAY(#{close_date})
+                            )
                 ) PR ON PR.CHAIN_NO = TC.CHAIN_NO 
         WHERE 	1 = 1
           AND   (
                     TC.SVC_STAT IN ('O', 'R')
                     OR 
-                    ( TC.SVC_STAT = 'C' AND TC.SVC_END_DT >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 10 DAY), '%Y-%m-%d'))
+                    ( TC.SVC_STAT = 'C' AND TC.SVC_END_DT >= CURDATE() - INTERVAL 10 DAY)
                 )
           AND  TC.USE_YN = 'Y'
         <choose>
@@ -512,8 +512,7 @@
                             , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02002', 'L06002', 'L07002' ) THEN T2.RECV_CRD_AMT 	ELSE NULL END) 	AS RECV_SPOT_DELAY_CRD_AMT	  				
                             , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L02002', 'L06002', 'L07002') THEN T2.MRECV_CRD_AMT 	ELSE NULL END) 	AS MRECV_SPOT_DELAY_CRD_AMT
                             , SUM(CASE WHEN T1.SUB_TYPE ='L' AND SUB_CODE IN ('L01001', 'L01002', 'L01004',  'L02001', 'L02002', 'L06001', 'L06002', 'L07001', 'L07002', 'L02004', 'L06004', 'L07004') THEN NULL ELSE T2.RECV_AMT END)	AS RECV_LOAN_ETC_AMT
-                    FROM 	TB_SUB_MST T1
-                            JOIN (
+                    FROM 	(
                                 SELECT SUB_NO
                                         , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN NULL ELSE RECV_AMT END) 			AS RECV_AMT
                                         , SUM(CASE WHEN SUBSTR(RECV_TYPE, 1, 1) = 'M' THEN NULL ELSE RECV_BASE_AMT END) 	AS RECV_BASE_AMT
@@ -526,8 +525,9 @@
                                 FROM	TB_SUB_RECEIVE
                                 WHERE	RECV_DATE 		= #{close_date}
                                 GROUP	BY SUB_NO
-                            ) T2 ON T2.SUB_NO = T1.SUB_NO
-                    WHERE	T1.SHIFT_FLAG 	= 'N'
+                            ) T2 
+                            JOIN TB_SUB_MST T1 ON T1.SUB_NO = T2.SUB_NO
+                                                AND T1.SHIFT_FLAG 	= 'N'  
                     GROUP 	BY T1.CHAIN_NO
                 ) SM ON SM.CHAIN_NO = TC.CHAIN_NO 
                 LEFT OUTER JOIN (
@@ -552,7 +552,7 @@
           AND   (
                     TC.SVC_STAT IN ('O', 'R')
                     OR 
-                    ( TC.SVC_STAT = 'C' AND TC.SVC_END_DT >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 10 DAY), '%Y-%m-%d'))
+                    ( TC.SVC_STAT = 'C' AND TC.SVC_END_DT >= CURDATE() - INTERVAL 10 DAY)
                 )
           AND  TC.USE_YN = 'Y'
 	</select>

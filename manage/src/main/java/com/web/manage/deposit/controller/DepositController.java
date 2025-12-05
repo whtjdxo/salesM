@@ -194,6 +194,22 @@ public class DepositController {
         return jString;  
     }
 
+    @RequestMapping(value="deposit/depoMng/getSearchConfDate", method = RequestMethod.POST)
+	public @ResponseBody ReturnDataVO getSearchConfDate(@RequestParam HashMap<String, String> hashmapParam, HttpSession session){
+		HashMap<String, Object> rslt = new HashMap<String, Object>();	
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+			rslt = depositService.getSearchConfDate(hashmapParam);			
+			result.setResultCode("S000");
+			result.setData(rslt);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
     @RequestMapping(value = "deposit/depoMng/depoResvList", method = RequestMethod.POST)
     public @ResponseBody String getDepoResvList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();

@@ -35,8 +35,8 @@
             return false;
           } else if (corpType === 'CH') {
             callAjax('/common/getChainList', "", fn_chain_list_setting);
-          } else if (corpType === 'LN') {
-            callAjax('/common/getCreditCorpList', { 'corp_type': corpType }, fn_corp_list_setting);
+          } else if (corpType === 'OP') {
+            callAjax('/common/getOpCorpList', { 'corp_type': corpType }, fn_corp_list_setting);
           }          
         }); 
 
@@ -93,21 +93,31 @@
             // 헤더 제외하고 데이터 처리
             for (let i = dataRow; i < data.length; i++) {
                 const row = data[i];
-                if (row.length > 0 && row[4] >= '0') {
-                    // 데이터 유효성 검사 및 처리
+                if (row.length > 0 && row[4] >= '0') {                    
+                    console.log('pre row :', row);
+                    // var tradeDttm = row[0];
+                    // if (typeof tradeDttm === 'number') {
+                    //     // 엑셀에서 날짜가 숫자로 올 경우 처리
+                    //     var date = XLSX.SSF.parse_date_code(tradeDttm);
+                    //     tradeDttm = `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')} ${String(date.H).padStart(2, '0')}:${String(date.M).padStart(2, '0')}:${String(date.S).padStart(2, '0')}`;                        
+                    //     row[0] = tradeDttm;
+                    // }
+
+                    row[0] = row[0].replace('.','-').replace('.','-'); // 엑셀에서 날짜가 .으로 구분되어 올 수 있어 변환                    
                     var checkResult = validateRow(row);
                     const tr = document.createElement('tr');
                     if (checkResult !== '정상') {
                         tr.style.backgroundColor = '#f8f9fa';
                         uploadChk = false;
                     }
+                    console.log('pre row :', row);
                     tr.innerHTML = `
-                        <td>${row[0].replace('.','-').replace('.','-') || ''}</td>
+                        <td>${row[0] || ''}</td>
                         <td>${row[1] || ''}</td>
-                        <td>${row[2] || ''}</td>
-                        <td>${row[3] || ''}</td>
-                        <td>${row[4] || ''}</td>
-                        <td>${row[5] || ''}</td>
+                        <td>${row[2] || ''}</td>                        
+                        <td style="text-align: right;">${row[3] || ''}</td>
+                        <td style="text-align: right;">${row[4] || ''}</td>
+                        <td style="text-align: right;">${row[5] || ''}</td>
                         <td>${row[6] || ''}</td>
                         <td>${checkResult || ''}</td>
                     `;
@@ -213,7 +223,7 @@
                                         <div class="col-sm-4">
                                             <select class="form-select form-control-sm me-1" id="corp_type" name="corp_type">
                                                 <option value="CH" selected>가맹점</option>
-                                                <option value="LN">여신사</option>
+                                                <option value="OP">운영사</option>
                                             </select>
                                         </div> 
                                         <div class="col-sm-5">
@@ -256,7 +266,7 @@
             </div> 
             <div class="card-body pt-0 px-0" style="padding-top: 0px">
                 <div class="table-responsive scrollbar">
-                    <table class="table table-sm fs-9 mb-0 selectable-table table-hover selectable" id="tbl_upload_data">
+                    <table class="table table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_upload_data">
                         <thead>
                             <tr>
                                 <th class="text-center">거래일시</th> 

@@ -40,6 +40,17 @@
          ORDER  BY 2
   </select>
 
+  <select id="getOpCorpList" resultType="hashMap">
+        SELECT  CORP_CD       as code
+                , CORP_NM     as codeNm
+                , 'CORP_CD'   AS group_code
+          FROM  TB_CORP
+         WHERE  1= 1
+           AND  CORP_TYPE = 'OP'
+           AND  USE_YN  = 'Y'           
+         ORDER  BY 2
+  </select>
+
   <select id="getChainVanList" resultType="hashMap">
         SELECT  CV.VAN_CD 		AS code
                 , CD.CODE_NM 	AS codeNm
@@ -102,7 +113,7 @@
                            WHERE  L.CHAIN_NO  = #{sch_help_chain_no}
                              AND  L.LINK_CHAIN_NO = TC.CHAIN_NO
                           ) 
-        <if test="sch_link_chain_nm != null and sch_link_chain_nm != ''">
+        <if test="sch_help_chain_nm != null and sch_help_chain_nm != ''">
           AND TC.CHAIN_NM LIKE CONCAT('%', #{sch_help_chain_nm}, '%')
         </if>
         <choose>

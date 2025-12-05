@@ -8,19 +8,19 @@
 	</select> 
 
     <select id="getSalesSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-		SELECT 	GB AS remit_gb 
-					, IFNULL(COUNT(DISTINCT VT.CHAIN_NO), 0)  	AS chain_cnt 
-					, IFNULL(SUM(CONF_CNT), 0) 					AS conf_cnt
-					, IFNULL(SUM(CONF_AMT), 0) 					AS conf_amt
-					, IFNULL(SUM(CARD_RESV_AMT), 0) 			AS card_resv_amt
-					, IFNULL(SUM(CARD_FEE_AMT), 0) 				AS card_fee_amt	
-					, IFNULL(SUM(SVC_FEE_AMT), 0) 				AS svc_fee_amt	
-					, IFNULL(SUM(CRD_FEE_AMT), 0) 				AS crd_fee_amt
-					, IFNULL(SUM(WD_BASE_AMT), 0) 				AS wd_base_amt
-					, IFNULL(SUM(EXC_REMIT_AMT), 0) 			AS exc_remit_amt	
-					, IFNULL(SUM(SUB_AMT), 0) 					AS sub_amrm	
-					, IFNULL(SUM(CONF_AMT), 0) - IFNULL(SUM(REMIT_TOT_AMT), 0) + IFNULL(SUM(EXC_REMIT_AMT), 0) AS sub_amt	
-					, IFNULL(SUM(REMIT_TOT_AMT), 0)				AS remit_tot_amt
+		SELECT 	GB                                          AS remit_gb 
+                , IFNULL(COUNT(DISTINCT VT.CHAIN_NO), 0)  	AS chain_cnt 
+                , IFNULL(SUM(CONF_CNT), 0) 					AS conf_cnt
+                , IFNULL(SUM(CONF_AMT), 0) 					AS conf_amt
+                , IFNULL(SUM(CARD_RESV_AMT), 0) 			AS card_resv_amt
+                , IFNULL(SUM(CARD_FEE_AMT), 0) 				AS card_fee_amt	
+                , IFNULL(SUM(SVC_FEE_AMT), 0) 				AS svc_fee_amt	
+                , IFNULL(SUM(CRD_FEE_AMT), 0) 				AS crd_fee_amt
+                , IFNULL(SUM(WD_BASE_AMT), 0) 				AS wd_base_amt
+                , IFNULL(SUM(EXC_REMIT_AMT), 0) 			AS exc_remit_amt	
+                , IFNULL(SUM(SUB_AMT), 0) 					AS sub_amrm	
+                , IFNULL(SUM(CONF_AMT), 0) - IFNULL(SUM(REMIT_TOT_AMT), 0) + IFNULL(SUM(EXC_REMIT_AMT), 0) AS sub_amt	
+                , IFNULL(SUM(REMIT_TOT_AMT), 0)				AS remit_tot_amt
 		  FROM 	(
 				SELECT 	1 AS ORD
 						, 'REMI'									AS GB
@@ -72,23 +72,27 @@
 						   AND 	USE_YN    = 'Y'
 						 GROUP 	BY CHAIN_NO, WORK_DATE
 						) WD  
-						LEFT OUTER JOIN (
-				  			SELECT CHAIN_NO 
-							       	, SUM(REMAIN_AMT)  AS SUB_AMT
-							  FROM 	TB_SUB_MST
-							 WHERE 	SUB_STATUS IN ('000000', '100000')
-							   AND 	USE_YN = 'Y'
-							 GROUP BY CHAIN_NO
+                        LEFT OUTER JOIN (
+				  			SELECT SM.CHAIN_NO 
+							       	, SUM(REMAIN_AMT)  AS SUB_AMT 
+							  FROM 	TB_SUB_MST SM
+							  		JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO 
+							  		   				AND TC.SVC_STAT = 'Y'
+							 WHERE 	SM.SUB_STATUS IN ('000000', '100000')
+							   AND 	SM.USE_YN = 'Y'
+							 GROUP BY SM.CHAIN_NO
 				  		) SB ON SB.CHAIN_NO = WD.CHAIN_NO 
 				  		LEFT OUTER JOIN (
-				  			SELECT 	CHAIN_NO, SUM(REMAIN_AMT) AS EXC_REMIT_AMT
-				  			  FROM 	TB_EXCEED_MST
-							 WHERE	EXC_STATUS = '100000'
-							   AND	USE_YN = 'Y'
-				   			 GROUP	BY CHAIN_NO
-				  		) EC ON EC.CHAIN_NO = WD.CHAIN_NO
+				  			SELECT 	EM.CHAIN_NO, SUM(REMAIN_AMT) AS EXC_REMIT_AMT
+				  			  FROM 	TB_EXCEED_MST EM
+				  			  		JOIN TB_CHAIN TC ON TC.CHAIN_NO = EM.CHAIN_NO 
+							  		   				AND TC.SVC_STAT = 'Y'
+							 WHERE	EM.EXC_STATUS = '100000'
+							   AND	EM.USE_YN = 'Y'
+				   			 GROUP	BY EM.CHAIN_NO
+				  		) EC ON EC.CHAIN_NO = WD.CHAIN_NO		
 				) VT  
-				JOIN TB_CHAIN TC ON TC.CHAIN_NO = VT.CHAIN_NO
+				STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = VT.CHAIN_NO
                 <choose>
                     <when test='userCorpType == "LN"'>
                         AND TC.CORP_CD = #{userCorpCd}
@@ -132,7 +136,7 @@
                     WHERE BANK_IN_DATE = #{sch_work_date}
                     GROUP BY CHAIN_NO, CARD_ACQ 
                 ) VT
-                JOIN TB_CHAIN TC ON TC.CHAIN_NO = VT.CHAIN_NO
+                STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = VT.CHAIN_NO
                                 AND TC.SVC_STAT IN ('O', 'R')
                                 AND TC.USE_YN = 'Y'                
                 <choose>

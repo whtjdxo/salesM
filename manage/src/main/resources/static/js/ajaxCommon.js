@@ -50,8 +50,7 @@ function swal(title, text, icon) {
 }
 
 async function callAjax(target, form, callback) {
-  LoadingBar.show("처리 중입니다...");
-  
+  LoadingBar.show("처리 중입니다...");  
   try {
     const response = await fetch(target, {
       method: "POST",
@@ -64,10 +63,8 @@ async function callAjax(target, form, callback) {
 
     if (!response.ok) {
       throw new Error("Network response was not ok");
-    }
-    
-    const data = await response.json();
-
+    }    
+    const data = await response.json();    
     if (data.resultCode === "F001") {
       location.replace("/login");
     } else if (data.resultCode === "S000") {
@@ -77,7 +74,7 @@ async function callAjax(target, form, callback) {
     }
   } catch (error) {
     console.error("AJAX Error:", error);
-    swal("실패", "작업수행에 실패하였습니다.", "error");
+    swal("실패", "조회 된 내역이 없습니다.", "error");
   } finally {
     LoadingBar.hide();
   }

@@ -117,6 +117,25 @@ public class WithdrawController {
         return jString;  
     } 
 
+    @RequestMapping(value="wdMng/totWdSummary")
+	public @ResponseBody ReturnDataVO getTotWDSummary(@RequestParam HashMap<String, Object> hashmapParam, HttpSession session){
+		
+		SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        HashMap<String, Object> totalSumm      = new HashMap<String, Object>();
+		// System.out.println("※ ※ ※ ※ ※ ※ ※ ※ hashmapParam : " + hashmapParam);
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+			totalSumm = withdrawService.getWDSummaryTotal(hashmapParam);
+			result.setResultCode("S000");
+			result.setData(totalSumm);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	} 
+
     @RequestMapping("wdMng/wdChainSummary")    
     public @ResponseBody String getWdChainSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
@@ -601,11 +620,11 @@ public class WithdrawController {
                 c02.setCellValue(Double.parseDouble(String.valueOf(row.get("remit_amt"))));
                 c02.setCellStyle(excelStyle.getStyle("number")); 
                 
-                dataRow.createCell(3).setCellValue(String.valueOf(row.get("ceo_nm")));              // 예금주:대표자명
+                dataRow.createCell(3).setCellValue(String.valueOf(row.get("bbank_depositor")));              // 입금계좌 예금주
                 dataRow.createCell(4).setCellValue("");                                                 // 빈칸
                 dataRow.createCell(5).setCellValue("");                                                 // 빈칸
                 dataRow.createCell(6).setCellValue(String.valueOf(row.get("chain_nm")));            // 가맹점명  
-                dataRow.createCell(7).setCellValue(String.valueOf(row.get("corp_nm")));             // 송금처:여신사명
+                dataRow.createCell(7).setCellValue(String.valueOf(row.get("op_nm")));               // 송금처:운영사명    
                 if (rowIndex==1){
                     for (int i = 0; i < 7; i++) {
                         sheet.autoSizeColumn(i);

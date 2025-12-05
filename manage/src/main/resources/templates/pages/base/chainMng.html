@@ -173,6 +173,12 @@
           },
         });
 
+        $('#schgb_chain_val').keypress(function(e) {
+          if (e.which === 13) { // Enter key
+            $('#btn_search').click();
+          }
+        });
+
         $('#btn_search').click(function () {
           fn_chain_form_clear();
           tbl_chain.ajax.reload();
@@ -205,6 +211,7 @@
             $('#file_chain_no').val(data.chain_no); 
 
             $('#chain_nm').val(data.chain_nm);
+            $('#select_chain_nm').text(data.chain_nm);
             $('#biz_no').val(data.biz_no);
             $('#upjong').val(data.upjong);            
             $('#uptae').val(data.uptae);
@@ -307,7 +314,7 @@
           $('#frm_van_info')[0].reset();
           $('#frm_card_info')[0].reset();
           $('#frm_file_info')[0].reset();
-
+          $('#select_chain_nm').text('');  
           fn_frm_van_info_clear();
           fn_frm_card_info_clear(); 
           fn_frm_link_chain_clear(); 
@@ -585,11 +592,11 @@
             return;
           }
 
-          if(idDupChk=='N' || idDupChk == ''){
-            swal('확인', "VAN ID 중복체크를 해주세요.", 'error');
-            checked = false;
-            return;
-          }
+          // if(idDupChk=='N' || idDupChk == ''){
+          //   swal('확인', "VAN ID 중복체크를 해주세요.", 'error');
+          //   checked = false;
+          //   return;
+          // }
 
           if (checked) {
             ConfirmdialogToAjax('create', '/base/organ/chainMng/insertChainVan', $('#frm_van_info').serialize(), fn_van_return_result);
@@ -937,7 +944,7 @@
 
         $('#btn_link_create').click(function () {               
           $('#crud').val('create');      
-          var form = $('#frm_link_info');
+          var form = $('#frm_link_chain');
           var checked = true;
           var chain_no = $('#link_org_chain_no').val();
           if(chain_no == '') {
@@ -951,6 +958,7 @@
             checked = false;
             return;
           }       
+
           if (checked) {
             ConfirmdialogToAjax('create', '/base/organ/chainMng/insertLinkChain', $('#frm_link_chain').serialize(), fn_link_return_result);
           } 
@@ -958,7 +966,7 @@
 
         $('#btn_link_update').click(function () {
           $('#crud').val('update');
-          var form = $('#frm_link_info');
+          var form = $('#frm_link_chain');
           var checked = true;           
           var chain_no = $('#link_org_chain_no').val();
           if(chain_no == '') {
@@ -982,9 +990,9 @@
           var resultCode = data.resultCode;
           var resultMsg = data.resultMsg; 
           if (resultCode == 'S000') {
-            fn_frm_link_info_clear();
+            fn_frm_link_chain_clear();
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
-            tbl_card.ajax.reload();                 
+            tbl_link_chain.ajax.reload();                 
           } else {
             swal('실패', resultMsg, 'error');
           }
@@ -1060,7 +1068,6 @@
             
             $('#file_down').css("display", "inline");
             $('#file_upload').css("display", "none");
- 
 
             $('#btn_file_delete').show();
             $('#btn_file_create').hide();            
@@ -1069,7 +1076,7 @@
         });      
 
         $('#btn_file_clear').click(function () {     
-           
+           fn_frm_file_info_clear();
         }); 
 
         function fn_frm_file_info_clear(){
@@ -1127,18 +1134,7 @@
             swal('실패', "파일을 먼저 선택해주세요.", 'error');
             checked = false;
             return;
-          }
-          var chain_no = $('#file_chain_no').val();
-          if(chain_no == '') {
-            swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
-            checked = false;
-            return;
           } 
-          if (!form[0].checkValidity()) {
-            form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
-            checked = false;
-            return;
-          }
           if (checked) {
             ConfirmdialogToAjax('delete', '/base/organ/chainMng/deleteChainFile', $('#frm_file_info').serialize(), fn_file_return_result);
           }
@@ -1148,7 +1144,7 @@
           var resultCode = data.resultCode;
           var resultMsg = data.resultMsg; 
           if (resultCode == 'S000') {
-            fn_frm_link_info_clear();
+            fn_frm_file_info_clear();
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
             tbl_card.ajax.reload();                 
           } else {
@@ -1279,7 +1275,14 @@
            $(this).find('button:not([disabled]), input:not([disabled])').first().focus();           
         }); 
 
+        $('#sch_help_chain_nm').keypress(function(e) {
+          if (e.which === 13) { // Enter key
+            $('#btn_search_chain').click();
+          }
+        });
+
         $('#btn_search_chain').click(function () {
+          var tbl_help_chain = $('#tbl_help_chain').DataTable();
           tbl_help_chain.ajax.reload();
         });
 
@@ -1365,13 +1368,16 @@
       </div>
       <div class="col-lg-4">
         <div class="card">
-          <!-- <div class="card-header">
+          <div class="card-header">
             <div class="row flex-between-end">
               <div class="col-auto align-self-center">
                 <h5 class="mb-0">가맹점 상세</h5>
               </div>
+              <div class="col-sm-8 text-end">
+                <h5 class="mb-0" id="select_chain_nm"></h5>
+              </div>
             </div>
-          </div> -->
+          </div>
           <div class="card-body">
             <div class="min-vh-50">
               <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -2031,8 +2037,8 @@
                           <div class="col-sm-8">
                             <div class="input-group input-group-sm">
                               <input class="form-control form-control-sm" id="van_id" type="text" name="van_id" maxlength="20" required />
-                              <input id="van_id_dup_chk" type="hidden" name="van_id_dup_chk"/>
-                              <button type="button" class="btn btn-primary" id="btn_van_dupchk">중복</button>
+                              <!-- <input id="van_id_dup_chk" type="hidden" name="van_id_dup_chk"/>
+                              <button type="button" class="btn btn-primary" id="btn_van_dupchk">중복</button> -->
                             </div>                            
                           </div>
                         </div>

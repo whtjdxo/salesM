@@ -12,6 +12,8 @@ public interface CommonMapper {
 
     List<HashMap<String, Object>> getCreditCorpList(HashMap<String, String> hashmapParam);
 
+    List<HashMap<String, Object>> getOpCorpList(HashMap<String, String> hashmapParam);
+
     List<HashMap<String, Object>> getChainVanList(HashMap<String, String> hashmapParam);
 
     List<HashMap<String, Object>> getChainCardList(HashMap<String, String> hashmapParam);

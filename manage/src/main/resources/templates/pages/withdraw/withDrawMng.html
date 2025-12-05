@@ -16,7 +16,12 @@
       $(document).ready(function () {           
         $('#frm_sch').onLoadFunction();      
         $('#frm_sch_card').onLoadFunction();      
-        $('#frm_sch_list').onLoadFunction();      
+        $('#frm_sch_list').onLoadFunction(); 
+        
+        // Set default values for sch_reg_sdt and sch_reg_edt
+        var toDay = returnDate('today');
+        $('#sch_work_date').val(toDay);
+        $('#change_work_date').val(toDay);
 
         callAjax('/common/getCreditCorpList', "", fn_corp_list_setting);
         function fn_corp_list_setting(data) {
@@ -36,12 +41,39 @@
         callAjax('/common/totalCodelist', "code_grp_cd=('VAN_CD')", fn_corp_van_setting);      
         function fn_corp_van_setting(data) {
           codeSetting('VAN_CD', data.data, '#sch_list_van', 'VAN', '', '');  
-        }
+        } 
+ 
+        callAjax('/withdraw/withdraw/wdMng/totWdSummary', "sch_work_date=" + $('#sch_work_date').val(), fn_tot_summary_setting );
+        function fn_tot_summary_setting(result) {
+          if (result.data) {
+            $('#tot_conf_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.conf_amt));
+            $('#card_fee_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.card_fee_amt));
+            $('#card_resv_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.card_resv_amt));
+            $('#svc_fee_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.svc_fee_amt));      
+            $('#crd_fee_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.crd_fee_amt));
+            $('#wd_base_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.wd_base_amt));
 
-        // Set default values for sch_reg_sdt and sch_reg_edt
-        var toDay = returnDate('today');
-        $('#sch_work_date').val(toDay);
-        $('#change_work_date').val(toDay);
+            if (result.data.sub_amt > 0) {
+              $('#sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.sub_amt))
+                .css({ 'color': 'red', 'font-weight': 'bold' });
+            } else {
+              $('#sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.sub_amt))
+                .css({ 'color': '', 'font-weight': '' });
+            }          
+            $('#exc_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.exc_amt));
+
+            if (result.data.remit_amt > 0) {
+              $('#remit_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.remit_amt))
+                .css({ 'color': 'blue', 'font-weight': 'bold' });
+            } else if (result.data.remit_amt < 0) {
+              $('#remit_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.remit_amt))
+                .css({ 'color': 'red', 'font-weight': 'bold' });
+            } else {
+              $('#remit_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.remit_amt))
+                .css({ 'color': '', 'font-weight': '' });
+            }
+          }          
+        }
 
         $("#sch_chain_nm").on("keydown", function (e) {
           if (e.key === "Enter") {
@@ -51,7 +83,9 @@
 
         $('#btn_search').click(function () {   
           fn_default_clear();
-          tbl_wd_summ.ajax.reload();
+          tbl_wd_summ.ajax.reload();          
+          callAjax('/withdraw/withdraw/wdMng/totWdSummary', "sch_work_date=" + $('#sch_work_date').val(), fn_tot_summary_setting );
+          
         });  
 
         $('#btn_list_search').click(function () {   
@@ -91,9 +125,10 @@
             columns: [
                 {
                     data: 'chain_no',
-                    render: function(data, type, row) {
+                    render: function(data, type, row, meta) {
                         // 각 행의 체크박스 생성. 고유 값(여기서는 chain_no)을 value로 사용
-                        return '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '">';
+                        rowno = meta.row + meta.settings._iDisplayStart + 1;
+                        return '<span>' + rowno + '&nbsp;<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '"></span>';
                     },
                     orderable: false,
                     className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
@@ -156,7 +191,7 @@
             // responsive: true, // 이미 위에서 설정됨
             // scrollCollapse: true,
             scrollY: '300px',
-            pageLength: 20,
+            pageLength: 10,
             language: {
                 emptyTable: '데이터가 없습니다.',
                 zeroRecords: '일치하는 데이터가 없습니다.',
@@ -282,6 +317,8 @@
           $('#sch_list_chain_no').val(row.chain_no);   // list 검색 조건
           $('#sch_risk_chain_no').val(row.chain_no);   // risk 검색 조건
 
+          $('#select_chain_nm').text(row.chain_nm ); // 가맹점명 설정
+
           $('#sch_card_work_date').val($('#sch_work_date').val());   // 카드 작업일 설정
           $('#sch_list_work_date').val($('#sch_work_date').val());   // risk 작업일 설정           
 
@@ -360,7 +397,7 @@
             icon: 'success'
           });
           fn_default_clear();
-          tbl_wd_summ.ajax.reload();
+          tbl_wd_summ.ajax.reload(null, false);
         }
 
         function fn_default_clear(){
@@ -369,7 +406,7 @@
           $('#frm_sch_list')[0].reset();
           $('#sch_card_chain_no').val('');
           $('#sch_card_work_date').val('');
-
+          $('#select_chain_nm').text(''); // 가맹점명 설정
           $('#sch_list_chain_no').val('');
           $('#sch_list_work_date').val('');
           $('#sch_list_card_acq').val('');  
@@ -407,6 +444,7 @@
             { data: 'cncl_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
             { data: 'tot_cnt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
             { data: 'tot_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'card_acq' , visible: false },
           ],
           columnDefs: [            
             { targets: 0, width: '120px', className: 'text-left' },
@@ -417,7 +455,7 @@
             { targets: 5, width: '90px', className: 'text-end' },
             { targets: 6, width: '130px', className: 'text-end' },
           ],
-          order: [[1, 'asc']],
+          order: [[7, 'asc']],
           paging: false,
           lengthChange: false,
           searching: false,
@@ -426,7 +464,7 @@
           responsive: true,
           // scrollCollapse: true,
           // pageLength: 15,
-          scrollY: '315px',
+          scrollY: '300px',
           info: false,
           language: {
             emptyTable: '데이터가 없습니다.',
@@ -455,22 +493,32 @@
           }, 
           columns: [
             {
-                data: null,
-                render: function (data, type, row, meta) {
-                  return meta.row + meta.settings._iDisplayStart + 1;
-                },                    
+              data: null,
+              render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+              },                    
             }, 
             {
-                    data: 'wd_no',
-                    render: function(data, type, row) {
-                        // 각 행의 체크박스 생성. 고유 값(여기서는 wd_no)을 value로 사용
-                        return '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '">';
-                    },
-                    orderable: false,
-                    className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
+              data: 'wd_no',
+              render: function(data, type, row) {
+                  // 각 행의 체크박스 생성. 고유 값(여기서는 wd_no)을 value로 사용
+                  return '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '">';
+              },
+              orderable: false,
+              className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
             },
             { data: 'wd_no' },
-            { data: 'wd_status_nm' },
+            { data: 'wd_status_nm', 
+              render: function(data, type, row) {
+                if (row.wd_status == "W00906") {      // 미출금 취소
+                  return '<span style="padding:2px 6px;border-radius:4px;background-color:#ff4d4f;color:#fff;">' + data + '</span>';  
+                }
+                else if (row.wd_status != "W00000") {
+                  return '<span style="padding:2px 6px;border-radius:4px;background-color:#ffa940;color:#fff;">' + data + '</span>';  
+                }
+                return data;
+              }
+            },
             { data: 'van_cd_nm' },
             { data: 'card_acq_nm' },
             { data: 'card_no' },
@@ -670,7 +718,7 @@
         function fn_change_result(data){
           swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
           fn_default_clear();
-          tbl_wd_summ.ajax.reload();
+          tbl_wd_summ.ajax.reload(null, false);
         }
         
         // Excel download button click event
@@ -1027,11 +1075,20 @@
       </div>
       <div class="col-lg-5">
         <div class="card" style="height: 560px;">    
-          <div class="card-header">            
+          <div class="card-header">          
+            <div class="row mb-2">
+              <div class="row flex-between-end">                              
+                  <div class="col-lg-10 align-self-left text-start">
+                    <h5 class="mb-0"><span id="select_chain_nm" style="color: blue;"></span></h5>
+                  </div>               
+                  <div class="col-sm-2"></div>
+              </div>
+            </div>              
+          <!-- </div>
+          <div class="card-body pt-0 px-0" style="padding-top: 10px">     -->
             <form id="frm_sch_card" name="frm_sch_card" onsubmit="return false;" novalidate="">
               <input class="form-control form-control-sm" id="sch_card_chain_no" type="hidden" name="sch_card_chain_no" readonly="readonly" />
               <input class="form-control form-control-sm" id="sch_card_work_date" type="hidden" name="sch_card_work_date"/>                
-            
               <div class="row flex-between-end">
                 <div class="row mb-1">
                   <div class="col-sm-4">

@@ -67,9 +67,10 @@
             columns: [
                 {
                     data: 'chain_no',
-                    render: function(data, type, row) {
+                    render: function(data, type, row, meta) {
                         // 각 행의 체크박스 생성. 고유 값(여기서는 chain_no)을 value로 사용
-                        return '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '">';
+                        rowno = meta.row + meta.settings._iDisplayStart + 1;
+                        return '<span>' + rowno + '&nbsp;<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '"></span>';
                     },
                     orderable: false,
                     className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
@@ -94,12 +95,12 @@
             ],
             columnDefs: [
                 { targets: 0, width: '40px', className: 'text-center dt-body-center' } // 중앙 정렬 확인
-                , { targets: 1, width: '130px', className: 'text-left px-1' }
-                , { targets: 2, width: '150px', className: 'text-left px-1' } // DataTables 권장 클래스
-                , { targets: 3, width: '130px', className: 'text-right px-1 dt-body-right' }
-                , { targets: 4, width: '130px', className: 'text-right px-1 dt-body-right' }
-                , { targets: 5, width: '130px', className: 'text-right px-1 dt-body-right' }
-                , { targets: 6, width: '130px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 1, width: '180px', className: 'text-left px-1' }
+                , { targets: 2, width: '120px', className: 'text-left px-1' } // DataTables 권장 클래스
+                , { targets: 3, width: '110px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 4, width: '110px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 5, width: '110px', className: 'text-right px-1 dt-body-right' }
+                , { targets: 6, width: '110px', className: 'text-right px-1 dt-body-right' }
             ],
             order: [[0, 'desc']], // 기본 정렬 설정
             paging: true,
@@ -215,6 +216,7 @@
           
           $('#sch_card_chain_no').val(row.chain_no);
           $('#sch_list_chain_no').val(row.chain_no);   // list 검색 조건
+          $('#select_chain_nm').text(row.chain_nm); // 가맹점명 설정
           
           $('#sch_card_adjust_date').val($('#sch_adjust_date').val());   // 카드 작업일 설정
           $('#sch_list_adjust_date').val($('#sch_adjust_date').val());   // list 작업일 설정   
@@ -305,13 +307,29 @@
           tbl_depo_resv_summ.ajax.reload();
         }
 
-        function fn_default_clear(){
-          // $('#frm_sch')[0].reset();
-          $('#frm_sch_card')[0].reset();   
-          $('#frm_sch_list')[0].reset();
+        
 
-          $('#tbl_card_summ').DataTable().clear().draw();
-          $('#tbl_depo_adjust_list').DataTable().clear().draw();  
+        function fn_default_clear(){           
+          fn_card_clear();
+          fn_list_clear(); 
+          $('#select_chain_nm').text('매입사별 입금 리스트');
+          $('#deposit_all').prop('checked', false); 
+        }
+
+        function fn_card_clear(){
+          $('#frm_sch_card')[0].reset();
+          $('#sch_card_chain_no').val('');
+          $('#sch_card_adjust_date').val('');
+          $('#sch_depo_gb').val(''); 
+          tbl_card_summ.ajax.reload(); 
+        }
+
+        function fn_list_clear(){  
+          $('#sch_list_chain_no').val('');
+          $('#sch_list_chain_nm').val('');
+          $('#sch_list_adjust_date').val('');
+          $('#sch_list_card_acq').val(''); 
+          tbl_depo_adjust_list.ajax.reload();
         }
         
         var tbl_card_summ = $('#tbl_card_summ').DataTable({
@@ -369,7 +387,7 @@
             , { targets: 5, width: '130px', className: 'text-right px-1 dt-body-right' }
             , { targets: 6, width: '130px', className: 'text-right px-1 dt-body-right' }
           ],
-          order: [[1, 'asc']],
+          order: [[0, 'asc']],
           paging: false,
           lengthChange: false,
           searching: false,
@@ -836,8 +854,8 @@
               <input id="sch_depo_gb"           type="hidden" name="sch_depo_gb" />
             </form>
             <div class="row flex-between-end">              
-              <div class="col-lg-9 align-self-center">
-                <h5 class="mb-0">매입사별 입금 리스트</h5>
+              <div class="col-lg-9 align-self-center">                
+                <h5 class="mb-0"><span id="select_chain_nm" style="color: blue;"></span> 매입사별 입금 리스트</h5>
               </div> 
               <div class="col-sm-3 text-end">
                 <button type="button" class="btn btn-success btn-sm" id="btn_cancel_depo_card" name="btn_cancel_depo_card">입금 취소</button>                      

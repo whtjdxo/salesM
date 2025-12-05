@@ -127,7 +127,8 @@
         $('#btn_search').click(function () {
           tbl_exc_summary.ajax.reload();
           $('#tbl_exc_list').DataTable().clear().draw();
-          $('#frm_exc_mst')[0].reset();          
+          $('#frm_exc_mst')[0].reset();   
+           $('#select_chain_nm').text("상세 정보");              
         });
 
         $('#sch_all').change(function () {          
@@ -177,7 +178,8 @@
             $('#sch_exc_edt').val(data.max_exc_date);
             $('#sch_chain_no').val(data.chain_no); 
             $('#chain_remit_over_stat').val(data.remit_over_stat); 
-            $('#chain_no').val(data.chain_no);                        
+            $('#chain_no').val(data.chain_no);                 
+            $('#select_chain_nm').text(data.chain_nm);       
             if (data.remit_over_stat === 'Y') {
               $('#btn_exceed_ready').show();
               $('#btn_exceed_ready_all').show();
@@ -507,7 +509,7 @@
                 });
               }
             });
-            tbl_exc_list.ajax.reload();
+            tbl_exc_list.ajax.reload(null, false);
             fn_frm_exc_mst_clear();            
           } else {  
             swal('실패', resultMsg, 'error');
@@ -599,7 +601,7 @@
           <div class="card-header">
             <div class="row flex-between-end">
               <div class="col-auto align-self-center">
-                <h5 class="mb-0">가맹점 목록</h5>
+                <h4 class="mb-0">과입금 관리</h4>
               </div>              
               <div class="col-lg-9">
                 <form id="frm_sch_chain" name="frm_sch_chain" onsubmit="return false;" novalidate="">
@@ -741,7 +743,7 @@
               </div> 
               <div class="row flex-between-end">
                 <div class="d-flex justify-content-between align-items-center mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">
-                  <span>상세정보</span> 
+                  <span  id="select_chain_nm">상세정보</span> 
                 </div>
                 
                 <form class="needs-validation" id="frm_exc_mst" name="frm_exc_mst" onsubmit="return false;" method="post" novalidate=""> 
