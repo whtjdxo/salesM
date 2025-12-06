@@ -18,6 +18,7 @@
 	</select> 
 	
     <select id="getDayPreCloseList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /*DayCloseMapper.getDayPreCloseList*/
         SELECT 	SQL_CALC_FOUND_ROWS
                 'N'                               AS close_stat
                 , #{close_date}						AS close_date
@@ -286,6 +287,7 @@
 	</select>
 
     <select id="getDayPreCloseSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /*DayCloseMapper.getDayPreCloseSumm*/
         SELECT 	SQL_CALC_FOUND_ROWS 	
                 IFNULL(SUM(RM.REMIT_CNT)		, 0)	AS rm_remit_cnt
                 , IFNULL(SUM(RM.CONF_AMT), 0)           AS rm_conf_amt
@@ -558,12 +560,13 @@
 	</select>
 
     <select id="getDayCloseList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /*DayCloseMapper.getDayCloseList*/
         SELECT 	SQL_CALC_FOUND_ROWS
-                'N'                               AS close_chk
-                , close_date				
-                , dc.chain_no			
-                , tc.chain_nm	        
-                , dc.corp_cd			
+                'Y'                                     AS close_chk
+                , DC.close_date			                AS close_date 	
+                , DC.CHAIN_NO                           AS chain_no			
+                , TC.CHAIN_NM                           AS chain_nm	        
+                , DC.CORP_CD                            AS corp_cd
                 , IFNULL(rm_remit_cnt, 0)              AS rm_remit_cnt
                 , IFNULL(rm_conf_amt, 0)               AS rm_conf_amt
                 , IFNULL(rm_card_fee_amt, 0)           AS rm_card_fee_amt
@@ -651,6 +654,7 @@
 	</select>
 
     <select id="getDayCloseSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /*DayCloseMapper.getDayCloseSumm*/
         SELECT  IFNULL(SUM(rm_remit_cnt), 0)                AS rm_remit_cnt
                 , IFNULL(SUM(rm_conf_amt), 0)               AS rm_conf_amt
                 , IFNULL(SUM(rm_card_fee_amt), 0)           AS rm_card_fee_amt
@@ -722,15 +726,7 @@
                 , IFNULL(SUM(pre_tot_use_amt), 0) - IFNULL(SUM(DC.tot_use_amt), 0)     AS tot_use_amt_gap 
           FROM  TB_DAY_CLOSE_REPORT DC
                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO                
-         WHERE  CLOSE_DATE = #{close_date}
-        <choose>
-            <when test="sidx != '' and sidx != null ">
-                    ORDER BY ${sidx} ${sord}
-            </when>
-            <otherwise>
-                    ORDER BY 1
-            </otherwise>
-        </choose> 
+         WHERE  DC.CLOSE_DATE = #{close_date} 
 	</select>
     <update id="callProcDayClose" parameterType="com.web.manage.deposit.domain.ProcDayCloseVO" statementType="CALLABLE">
 		{ 
