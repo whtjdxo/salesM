@@ -149,6 +149,14 @@ public class CommonController {
 		return result;
 	}
 
+	@RequestMapping(value="/getChainSchList")
+	@ResponseBody
+	public List<HashMap<String, Object>> getChainSchList(@RequestParam String keyword, HttpSession session){
+		System.out.println("hashmapParam : " + keyword);
+		return commonService.getChainSchList(keyword);
+	}
+
+
 	@RequestMapping(value="/getLinkChainList")
 	public @ResponseBody String getLinkChainList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();

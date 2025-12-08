@@ -8,8 +8,11 @@ import java.util.List;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.web.config.interceptor.AuthInterceptor;
 import com.web.manage.common.domain.ReturnDataVO;
@@ -165,15 +168,25 @@ public class DepositService {
 
 
     @Transactional
-    public boolean uploadExcelData(DepositExcelDataVO excelDataVo) {        
+    public ReturnDataVO uploadExcelData(DepositExcelDataVO excelDataVo) {     
+        ReturnDataVO result = new ReturnDataVO();   
+        int totCount = 0;
+        int succCount = 0;
+        int failCount = 0;
+        int dupCount = 0;
         try {
             if(excelDataVo.getExcelData() == null || excelDataVo.getExcelData().size() == 0) {
                 throw new RuntimeException("No data to upload.");
             } 
             // 회사 계좌번호 조회
             HashMap<String, Object> hparam = new HashMap<>();
-            hparam.put("corpCd", excelDataVo.getCorp_cd());
+            
             hparam.put("corpType", excelDataVo.getCorp_type());
+            if("CH".equals(excelDataVo.getCorp_type())) {
+                hparam.put("corpCd", excelDataVo.getChain_no());
+            } else if ("OP".equals(excelDataVo.getCorp_type())) {
+                hparam.put("corpCd", excelDataVo.getCorp_cd()); 
+            }
             String corpAccountNo = depositMapper.getCorpAccountNo(hparam);
 
             for (DepositExcelRowDataVO rowData : excelDataVo.getExcelData()) {
@@ -186,27 +199,61 @@ public class DepositService {
                 rowData.setOutAmt("".equals(rowData.getOutAmt()) ? "0" : rowData.getOutAmt().replace(",", ""));
                 rowData.setRemainAmt("".equals(rowData.getRemainAmt()) ? "0" : rowData.getRemainAmt().replace(",", ""));
 
-                if (!depositMapper.excelUploadBankData(rowData)) {
-                    throw new RuntimeException("Deposit Manual Excel Data  insertion failed.");
+                // if (!depositMapper.excelUploadBankData(rowData)) {
+                //     throw new RuntimeException("Deposit Manual Excel Data  insertion failed.");
+                // }
+                try {
+                    depositMapper.excelUploadBankData(rowData);
+                    succCount++;
+                } catch (DuplicateKeyException e) {
+                    dupCount++;
+                    // throw new RuntimeException("중복 데이터가 존재합니다."); 
+                    //중복데이터는 건너뛰고 계속 진행
+                    logger.error("Duplicate key error during Excel data upload: ", e);
+
+                } catch (DataAccessException e) {
+                    // 기타 SQL 관련 예외
+                    throw new RuntimeException("Error during Excel data upload: " + e.getMessage());
                 }
+                totCount++;
             }
 
             // 모든 데이터가 성공적으로 삽입된 경우 TRANS_DEPOSIT 실행
-            ProcTransDepositVO procVo = new ProcTransDepositVO();
-            procVo.setUserId(excelDataVo.getEnt_user_id());
-            procVo.setChainNo(excelDataVo.getCorp_cd());
+            if (succCount > 0) {
+                ProcTransDepositVO procVo = new ProcTransDepositVO();
+                procVo.setUserId(excelDataVo.getEnt_user_id());
+                procVo.setChainNo(excelDataVo.getCorp_cd());
 
-            depositMapper.callProcTransDepositBatch(procVo);
-            if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
-                return true;
+                depositMapper.callProcTransDepositBatch(procVo);
+                if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
+                    // return true;
+                    result.setResultCode("S000");
+                    result.setResultMsg("Excel data uploaded successfully. Total: " + totCount + ", Success: " + succCount + ", Duplicates: " + dupCount + ", Failed: " + failCount);
+                } else {
+                    // result.setResultCode("F000");
+                    // result.setResultMsg("Excel data upload failed during deposit processing: " + procVo.getResultMsg());
+                    logger.error("Error during Excel data upload: ", procVo.getResultMsg());    
+                    throw new RuntimeException(procVo.getResultMsg());
+                }
             } else {
-                logger.error("Error during Excel data upload: ", procVo.getResultMsg());    
-                throw new RuntimeException(procVo.getResultMsg());
+                result.setResultCode("F000");
+                result.setResultMsg("처리된 데이터가 없습니다. Total: " + totCount + ", Success: " + succCount + ", Duplicates: " + dupCount + ", Failed: " + failCount);  
             }
+            return result;
+        } catch (DataAccessException e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 
+            result.setResultCode("F500");
+            result.setResultMsg("DB 처리 중 오류가 발생했습니다: " + e.getMessage());
+            return result;
         } catch (Exception e) {
-            logger.error("Error during Excel data upload: ", e);
-            throw e; // 트랜잭션 롤백을 위해 예외 재발생
+            // 기타 예외 처리 rollback
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();  
+            result.setResultCode("F500");
+            result.setResultMsg("Error during Excel data upload: " + e.getMessage());
+            return result;
+            // logger.error("Error during Excel data upload: ", e);
+            // throw e; // 트랜잭션 롤백을 위해 예외 재발생
         } 
     }
 

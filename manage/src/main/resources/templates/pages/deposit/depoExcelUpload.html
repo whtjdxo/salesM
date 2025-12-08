@@ -8,9 +8,12 @@
   <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
   <script src="/vendors/dropzone/dropzone-min.js"></script>
   <script src="/js/jquery.form.js"></script>
-
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <!-- ✅ XLSX (SheetJS) 추가 -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Select2 Bootstrap5 Theme -->
+  <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.1.1/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 
   <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />    
   <link rel="stylesheet" href="/css/custom-salesm.css" />
@@ -20,12 +23,14 @@
 
         $('#btn_upload').hide(); // 초기에는 업로드 버튼 숨김 
 
-        callAjax('/common/getChainList', "", fn_chain_list_setting);
-        function fn_chain_list_setting(data) {
-          codeSetting('CHAIN_NO', data.data, '#corp_cd', '1', '', '');
-        }
+        // callAjax('/common/getChainList', "", fn_chain_list_setting);
+        // function fn_chain_list_setting(data) {
+        //   codeSetting('CHAIN_NO', data.data, '#corp_cd', '1', '', '');
+        // }
+
+        callAjax('/common/getOpCorpList', "", fn_corp_list_setting);
         function fn_corp_list_setting(data) {
-          codeSetting('CORP_CD', data.data, '#corp_cd', '1', '', '');
+          codeSetting('CORP_CD', data.data, '#corp_cd', '1', 'OP00001', '');
         }
         
         $('#corp_type').change(function() {
@@ -34,11 +39,41 @@
             alert('구분을 선택해주세요.');
             return false;
           } else if (corpType === 'CH') {
-            callAjax('/common/getChainList', "", fn_chain_list_setting);
+            $('#corp_select_chain').show();
+            $('#corp_select_op').hide();
+            // callAjax('/common/getChainList', "", fn_chain_list_setting);
           } else if (corpType === 'OP') {
-            callAjax('/common/getOpCorpList', { 'corp_type': corpType }, fn_corp_list_setting);
+            $('#corp_select_chain').hide();
+            $('#corp_select_op').show();
+            // callAjax('/common/getOpCorpList', { 'corp_type': corpType }, fn_corp_list_setting);
           }          
         }); 
+
+        $('#chain_no').select2({            
+            theme: 'bootstrap-5',
+            placeholder: '가맹점 선택',
+            minimumInputLength: 1, // 1글자 이상 입력해야 검색 시작
+            ajax: {
+                url: '/common/getChainSchList',  // 서버 API
+                type: 'GET',
+                dataType: 'json',
+                delay: 300,
+                data: function (params) {
+                    return {
+                        keyword: params.term   // 검색어
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.map(item => ({
+                            id: item.code,
+                            text: item.codeNm
+                        }))
+                    };
+                }
+            }
+        });
+
 
         // DataTable 초기화
         $('#tbl_upload_data').DataTable({
@@ -74,7 +109,7 @@
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
                 const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-
+                console.log('Excel data:', jsonData);
                 displayData(jsonData);
                 };
                 reader.readAsArrayBuffer(file);  
@@ -161,10 +196,16 @@
                 alert('구분을 선택해주세요.');
                 return false;
             }
-            if (!$('#corp_cd').val()) {
-                alert('회사를 선택해주세요.');
+            if ($('#corp_type').val() === 'CH' && !$('#chain_no').val()) {
+                alert('가맹점을 선택해주세요.');
+                return false;
+            } 
+
+            if ($('#corp_type').val() === 'OP' && !$('#corp_cd').val()) {
+                alert('운영사를 선택해주세요.');
                 return false;
             }
+             
             // 테이블 데이터를 FormData에 추가
             const tableRows = $('#tbl_upload_data tbody tr');
             const tableData = [];
@@ -184,6 +225,7 @@
             const formData = {
                 corp_type: $('#corp_type').val(),
                 corp_cd: $('#corp_cd').val(),
+                chain_no: $('#chain_no').val(),
                 bank_cd: $('#bank_cd').val(),
                 ent_user_id: $('#ent_user_id').val(),
                 excelData: tableData
@@ -197,7 +239,8 @@
           var resultMsg = data.resultMsg;   
           
           if (resultCode == 'S000') {                               
-            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');       
+
+            swal('성공', '작업을 정상적으로 완료하였습니다.' + resultMsg, 'success');       
           } else {  
             swal('실패', resultMsg, 'error');
           }
@@ -219,18 +262,21 @@
                             <div class="col-sm-4">
                                 <div class="input-group">
                                     <div class="input-group input-group-sm mb-1 me-1">
-                                        <label class="col-sm-3 col-form-label col-form-label-sm" for="corp_type">구분</label>
+                                        <label class="col-sm-2 col-form-label col-form-label-sm" for="corp_type">구분</label>
                                         <div class="col-sm-4">
                                             <select class="form-select form-control-sm me-1" id="corp_type" name="corp_type">
                                                 <option value="CH" selected>가맹점</option>
                                                 <option value="OP">운영사</option>
                                             </select>
                                         </div> 
-                                        <div class="col-sm-5">
-                                            <select class="form-select form-control-sm me-1" id="corp_cd" name="corp_cd">
+                                        <div class="col-sm-6" id="corp_select_chain">
+                                            <select class="form-select form-control-sm me-1" id="chain_no" name="chain_no"></select>                                            
+                                        </div>                             
+                                        <div class="col-sm-6" id="corp_select_op" style="display: none;">
+                                            <select class="form-select form-control-sm me-1"   id="corp_cd" name="corp_cd">
                                                 <option value="">선택</option>
                                             </select>
-                                        </div>                             
+                                        </div>
                                     </div> 
                                 </div>
                             </div>
@@ -255,7 +301,7 @@
                             </div> 
                             <div class="col-sm-4">
                                 <div class="input-group input-group-sm mb-1">
-                                    <input type="file" class="form-control" id="excel_file" name="file" accept=".xlsx, .xls" />
+                                    <input type="file" class="form-control" id="excel_file" name="file" accept=".xlsx, .xls" placeholder="엑셀로 변환 후 업로드" />
                                     <button type="button" class="btn btn-primary" id="btn_upload" name="btn_upload">Upload</button> 
                                 </div>
                             </div> 

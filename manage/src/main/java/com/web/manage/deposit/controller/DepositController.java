@@ -776,15 +776,17 @@ public class DepositController {
 
             // depositVo.setDeposit_no(depositService.getnew("DEPOSIT_NO_SEQ"));
             // System.out.println("excelVo : " + excelVo);
-            if (depositService.uploadExcelData(excelVo)) {
-                System.out.println("Deposit Data Excel Upload  Create success");
-                result.setResultCode("S000");
-                result.setResultMsg("Deposit Data Excel Upload creation successful.");
-            } else {
-                System.out.println("Exceed Amt fail");
-                result.setResultCode("F000");
-                result.setResultMsg("Deposit Data Excel Upload  creation Failed");
-            }
+            result = depositService.uploadExcelData(excelVo);
+            return result;
+            // if (depositService.uploadExcelData(excelVo)) {
+            //     System.out.println("Deposit Data Excel Upload  Create success");
+            //     result.setResultCode("S000");
+            //     result.setResultMsg("Deposit Data Excel Upload creation successful.");
+            // } else {
+            //     System.out.println("Exceed Amt fail");
+            //     result.setResultCode("F000");
+            //     result.setResultMsg("Deposit Data Excel Upload  creation Failed");
+            // }
         } catch (Exception e) {
             result.setResultCode("F000");
             result.setResultMsg("Deposit Data Excel Upload creation Failed");

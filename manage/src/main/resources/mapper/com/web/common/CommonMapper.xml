@@ -94,6 +94,16 @@
          ORDER	BY CHAIN_NM
   </select>
 
+  <select id="getChainSchList" parameterType="string" resultType="map">    
+        SELECT 	CHAIN_NO		  AS code 
+                , CHAIN_NM		AS codeNm 
+          FROM 	TB_CHAIN
+         WHERE 	USE_YN = 'Y'
+           AND  SVC_STAT IN ('O', 'R')
+           AND  CHAIN_NM LIKE CONCAT('%', #{keyword}, '%')
+         ORDER	BY CHAIN_NM
+  </select>
+
   <select id="getLinkChainList" resultType="hashMap">
       SELECT 	SQL_CALC_FOUND_ROWS
               TC.CHAIN_NO		            AS chain_no
