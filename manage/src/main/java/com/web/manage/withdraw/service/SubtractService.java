@@ -32,6 +32,9 @@ public class SubtractService {
     public List<HashMap<String, Object>> getSubSummary(HashMap<String, Object> hashmapParam) {
         return subtractMapper.getSubSummary(hashmapParam);
     }
+    public HashMap<String, Object> getSubSummaryTotal(HashMap<String, Object> hashmapParam) {
+        return subtractMapper.getSubSummaryTotal(hashmapParam);
+    }
 
     public List<HashMap<String, Object>> getChainSubList(HashMap<String, Object> hashmapParam) {
         return subtractMapper.getChainSubList(hashmapParam);

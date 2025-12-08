@@ -68,6 +68,7 @@ public class SubtractController {
     public @ResponseBody String getSubSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> totalSumm      = new HashMap<String, Object>();
         Gson gson = new Gson();
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
@@ -89,6 +90,7 @@ public class SubtractController {
 
             list = subtractService.getSubSummary(hashmapParam);
             int records = subtractService.getQueryTotalCnt();
+            totalSumm = subtractService.getSubSummaryTotal(hashmapParam);
 
             pageing.setRecords(records);
             pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
@@ -97,6 +99,7 @@ public class SubtractController {
             hashmapResult.put("recordsTotal", pageing.getRecords());
             hashmapResult.put("recordsFiltered", pageing.getRecords());
             hashmapResult.put("data", list);
+            hashmapResult.put("totalSumm", totalSumm);
 
             jString = gson.toJson(hashmapResult);
         } catch (Exception e) {

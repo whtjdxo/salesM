@@ -228,6 +228,7 @@ public class WithdrawController {
     public @ResponseBody String getWdResvlList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> totalSumm      = new HashMap<String, Object>();
         Gson gson = new Gson();
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
@@ -253,13 +254,16 @@ public class WithdrawController {
             list = withdrawService.getWdResvlList(hashmapParam);
             int records = withdrawService.getQueryTotalCnt();
 
+            totalSumm= withdrawService.getWDResvListTotal(hashmapParam);
+
             pageing.setRecords(records);
             pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
 
             hashmapResult.put("draw", pageing.getDraw());
             hashmapResult.put("recordsTotal", pageing.getRecords());
             hashmapResult.put("recordsFiltered", pageing.getRecords());
-            hashmapResult.put("data", list);
+            hashmapResult.put("data", list);            
+            hashmapResult.put("totalSumm", totalSumm);              
 
             jString = gson.toJson(hashmapResult);
         } catch (Exception e) {

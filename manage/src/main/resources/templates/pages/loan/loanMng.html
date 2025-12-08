@@ -38,7 +38,7 @@
 
         callAjax('/common/totalCodelist', "code_grp_cd=('LOAN_STATUS')", fn_loan_status_setting);
         function fn_loan_status_setting(data) {
-          codeSetting('LOAN_STATUS', data.data, '#sch_loan_status', '진행상태', '', '');
+          codeSetting('LOAN_STATUS', data.data, '#sch_loan_status', '진행상태', '01', '');
           codeSetting('LOAN_STATUS', data.data, '#loan_status', '1', '', '');
         } 
         callAjax('/common/getCreditCorpList', "", fn_credit_list_setting);
@@ -155,15 +155,25 @@
         }); 
 
         $('#btn_search').click(function () {
-          tbl_loan_summary.ajax.reload();
+          fn_clear_all();
+          tbl_loan_summary.ajax.reload();    
+          // $('#tbl_chain_loan_list').DataTable().clear().draw();
+        });
+
+        function fn_clear_all(){
+          //Hidden Values Clear  별도로 처리해야  clear됨
+          $('#sch_chain_no').val('');
           $('#frm_chain_list')[0].reset();
-          $('#frm_loan_mst')[0].reset(); 
-          $('#frm_counsel_mst')[0].reset(); 
+          
+          $('#sch_loan_no').val('');
+          $('#chain_no').val('');
+          $('#frm_loan_mst')[0].reset();  
+
+          $('#frm_counsel_mst')[0].reset();
           
           tbl_chain_loan_list.ajax.reload();
           tbl_counsel_list.ajax.reload();
-          // $('#tbl_chain_loan_list').DataTable().clear().draw();
-        });
+        }
 
         $("#sch_chain_nm").on("keydown", function (e) {
           if (e.key === "Enter") {
@@ -295,7 +305,7 @@
                 const colMap = {
                     4: 'princ_amt',
                     5: 'int_amt', 
-                    6: 'remain_amt', 
+                    6: 'remain_princ_amt', 
                 };
                 Object.entries(colMap).forEach(([colIdx, key]) => {
                     const footer = api.column(Number(colIdx)).footer();
@@ -1185,7 +1195,7 @@
                   <div class="row mb-0">
                     <div class="col-sm-3">
                       <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="sch_all" name="sch_all" />
+                        <input class="form-check-input" type="checkbox" id="sch_all" name="sch_all" value="Y" />
                         <label class="form-check-label" for="sch_all">완납포함</label>
                       </div> 
                     </div>

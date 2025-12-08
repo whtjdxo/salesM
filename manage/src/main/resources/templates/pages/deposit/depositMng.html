@@ -240,20 +240,29 @@
           // var formData = $('#frm_sch_card').serializeObject();    
           var formData ={
             sch_chain_no   : row.chain_no, 
-					  sch_depo_date	 : $('#sch_card_resv_date').val(),
+					  sch_depo_date	 : $('#sch_resv_date').val(),
           }      
           callAjaxJson('/deposit/deposit/depoMng/chainDepositStatus', formData, fn_chainDepoStatus);
 
-          var formData ={
+          var formData2 ={
             select_chain_no   : row.chain_no, 
 					  sch_resv_date	 : $('#sch_resv_date').val(),
           }      
-          callAjax('/deposit/deposit/depoMng/getSearchConfDate', formData, fn_list_search_date_setting);
+          callAjax('/deposit/deposit/depoMng/getSearchConfDate', formData2, fn_list_search_date_setting);
 
           if ($('#sch_list_chain_no').val() && $('#sch_list_resv_date').val()) {
             tbl_depo_resv_list.ajax.reload();
           } 
         });  
+
+        function fn_chainDepoClear(){
+          $('#chain_depo_amt').val('0');
+          $('#credit_depo_amt').val('0');
+          $('#gap_amt').val('0');
+          $('#crd_remit_fee_amt').val('0');
+          $('#crd_unremit_sub_amt').val('0');
+          $('#crd_exc_amt').val('0');
+        }
         
         function fn_chainDepoStatus(data){
           // console.log(data.data); 
@@ -367,6 +376,7 @@
           fn_list_clear(); 
           $('#select_chain_nm').text('매입사별 입금 예정 리스트');
           $('#deposit_all').prop('checked', false); 
+          fn_chainDepoClear();
         }
 
         function fn_card_clear(){

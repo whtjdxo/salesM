@@ -15,6 +15,7 @@ public interface WithdrawMapper {
     List<HashMap<String, Object>> getWDChainSummary(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getWDCardSummary(HashMap<String, Object> hashmapParam);    
     List<HashMap<String, Object>> getWDResvList(HashMap<String, Object> hashmapParam);
+    HashMap<String, Object> getWDResvListTotal(HashMap<String, Object> hashmapParam);
     
     void callProcRemitMain(ProcRemitVO procVo);
 

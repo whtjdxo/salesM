@@ -160,6 +160,8 @@ public class DepositController {
 
     @RequestMapping(value="deposit/depoMng/chainDepositStatus", method = RequestMethod.POST)
 	public @ResponseBody ReturnDataVO totalCodelist(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session){
+        System.out.println("............. DepositController.chainDepositStatus ");
+        System.out.println("hashmapParam : " + hashmapParam);
 		HashMap<String, Object> depoStatus = new HashMap<String, Object>();
 		ReturnDataVO result = new ReturnDataVO();
 		try {
@@ -200,6 +202,22 @@ public class DepositController {
 		ReturnDataVO result = new ReturnDataVO();
 		try {
 			rslt = depositService.getSearchConfDate(hashmapParam);			
+			result.setResultCode("S000");
+			result.setData(rslt);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+    @RequestMapping(value="deposit/depoMng/getDepositConfDate", method = RequestMethod.POST)
+	public @ResponseBody ReturnDataVO getDepositConfDate(@RequestParam HashMap<String, String> hashmapParam, HttpSession session){
+		HashMap<String, Object> rslt = new HashMap<String, Object>();	
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+			rslt = depositService.getDepositConfDate(hashmapParam);			
 			result.setResultCode("S000");
 			result.setData(rslt);
 		} catch (Exception e) {

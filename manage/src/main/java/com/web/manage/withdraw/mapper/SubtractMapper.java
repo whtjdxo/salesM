@@ -13,6 +13,7 @@ import com.web.manage.withdraw.domain.ProcSubReceiveVO;
 public interface SubtractMapper {
     int getQueryTotalCnt(); 
     List<HashMap<String, Object>> getSubSummary(HashMap<String, Object> hashmapParam);    
+    HashMap<String, Object> getSubSummaryTotal(HashMap<String, Object> hashmapParam);
     
     List<HashMap<String, Object>> getChainSubList(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getChainWdSubList(HashMap<String, Object> hashmapParam);

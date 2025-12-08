@@ -47,7 +47,10 @@ public class WithdrawService {
     public List<HashMap<String, Object>> getWdResvlList(HashMap<String, Object> hashmapParam) {
         return withdrawMapper.getWDResvList(hashmapParam);
     }
- 
+    
+    public HashMap<String, Object> getWDResvListTotal(HashMap<String, Object> hashmapParam) {
+        return withdrawMapper.getWDResvListTotal(hashmapParam);
+    }
  
     //  transaction 처리 는 Procedure 에서 처리하도록 함
     public ReturnDataVO callProcRemitMain (ProcRemitVO procVo) {

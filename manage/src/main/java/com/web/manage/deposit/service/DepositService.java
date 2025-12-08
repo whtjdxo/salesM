@@ -56,6 +56,9 @@ public class DepositService {
      public HashMap<String, Object> getSearchConfDate(HashMap<String, String> hashmapParam) {
         return depositMapper.getSearchConfDate(hashmapParam);
     }
+    public HashMap<String, Object> getDepositConfDate(HashMap<String, String> hashmapParam) {
+        return depositMapper.getDepositConfDate(hashmapParam);
+    }
 
     //  transaction 처리 는 Procedure 에서 처리하도록 함
     public ReturnDataVO callProcChangeResvDate(ProcDepositVO procVo) {

@@ -5,6 +5,7 @@
 		SELECT FOUND_ROWS()
 	</select> 
     <select id="getCorpList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* LoanMapper.getCorpList */
         SELECT 	SQL_CALC_FOUND_ROWS
                 CORP_CD                       as corp_cd
                 , CORP_NM                     as corp_nm
@@ -25,6 +26,7 @@
     </select>
     
     <select id="getLoanSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* LoanMapper.getLoanSummary */
         SELECT 	SQL_CALC_FOUND_ROWS
                 TC.CHAIN_NO                         as chain_no         
                 , TC.CHAIN_NM                       AS chain_nm         
@@ -68,17 +70,17 @@
                                  WHERE  USE_YN = 'Y'
 								 GROUP	BY LOAN_NO  
                     		) SC ON SC.LOAN_NO = M.LOAN_NO                    
-                    WHERE 	M.USE_YN = 'Y'                    
-                    <if test='sch_all != null and sch_all == ""'>
+                    WHERE 	M.USE_YN = 'Y'                             
+                    <if test='sch_all == null'>
                         AND	M.LOAN_STATUS  =   '01'
-                    </if>                    
+                    </if>  
                     GROUP BY M.CHAIN_NO
                 ) LM ON TC.CHAIN_NO = LM.CHAIN_NO  
                 JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
                 JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
                             AND CO.CORP_TYPE = 'LN'                            
         WHERE 	TC.USE_YN  = 'Y'
-          AND TC.SVC_STAT IN ('R', 'O')	
+          AND   TC.SVC_STAT IN ('R', 'O')	
                 
         <if test='sch_chain_nm != null and sch_chain_nm != ""'>
             AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
@@ -109,12 +111,14 @@
     </select> 
 
     <select id="getLoanSummTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-        SELECT 	  IFNULL(SUM(LM.BIZ_LOAN_AMT), 0)    AS biz_loan_amt
-                , IFNULL(SUM(LM.SPOT_LOAN_AMT), 0)   AS spot_loan_amt
-                , IFNULL(SUM(LM.ETC_LOAN_AMT), 0)    AS etc_loan_amt
-                , IFNULL(SUM(LM.TOT_LOAN_AMT), 0)    AS tot_loan_amt
-                , IFNULL(SUM(LM.RECV_AMT), 0)        AS recv_amt
-                , IFNULL(SUM(LM.REMAIN_AMT), 0)      AS remain_amt
+        /* LoanMapper.getLoanSummTotal */
+        SELECT 	  IFNULL(SUM(TC.TOT_USE_AMT), 0)        AS tot_use_amt
+                , IFNULL(SUM(LM.BIZ_LOAN_AMT), 0)       AS biz_loan_amt
+                , IFNULL(SUM(LM.SPOT_LOAN_AMT), 0)      AS spot_loan_amt
+                , IFNULL(SUM(LM.ETC_LOAN_AMT), 0)       AS etc_loan_amt
+                , IFNULL(SUM(LM.TOT_LOAN_AMT), 0)       AS tot_loan_amt
+                , IFNULL(SUM(LM.RECV_AMT), 0)           AS recv_amt
+                , IFNULL(SUM(LM.REMAIN_AMT), 0)         AS remain_amt
         FROM 	TB_CHAIN TC 
                 LEFT OUTER JOIN (
                     SELECT	M.CHAIN_NO 
@@ -136,7 +140,7 @@
 								 GROUP	BY LOAN_NO  
                     		) SC ON SC.LOAN_NO = M.LOAN_NO                    
                     WHERE 	M.USE_YN = 'Y'                     
-                    <if test='sch_all != null and sch_all == ""'>
+                    <if test='sch_all == null'>
                         AND	M.LOAN_STATUS  =   '01'
                     </if>                    
                     GROUP BY M.CHAIN_NO
@@ -166,7 +170,8 @@
     </select>
 
     <select id="getChainLoanList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-        SELECT     SQL_CALC_FOUND_ROWS
+        /* LoanMapper.getChainLoanList */
+        SELECT  SQL_CALC_FOUND_ROWS
                 LM.CHAIN_NO                         AS chain_no
                 , LM.CORP_CD                        AS corp_cd
                 , CO.CORP_NM                        AS corp_nm
@@ -278,6 +283,7 @@
 
 
     <select id="getChainLoanListTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* LoanMapper.getChainLoanListTotal */
         SELECT 	IFNULL(SUM(LM.PRINC_AMT), 0)            AS princ_amt
                 , IFNULL(SUM(LM.INT_AMT), 0)            AS int_amt
                 , IFNULL(SUM(LM.TOT_LOAN_AMT), 0)       AS tot_loan_amt
@@ -341,6 +347,7 @@
     </select> 
 
     <select id="getLoanRepaymentList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* LoanMapper.getLoanRepaymentList */
         SELECT 	SQL_CALC_FOUND_ROWS
                 LOAN_NO						AS loan_no
                 , SC_SEQ					AS sc_seq
@@ -381,6 +388,7 @@
 	</select>
 
     <insert id="insertLoanMst" parameterType="com.web.manage.loan.domain.LoanMstVO">
+        /* LoanMapper.insertLoanMst */
         INSERT INTO TB_LOAN_MST (
             LOAN_NO             , CORP_CD           , CHAIN_NO      
             , LOAN_STATUS       , LOAN_TYPE         , SUB_CODE          , CONT_DT
@@ -397,6 +405,7 @@
     </insert> 
 
     <select id="changeLoanChk" parameterType="com.web.manage.loan.domain.LoanMstVO" resultType="java.util.HashMap">
+        /* LoanMapper.changeLoanChk */
         SELECT  CASE WHEN IFNULL(SUM(SC.RECV_AMT), 0)  > 0
                        OR IFNULL(SUM(SC.TRANS_CNT), 0) > 0 THEN 'Y' ELSE 'N' END AS change_chk
         FROM 	TB_LOAN_MST LM
@@ -420,6 +429,7 @@
     </select> 
 
     <update id="updateLoanMst" parameterType="com.web.manage.loan.domain.LoanMstVO">
+        /* LoanMapper.updateLoanMst */
         UPDATE  TB_LOAN_MST
            SET  LOAN_STATUS = #{loan_status} 
                 , MEMO      = #{memo}
@@ -429,10 +439,12 @@
     </update>
 
     <select id="loanDeleteChk" parameterType="com.web.manage.loan.domain.LoanMstVO" resultType="java.util.HashMap">
+        /* LoanMapper.loanDeleteChk */
         SELECT  GET_LOAN_DELETE_CHK(#{loan_no} ) as delete_chk 
     </select> 
 
     <update id="deleteLoanMst" parameterType="com.web.manage.loan.domain.LoanMstVO">
+        /* LoanMapper.deleteLoanMst */
         UPDATE  TB_LOAN_MST
            SET  USE_YN = 'N'
                 , UPT_DTTM = NOW()
@@ -441,6 +453,7 @@
     </update>
 
     <insert id="insertLoanRepaySchedule" parameterType="com.web.manage.loan.domain.LoanRepayScheduleVO">
+        /* LoanMapper.insertLoanRepaySchedule */
         INSERT INTO TB_LOAN_REPAY_SCHEDULE (
             LOAN_NO             , SC_SEQ            , SC_DATE       
             , REPAY_PRINC_AMT   , REPAY_INT_AMT     , REPAY_TOT_AMT     , BALANCE_AMT       
@@ -457,12 +470,14 @@
     </insert>
 
     <update id="deleteLoanRepaySchedule" parameterType="com.web.manage.loan.domain.LoanMstVO">
+        /* LoanMapper.deleteLoanRepaySchedule */
         DELETE  
           FROM  TB_LOAN_REPAY_SCHEDULE
          WHERE  LOAN_NO = #{loan_no}
     </update>
 
     <update id="callProcLoanPrepay" parameterType="com.web.manage.loan.domain.ProcPrepayVO" statementType="CALLABLE">
+        /* LoanMapper.callProcLoanPrepay */
 		{ 
 				CALL PRC_LOAN_PREPAY(
 						#{prepay_loan_no        , mode=IN, jdbcType=VARCHAR} 
@@ -476,6 +491,7 @@
 	</update>
 
     <update id="callProcLoanSendSubTrans" parameterType="com.web.manage.loan.domain.ProcSubTransVO" statementType="CALLABLE">
+        /* LoanMapper.callProcLoanSendSubTrans */
 		{ 
 				CALL PRC_LOAN_SEND_SUB_TRANS(
 						#{loan_no       , mode=IN, jdbcType=VARCHAR} 

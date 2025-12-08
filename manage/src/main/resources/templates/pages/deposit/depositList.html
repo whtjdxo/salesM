@@ -24,14 +24,12 @@
         }
         // Set default values for sch_reg_sdt and sch_reg_edt
         var toDay = returnDate('today');        
-        $('#sch_adjust_date').val(toDay);
-        // $('#sch_list_conf_date').val(toDay);
+        $('#sch_adjust_date').val(toDay); 
         $('#change_resv_date').val(toDay);
 
         $('#btn_search').click(function () {   
           fn_default_clear();
           tbl_depo_resv_summ.ajax.reload();
-
         });  
 
         $('#btn_list_search').click(function () {   
@@ -214,18 +212,20 @@
           $('#frm_sch_card')[0].reset();   
           $('#frm_sch_list')[0].reset();
           
-          $('#sch_card_chain_no').val(row.chain_no);
-          $('#sch_list_chain_no').val(row.chain_no);   // list 검색 조건
-          $('#select_chain_nm').text(row.chain_nm); // 가맹점명 설정
-          
           $('#sch_card_adjust_date').val($('#sch_adjust_date').val());   // 카드 작업일 설정
+          $('#sch_card_chain_no').val(row.chain_no);
+          
           $('#sch_list_adjust_date').val($('#sch_adjust_date').val());   // list 작업일 설정   
+          $('#sch_list_chain_no').val(row.chain_no);   // list 검색 조건
+
+          $('#select_chain_nm').text(row.chain_nm); // 가맹점명 설정  
           
           var formData ={
-            sch_chain_no   : row.chain_no, 
-					  sch_depo_date	 : $('#sch_adjust_date').val(),
+            sch_chain_no    : row.chain_no, 
+					  sch_adjust_date	: $('#sch_adjust_date').val(),
           }       
-          callAjaxJson('/deposit/deposit/depoMng/chainDepositStatus', formData, fn_chainDepoStatus);
+          callAjaxJson('/deposit/deposit/depoMng/chainDepositStatus', formData, fn_chainDepoStatus);           
+          callAjax('/deposit/deposit/depoMng/getDepositConfDate', formData, fn_list_search_date_setting);
  
           tbl_card_summ.ajax.reload(); 
           if ($('#sch_list_chain_no').val() && $('#sch_list_adjust_date').val()) {
@@ -233,6 +233,12 @@
           } 
 
         });
+
+        function fn_list_search_date_setting(data){
+          var searchDate = data.data || {};          
+          $('#sch_list_conf_sdt').val(searchDate.conf_sdt);
+          $('#sch_list_conf_edt').val(searchDate.conf_edt);          
+        }
 
         $('#btn_cancel_depo').click(function () {
           var selectedChainNos = [];
@@ -957,12 +963,19 @@
                 <input id="sch_list_adjust_date" type="hidden" name="sch_list_adjust_date"/>
                 <input id="sch_list_card_acq"  type="hidden" name="sch_list_card_acq" />
                 <div class="row mb-1">
-                  <div class="col-sm-6">
+                  <div class="col-sm-4">
                     <div class="input-group input-group-sm mb-1"> 
-                      <div class="col-sm-3">
-                        <input class="form-control form-control-sm" id="sch_list_conf_date" type="text" name="sch_list_conf_date" istyle="date" maxlength="10" required />
-                      </div> 
-                                         
+                      <div class="col-sm-5">
+                        <input class="form-control form-control-sm me-1" id="sch_list_conf_sdt" type="text" name="sch_list_conf_sdt" istyle="date" maxlength="10" required />
+                      </div>   
+                      <span class="input-group-text">~</span>
+                      <div class="col-sm-5">
+                        <input class="form-control form-control-sm me-1" id="sch_list_conf_edt" type="text" name="sch_list_conf_edt" istyle="date" maxlength="10" required />
+                      </div>
+                    </div>
+                  </div>      
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1"> 
                       <select class="form-select form-control-sm me-1" id="sch_list_gb" name="sch_list_gb" style="width: 120px">
                         <option value="sch_list_gb_conf_no">승인 번호</option>
                         <option value="sch_list_gb_card_no">카드 번호</option>
@@ -971,11 +984,10 @@
                       <input type="text" class="form-control form-control-sm me-1" id="sch_list_gb_conf_val" name="sch_list_gb_conf_val" style="width:100px" />                        
                       <button type="button" class="btn btn-primary btn-sm" id="btn_list_search" name="btn_list_search">조회</button> 
                     </div>
-                  </div> 
-                  <div class="col-sm-4">
-                                                
+                  </div>      
+                  <div class="col-sm-4">                                                
                   </div>
-                  <div class="col-sm-2 text-end"> 
+                  <div class="col-sm-1 text-end"> 
                     <button type="button" class="btn btn-primary btn-sm" id="btn_list_excel" name="btn_list_excel">Excel</button> 
                   </div>    
                 </div> 

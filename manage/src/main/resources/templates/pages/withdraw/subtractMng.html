@@ -57,12 +57,24 @@
             url: '/withdraw/subtract/subMng/subSummary',
             contentType: 'application/json',
             dataType: 'JSON',
-            type: 'POST',            
+            type: 'POST',
             data: function (postData) {
-              formData = $('#frm_sch_chain').serializeObject(); 
-              Object.assign(postData, formData);
-              return JSON.stringify(postData);
+                var formData = $('#frm_sch').serializeObject(); // serializeObject는 jQuery 플러그인일 수 있습니다.
+                for (var key in formData) {
+                    postData[key] = formData[key];
+                }
+                return JSON.stringify(postData); 
             },
+            dataSrc: function (json) {
+                // totalSummary 저장
+                totalSumm = json.totalSumm || {};
+                return json.data;
+            },
+            // 서버 에러 처리 등 추가 가능
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                // 사용자에게 에러 메시지 표시 등
+            }
           },
             columns: [
                 { data: 'chain_nm' }
@@ -95,6 +107,23 @@
             loadingRecords: '로딩중...',
             processing: '처리중...',
           },
+          footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+                const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+                const colMap = {
+                    1: 'occur_amt',
+                    2: 'recv_amt',
+                    3: 'remain_amt',
+                };
+
+                Object.entries(colMap).forEach(([colIdx, key]) => {
+                    const footer = api.column(Number(colIdx)).footer();
+                    if (footer) {
+                        const val = totalSumm[key] || 0;
+                        $(footer).html(renderNumber(val));
+                    }
+                }); 
+            },
         });
 
         $('#btn_search').click(function () {
@@ -367,6 +396,18 @@
           $('#btn_create').show();      
           
         }
+
+        $('#occur_crd_amt').on('focus', function () {
+          $(this).select();
+        });
+
+        $('#occur_svc_amt').on('focus', function () {
+          $(this).select();
+        });
+
+        $('#occur_base_amt').on('focus', function () {
+          $(this).select();
+        });
         
         $('#btn_create').click(function () {    
           $('#crud').val('create');      
@@ -560,7 +601,7 @@
                 <h5 class="mb-0">차감 관리</h5>
               </div>              
               <div class="col-lg-9">
-                <form id="frm_sch_chain" name="frm_sch_chain" onsubmit="return false;" novalidate="">
+                <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate="">
                   <div class="row mb-0">
                     <div class="col-sm-4">
                       <div class="input-group input-group-sm mb-0">
@@ -594,6 +635,14 @@
                   </tr>
                 </thead>
                 <tbody class="list"></tbody>
+                <tfoot>
+                  <tr>
+                    <th class="text-center">총계</th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>

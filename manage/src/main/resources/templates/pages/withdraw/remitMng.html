@@ -131,7 +131,10 @@
               { targets: 13, width: '100px', className: 'text-right px-1 dt-body-right' },
               { targets: 14, width: '110px', className: 'text-right px-1 dt-body-right' }, 
           ],
-          order: [[15, 'asc']], // 기본 정렬 설정
+          order: [ 
+                [4, 'desc'],   // 1차 정렬
+                [15, 'asc']   // 2차 정렬
+          ],
           paging: true,
           lengthChange: false,
           searching: false,

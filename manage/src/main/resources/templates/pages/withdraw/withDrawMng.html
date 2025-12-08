@@ -44,14 +44,13 @@
         } 
  
         callAjax('/withdraw/withdraw/wdMng/totWdSummary', "sch_work_date=" + $('#sch_work_date').val(), fn_tot_summary_setting );
-        function fn_tot_summary_setting(result) {
+        function fn_tot_summary_setting(result) {          
           if (result.data) {
-            $('#tot_conf_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.conf_amt));
-            $('#card_fee_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.card_fee_amt));
-            $('#card_resv_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.card_resv_amt));
+            $('#tot_conf_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.tot_amt));
+            $('#card_fee_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.card_fee_amt));            
             $('#svc_fee_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.svc_fee_amt));      
             $('#crd_fee_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.crd_fee_amt));
-            $('#wd_base_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.wd_base_amt));
+            $('#wd_base_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.wd_base_amt));            
 
             if (result.data.sub_amt > 0) {
               $('#sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.sub_amt))
@@ -59,7 +58,15 @@
             } else {
               $('#sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.sub_amt))
                 .css({ 'color': '', 'font-weight': '' });
-            }          
+            }
+
+            if (result.data.real_sub_amt > 0) {
+              $('#real_sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.real_sub_amt))
+                .css({ 'color': 'red', 'font-weight': 'bold' });
+            } else {
+              $('#real_sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.real_sub_amt))
+                .css({ 'color': '', 'font-weight': '' });
+            }
             $('#exc_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(result.data.exc_amt));
 
             if (result.data.remit_amt > 0) {
@@ -336,6 +343,14 @@
             $('#sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.sub_amt))
               .css({ 'color': '', 'font-weight': '' });
           }
+
+          if (row.real_sub_amt > 0) {
+            $('#real_sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.real_sub_amt))
+              .css({ 'color': 'red', 'font-weight': 'bold' });
+          } else {
+            $('#real_sub_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.real_sub_amt))
+              .css({ 'color': '', 'font-weight': '' });
+          }
           
           $('#exc_amt').val($.fn.dataTable.render.number(',', '.', 0, '').display(row.exc_amt));
           if (row.remit_amt > 0) {
@@ -486,10 +501,22 @@
             dataType: 'JSON',
             type: 'POST',
             data: function (postData) {
-              formData = $('#frm_sch_list').serializeObject();
-              Object.assign(postData, formData);
-              return JSON.stringify(postData);
-            },
+                    var formData = $('#frm_sch_list').serializeObject(); // serializeObject는 jQuery 플러그인일 수 있습니다.
+                    for (var key in formData) {
+                        postData[key] = formData[key];
+                    }
+                    return JSON.stringify(postData);  
+                },
+                dataSrc: function (json) {
+                    // totalSummary 저장
+                    totalSumm = json.totalSumm || {};
+                    return json.data;
+                },
+                // 서버 에러 처리 등 추가 가능
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                    // 사용자에게 에러 메시지 표시 등
+                }
           }, 
           columns: [
             {
@@ -575,7 +602,29 @@
             zeroRecords: '일치하는 데이터가 없습니다.',
             loadingRecords: '로딩중...',
             processing: '처리중...',
-          },
+          }, 
+
+          footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+                const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+                const colMap = {
+                    12: 'conf_amt',
+                    13: 'card_fee_amt',
+                    14: 'card_resv_amt',
+                    15: 'svc_fee_amt',
+                    16: 'wd_base_amt',
+                    17: 'crd_fee_amt',
+                    18: 'remit_amt',
+                };
+
+                Object.entries(colMap).forEach(([colIdx, key]) => {
+                    const footer = api.column(Number(colIdx)).footer();
+                    if (footer) {
+                        const val = totalSumm[key] || 0;
+                        $(footer).html(renderNumber(val));
+                    }
+                }); 
+            },
           
           // =============================================================
             // 중요: 테이블이 다시 그려질 때마다 체크박스 상태를 업데이트
@@ -1109,22 +1158,14 @@
                   </div>
                   <div class="col-sm-4">
                     <div class="input-group input-group-sm mb-1">
-                      <label class="col-sm-4 col-form-label col-form-label-sm" for="card_resv_amt">입금 예정액</label> 
-                      <div class="col-sm-8">
-                        <input class="form-control form-control-sm text-end bg-light" id="card_resv_amt" type="text" name="card_resv_amt" readonly/>
-                      </div>
-                    </div>
-                  </div>
-                </div>  
-                <div class="row mb-1">
-                  <div class="col-sm-4">
-                    <div class="input-group input-group-sm mb-1">
                       <label class="col-sm-4 col-form-label col-form-label-sm" for="svc_fee_amt">운영 수수료</label> 
                       <div class="col-sm-8">
                         <input class="form-control form-control-sm text-end bg-light" id="svc_fee_amt" type="text" name="svc_fee_amt" readonly/>
                       </div>
                     </div>
-                  </div>
+                  </div>                  
+                </div>  
+                <div class="row mb-1">                  
                   <div class="col-sm-4">
                     <div class="input-group input-group-sm mb-1">
                       <label class="col-sm-4 col-form-label col-form-label-sm" for="crd_fee_amt">여신 수수료</label> 
@@ -1141,16 +1182,6 @@
                       </div>
                     </div>
                   </div>
-                </div>
-                <div class="row mb-1">
-                  <div class="col-sm-4">
-                    <div class="input-group input-group-sm mb-1">
-                      <label class="col-sm-4 col-form-label col-form-label-sm" for="sub_amt">차 감 액</label> 
-                      <div class="col-sm-8">
-                        <input class="form-control form-control-sm text-end bg-light" id="sub_amt" type="text" name="sub_amt" readonly/>
-                      </div>
-                    </div>
-                  </div>
                   <div class="col-sm-4">
                     <div class="input-group input-group-sm mb-1">
                       <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_amt">과 입 금</label> 
@@ -1159,6 +1190,25 @@
                       </div>
                     </div>
                   </div>
+                  
+                </div>
+                <div class="row mb-1">
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="sub_amt">차감 대상액</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="sub_amt" type="text" name="sub_amt" readonly/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="real_sub_amt">차 감 액</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="real_sub_amt" type="text" name="real_sub_amt" readonly/>
+                      </div>
+                    </div>
+                  </div>                  
                   <div class="col-sm-4">
                     <div class="input-group input-group-sm mb-1">
                       <label class="col-sm-4 col-form-label col-form-label-sm" for="remit_amt">출금 예정액</label> 
@@ -1302,6 +1352,19 @@
                   </tr>  
               </thead>
               <tbody class="list"></tbody>
+              <tfoot>
+                  <tr>
+                    <th colspan="12" class="text-center">총계</th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th> 
+                    <th class="text-right px-2"></th>
+                    <th colspan="2" class="text-center"></th>
+                  </tr>
+                </tfoot>
             </table>
           </div>
         </div>        

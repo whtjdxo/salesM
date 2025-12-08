@@ -6,6 +6,7 @@
 	</select>     
 
     <select id="getSubSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
+        /* SubtractMapper.getSubSummary */
         SELECT  SQL_CALC_FOUND_ROWS
                 TC.CHAIN_NO                     AS chain_no
                 , TC.CHAIN_NM                   AS chain_nm
@@ -81,19 +82,19 @@
         LIMIT  ${start}, ${end}
     </select>
     <select id="getSubSummaryTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
-        SELECT  SQL_CALC_FOUND_ROWS
-                IFNULL(OCCUR_AMT, 0)  	AS occur_amt
-                , IFNULL(OCCUR_BASE_AMT, 0) 	AS occur_base_amt
-                , IFNULL(OCCUR_SVC_AMT, 0) 	AS occur_svc_amt
-                , IFNULL(OCCUR_CRD_AMT, 0) 	AS occur_crd_amt
-                , IFNULL(RECV_AMT, 0) 	        AS recv_amt                        
-                , IFNULL(RECV_BASE_AMT, 0) 	AS recv_base_amt
-                , IFNULL(RECV_SVC_AMT, 0) 	AS recv_svc_amt
-                , IFNULL(RECV_CRD_AMT, 0) 	AS recv_crd_amt
-                , IFNULL(REMAIN_AMT, 0) 	AS remain_amt
-                , IFNULL(REMAIN_BASE_AMT, 0) 	AS remain_base_amt
-                , IFNULL(REMAIN_SVC_AMT, 0) 	AS remain_svc_amt
-                , IFNULL(REMAIN_CRD_AMT, 0) 	AS remain_crd_amt
+        /* SubtractMapper.getSubSummaryTotal */
+        SELECT  IFNULL(SUM(OCCUR_AMT), 0)  	AS occur_amt
+                , IFNULL(SUM(OCCUR_BASE_AMT), 0) 	AS occur_base_amt
+                , IFNULL(SUM(OCCUR_SVC_AMT), 0) 	AS occur_svc_amt
+                , IFNULL(SUM(OCCUR_CRD_AMT), 0) 	AS occur_crd_amt
+                , IFNULL(SUM(RECV_AMT), 0) 	        AS recv_amt                        
+                , IFNULL(SUM(RECV_BASE_AMT), 0) 	AS recv_base_amt
+                , IFNULL(SUM(RECV_SVC_AMT), 0) 	AS recv_svc_amt
+                , IFNULL(SUM(RECV_CRD_AMT), 0) 	AS recv_crd_amt
+                , IFNULL(SUM(REMAIN_AMT), 0) 	AS remain_amt
+                , IFNULL(SUM(REMAIN_BASE_AMT), 0) 	AS remain_base_amt
+                , IFNULL(SUM(REMAIN_SVC_AMT), 0) 	AS remain_svc_amt
+                , IFNULL(SUM(REMAIN_CRD_AMT), 0) 	AS remain_crd_amt
         FROM	TB_CHAIN TC  
                 LEFT OUTER JOIN (        
                     SELECT	SM.CHAIN_NO
@@ -129,6 +130,7 @@
     </select>
 
     <select id="getChainSubList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* SubtractMapper.getChainSubList */
         SELECT  SQL_CALC_FOUND_ROWS
                 SM.SUB_NO                                       AS sub_no
                 , SM.CHAIN_NO                                   AS chain_no       
@@ -201,6 +203,7 @@
     </select>
     
     <select id="getChainWdSubList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* SubtractMapper.getChainWdSubList */
         SELECT  SQL_CALC_FOUND_ROWS
                 SM.SUB_NO                                       AS sub_no
                 , SM.CHAIN_NO                                   AS chain_no       
@@ -257,6 +260,7 @@
     </select> 
 
     <select id="getSubReceiveList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* SubtractMapper.getSubReceiveList */
         SELECT  SQL_CALC_FOUND_ROWS
                 SR.SUB_NO                                       AS sub_no 
                 , RECV_DATE                                     AS recv_date
@@ -282,6 +286,7 @@
 	</select>
 
     <insert id="insertSubMst" parameterType="com.web.manage.withdraw.domain.SubMstVO">
+        /* SubtractMapper.insertSubMst */
         INSERT INTO TB_SUB_MST (
                 SUB_NO                  , CHAIN_NO              , REG_DATE              , RESV_DATE
                 , SUB_TYPE              , SUB_STATUS            , SUB_CODE              , SUB_MEMO                            
@@ -300,6 +305,7 @@
 	</insert>
 
 	<update id="updateSubMst" parameterType="com.web.manage.withdraw.domain.SubMstVO">
+        /* SubtractMapper.updateSubMst */
         UPDATE  TB_SUB_MST
             SET  REG_DATE        = #{reg_date},
                 RESV_DATE       = #{resv_date},
@@ -342,6 +348,7 @@
         </update>
 
         <select id="getSubStatSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
+            /* SubtractMapper.getSubStatSummary */
             SELECT  SQL_CALC_FOUND_ROWS
                     SM.CHAIN_NO             AS chain_no
                     , TC.CHAIN_NM           AS chain_nm
@@ -400,6 +407,7 @@
     </select>
 
     <select id="getSubStatSummaryTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
+        /* SubtractMapper.getSubStatSummaryTotal */
         SELECT  SQL_CALC_FOUND_ROWS
                 IFNULL(SUM(CASE WHEN SUB_TYPE = 'O' THEN 1 	ELSE NULL END), 0)     		AS count_o
                 , IFNULL(SUM(CASE WHEN SUB_TYPE = 'O' THEN OCCUR_AMT 	ELSE NULL END), 0)     	AS occur_amt_o
@@ -445,6 +453,7 @@
     </select>
 
     <select id="getSubStatDetail" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
+        /* SubtractMapper.getSubStatDetail */
         SELECT  SQL_CALC_FOUND_ROWS 
                 SM.SUB_NO                               AS sub_no 
                 , SM.REG_DATE                           AS reg_date
