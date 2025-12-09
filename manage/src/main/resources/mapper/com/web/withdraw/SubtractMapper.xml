@@ -72,8 +72,8 @@
             AND     TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
         </if>                        
         <choose>
-            <when test="sidx != '' and sidx != null ">
-                ORDER BY ${sidx} ${sord}
+            <when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
             </when>
             <otherwise>
                 ORDER BY 1
@@ -192,8 +192,8 @@
             AND  SM.REMAIN_AMT &gt;= 0
         </if>          
         <choose>
-            <when test="sidx != '' and sidx != null ">
-                ORDER BY ${sidx} ${sord}
+            <when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
             </when>
             <otherwise>
                 ORDER BY 1 desc
@@ -249,8 +249,8 @@
             AND  SM.SUB_STATUS IN ('000000', '100000')
             AND  SM.REMAIN_AMT &gt;= 0 
         <choose>
-            <when test="sidx != '' and sidx != null ">
-                ORDER BY ${sidx} ${sord}
+            <when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
             </when>
             <otherwise>
                 ORDER BY 1 desc
@@ -396,8 +396,8 @@
             </if> 
             GROUP   BY SM.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO 
             <choose>
-                <when test="sidx != '' and sidx != null ">
-                    ORDER BY ${sidx} ${sord}
+                <when test="orderBy != '' and orderBy != null">
+                    ORDER BY ${orderBy}
                 </when>
                 <otherwise>
                     ORDER BY 1
@@ -486,8 +486,8 @@
             AND  SM.SUB_STATUS = #{sch_sub_status} 
         </if>                   
         <choose>
-            <when test="sidx != '' and sidx != null ">
-                ORDER BY ${sidx} ${sord}
+            <when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
             </when>
             <otherwise>
                 ORDER BY 1

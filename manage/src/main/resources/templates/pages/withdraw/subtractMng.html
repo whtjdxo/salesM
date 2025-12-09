@@ -126,6 +126,13 @@
             },
         });
 
+        // Enter key evsch_chain_nment for sch_chain_nm
+        $('#sch_chain_nm').on('keypress', function(e) {
+          if (e.which === 13) {
+            $('#btn_search').click();
+          }
+        });
+
         $('#btn_search').click(function () {
           tbl_sub_summary.ajax.reload();
           $('#tbl_sub_list').DataTable().clear().draw();

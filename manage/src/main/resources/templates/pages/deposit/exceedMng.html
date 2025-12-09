@@ -122,7 +122,7 @@
                     }
                 }); 
             },
-        });
+        }); 
 
         $('#btn_search').click(function () {
           tbl_exc_summary.ajax.reload();
@@ -130,6 +130,12 @@
           $('#frm_exc_mst')[0].reset();   
            $('#select_chain_nm').text("상세 정보");              
         });
+
+        $('#sch_chain_nm').on('keypress', function(e) {
+          if (e.which === 13) { // Enter key 
+            $('#btn_search').click();
+          }
+        }); 
 
         $('#sch_all').change(function () {          
           $('#btn_search').click();          
@@ -481,13 +487,12 @@
               checked = false;
               return;
             }
-          } else {
-            if ($('#issue_amt').val() <= 0) {
-              swal('실패', "출금 금액이 존재해야 합니다.", 'error');
+          } else if ($('#issue_amt').val() < 0) {
+              swal('실패', "출금 금액은 0 보다 커야 합니다.", 'error');
               checked = false;
               return;
-            }
           }
+
           if (checked) {
             ConfirmdialogToAjax('update', '/deposit/exceed/excMng/updateExceedMst', $('#frm_exc_mst').serialize(), fn_return_result);
           }  
@@ -606,6 +611,7 @@
               <div class="col-lg-9">
                 <form id="frm_sch_chain" name="frm_sch_chain" onsubmit="return false;" novalidate="">
                   <div class="row mb-0">
+                    
                     <div class="col-sm-4">
                       <div class="input-group input-group-sm mb-0">
                         <div class="form-check form-check-inline">

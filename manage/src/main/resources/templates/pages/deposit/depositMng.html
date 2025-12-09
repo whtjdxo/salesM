@@ -28,6 +28,13 @@
         // $('#sch_list_conf_date').val(toDay);
         $('#change_resv_date').val(toDay);
 
+        // Enter key event for sch_chain_nm
+        $('#sch_chain_nm').on('keypress', function(e) {
+          if (e.which === 13) {
+            $('#btn_search').click();
+          }
+        });
+
         $('#btn_search').click(function () {             
           tbl_depo_resv_summ.ajax.reload();
           fn_default_clear();
@@ -789,69 +796,155 @@
             $('#tbl_depo_list').DataTable().destroy();
           }          
           
-          $('#tbl_depo_list').DataTable({
-            processing: true,
-            serverSide: true,
-            select: true,
-            responsive: true,
-            ajax: {
-                url: '/deposit/deposit/depoMng/depositList',
-                contentType: 'application/json',
-                dataType: 'JSON',
-                type: 'POST',
-                data: function (postData) {
-                  var formData = { 
-                    sch_gb      : $('#sch_depo_gb').val(),
-                    sch_chain_no: $('#sch_card_chain_no').val(),
-                    sch_date    : $('#sch_resv_date').val(),
-                  };
-                  Object.assign(postData, formData);
-                  return JSON.stringify(postData);
+          var tbl_depo_list = $('#tbl_depo_list').DataTable({
+              processing: true,
+              serverSide: true,
+              select: true,
+              responsive: true,
+              ajax: {
+                  url: '/deposit/deposit/depoMng/depositList',
+                  contentType: 'application/json',
+                  dataType: 'JSON',
+                  type: 'POST',
+                  data: function (postData) {
+                    var formData = { 
+                      sch_gb      : $('#sch_depo_gb').val(),
+                      sch_chain_no: $('#sch_card_chain_no').val(),
+                      sch_date    : $('#sch_resv_date').val(),
+                    };
+                    Object.assign(postData, formData);
+                    return JSON.stringify(postData);
+                  },
                 },
-              },
-            columns: [
-              { 
+              columns: [
+                { 
+                    data: null,
+                    render: function (data, type, row, meta) {
+                      return meta.row + meta.settings._iDisplayStart + 1;
+                    }
+                },
+                {
                   data: 'deposit_no',
-                  render: function (data, type, row, meta) {
-                    return meta.row + meta.settings._iDisplayStart + 1;
-                  }
+                  render: function(data, type, row) {                    
+                      return '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '">';
+                  },
+                  orderable: false,
+                  className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
+                },
+                { data: 'gubun' },
+                { data: 'bank_cd_nm' },
+                { data: 'send_corp_nm' },
+                { data: 'bank_in_dttm' },
+                { data: 'in_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },              
+                { data: 'remark' },
+              ],
+              columnDefs: [
+                { targets: 0, width: '40px', className: 'text-center' },
+                { targets: 1, width: '40px', className: 'text-center' },
+                { targets: 2, width: '90px', className: 'text-center' },
+                { targets: 3, width: '110px', className: 'text-left' },
+                { targets: 4, width: '120px', className: 'text-left' },
+                { targets: 5, width: '200px', className: 'text-center' },
+                { targets: 6, width: '120px', className: 'text-end' },
+                { targets: 7, width: '300px', className: 'text-left' },
+              ],
+              order: [[0, 'desc']],
+              paging: true,
+              lengthChange: false,
+              searching: false,
+              ordering: true,
+              autoWidth: false,
+              responsive: true,
+              scrollCollapse: false,
+              pageLength: 10,
+              scrollY: '280px',
+              info: false,
+              language: {
+                emptyTable: '데이터가 없습니다.',
+                zeroRecords: '일치하는 데이터가 없습니다.',
+                loadingRecords: '로딩중...',
+                processing: '처리중...',
               },
-              { data: 'gubun' },
-              { data: 'bank_cd_nm' },
-              { data: 'send_corp_nm' },
-              { data: 'bank_in_dttm' },
-              { data: 'in_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },              
-              { data: 'remark' },
-            ],
-            columnDefs: [
-              { targets: 0, width: '60px', className: 'text-center' },
-              { targets: 1, width: '100px', className: 'text-center' },
-              { targets: 2, width: '120px', className: 'text-left' },
-              { targets: 3, width: '120px', className: 'text-left' },
-              { targets: 4, width: '200px', className: 'text-center' },
-              { targets: 5, width: '120px', className: 'text-end' },
-              { targets: 6, width: '300px', className: 'text-left' },
-            ],
-            order: [[0, 'desc']],
-            paging: true,
-            lengthChange: false,
-            searching: false,
-            ordering: true,
-            autoWidth: false,
-            responsive: true,
-            scrollCollapse: false,
-            pageLength: 10,
-            scrollY: '280px',
-            info: false,
-            language: {
-              emptyTable: '데이터가 없습니다.',
-              zeroRecords: '일치하는 데이터가 없습니다.',
-              loadingRecords: '로딩중...',
-              processing: '처리중...',
-            },
+              // =============================================================
+              // 중요: 테이블이 다시 그려질 때마다 체크박스 상태를 업데이트
+              // =============================================================
+              drawCallback: function( settings ) {
+                  updateCheckAllListState();
+              }
           });
+
+          // --- 전체 선택/해제 체크박스 클릭 이벤트 ---
+          $('#check_all_depo_list').on('click', function(){
+              var isChecked = this.checked;
+              // 현재 페이지의 모든 행 체크박스를 찾아서 상태 변경
+              tbl_depo_list.rows({ page: 'current' }).nodes().to$().find('.row-checkbox').prop('checked', isChecked);
+          });
+
+          // --- 각 행의 체크박스 클릭 이벤트 (이벤트 위임 사용) ---
+          $('#tbl_depo_list tbody').on('click', '.row-checkbox', function(){
+              // 개별 체크박스 클릭 시 '전체 선택' 체크박스 상태 업데이트
+              updateCheckAllDepoListState();
+          });
+
+          $('#tbl_depo_list').on('click', 'tr', function () {      
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+            } else {
+                tbl_depo_list.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+            }       
+            // if ($(this).hasClass('selected')) {
+            //   $(this).removeClass('selected');
+            //   $(this).find('.row-checkbox').prop('checked', false);
+            // } else {
+            //   $(this).addClass('selected');
+            //   $(this).find('.row-checkbox').prop('checked', true);
+            // }
+          });
+
+          // --- '전체 선택' 체크박스 상태 업데이트 함수 ---
+          function updateCheckAllDepoListState() {
+              var $rowCheckboxes = tbl_depo_list.rows({ page: 'current' }).nodes().to$().find('.row-checkbox');
+              var totalCheckboxes = $rowCheckboxes.length;
+              var checkedCheckboxes = $rowCheckboxes.filter(':checked').length;
+
+              // 모든 체크박스가 선택되었는지 확인
+              var allChecked = totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes;
+              $('#check_all_depo_list').prop('checked', allChecked);
+
+              // 하나라도 선택된 경우 vs 모두 선택되지 않은 경우 (선택 사항: indeterminate 상태 구현)
+              if (checkedCheckboxes > 0 && checkedCheckboxes < totalCheckboxes) {
+                  $('#check_all_depo_list').prop('indeterminate', true); // 일부만 선택되었을 때 중간 상태 표시
+              } else {
+                  $('#check_all_depo_list').prop('indeterminate', false);
+              }
+          }
           // 첫 번째 포커스 가능 요소로 이동
-          $(this).find('button:not([disabled]), input:not([disabled])').first().focus();           
+          $(this).find('button:not([disabled]), input:not([disabled])').first().focus();         
+          
+          $('#btn_depo_delete').click(function () {          
+            var selectedDepoNO = [];
+            tbl_depo_list.rows({ page: 'current' }).nodes().to$().find('.row-checkbox:checked').each(function () {
+              selectedDepoNO.push($(this).val());
+            });
+
+            if (selectedDepoNO.length === 0) {
+              alert('삭제 건을 선택해주세요');
+              return;
+            }
+
+            var dataParam = {
+              depositNo: selectedDepoNO.join(',') 
+            }; 
+            
+            ConfirmdialogToAjax("execute", "/deposit/deposit/depoMng/deleteDepoData", dataParam, fn_depo_delete_result);
+            
+          });
+
+          function fn_depo_delete_result(data){
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');             
+            tbl_depo_list.ajax.reload();
+          }
         });
 
         // 모달이 닫힐 때 포커스 복원
@@ -1205,7 +1298,7 @@
                     <th class="text-center" style="width:120px; border:1px solid #dee2e6;">승인금액</th>                    
                     <th class="text-center" style="width:120px; border:1px solid #dee2e6;">카드수수료</th>
                     <th class="text-center" style="width:120px; border:1px solid #dee2e6;">입금예정액</th>
-                    <th class="text-center" style="width:120px; border:1px solid #dee2e6;">서비스수수료</th>
+                    <th class="text-center" style="width:120px; border:1px solid #dee2e6;">정산 수수료</th>
                     
                     <th class="text-center" style="width:120px; border:1px solid #dee2e6;">정산 원금</th>
                     <th class="text-center" style="width:120px; border:1px solid #dee2e6;">여신수수료</th>
@@ -1233,9 +1326,12 @@
             <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_depo_list">
               <thead class="bg-200">
                 <tr>
-                  <th class="text-center" style="width: 60px;">번호</th>
-                  <th class="text-center" style="width: 100px;">구분</th>
-                  <th class="text-center" style="width: 120px;">은행명</th>
+                  <th class="text-center" style="width: 40px;">번호</th>
+                  <th class="text-center" style="width: 40px;">
+                    <input type="checkbox" id="check_all_depo_list" class="form-check-input" />
+                  </th>
+                  <th class="text-center" style="width: 90px;">구분</th>
+                  <th class="text-center" style="width: 110px;">은행명</th>
                   <th class="text-center" style="width: 120px;">입금처</th>
                   <th class="text-center" style="width: 200px;">입금시간</th> 
                   <th class="text-center" style="width: 120px;">입금액</th>
@@ -1246,6 +1342,7 @@
             </table>
           </div> 
           <div class="modal-footer">            
+            <button class="btn btn-primary text-start" type="button" id="btn_depo_delete" name="btn_depo_delete">입금 내역 삭제</button>
             <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
           </div>          
         </div>

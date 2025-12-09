@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.web.manage.deposit.domain.DepositExcelRowDataVO;
+import com.web.manage.deposit.domain.ProcDepositDataVO;
 import com.web.manage.deposit.domain.ProcDepositVO;
 import com.web.manage.deposit.domain.ProcTransDepositVO;
 
@@ -28,6 +29,8 @@ public interface DepositMapper {
 
     void callProcChangeResvDate(ProcDepositVO procVo);
     void callProcDepositAdjust(ProcDepositVO procVo);
+    void callProcDeleteDeposit(ProcDepositDataVO procVo);
+
     List<HashMap<String, Object>> getDepoAdjustSummary(HashMap<String, Object> hashmapParam);
     HashMap<String, Object> getDepoAdjustSummTotal(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getChainDepositList(HashMap<String, Object> hashmapParam);

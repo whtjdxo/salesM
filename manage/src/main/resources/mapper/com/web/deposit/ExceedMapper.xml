@@ -33,11 +33,11 @@
 		   AND	EM.USE_YN	= 'Y'
 		 GROUP 	BY   EM.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO 
         <choose>
-			<when test="sidx != '' and sidx != null ">
-					ORDER BY ${sidx} ${sord}
-			</when>
+			<when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
 			<otherwise>
-					ORDER BY 1
+				ORDER BY 1
 			</otherwise>
         </choose>                
         LIMIT  ${start}, ${end}
@@ -101,11 +101,11 @@
 		</if>
 		
 		<choose>
-			<when test="sidx != '' and sidx != null ">
-					ORDER BY ${sidx} ${sord}
-			</when>
+			<when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
 			<otherwise>
-					ORDER BY 1
+				ORDER BY 1
 			</otherwise>
 		</choose>                
 		LIMIT  ${start}, ${end}
@@ -159,11 +159,11 @@
 		   AND  EM.USE_YN = 'Y'
 		   AND 	EM.EXC_STATUS = '100000'
 		<choose>
-			<when test="sidx != '' and sidx != null ">
-					ORDER BY ${sidx} ${sord}
-			</when>
+			<when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
 			<otherwise>
-					ORDER BY 1
+				ORDER BY 1
 			</otherwise>
 		</choose>                
 		LIMIT  ${start}, ${end}

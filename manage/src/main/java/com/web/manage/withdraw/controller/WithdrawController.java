@@ -3,6 +3,7 @@ package com.web.manage.withdraw.controller;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -85,12 +86,40 @@ public class WithdrawController {
             pageing.setPageingVO(hashmapParam);
 
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
+                hashmapParam.put("orderBy", "");    
             } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
@@ -148,16 +177,42 @@ public class WithdrawController {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam);
 
-            // System.out.println(hashmapParam);
-
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
-            } 
+                hashmapParam.put("orderBy", "");    
+            }  
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -192,16 +247,42 @@ public class WithdrawController {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam);
 
-            // System.out.println(hashmapParam);
-
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
-            } 
+                hashmapParam.put("orderBy", "");    
+            }  
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -241,13 +322,41 @@ public class WithdrawController {
             pageing.setPageingVO(hashmapParam); 
 
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
-            } 
+                hashmapParam.put("orderBy", "");    
+            }  
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -300,7 +409,7 @@ public class WithdrawController {
             String[] headers = {
                   "정산 번호"       , "정산 상태"       , "매입사"          , "VAN"             ,  "카드번호"       , "카드유형"
                 , "구분"           , "승인번호"        , "승인일시"         , "입금예정일"       , "승인금액"
-                , "카드수수료"      , "입금예정액"       , "서비스수수료"     , "정산 원금"       , "여신수수료"
+                , "카드수수료"      , "입금예정액"       , "정산 수수료"     , "정산 원금"       , "여신수수료"
                 , "출금예정액"      , "비고"
             };
             for (int i = 0; i < headers.length; i++) {
@@ -458,17 +567,43 @@ public class WithdrawController {
         String jString = null; 
         try {
             PageingVO pageing = new PageingVO();
-            pageing.setPageingVO(hashmapParam);
-
-            // System.out.println(hashmapParam);
-
+            pageing.setPageingVO(hashmapParam);  
+             
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
+                hashmapParam.put("orderBy", "");    
             } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
@@ -509,13 +644,40 @@ public class WithdrawController {
             pageing.setPageingVO(hashmapParam); 
 
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                System.out.println("++++++++++++++++++++ empty");
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
+                hashmapParam.put("orderBy", "");    
             } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
@@ -554,13 +716,41 @@ public class WithdrawController {
             pageing.setPageingVO(hashmapParam); 
 
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
-            } 
+                hashmapParam.put("orderBy", "");    
+            }  
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -684,7 +874,7 @@ public class WithdrawController {
             String[] headers = {
                   "가맹점 명"       , "사업자 번호"         , "대표자명"          ,  "송금 상태"       
                 , "송금 금액"       , "매출 금액"           , "카드사 수수료"       , "입금예정액"
-                , "정산 원금"       , "서비스 수수료"       , "여신수수료"         , "정산 금액"
+                , "정산 원금"       , "정산 수수료"       , "여신수수료"         , "정산 금액"
                 , "과입금액"        , "차감 정산액"
             };
             for (int i = 0; i < headers.length; i++) {
@@ -811,7 +1001,7 @@ public class WithdrawController {
             String[] headers = {
                   "정산 번호"       , "정산 상태"       , "VAN"         , "매입사"          ,  "카드번호"       , "카드유형"
                 , "구분"           , "승인번호"        , "승인일시"         , "입금예정일"       , "승인금액"
-                , "카드수수료"      , "입금예정액"       , "서비스수수료"      , "정산 원금"       , "여신수수료"
+                , "카드수수료"      , "입금예정액"       , "정산 수수료"      , "정산 원금"       , "여신수수료"
                 , "출금예정액"      , "비고"
             };
             for (int i = 0; i < headers.length; i++) {
@@ -939,12 +1129,40 @@ public class WithdrawController {
             pageing.setPageingVO(hashmapParam);
 
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
+                hashmapParam.put("orderBy", "");    
             } 
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
@@ -986,13 +1204,41 @@ public class WithdrawController {
             // System.out.println(hashmapParam);
 
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
-            } 
+                hashmapParam.put("orderBy", "");    
+            }  
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -1029,13 +1275,41 @@ public class WithdrawController {
             pageing.setPageingVO(hashmapParam); 
 
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
-            } 
+                hashmapParam.put("orderBy", "");    
+            }  
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -1085,7 +1359,7 @@ public class WithdrawController {
             String[] headers = {
                   "정산 번호"       , "정산 상태"       , "매입사"          , "VAN"             ,  "카드번호"       , "카드유형"
                 , "구분"           , "승인번호"        , "승인일시"         , "입금예정일"       , "승인금액"
-                , "카드수수료"      , "입금예정액"       , "서비스수수료"     , "정산 원금"       , "여신수수료"
+                , "카드수수료"      , "입금예정액"       , "정산 수수료"     , "정산 원금"       , "여신수수료"
                 , "출금예정액"      , "비고"
             };
             for (int i = 0; i < headers.length; i++) {

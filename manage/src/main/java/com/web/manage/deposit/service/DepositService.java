@@ -18,6 +18,7 @@ import com.web.config.interceptor.AuthInterceptor;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.deposit.domain.DepositExcelDataVO;
 import com.web.manage.deposit.domain.DepositExcelRowDataVO;
+import com.web.manage.deposit.domain.ProcDepositDataVO;
 import com.web.manage.deposit.domain.ProcDepositVO;
 import com.web.manage.deposit.domain.ProcTransDepositVO;
 import com.web.manage.deposit.mapper.DepositMapper;
@@ -104,6 +105,26 @@ public class DepositService {
             result.setResultMsg("시스템 오류가 발생했습니다: " + e.getMessage());
             // 로깅 처리
             // logger.error("Scrap transaction processing failed", e);
+        }
+        return result; 
+    }
+
+    public ReturnDataVO callProcDepositDelete(ProcDepositDataVO procVo) {
+        // return withdrawMapper.callProcRemitMain(procVo);
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            depositMapper.callProcDeleteDeposit(procVo);            
+            if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
+                result.setResultCode("S000");
+                result.setResultMsg(procVo.getResultMsg());
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg(procVo.getResultMsg());
+                return result;
+            } 
+        } catch (Exception e) {
+            result.setResultCode("F500");
+            result.setResultMsg("시스템 오류가 발생했습니다: " + e.getMessage()); 
         }
         return result; 
     }

@@ -68,11 +68,11 @@
 				</if>				 
 		WHERE  1= 1       
         <choose>
-			<when test="sidx != '' and sidx != null ">
-					ORDER BY ${sidx} ${sord}
-			</when>
+			<when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
 			<otherwise>
-					ORDER BY 1
+				ORDER BY 1
 			</otherwise>
         </choose>                
         LIMIT  ${start}, ${end}
@@ -181,11 +181,11 @@
 				JOIN TB_CHAIN TC ON TC.CHAIN_NO = VW.CHAIN_NO  
 		WHERE  1= 1       
 		<choose>
-			<when test="sidx != '' and sidx != null ">
-					ORDER BY ${sidx} ${sord}
-			</when>
+			<when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
 			<otherwise>
-					ORDER BY 1
+				ORDER BY 1
 			</otherwise>
 		</choose>                
 		<!-- LIMIT  ${start}, ${end} -->
@@ -280,11 +280,11 @@
 			</choose>
 		</if>  
 		<choose>
-			<when test="sidx != '' and sidx != null ">
-					ORDER BY ${sidx} ${sord}
-			</when>
+			<when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
 			<otherwise>
-					ORDER BY 1
+				ORDER BY 1
 			</otherwise>
 		</choose>                
 		LIMIT  ${start}, ${end}
@@ -292,26 +292,37 @@
 
 	<update id="callProcChangeResvDate" parameterType="com.web.manage.deposit.domain.ProcDepositVO" statementType="CALLABLE">
 		{ 
-				CALL PRC_DEPOSIT_CHANGE_RESV_DATE(
-						#{wdNo, mode=IN, jdbcType=VARCHAR} 
-						, #{changeResvDate, mode=IN, jdbcType=VARCHAR}
-						, #{userId, mode=IN, jdbcType=VARCHAR}
-						, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-						, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
-				) 
+			CALL PRC_DEPOSIT_CHANGE_RESV_DATE(
+					#{wdNo, mode=IN, jdbcType=VARCHAR} 
+					, #{changeResvDate, mode=IN, jdbcType=VARCHAR}
+					, #{userId, mode=IN, jdbcType=VARCHAR}
+					, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+					, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+			) 
 		}
 	</update>
 
 	<update id="callProcDepositAdjust" parameterType="com.web.manage.deposit.domain.ProcDepositVO" statementType="CALLABLE">
 		{ 
-				CALL PRC_DEPOSIT_ADJUST(
-						#{resvDate, mode=IN, jdbcType=VARCHAR} 
-						, #{chainNo, mode=IN, jdbcType=VARCHAR}
-						, #{cardAcq, mode=IN, jdbcType=VARCHAR}
-						, #{userId, mode=IN, jdbcType=VARCHAR}
-						, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-						, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
-				) 
+			CALL PRC_DEPOSIT_ADJUST(
+					#{resvDate, mode=IN, jdbcType=VARCHAR} 
+					, #{chainNo, mode=IN, jdbcType=VARCHAR}
+					, #{cardAcq, mode=IN, jdbcType=VARCHAR}
+					, #{userId, mode=IN, jdbcType=VARCHAR}
+					, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+					, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+			) 
+		}
+	</update> 
+
+	<update id="callProcDepositDataDelete" parameterType="com.web.manage.deposit.domain.ProcDepositDataVO" statementType="CALLABLE">
+		{ 
+			CALL PRC_DEPOSIT_DATA_DELETE(
+					#{depositNo, mode=IN, jdbcType=VARCHAR}  
+					, #{userId, mode=IN, jdbcType=VARCHAR}
+					, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+					, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+			) 
 		}
 	</update>
 
@@ -356,12 +367,12 @@
 		WHERE	DA.ADJUST_DATE = #{sch_adjust_date} 
 		GROUP 	BY DA.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO
         <choose>
-                <when test="sidx != '' and sidx != null ">
-                        ORDER BY ${sidx} ${sord}
-                </when>
-                <otherwise>
-                        ORDER BY 1
-                </otherwise>
+			<when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
+			<otherwise>
+				ORDER BY 1
+			</otherwise>
         </choose>                
         LIMIT  ${start}, ${end}
 	</select>
@@ -438,11 +449,11 @@
 		   AND  DA.CHAIN_NO 	= #{sch_card_chain_no}
 		 GROUP	BY DA.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO, DA.CARD_ACQ, GET_CODE_NM('CARD_ACQ', DA.CARD_ACQ)
 		<choose>
-			<when test="sidx != '' and sidx != null ">
-					ORDER BY ${sidx} ${sord}
-			</when>
+			<when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
 			<otherwise>
-					ORDER BY 1
+				ORDER BY 1
 			</otherwise>
 		</choose>                
 		<!-- LIMIT  ${start}, ${end} -->
@@ -589,11 +600,11 @@
 			</choose>
 		</if>  
 		<choose>
-			<when test="sidx != '' and sidx != null ">
-					ORDER BY ${sidx} ${sord}
-			</when>
+			<when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
 			<otherwise>
-					ORDER BY 1
+				ORDER BY 1
 			</otherwise>
 		</choose>                
 		LIMIT  ${start}, ${end}
@@ -643,9 +654,9 @@
 		   AND  DL.CHAIN_NO 	= #{sch_chain_no}
 		   AND	DL.IN_AMT > 0
 		<choose>
-			<when test="sidx != '' and sidx != null ">
-				ORDER BY ${sidx} ${sord}
-			</when>
+			<when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
 			<otherwise>
 				ORDER BY 1
 			</otherwise>
@@ -676,9 +687,9 @@
 		   AND  DL.CHAIN_NO 	= #{sch_chain_no}
 		   AND	DL.IN_AMT > 0
 		<choose>
-			<when test="sidx != '' and sidx != null ">
-				ORDER BY ${sidx} ${sord}
-			</when>
+			<when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
 			<otherwise>
 				ORDER BY 1
 			</otherwise>
@@ -771,9 +782,9 @@
 		   AND  DL.TRANS_COMP 	= #{sch_chain_no}
 		   AND	DL.IN_AMT > 0
 		<choose>
-			<when test="sidx != '' and sidx != null ">
-				ORDER BY ${sidx} ${sord}
-			</when>
+			<when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
 			<otherwise>
 				ORDER BY 1
 			</otherwise>

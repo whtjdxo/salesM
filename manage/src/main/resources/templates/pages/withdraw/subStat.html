@@ -36,6 +36,13 @@
         $('#sch_reg_sdt').val(thirtyDayAgo);
         $('#sch_reg_edt').val(toDay);  
 
+        // Enter key event for sch_chain_nm
+        $('#sch_chain_nm').on('keypress', function(e) {
+          if (e.which === 13) {
+            $('#btn_search').click();
+          }
+        });
+        
         $('#btn_search').click(function () {   
           tbl_substat_summ.ajax.reload();
         });  

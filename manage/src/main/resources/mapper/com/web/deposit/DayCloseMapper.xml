@@ -277,12 +277,12 @@
                 )
           AND  TC.USE_YN = 'Y'
         <choose>
-                <when test="sidx != '' and sidx != null ">
-                        ORDER BY ${sidx} ${sord}
-                </when>
-                <otherwise>
-                        ORDER BY 1
-                </otherwise>
+            <when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY 1
+            </otherwise>
         </choose>          
 	</select>
 
@@ -644,8 +644,8 @@
                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO                
          WHERE  close_date = #{close_date}
         <choose>
-            <when test="sidx != '' and sidx != null ">
-                    ORDER BY ${sidx} ${sord}
+            <when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
             </when>
             <otherwise>
                     ORDER BY 1

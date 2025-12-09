@@ -27,6 +27,13 @@
         $('#sch_adjust_date').val(toDay); 
         $('#change_resv_date').val(toDay);
 
+        // Enter key event for sch_chain_nm
+        $('#sch_chain_nm').on('keypress', function(e) {
+          if (e.which === 13) {
+            $('#btn_search').click();
+          }
+        });
+
         $('#btn_search').click(function () {   
           fn_default_clear();
           tbl_depo_resv_summ.ajax.reload();
@@ -1018,7 +1025,7 @@
                     <th class="text-center" style="width:120px; border:1px solid #dee2e6;">승인금액</th>                    
                     <th class="text-center" style="width:120px; border:1px solid #dee2e6;">카드수수료</th>
                     <th class="text-center" style="width:120px; border:1px solid #dee2e6;">입금예정액</th>
-                    <th class="text-center" style="width:120px; border:1px solid #dee2e6;">서비스수수료</th>
+                    <th class="text-center" style="width:120px; border:1px solid #dee2e6;">정산 수수료</th>
                     
                     <th class="text-center" style="width:120px; border:1px solid #dee2e6;">정산 원금</th>
                     <th class="text-center" style="width:120px; border:1px solid #dee2e6;">여신수수료</th>

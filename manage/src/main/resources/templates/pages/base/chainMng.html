@@ -302,7 +302,38 @@
             tbl_link_chain.ajax.reload();
             tbl_file.ajax.reload();                         
           }  
-        });      
+        });             
+        
+        $('#crd_fee_rate').on('focus', function () {
+          $(this).select();
+        });
+        $('#crd_delay_rate').on('focus', function () {
+          $(this).select();
+        });
+        $('#svc_fee_rate').on('focus', function () {
+          $(this).select();
+        });
+        $('#etc_fee_rate').on('focus', function () {
+          $(this).select();
+        });
+        $('#day_use_rate').on('focus', function () {
+          $(this).select();
+        });
+        $('#tot_limit_amt').on('focus', function () {
+          $(this).select();
+        });
+        $('#day_use_rate').on('focus', function () {
+          $(this).select();
+        });
+
+        $('#unit_limit_amt').on('focus', function () {
+          $(this).select();
+        });
+        $('#unit_limit_amt').on('focus', function () {
+          $(this).select();
+        });
+
+
 
         $('#btn_clear').click(function () {
           fn_chain_form_clear();

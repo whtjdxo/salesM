@@ -3,6 +3,7 @@ package com.web.manage.withdraw.controller;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -78,13 +79,41 @@ public class SubtractController {
             pageing.setPageingVO(hashmapParam); 
  
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
-            } 
+                hashmapParam.put("orderBy", "");    
+            }  
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -121,13 +150,41 @@ public class SubtractController {
             pageing.setPageingVO(hashmapParam);
             
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
-            } 
+                hashmapParam.put("orderBy", "");    
+            }  
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -162,9 +219,38 @@ public class SubtractController {
             pageing.setPageingVO(hashmapParam);
             
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
                 hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
                 hashmapParam.put("sord", "");                
@@ -203,13 +289,41 @@ public class SubtractController {
             pageing.setPageingVO(hashmapParam);
             
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
-            } 
+                hashmapParam.put("orderBy", "");    
+            }   
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
             list = subtractService.getSubReceiveList(hashmapParam);
@@ -351,13 +465,41 @@ public class SubtractController {
             pageing.setPageingVO(hashmapParam); 
  
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
-            } 
+                hashmapParam.put("orderBy", "");    
+            }   
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
@@ -395,13 +537,41 @@ public class SubtractController {
             pageing.setPageingVO(hashmapParam);
             
             if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
-                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
-                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
-                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
             } else {
-                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
-                hashmapParam.put("sord", "");                
-            } 
+                hashmapParam.put("orderBy", "");    
+            }  
             hashmapParam.put("start", pageing.getStart());
             hashmapParam.put("end", pageing.getLength());
 
