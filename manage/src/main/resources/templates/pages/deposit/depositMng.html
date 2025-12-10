@@ -66,7 +66,6 @@
               // 서버 에러 처리 등 추가 가능
               error: function(jqXHR, textStatus, errorThrown) {
                   console.error("DataTables Ajax Error: ", textStatus, errorThrown);
-                  // 사용자에게 에러 메시지 표시 등
               }
             },
             columns: [
@@ -336,13 +335,11 @@
         });
 
         $('#btn_deposit_card').click(function () { 
-
           var selectedChainNo = "";
           var selectedRow = tbl_depo_resv_summ.row('.selected').data();
           if (selectedRow) {
             selectedChainNo = selectedRow.chain_no;
           }
-
 
           if (selectedChainNo == "") {
             alert('입금 처리할 가맹점을 선택하세요.');
@@ -375,7 +372,7 @@
             icon: 'success'
           });
           fn_default_clear();
-          tbl_depo_resv_summ.ajax.reload();
+          tbl_depo_resv_summ.ajax.reload(null, false);
         }
 
         function fn_default_clear(){           
@@ -741,7 +738,7 @@
         function fn_change_result(data){
           swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
           fn_default_clear();
-          tbl_depo_resv_summ.ajax.reload();
+          tbl_depo_resv_summ.ajax.reload(null, false);
         }
         
         // Excel download button click event
@@ -825,8 +822,12 @@
                 },
                 {
                   data: 'deposit_no',
-                  render: function(data, type, row) {                    
+                  render: function(data, type, row) {       
+                    if (row.gubun == 'KSOL') {
+                      return '<span style="color: orange; font-weight: bold;">-</span>&nbsp;';                      
+                    } else {
                       return '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '">';
+                    }
                   },
                   orderable: false,
                   className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
@@ -935,6 +936,7 @@
 
             var dataParam = {
               depositNo: selectedDepoNO.join(',') 
+              , corpGb : $('#sch_depo_gb').val()
             }; 
             
             ConfirmdialogToAjax("execute", "/deposit/deposit/depoMng/deleteDepoData", dataParam, fn_depo_delete_result);
@@ -942,8 +944,11 @@
           });
 
           function fn_depo_delete_result(data){
-            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');             
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');    
+            tbl_depo_resv_summ.ajax.reload(null, false);
+            tbl_card_summ.ajax.reload();         
             tbl_depo_list.ajax.reload();
+            
           }
         });
 

@@ -305,23 +305,24 @@
 	<update id="callProcDepositAdjust" parameterType="com.web.manage.deposit.domain.ProcDepositVO" statementType="CALLABLE">
 		{ 
 			CALL PRC_DEPOSIT_ADJUST(
-					#{resvDate, mode=IN, jdbcType=VARCHAR} 
-					, #{chainNo, mode=IN, jdbcType=VARCHAR}
-					, #{cardAcq, mode=IN, jdbcType=VARCHAR}
-					, #{userId, mode=IN, jdbcType=VARCHAR}
-					, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-					, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+				#{resvDate, mode=IN, jdbcType=VARCHAR} 
+				, #{chainNo, mode=IN, jdbcType=VARCHAR}
+				, #{cardAcq, mode=IN, jdbcType=VARCHAR}
+				, #{userId, mode=IN, jdbcType=VARCHAR}
+				, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+				, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
 			) 
 		}
 	</update> 
 
-	<update id="callProcDepositDataDelete" parameterType="com.web.manage.deposit.domain.ProcDepositDataVO" statementType="CALLABLE">
+	<update id="callProcDeleteDeposit" parameterType="com.web.manage.deposit.domain.ProcDepositDataVO" statementType="CALLABLE">
 		{ 
 			CALL PRC_DEPOSIT_DATA_DELETE(
-					#{depositNo, mode=IN, jdbcType=VARCHAR}  
-					, #{userId, mode=IN, jdbcType=VARCHAR}
-					, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-					, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+				#{depositNo, mode=IN, jdbcType=VARCHAR}  
+				, #{corpGb, mode=IN, jdbcType=VARCHAR}
+				, #{userId, mode=IN, jdbcType=VARCHAR}
+				, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+				, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
 			) 
 		}
 	</update>
@@ -639,7 +640,7 @@
 				, DL.BANK_CD							AS bank_cd
 				, GET_CODE_NM('BANK_CD', DL.BANK_CD)	AS bank_cd_nm	
 				, DL.IN_AMT								AS in_amt
-				, SD.REMARK								AS remark
+				, IFNULL(SD.REMARK, '')					AS remark
 		  FROM 	TB_CHAIN_DEPOSIT_LIST DL
 			   	STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = DL.CHAIN_NO 
 			   	LEFT OUTER JOIN (
@@ -774,7 +775,7 @@
 				, CO.BANK_CD							AS bank_cd
 				, GET_CODE_NM('BANK_CD', CO.BANK_CD)	AS bank_cd_nm	
 				, DL.IN_AMT								AS in_amt
-				, DL.BK_JUKYO 							AS remark
+				, IFNULL(DL.BK_JUKYO, '')				AS remark
 		  FROM 	TB_CREDIT_DEPOSIT_LIST DL
 			   	STRAIGHT_JOIN TB_CORP CO 	ON CO.CORP_CD = DL.CORP_CD  			   	
 			   	STRAIGHT_JOIN TB_CHAIN TC 	ON TC.CHAIN_NO = DL.TRANS_COMP
@@ -851,7 +852,7 @@
 		/*  DepositController.callProcTransDepositBatch  */
 		{ 
 			CALL PRC_SCRAP_TRANS_BANK_DEPOSIT(
-					#{chainNo, mode=IN, jdbcType=VARCHAR}
+				  #{chainNo, mode=IN, jdbcType=VARCHAR}
 				, #{userId, mode=IN, jdbcType=VARCHAR}
 				, #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
 				, #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}

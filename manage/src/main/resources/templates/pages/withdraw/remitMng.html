@@ -288,6 +288,10 @@
           dataParam ={
             remitNo : selectRemitNos.join(','),
           }   
+          if (selectRemitNos.length > 50) {
+            alert('한 번에 처리할 수 있는 항목은 최대 50개입니다.');
+            return;
+          }
           ConfirmdialogToAjax("execute","/withdraw/withdraw/remitMng/remitCancel", dataParam, fn_remit_result);
         });
 
@@ -376,22 +380,26 @@
           });
           
           var dataParam ="";
-          if ($('#remit_all').is(':checked')) {  
-            if (!confirm("모두 송금완료로 처리하시겠습니까?")) {              
-              return;
-            }
-            dataParam ={
-              remitNo : 'ALL',
-            }
-          } else {
-            if (selectRemitNos.length === 0) {
-              alert('송금 처리 할 가맹점을 선택하세요.');
-              return;
-            }
-            dataParam ={              
-              remitNo : selectRemitNos.join(','),
-            }  
-          } 
+          // if ($('#remit_all').is(':checked')) {  
+          //   if (!confirm("모두 송금완료로 처리하시겠습니까?")) {              
+          //     return;
+          //   }
+          //   dataParam ={
+          //     remitNo : 'ALL',
+          //   }
+          // } else {
+          if (selectRemitNos.length === 0) {
+            alert('송금 처리 할 가맹점을 선택하세요.');
+            return;
+          }
+          if (selectRemitNos.length > 50) {
+            alert('한 번에 처리할 수 있는 항목은 최대 50개입니다.');
+            return;
+          }
+          dataParam ={              
+            remitNo : selectRemitNos.join(','),
+          }  
+          // } 
           ConfirmdialogToAjax("execute","/withdraw/withdraw/remitMng/remitSend", dataParam, fn_remit_result);
         });
 

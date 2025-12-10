@@ -66,11 +66,11 @@
                                     WHEN 'CARD' THEN  '여신협'
                                     ELSE TML.VAN_CD END, '')	 	AS van_nm
                 , CASE 	WHEN IFNULL(VL.VAN_CD, 'X') = 'X' THEN '스크래핑 기록이 없습니다'
-        ELSE CONCAT(IFNULL(VL.SCRAP_GB, 'X') , ' >> ', IFNULL(VL.RSLT_MSG, '')  
-            ,  CASE	WHEN IFNULL(VL.LOGIN_ID, 'X') = 'X' THEN ''
-                    ELSE CONCAT(' (', IFNULL(VL.LOGIN_ID, ' '), ' / ', IFNULL(VL.LOGIN_PWD, ' '),  ')') END 
-            )	
-                        END                                                                     AS act_status
+                        ELSE CONCAT(IFNULL(VL.SCRAP_GB, 'X') , ' >> ', IFNULL(VL.RSLT_MSG, '')  
+                            ,  CASE	WHEN IFNULL(VL.LOGIN_ID, 'X') = 'X' THEN ''
+                                    ELSE CONCAT(' (', IFNULL(VL.LOGIN_ID, ' '), ' / ', IFNULL(VL.LOGIN_PWD, ' '),  ')') END 
+                            )	
+                                        END                                 AS act_status
                 , IFNULL(VL.SCRAP_GB, 'N')					                AS act_status_nm
                 , TML.GUBUN									AS gubun
                 , IFNULL(CASE TML.GUBUN	WHEN 'APRV' 	THEN '승인전문'
@@ -99,13 +99,13 @@
                                     WHERE	USE_YN = 'Y'
                                     AND  CORP_TYPE  = 'OP'
                                 ) VC
-                            UNION 	ALL 
-                        SELECT  'CARD'	AS GUBUN, CHAIN_NO, 'CARDSALES' AS VAN_CD, 1 AS CNT
+                            <!-- UNION 	ALL 
+                            SELECT  'CARD'	AS GUBUN, CHAIN_NO, 'CARDSALES' AS VAN_CD, 1 AS CNT
                             FROM 	TB_CHAIN 
                             WHERE 	SVC_STAT IN ('O', 'R')
-                            AND  USE_YN = 'Y'
+                            AND     USE_YN = 'Y'
                             AND 	LENGTH(CARDSALES_ID) &gt; 5 
-                            AND  LENGTH(CARDSALES_PWD) &gt; 5 
+                            AND     LENGTH(CARDSALES_PWD) &gt; 5  -->
                 ) TML ON TML.CHAIN_NO = TC.CORP_CD
                 LEFT OUTER JOIN (
                         SELECT 	ROW_NUMBER() OVER (PARTITION BY CHAIN_NO, VAN_CD ORDER BY LAST_SCRAP_DTTM DESC) AS CHAIN_RNO

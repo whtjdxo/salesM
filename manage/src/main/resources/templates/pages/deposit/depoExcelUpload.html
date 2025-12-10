@@ -230,6 +230,8 @@
                 ent_user_id: $('#ent_user_id').val(),
                 excelData: tableData
             }; 
+
+            alert($('#corp_type').val() + ' / ' + $('#corp_cd').val() + ' / ' + $('#chain_no').val() + ' / ' + $('#bank_cd').val() + ' / ' + tableData.length + '건 업로드 진행합니다.');
             ConfirmdialogToJsonAjax('create', '/deposit/upload/uploadExcel', formData, fn_return_result);
             
         });

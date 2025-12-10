@@ -669,25 +669,38 @@
               </div>
               <div class="col-sm-10">
                 <form id="frm_sch_exc" name="frm_sch_exc" onsubmit="return false;" novalidate="">
-                <div class="row mb-1">  
+                <div class="row mb-1">
                   <div class="col-sm-6">
                     <div class="input-group">
                       <div class="input-group input-group-sm mb-1 me-1">
-                        <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_exc_sdt">발생일</label>
+                        <div class="col-sm-4">
+                          <div class="form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="del_view" name="del_view" />
+                            <label class="form-check-label" for="del_view">미사용 포함</label> 
+                          </div>  
+                        </div>     
+                        <!-- <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_exc_sdt">발생일</label> -->
                         <input class="form-control form-control-sm" id="sch_chain_no" type="hidden" name="sch_chain_no" readonly="readonly"/>
-                        <div class="col-sm-5">
+                        <div class="col-sm-4">
                           <input class="form-control form-control-sm " id="sch_exc_sdt" type="text" name="sch_exc_sdt" istyle="date" maxlength="10" required />
                         </div>   
                         <!-- <span class="input-group-text">~</span> -->
-                        <div class="col-sm-5">
+                        <div class="col-sm-4">
                           <input class="form-control form-control-sm" id="sch_exc_edt" type="text" name="sch_exc_edt" istyle="date" maxlength="10" required />
-                        </div>   
-                      </div>
+                        </div>  
+                                            
+                      </div>            
                     </div> 
                   </div>
+                  <!-- </div>
+                  <div class="col-sm-1">  
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="checkbox" id="del_view" name="del_view" />
+                      <label class="form-check-label" for="del_view">N</label> 
+                    </div>                    
+                  </div> -->
                   <div class="col-sm-6">
                     <div class="input-group input-group-sm px-3">
-                      <!-- <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_reg_sdate">차감유형</label> -->
                       <select class="form-select form-control-sm" id="sch_exc_type" name="sch_exc_type" style="width: 100px">
                         <option value="">선 택</option>
                       </select>                    
@@ -713,12 +726,12 @@
                     <button type="button" class="btn btn-primary me-2" id="btn_exceed_ready_all">모두 출금대기</button> 
                   </div>
                 </div>
-                <div class="col-sm-6">  
-                  <div class="d-flex justify-content-start align-items-center">
+                <div class="col-sm-6 text-end">  
+                  <div >
                     <button type="button" class="btn btn-success me-2" id="btn_exceed_cancel">출금대기 취소</button> 
                     <button type="button" class="btn btn-primary me-2" id="btn_exceed_cancel_all">모두 출금대기 취소</button> 
                   </div>
-                </div>
+                </div>                
               </div>
               <div class="table-responsive scrollbar">
                 <table class="table table-striped table-sm fs-9 mb-0 table-hover table-bordered" id="tbl_exc_list">

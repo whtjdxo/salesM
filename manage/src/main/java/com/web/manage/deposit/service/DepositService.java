@@ -109,8 +109,7 @@ public class DepositService {
         return result; 
     }
 
-    public ReturnDataVO callProcDepositDelete(ProcDepositDataVO procVo) {
-        // return withdrawMapper.callProcRemitMain(procVo);
+    public ReturnDataVO callProcDepositDelete(ProcDepositDataVO procVo) { 
         ReturnDataVO result = new ReturnDataVO();
         try {
             depositMapper.callProcDeleteDeposit(procVo);            
@@ -202,12 +201,20 @@ public class DepositService {
             // 회사 계좌번호 조회
             HashMap<String, Object> hparam = new HashMap<>();
             
+            System.out.println("excelDataVo.getCorp_type() : " + excelDataVo.getCorp_type());
+            System.out.println("excelDataVo.getChain_no() : " + excelDataVo.getChain_no());
+            System.out.println("excelDataVo.getCorp_cd() : " + excelDataVo.getCorp_cd());
+
             hparam.put("corpType", excelDataVo.getCorp_type());
             if("CH".equals(excelDataVo.getCorp_type())) {
-                hparam.put("corpCd", excelDataVo.getChain_no());
+                excelDataVo.setCorp_cd(excelDataVo.getChain_no());
             } else if ("OP".equals(excelDataVo.getCorp_type())) {
+                // excelDataVo.setCorp_cd(excelDataVo.getCorp_cd());
                 hparam.put("corpCd", excelDataVo.getCorp_cd()); 
+            }   else {
+                throw new RuntimeException("Invalid corp type.");
             }
+            
             String corpAccountNo = depositMapper.getCorpAccountNo(hparam);
 
             for (DepositExcelRowDataVO rowData : excelDataVo.getExcelData()) {

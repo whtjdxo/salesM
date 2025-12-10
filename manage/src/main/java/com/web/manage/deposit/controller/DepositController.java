@@ -361,7 +361,7 @@ public class DepositController {
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
         String jString = null; 
-        System.out.println(" ................... getChainDepositList ");
+        // System.out.println(" ................... getChainDepositList ");
         try {
             PageingVO pageing = new PageingVO();
             pageing.setPageingVO(hashmapParam);  
@@ -653,7 +653,7 @@ public class DepositController {
     public @ResponseBody ReturnDataVO callProcDepositDelete(@ModelAttribute("ProcDepositDataVO") @Valid ProcDepositDataVO procVo, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO(); 
         try {
-            // System.out.println("procVo : " + procVo);
+            System.out.println("procVo : " + procVo);
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
             procVo.setUserId(member.getUserId());            
             return depositService.callProcDepositDelete(procVo);             
@@ -1000,29 +1000,15 @@ public class DepositController {
         }
     }
 
-    // @RequestMapping(value = "upload/uploadExcel", method = RequestMethod.POST)    
-    // public @ResponseBody ReturnDataVO uploadExcelData(@ModelAttribute("DepositExcelVO") @Valid DepositExcelDataVO excelVo, BindingResult bindingResult, HttpSession session) {
     @PostMapping("upload/uploadExcel")
     @ResponseBody
     public ReturnDataVO uploadExcelData(@RequestBody DepositExcelDataVO excelVo, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO(); 
         try {            
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
-            excelVo.setEnt_user_id(member.getUserId());
-
-            // depositVo.setDeposit_no(depositService.getnew("DEPOSIT_NO_SEQ"));
-            // System.out.println("excelVo : " + excelVo);
+            excelVo.setEnt_user_id(member.getUserId()); 
             result = depositService.uploadExcelData(excelVo);
-            return result;
-            // if (depositService.uploadExcelData(excelVo)) {
-            //     System.out.println("Deposit Data Excel Upload  Create success");
-            //     result.setResultCode("S000");
-            //     result.setResultMsg("Deposit Data Excel Upload creation successful.");
-            // } else {
-            //     System.out.println("Exceed Amt fail");
-            //     result.setResultCode("F000");
-            //     result.setResultMsg("Deposit Data Excel Upload  creation Failed");
-            // }
+            return result; 
         } catch (Exception e) {
             result.setResultCode("F000");
             result.setResultMsg("Deposit Data Excel Upload creation Failed");
