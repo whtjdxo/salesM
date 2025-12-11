@@ -716,18 +716,21 @@
           var resultMsg = data.resultMsg;
 
           if (resultCode == 'S000') {
-            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
-            var selectedRowData = tbl_loan_summary.row('.selected').data(); // 현재 선택된 데이터 저장
-            tbl_loan_summary.ajax.reload(function () {
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');             
+            // 현재 선택된 행의 데이터 저장
+            var selectedRowData = tbl_loan_summary.row('.selected').data();            
+            tbl_loan_summary.ajax.reload(function() {
+              // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
               if (selectedRowData) {
-                tbl_loan_summary.rows().every(function () {
-                  if (this.data().chain_no === selectedRowData.chain_no) { // 저장된 데이터와 매칭
-                    $(this.node()).addClass('selected'); // 다시 선택
-                  }
-                });
+              tbl_loan_summary.rows().every(function() {
+                if (this.data().chain_no === selectedRowData.chain_no) {
+                $(this.node()).addClass('selected');
+                return false; // 찾으면 루프 중단
+                }
+              });
               }
-            });
-            tbl_loan_summary.ajax.reload();
+            }, false);
+
             tbl_chain_loan_list.ajax.reload();
             fn_frm_loan_mst_clear();
           } else { 
@@ -931,18 +934,23 @@
           var resultCode = data.resultCode;
           var resultMsg = data.resultMsg;
           if (resultCode == 'S000') {
-            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
-            var selectedRowData = tbl_counsel_list.row('.selected').data(); // 현재 선택된 데이터 저장
-            tbl_counsel_list.ajax.reload(function () {
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');            
+
+            // 현재 선택된 행의 데이터 저장
+            var selectedRowData = tbl_counsel_list.row('.selected').data();            
+            tbl_counsel_list.ajax.reload(function() {
+              // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
               if (selectedRowData) {
-                tbl_counsel_list.rows().every(function () {
-                  if (this.data().counsel_no === selectedRowData.counsel_no) { // 저장된 데이터와 매칭
-                    $(this.node()).addClass('selected'); // 다시 선택
-                  }
-                });
+              tbl_counsel_list.rows().every(function() {
+                if (this.data().counsel_no === selectedRowData.counsel_no) {
+                $(this.node()).addClass('selected');
+                return false; // 찾으면 루프 중단
+                }
+              });
               }
-            });
-            tbl_counsel_list.ajax.reload(); 
+            }, false);
+
+             
             fn_frm_counsel_reset();
           } else { 
             swal('실패', resultMsg, 'error');
@@ -966,7 +974,7 @@
             $('#tbl_modal_schedule').DataTable().destroy();
           }
 
-            $('#tbl_modal_schedule').DataTable({
+          var tbl_modal_schedule = $('#tbl_modal_schedule').DataTable({
             processing: true,
             serverSide: true,
             select: true,
@@ -1061,7 +1069,7 @@
             responsive: true,
             scrollCollapse: true,
             // pageLength: 10,
-            scrollY: '400px',
+            scrollY: '320px',
             info: false,
             language: {
               emptyTable: '데이터가 없습니다.',
@@ -1087,6 +1095,7 @@
               });
             } 
           });
+          $('#tbl_modal_recv_log').DataTable().ajax.reload();
           // 첫 번째 포커스 가능 요소로 이동
           $(this).find('button:not([disabled]), input:not([disabled])').first().focus();
           // document.querySelector('body > :not(#modal_schedule)').inert = true;
@@ -1132,7 +1141,9 @@
           } else {
             $('#tbl_modal_schedule').DataTable().$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
-          }
+          } 
+          // 수납 내역 테이블 갱신
+          $('#tbl_modal_recv_log').DataTable().ajax.reload();
         });
 
         // 모달이 닫힐 때 포커스 복원
@@ -1178,6 +1189,103 @@
             }
           });
         }); 
+
+        var tbl_modal_recv_log = $('#tbl_modal_recv_log').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          responsive: true,
+          ajax: {
+            url: '/loan/loan/loanMng/loanRecvLog',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',
+            data: function (postData) {
+
+              var formData = {
+              sch_loan_no : $('#loan_no').val()
+              , sch_sc_seq : $('#tbl_modal_schedule').DataTable().row('.selected').data() ? $('#tbl_modal_schedule').DataTable().row('.selected').data().sc_seq : ''              
+              };
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
+            },
+            dataSrc: function (json) {
+                // totalSummary 저장
+                totalSumm = json.totalSumm || {};
+                return json.data;
+            },
+            // 서버 에러 처리 등 추가 가능
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                // 사용자에게 에러 메시지 표시 등
+            }
+          },
+          columns: [
+            { data: 'loan_recv_seq'  
+              , render: function (data, type, row, meta) {
+                return meta.row + 1 + meta.settings._iDisplayStart;
+              }
+            },
+            { data: 'recv_dt' },            
+            { data: 'recv_type_nm' },
+            { data: 'recv_princ_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'recv_int_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'recv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'sub_code_nm' },
+          ],
+          columnDefs: [
+            { targets: 0, width: '50px', className: 'text-center' },
+            { targets: 1, width: '100px', className: 'text-center' },
+            { targets: 2, width: '120px', className: 'text-center' },
+            { targets: 3, width: '120px', className: 'text-right' },
+            { targets: 4, width: '120px', className: 'text-right' },
+            { targets: 5, width: '120px', className: 'text-right' }, 
+            { targets: 6, width: '200px', className: 'text-left' }, 
+          ],
+          order: [[0, 'desc']],
+          paging: false,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          autoWidth: false,
+          responsive: true,
+          scrollCollapse: false,
+          // pageLength: 5, 
+          scrollY: '100px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
+          footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+                const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+                const colMap = {
+                    3: 'recv_princ_amt',
+                    4: 'recv_int_amt', 
+                    5: 'recv_tot_amt', 
+                };
+                Object.entries(colMap).forEach(([colIdx, key]) => {
+                    const footer = api.column(Number(colIdx)).footer();
+                    if (footer) {
+                        const val = totalSumm[key] || 0;
+                        $(footer).html(renderNumber(val));
+                    }
+                }); 
+            },
+        }); 
+
+        $('#tbl_modal_recv_log').on('click', 'tr', function () {
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+          } else {
+            $('#tbl_modal_recv_log').DataTable().$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          } 
+        });
+
       });
     </script>
   </head>
@@ -1573,12 +1681,17 @@
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">대출 상환 스케줄</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <div class="col-auto align-self-center">
+            <h5 class="mb-0">대출 상환 스케줄</h5>
+          </div>
+          <div class="col-xl-9 text-end">
+            <button type="button" class="btn btn-primary" id="btn_schedule_excel" aria-label="Excel">Excel</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+          </div>          
         </div>
-        <div class="modal-body">
+        <div class="modal-body" style="height: 440px;">
           <div class="table-responsive scrollbar" style="overflow-x: auto; min-width: 1050px;">
-            <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_modal_schedule" style="min-width: 1050px; border-collapse: collapse;">
+            <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_modal_schedule" style="border-collapse: collapse;">
               <thead class="bg-200">
                 <tr>
                   <th class="text-center" style="width: 70px;">회차</th>
@@ -1609,12 +1722,39 @@
                 </tr>
               </tfoot>
             </table>
-          </div> 
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" id="btn_schedule_excel" aria-label="Excel">Excel</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-          </div>
+          </div>           
         </div>
+        <div class="modal-footer">
+          <div class="card" style="height: 230px;">
+            <div class="card-body">
+              <div class="table-responsive scrollbar" style="overflow-x: auto; min-width: 1050px;">
+                <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_modal_recv_log" style="border-collapse: collapse;">
+                  <thead class="bg-200">
+                    <tr>
+                      <th class="text-center" style="width: 50px;">순번</th>
+                      <th class="text-center" style="width: 100px;">수납일</th>
+                      <th class="text-center" style="width: 120px;">수납유형</th>
+                      <th class="text-center" style="width: 120px;">수납원금</th>
+                      <th class="text-center" style="width: 120px;">수납이자</th>
+                      <th class="text-center" style="width: 120px;">수납금액</th>                       
+                      <th class="text-center" style="width: 200px;">비고</th> 
+                    </tr>
+                  </thead>
+                  <tbody class="list"></tbody> 
+                  <tfoot>
+                    <tr>
+                      <th colspan="3" class="text-center">총계</th>
+                      <th class="text-right px-2"></th> 
+                      <th class="text-right px-2"></th> 
+                      <th class="text-right px-2"></th> 
+                      <th class="text-right px-2"></th>  
+                    </tr>
+                  </tfoot>
+                </table>
+              </div> 
+            </div>
+          </div>  
+        </div>        
       </div>
     </div>
   </div>

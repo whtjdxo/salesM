@@ -232,7 +232,7 @@
 
           if (resultCode == 'S000') {            
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
-            tbl_mapcode_list.ajax.reload();                 
+            tbl_mapcode_list.ajax.reload(null, false);                 
             fn_frm_map_code_clear();
           } else { 
             swal('실패', resultMsg, 'error');

@@ -176,8 +176,7 @@
           }
           var data = tbl_exc_summary.row(this).data();
 
-          if (data) {            
-              
+          if (data) {
             $('#frm_sch_exc')[0].reset();
             $('#frm_exc_mst')[0].reset();       
             $('#sch_exc_sdt').val(data.min_exc_date);
@@ -503,17 +502,21 @@
           var resultMsg = data.resultMsg;   
           
           if (resultCode == 'S000') {                               
-            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');            
-            var selectedRowData = tbl_exc_summary.row('.selected').data(); // 현재 선택된 데이터 저장            
-            tbl_exc_summary.ajax.reload(function () {
+            swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');       
+
+            // 현재 선택된 행의 데이터 저장
+            var selectedRowData = tbl_exc_summary.row('.selected').data();            
+            tbl_exc_summary.ajax.reload(function() {
+              // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
               if (selectedRowData) {
-                tbl_exc_summary.rows().every(function () {
-                  if (this.data().chain_no === selectedRowData.chain_no) { // 저장된 데이터와 매칭
-                    $(this.node()).addClass('selected'); // 다시 선택
-                  }
-                });
+              tbl_exc_summary.rows().every(function() {
+                if (this.data().chain_no === selectedRowData.chain_no) {
+                $(this.node()).addClass('selected');
+                return false; // 찾으면 루프 중단
+                }
+              });
               }
-            });
+            }, false);
             tbl_exc_list.ajax.reload(null, false);
             fn_frm_exc_mst_clear();            
           } else {  

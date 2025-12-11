@@ -133,7 +133,7 @@
           ],
           order: [ 
                 [4, 'desc'],   // 1차 정렬
-                [15, 'asc']   // 2차 정렬
+                [15, 'desc']   // 2차 정렬
           ],
           paging: true,
           lengthChange: false,
@@ -225,11 +225,11 @@
           
           if ($(this).hasClass('selected')) {
             $(this).removeClass('selected');     
-            $(this).find('.row-checkbox').prop('checked', false);       
+            // $(this).find('.row-checkbox').prop('checked', false);       
           } else {
             tbl_remit_summ.$('tr.selected').removeClass('selected');      
             $(this).addClass('selected');            
-            $(this).find('.row-checkbox').prop('checked', true);
+            // $(this).find('.row-checkbox').prop('checked', true);
           }
           
           var row = tbl_remit_summ.row(this).data();
@@ -406,7 +406,20 @@
         function fn_remit_result(data){ 
           swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
           fn_default_clear();
-          tbl_remit_summ.ajax.reload(null, false);
+          // tbl_remit_summ.ajax.reload(null, false);
+          // 현재 선택된 행의 데이터 저장
+          var selectedRowData = tbl_remit_summ.row('.selected').data();            
+          tbl_remit_summ.ajax.reload(function() {
+            // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
+            if (selectedRowData) {
+            tbl_remit_summ.rows().every(function() {
+              if (this.data().chain_no === selectedRowData.chain_no) {
+              $(this.node()).addClass('selected');
+              return false; // 찾으면 루프 중단
+              }
+            });
+            }
+          }, false);
         }
 
         function fn_default_clear(){ 

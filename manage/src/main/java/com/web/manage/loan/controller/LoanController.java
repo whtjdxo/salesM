@@ -161,6 +161,50 @@ public class LoanController {
         return jString;  
     }
 
+    @RequestMapping("loanMng/loanRecvLog")    
+    public @ResponseBody String getLoanRecvLogList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list  = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> totalSumm     = new HashMap<String, Object>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam); 
+ 
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = loanService.getLoanRecvLogList(hashmapParam);
+            int records = loanService.getQueryTotalCnt();
+            totalSumm = loanService.getLoanRecvLogTotal(hashmapParam);
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+            hashmapResult.put("totalSumm", totalSumm);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jString;  
+    }
+
 	@RequestMapping("loanMng/viewRepaySchdule")    
     public @ResponseBody String getViewRepaySchedule(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
@@ -522,27 +566,7 @@ public class LoanController {
             result.setResultMsg("An error occurred while processing the Delete Loan. [deleteLoanMst]");
             e.printStackTrace();
             return result;
-        }
-
-        // try {
-        //     SessionVO member = (SessionVO) session.getAttribute("S_USER");
-    	//     loanMstVo.setUpt_user_id(member.getUserId());  
-
-        //     if (loanService.deleteLoanMst(loanMstVo)) {
-        //         System.out.println("Delete LoanMst  success");
-        //         result.setResultCode("S000");
-        //         result.setResultMsg("LoanMst Delete successful.");
-        //     } else {
-        //         System.out.println("Delete Loan Master Fail");
-        //         result.setResultCode("F000");
-        //         result.setResultMsg("LoanMst Delete failed.");
-        //     }
-        // } catch (Exception e) {
-        //     result.setResultCode("F000");
-        //     result.setResultMsg("LoanMst Delete failed.");
-        //     e.printStackTrace();
-        // }
-        // return result;
+        } 
     }
 	
 

@@ -189,7 +189,20 @@
           if (resultCode == 'S000') {
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
             $('#frm_user_info')[0].reset();    
-            tbl_user.ajax.reload();        
+            
+            // 현재 선택된 행의 데이터 저장
+            var selectedRowData = tbl_user.row('.selected').data();            
+            tbl_user.ajax.reload(function() {
+              // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
+              if (selectedRowData) {
+              tbl_user.rows().every(function() {
+                if (this.data().user_id === selectedRowData.user_id) {
+                $(this.node()).addClass('selected');
+                return false; // 찾으면 루프 중단
+                }
+              });
+              }
+            }, false);
             $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
             $('#btn_update').hide();
             $('#btn_create').show();  

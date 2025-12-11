@@ -54,6 +54,14 @@ public class LoanService {
         return loanMapper.getChainLoanListTotal(hashmapParam);
     }
 
+    public List<HashMap<String, Object>> getLoanRecvLogList(HashMap<String, Object> hashmapParam) {
+        return loanMapper.getLoanRecvLogList(hashmapParam);
+    }
+
+    public HashMap<String, Object> getLoanRecvLogTotal(HashMap<String, Object> hashmapParam) {
+        return loanMapper.getLoanRecvLogTotal  (hashmapParam);
+    }
+
     public List<HashMap<String, Object>> getLoanRepaymentList(HashMap<String, Object> hashmapParam) {
         return loanMapper.getLoanRepaymentList(hashmapParam);
     }

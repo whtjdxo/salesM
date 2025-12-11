@@ -503,4 +503,41 @@
 		}
 	</update> 
 
+    <select id="getLoanRecvLogList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* LoanMapper.getLoanRecvLogList   */
+        SELECT 	SQL_CALC_FOUND_ROWS
+                LOAN_RECV_SEQ							AS loan_recv_seq				
+                , RECV_DT								AS recv_dt
+                , SUB_CODE 								AS sub_code
+                , GET_CODE_NM('SUB_CODE', SUB_CODE)		AS sub_code_nm
+                , RECV_TYPE								AS recv_type
+                , GET_CODE_NM('RECV_TYPE', RECV_TYPE ) 	AS recv_type_nm
+                , RECV_TRANS_NO 						AS recv_trans_no
+                , IFNULL(RECV_AMT, 0)					AS recv_amt 
+                , IFNULL(RECV_PRINC_AMT, 0) 			AS recv_princ_amt
+                , IFNULL(RECV_INT_AMT, 0)				AS recv_int_amt
+        FROM 	TB_LOAN_RECV_LOG 
+        WHERE	LOAN_NO = #{sch_loan_no}
+        AND     SC_SEQ  = #{sch_sc_seq} 
+        <choose>
+            <when test="sidx != '' and sidx != null ">
+                    ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                    ORDER BY 1
+            </otherwise>
+        </choose>        
+    </select> 
+
+
+    <select id="getLoanRecvLogTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* LoanMapper.getLoanRecvLogTotal */
+        SELECT   IFNULL(SUM(RECV_AMT), 0)                                   AS recv_amt
+                , IFNULL(SUM(RECV_PRINC_AMT), 0)                     AS recv_princ_amt
+                , IFNULL(SUM(RECV_INT_AMT), 0)                               AS recv_int_amt
+        FROM 	TB_LOAN_RECV_LOG 
+        WHERE	LOAN_NO = #{sch_loan_no}
+        AND     SC_SEQ  = #{sch_sc_seq}          
+    </select> 
+
 </mapper>

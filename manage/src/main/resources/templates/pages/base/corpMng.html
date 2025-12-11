@@ -120,7 +120,8 @@
             $('#account_no').val(data.account_no);
             $('#account_pwd').val(data.account_pwd);
             $('#web_id').val(data.web_id);
-            $('#web_pwd').val(data.web_pwd);            
+            $('#web_pwd').val(data.web_pwd);           
+            $('#depositor').val(data.depositor); 
             $('#api_url').val(data.api_url);
             $('#memo').val(data.memo);  
             $("input:radio[name='use_yn'][value='" + data.use_yn + "']").prop('checked', true);
@@ -174,7 +175,20 @@
           if (resultCode == 'S000') {
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
             $('#frm_corp_info')[0].reset();    
-            tbl_corp.ajax.reload();        
+            // tbl_corp.ajax.reload();    
+            // 현재 선택된 행의 데이터 저장
+            var selectedRowData = tbl_corp.row('.selected').data();            
+            tbl_corp.ajax.reload(function() {
+              // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
+              if (selectedRowData) {
+              tbl_corp.rows().every(function() {
+                if (this.data().corp_cd === selectedRowData.corp_cd) {
+                $(this.node()).addClass('selected');
+                return false; // 찾으면 루프 중단
+                }
+              });
+              }
+            }, false);    
             $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
             $('#btn_update').hide();
             $('#btn_save').show(); 

@@ -259,6 +259,7 @@
          WHERE 	FIND_IN_SET(EM.EXC_NO, #{excNo})
 		   AND 	EM.CHAIN_NO 		= #{chainNo}
 		   AND 	EM.EXC_STATUS 		= '000000'
+		   AND  EM.USE_YN 			= 'Y'	
     </update>
 
 	<update id="setExceedReadyAll" parameterType="com.web.manage.deposit.domain.ProcExceedVO">
@@ -271,6 +272,7 @@
                	, EM.UPT_DTTM         	= NOW()
          WHERE 	EM.CHAIN_NO 		= #{chainNo}
 		   AND 	EM.EXC_STATUS 		= '000000'
+		   AND  EM.USE_YN 			= 'Y'	
     </update>
 
 	<update id="setExceedCancel" parameterType="com.web.manage.deposit.domain.ProcExceedVO">
@@ -284,6 +286,7 @@
          WHERE 	FIND_IN_SET(EM.EXC_NO, #{excNo})
 		   AND 	EM.CHAIN_NO 		= #{chainNo}
 		   AND 	EM.EXC_STATUS 		= '100000'
+		   AND  EM.USE_YN 			= 'Y'	
     </update>
 
 	<update id="setExceedCancelAll" parameterType="com.web.manage.deposit.domain.ProcExceedVO">
@@ -296,6 +299,7 @@
                	, EM.UPT_DTTM         	= NOW()
          WHERE 	EM.CHAIN_NO 		= #{chainNo}
 		   AND 	EM.EXC_STATUS 		= '100000'
+		   AND  EM.USE_YN 			= 'Y'	
     </update>
 
 </mapper>

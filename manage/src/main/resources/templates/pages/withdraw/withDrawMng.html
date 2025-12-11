@@ -767,7 +767,20 @@
         function fn_change_result(data){
           swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
           fn_default_clear();
-          tbl_wd_summ.ajax.reload(null, false);
+          
+          // 현재 선택된 행의 데이터 저장
+          var selectedRowData = tbl_wd_summ.row('.selected').data();            
+          tbl_wd_summ.ajax.reload(function() {
+            // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
+            if (selectedRowData) {
+            tbl_wd_summ.rows().every(function() {
+              if (this.data().chain_no === selectedRowData.chain_no) {
+              $(this.node()).addClass('selected');
+              return false; // 찾으면 루프 중단
+              }
+            });
+            }
+          }, false);
         }
         
         // Excel download button click event

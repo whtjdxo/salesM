@@ -137,8 +137,20 @@
                 , { data: 'tot_use_amt' }
                 , { data: 'corp_nm' }
                 , { data: 'agency_nm' }
-                , { data: 'svc_stat_nm' }
-                , { data: 'remit_stat_nm' }                
+                , { data: 'remit_stat_nm', render: function(data, type, row) {
+                  if (type === 'display' && row.remit_stat === 'N') {
+                    return '<span style="background-color: orange; padding: 2px 4px; border-radius: 3px;">' + data + '</span>';
+                  }
+                  return data;
+                  }
+                }
+                , { data: 'svc_stat_nm', render: function(data, type, row) {
+                  if (type === 'display' && row.svc_stat === 'C') {
+                    return '<span style="background-color: red; color: white; padding: 2px 4px; border-radius: 3px;">' + data + '</span>';
+                  }
+                  return data;
+                  }
+                }
               ],
             columnDefs: [           
             { targets: 0, width: '90px', className: 'text-center' },
@@ -455,7 +467,20 @@
           if (resultCode == 'S000') {
             fn_chain_form_clear();
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
-            tbl_chain.ajax.reload();                 
+              
+            // 현재 선택된 행의 데이터 저장
+            var selectedRowData = tbl_chain.row('.selected').data();            
+            tbl_chain.ajax.reload(function() {
+              // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
+              if (selectedRowData) {
+              tbl_chain.rows().every(function() {
+                if (this.data().chain_no === selectedRowData.chain_no) {
+                $(this.node()).addClass('selected');
+                return false; // 찾으면 루프 중단
+                }
+              });
+              }
+            }, false);           
           } else {
             swal('실패', resultMsg, 'error');
           }
@@ -1387,8 +1412,8 @@
                     <th class="text-center">즉결잔고</th>
                     <th class="text-center">여신사</th>
                     <th class="text-center">대리점</th> 
-                    <th class="text-center">계약</th>
-                    <th class="text-center">출금</th>                    
+                    <th class="text-center">출금</th>
+                    <th class="text-center">계약</th>                    
                   </tr>
                 </thead>
                 <tbody class="list"></tbody>
