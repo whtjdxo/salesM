@@ -267,13 +267,13 @@ public class LoanService {
         
         for (LoanRepayScheduleVO payment : schedule) {
             System.out.printf("%-8s %-12s %-15s %-15s %-15s %-15s\n",
-                    payment.getSc_seq(),
-                    payment.getSc_date(),
-                    decimalFormat.format(new BigDecimal(payment.getRepay_tot_amt())),
-                    decimalFormat.format(new BigDecimal(payment.getRepay_princ_amt())),
-                    decimalFormat.format(new BigDecimal(payment.getRepay_int_amt())),
-                    decimalFormat.format(new BigDecimal(payment.getBalance_amt()))
-                );
+                payment.getSc_seq(),
+                payment.getSc_date(),
+                decimalFormat.format(new BigDecimal(payment.getRepay_tot_amt())),
+                decimalFormat.format(new BigDecimal(payment.getRepay_princ_amt())),
+                decimalFormat.format(new BigDecimal(payment.getRepay_int_amt())),
+                decimalFormat.format(new BigDecimal(payment.getBalance_amt()))
+            );
         }
     } 
 
@@ -283,23 +283,52 @@ public class LoanService {
 
     @Transactional
     public boolean insertLoanMst(LoanMstVO loanMstVo ) {
-        if (loanMapper.insertLoanMst(loanMstVo)){
-            String loanType = loanMstVo.getLoan_type();
-            BigDecimal loanPrincAmt = new BigDecimal(loanMstVo.getPrinc_amt());
-            BigDecimal intRate      = new BigDecimal(loanMstVo.getInt_rate());
-            int loanDays            = Integer.parseInt(loanMstVo.getLoan_day());
-            LocalDate loanSDate     = LocalDate.parse(loanMstVo.getLoan_sdt(), DateTimeFormatter.ISO_LOCAL_DATE);
+        String loanType = loanMstVo.getLoan_type();
+        BigDecimal loanPrincAmt = new BigDecimal(loanMstVo.getPrinc_amt());
+        BigDecimal intRate      = new BigDecimal(loanMstVo.getInt_rate());
+        BigDecimal loanIntSumm  = new BigDecimal(0);
+        int loanDays            = Integer.parseInt(loanMstVo.getLoan_day());
+        LocalDate loanSDate     = LocalDate.parse(loanMstVo.getLoan_sdt(), DateTimeFormatter.ISO_LOCAL_DATE);
 
-            List<LoanRepayScheduleVO> scheduleList = getLoanRepaymentVOs(loanType, loanPrincAmt, intRate, loanDays, loanSDate);
-            for (LoanRepayScheduleVO schedule : scheduleList) {
-                schedule.setLoan_no(loanMstVo.getLoan_no());
-                if (!loanMapper.insertLoanRepaySchedule(schedule)) {
-                    throw new RuntimeException("Loan Repay Schedule creation failed.");                    
-                }
-            }            
-        } else {
+        List<LoanRepayScheduleVO> scheduleList = getLoanRepaymentVOs(loanType, loanPrincAmt, intRate, loanDays, loanSDate);
+        loanIntSumm = BigDecimal.ZERO;
+        for (LoanRepayScheduleVO schedule : scheduleList) {
+            schedule.setLoan_no(loanMstVo.getLoan_no());
+            loanIntSumm = loanIntSumm.add(new BigDecimal(schedule.getRepay_int_amt()));            
+            if (!loanMapper.insertLoanRepaySchedule(schedule)) {
+                throw new RuntimeException("Loan Repay Schedule creation failed.");                    
+            }
+        }  
+        // Script 에서 계산한 값과 실제 스케줄이 1원 단위 차이가 나는 경우가 있어 보정 처리
+        loanMstVo.setInt_amt(loanIntSumm.toPlainString());
+        loanMstVo.setTot_loan_amt(new BigDecimal(loanMstVo.getPrinc_amt()).add(loanIntSumm).toPlainString());
+
+        System.out.println("Final Loan Interest Amount Adjustment: " + loanIntSumm.toPlainString());
+        System.out.println("Final Loan Interest Amount Adjustment: " + loanMstVo.getPrinc_amt());
+        System.out.println("Original Total Loan Amount: " + (new BigDecimal(loanMstVo.getPrinc_amt()).add(new BigDecimal(loanMstVo.getInt_amt()))).toPlainString());
+        System.out.println("Final Total Loan Amount Adjustment: " + loanMstVo.getTot_loan_amt());
+
+        if (!loanMapper.insertLoanMst(loanMstVo)){
             throw new RuntimeException("Loan Master Data creation failed.");                          
-        } 
+        }
+
+        // if (loanMapper.insertLoanMst(loanMstVo)){
+        //     String loanType = loanMstVo.getLoan_type();
+        //     BigDecimal loanPrincAmt = new BigDecimal(loanMstVo.getPrinc_amt());
+        //     BigDecimal intRate      = new BigDecimal(loanMstVo.getInt_rate());
+        //     int loanDays            = Integer.parseInt(loanMstVo.getLoan_day());
+        //     LocalDate loanSDate     = LocalDate.parse(loanMstVo.getLoan_sdt(), DateTimeFormatter.ISO_LOCAL_DATE);
+
+        //     List<LoanRepayScheduleVO> scheduleList = getLoanRepaymentVOs(loanType, loanPrincAmt, intRate, loanDays, loanSDate);
+        //     for (LoanRepayScheduleVO schedule : scheduleList) {
+        //         schedule.setLoan_no(loanMstVo.getLoan_no());
+        //         if (!loanMapper.insertLoanRepaySchedule(schedule)) {
+        //             throw new RuntimeException("Loan Repay Schedule creation failed.");                    
+        //         }
+        //     }            
+        // } else {
+        //     throw new RuntimeException("Loan Master Data creation failed.");                          
+        // } 
         return true;
     }
 
