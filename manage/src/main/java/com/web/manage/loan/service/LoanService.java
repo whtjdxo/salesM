@@ -303,10 +303,10 @@ public class LoanService {
         loanMstVo.setInt_amt(loanIntSumm.toPlainString());
         loanMstVo.setTot_loan_amt(new BigDecimal(loanMstVo.getPrinc_amt()).add(loanIntSumm).toPlainString());
 
-        System.out.println("Final Loan Interest Amount Adjustment: " + loanIntSumm.toPlainString());
-        System.out.println("Final Loan Interest Amount Adjustment: " + loanMstVo.getPrinc_amt());
-        System.out.println("Original Total Loan Amount: " + (new BigDecimal(loanMstVo.getPrinc_amt()).add(new BigDecimal(loanMstVo.getInt_amt()))).toPlainString());
-        System.out.println("Final Total Loan Amount Adjustment: " + loanMstVo.getTot_loan_amt());
+        // System.out.println("Final Loan Interest Amount Adjustment: " + loanIntSumm.toPlainString());
+        // System.out.println("Final Loan Interest Amount Adjustment: " + loanMstVo.getPrinc_amt());
+        // System.out.println("Original Total Loan Amount: " + (new BigDecimal(loanMstVo.getPrinc_amt()).add(new BigDecimal(loanMstVo.getInt_amt()))).toPlainString());
+        // System.out.println("Final Total Loan Amount Adjustment: " + loanMstVo.getTot_loan_amt());
 
         if (!loanMapper.insertLoanMst(loanMstVo)){
             throw new RuntimeException("Loan Master Data creation failed.");                          

@@ -30,6 +30,7 @@ import com.web.manage.base.domain.ChainFileVO;
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
+import com.web.manage.common.service.CommonService;
 import com.web.manage.system.domain.BoardFileVO;
 import com.web.manage.system.domain.BoardVO;
 import com.web.manage.system.domain.GroupCodeVO;
@@ -45,6 +46,9 @@ public class BoardController {
 
 	@Autowired
 	private BoardService boardService;
+
+	@Autowired
+    private CommonService commonService;
 	
 	@Value("${global.fileBoardPath}")
 	String origin_fileBoardPath;
@@ -169,7 +173,7 @@ public class BoardController {
 				return result;
 			}
 			
-			String seq = boardService.createBoardSeq();
+			String seq = commonService.getJobSeq("TB_BOARD", "BOARD_SEQ");
 			boardVO.setBoard_seq(String.valueOf(seq));
 			
 			// 첨부파일			

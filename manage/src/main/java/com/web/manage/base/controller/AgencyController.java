@@ -21,6 +21,7 @@ import com.web.manage.common.domain.SessionVO;
 import com.web.manage.user.domain.UserVO;
 import com.web.manage.user.service.UserMngService;
 import com.web.manage.base.domain.AgencyVO;
+import com.web.manage.common.service.CommonService;
 import jakarta.validation.Valid;
 
 import com.web.common.util.DateUtil;
@@ -38,6 +39,8 @@ public class AgencyController {
     private AgencyService agencyService;
     @Autowired
     private UserMngService userMngService;
+    @Autowired
+    private CommonService commonService;
 
     @RequestMapping("view")
     public String view() {
@@ -109,7 +112,8 @@ public class AgencyController {
         UserVO userVO= new UserVO();
         try {
             
-            String agency_cd = agencyService.getNewAgencyNo();
+            // String agency_cd = agencyService.getNewAgencyNo();            
+            String agency_cd = commonService.getJobSeq("TB_AGENCY", "AGENCY_NO");
 			agencyVO.setAgency_cd(agency_cd);            
 
             SessionVO member = (SessionVO) session.getAttribute("S_USER");

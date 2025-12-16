@@ -481,7 +481,7 @@ public class LoanController {
 			loanMstVo.setPrinc_amt(loanMstVo.getPrinc_amt().replace(",", ""));
             loanMstVo.setInt_amt(loanMstVo.getInt_amt().replace(",", ""));
             loanMstVo.setTot_loan_amt(loanMstVo.getTot_loan_amt().replace(",", ""));
-			loanMstVo.setLoan_no(loanService.getNewLoanNo());
+			loanMstVo.setLoan_no(commonService.getJobSeq("TB_LOAN_MST", "LOAN_NO"));
 
 			if (loanService.insertLoanMst(loanMstVo)) {					 
 				result.setResultCode("S000");

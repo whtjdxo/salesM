@@ -518,6 +518,9 @@
               swal('실패', '가맹점을 선택해주세요.', 'error');
               return; 
             }
+            // 입금 라디오 버튼 기본 선택
+            $('input[name="mng_recv_type"][value="M10000"]').prop('checked', true);
+            $('#mng_sub_shift_div').hide();
             // $(this).find('button:not([disabled]), input:not([disabled])').first().focus();
             $('#btn_sub_mng').focus();            
         });
@@ -539,7 +542,7 @@
         });
 
         $('input[name="mng_recv_type"]').on('change', function() {
-          if ($(this).val() === 'M10000') {           // 수가 차감            
+          if ($(this).val() === 'M10000') {           // 수기 차감            
             $('#mng_sub_shift_div').hide();
           } else {
             $('#mng_sub_shift_div').show();

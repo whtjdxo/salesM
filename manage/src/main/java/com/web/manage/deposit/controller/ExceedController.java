@@ -269,7 +269,7 @@ public class ExceedController {
         try {            
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
     	    exceedMstVo.setEnt_user_id(member.getUserId());
-
+            exceedMstVo.setExc_no( commonService.getJobSeq("TB_EXCEED_MST", "EXC_NO") );
             exceedMstVo.setOccur_amt(exceedMstVo.getOccur_amt().replace(",", "") );
             exceedMstVo.setIssue_amt(exceedMstVo.getIssue_amt().replace(",", "") );
             exceedMstVo.setRemain_amt(exceedMstVo.getRemain_amt().replace(",", "") );

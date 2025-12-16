@@ -18,7 +18,8 @@ import com.web.common.util.StringUtil;
 import com.web.manage.base.service.CorpService; 
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
-import com.web.manage.common.domain.SessionVO; 
+import com.web.manage.common.domain.SessionVO;
+import com.web.manage.common.service.CommonService;
 import com.web.manage.base.domain.CorpVO;
 
 import jakarta.servlet.http.HttpSession;
@@ -32,6 +33,8 @@ public class CorpController {
     CorpVO corpVO = new CorpVO();
     @Autowired
     private CorpService corpService;
+    @Autowired
+    private CommonService commonService;
 
     @RequestMapping("view")
     public String view() {
@@ -84,7 +87,8 @@ public class CorpController {
     public @ResponseBody ReturnDataVO corpCreate(@ModelAttribute("CorpVo") @Valid CorpVO corpVO, BindingResult bindingResult, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO();
         try {
-            String corp_cd = corpService.createCorpCd();
+            String corp_cd = commonService.getJobSeq("TB_CORP", "CORP_CD");
+            
 			corpVO.setCorp_cd(corp_cd);
 
             SessionVO member = (SessionVO) session.getAttribute("S_USER");

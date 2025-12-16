@@ -193,4 +193,16 @@
   <select id="getToDay" parameterType="java.util.HashMap" resultType="String">
     SELECT DATE_FORMAT(NOW(), '%Y-%m-%d') AS to_day
 	</select>
-</mapper>
+ 
+
+  <update id="callProcGetJobSeq" parameterType="com.web.manage.common.domain.JobSeqVO" statementType="CALLABLE">
+    /* CommonMapper.callProcGetJobSeq */
+    { 
+        CALL PRC_GET_JOB_SEQ(
+              #{main_code   , mode=IN, jdbcType=VARCHAR} 
+            , #{sub_code    , mode=IN, jdbcType=VARCHAR}
+            , #{job_seq     , mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+        ) 
+    }  
+  </update>   
+</mapper> 

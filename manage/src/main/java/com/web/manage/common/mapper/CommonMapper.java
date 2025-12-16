@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.web.manage.common.domain.JobSeqVO;
+
 @Mapper
 public interface CommonMapper {
     int getQueryTotalCnt();
@@ -33,4 +35,7 @@ public interface CommonMapper {
     String getNearWorkDay();
     String getToDay();
 
+    void callProcGetJobSeq(JobSeqVO jobSeqVo) ;
+
 }
+    

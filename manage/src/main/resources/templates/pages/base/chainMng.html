@@ -1349,9 +1349,6 @@
             $('#tbl_help_chain').find('tr.selected').removeClass('selected');
             $(this).addClass('selected');
           }
-        });
-
-        $('#tbl_help_chain').on('dblclick', 'tr', function () { 
           var data = $('#tbl_help_chain').DataTable().row(this).data();
           if (data) {
             $('#link_chain_no').val(data.chain_no);
@@ -1359,6 +1356,15 @@
             $('#modal_help_chain').modal('hide');
           }
         });
+
+        // $('#tbl_help_chain').on('dblclick', 'tr', function () { 
+        //   var data = $('#tbl_help_chain').DataTable().row(this).data();
+        //   if (data) {
+        //     $('#link_chain_no').val(data.chain_no);
+        //     $('#link_chain_nm').val(data.chain_nm);
+        //     $('#modal_help_chain').modal('hide');
+        //   }
+        // });
          
       });
     </script>

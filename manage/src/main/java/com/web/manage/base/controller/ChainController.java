@@ -24,6 +24,7 @@ import com.web.manage.base.service.ChainService;
 import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
+import com.web.manage.common.service.CommonService;
 import com.web.manage.system.domain.BoardVO;
 import com.web.manage.user.domain.UserVO;
 import com.google.gson.Gson;
@@ -44,6 +45,9 @@ public class ChainController {
  
     @Autowired
     private ChainService chainService; 
+    @Autowired
+    private CommonService commonService;
+    
 
     @RequestMapping("view")
     public String view() {
@@ -103,7 +107,8 @@ public class ChainController {
         ReturnDataVO result = new ReturnDataVO();
         UserVO userVO = new UserVO();
         try {
-            String chain_no = chainService.getNewChainNo();
+            // String chain_no = chainService.getNewChainNo();
+            String chain_no = commonService.getJobSeq("TB_CHAIN", "CHAIN_NO");
 			chainVo.setChain_no(chain_no);
 
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
@@ -618,7 +623,7 @@ public class ChainController {
 					  
 	                    // String pathString = origin_fileStorePath + chainFileVo.getFile_chain_no() ;
                         String pathString = Paths.get(origin_fileStorePath, chainFileVo.getFile_chain_no()).toString();
-	                    String fileSeq = chainService.getNewFileNo(); 
+	                    String fileSeq = commonService.getJobSeq("TB_CHAIN_FILE", "FILE_SEQ");                        
 
                         System.out.println("pathString : " + pathString);    
 	                   

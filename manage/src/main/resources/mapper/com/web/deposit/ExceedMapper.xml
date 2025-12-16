@@ -223,7 +223,7 @@
 			, EXC_MEMO      	, USE_YN    
             , ENT_DTTM      	, ENT_USER_ID
         ) VALUES (
-            GET_JOB_SEQ('TB_EXCEED_MST', 'EXC_NO') 
+           #{exc_no}
 			, #{chain_no} 		, #{exc_type} 	, #{exc_code}		, '0000'		
 			, #{exc_status} 	, #{exc_date} 	, #{occur_amt} 		, #{issue_amt} , #{remain_amt}
 			, #{exc_memo}  		, 'Y'

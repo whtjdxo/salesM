@@ -6,130 +6,130 @@
 		SELECT FOUND_ROWS()
 	</select>    
 
-        <select id="getCeoIdDupChk" parameterType="java.util.HashMap" resultType="int">
-                SELECT  COUNT(1)
-                FROM  tb_user
-                WHERE  user_id = #{user_id}
+    <select id="getCeoIdDupChk" parameterType="java.util.HashMap" resultType="int">
+            SELECT  COUNT(1)
+            FROM  tb_user
+            WHERE  user_id = #{user_id}
 	</select>    
 
 	<select id="getAgencyList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-                SELECT  SQL_CALC_FOUND_ROWS
-                        TA.agency_cd
+        SELECT  SQL_CALC_FOUND_ROWS
+                TA.agency_cd
 		        , TA.agency_nm
-                        , TA.biz_no
-                        , TA.law_no
-                        , TA.uptae
-                        , TA.upjong
-                        , TA.email                        
-                        , TA.corp_zip_no
-                        , TA.corp_addr
-                        , TA.corp_addr_dtl
-                        , TA.corp_tel_no
-                        , TA.ceo_id
-                        , TU.USER_NM		AS ceo_nm
-                        , TU.ZIP_NO		AS ceo_zip_no
-                        , TU.ADDR		AS ceo_addr
-                        , TU.ADDR_DTL		AS ceo_addr_dtl                        
-                        , TU.HP_NO		AS ceo_tel_no
-                        , TA.assure_amt
-                        , TA.insure_amt
-                        , TA.ass_sdate
-                        , TA.ass_edate
-                        , TA.remark
-                        , IFNULL(TA.cont_dt, '')	AS cont_dt
-                        , IFNULL(TA.svc_stat, '')	AS svc_stat 
-                        , TA.svc_fee_rate, TA.crd_fee_rate, TA.loan_fee_rate
-                        , TA.bank_cd
-                        , TA.account_no, TA.depositor, TA.yubo_limit, TA.yubo_rate, TA.tot_yubo_amt
-                        , TA.use_yn
-                        , IFNULL((SELECT COUNT(1) FROM TB_CHAIN WHERE AGENCY_CD = TA.AGENCY_CD AND USE_YN = 'Y' AND SVC_STAT IN ('R', 'O')), 0) AS chain_cnt
-                        , IFNULL(TA.upt_user_id, TA.ent_user_id)                                      as upt_user_id
-                        , DATE_FORMAT(IFNULL(TA.upt_dttm, TA.ent_dttm), '%Y-%m-%d %H:%i:%s')          as upt_dttm
-                  FROM  TB_AGENCY TA	
-                        JOIN TB_USER TU ON TU.USER_ID = TA.CEO_ID
-                WHERE  1 = 1 
-                <if test="schgb_agency_val != ''">
-			<choose>
-				<when test="schgb_agency == 'schgb_agency_cd'">
-					AND TA.AGENCY_CD = #{schgb_agency_val}
-				</when>
-				<when test="schgb_agency == 'schgb_agency_nm'">
-					AND TA.AGENCY_NM LIKE CONCAT('%', #{schgb_agency_val}, '%')
-				</when>
-			</choose>
+                , TA.biz_no
+                , TA.law_no
+                , TA.uptae
+                , TA.upjong
+                , TA.email                        
+                , TA.corp_zip_no
+                , TA.corp_addr
+                , TA.corp_addr_dtl
+                , TA.corp_tel_no
+                , TA.ceo_id
+                , TU.USER_NM		AS ceo_nm
+                , TU.ZIP_NO		AS ceo_zip_no
+                , TU.ADDR		AS ceo_addr
+                , TU.ADDR_DTL		AS ceo_addr_dtl                        
+                , TU.HP_NO		AS ceo_tel_no
+                , TA.assure_amt
+                , TA.insure_amt
+                , TA.ass_sdate
+                , TA.ass_edate
+                , TA.remark
+                , IFNULL(TA.cont_dt, '')	AS cont_dt
+                , IFNULL(TA.svc_stat, '')	AS svc_stat 
+                , TA.svc_fee_rate, TA.crd_fee_rate, TA.loan_fee_rate
+                , TA.bank_cd
+                , TA.account_no, TA.depositor, TA.yubo_limit, TA.yubo_rate, TA.tot_yubo_amt
+                , TA.use_yn
+                , IFNULL((SELECT COUNT(1) FROM TB_CHAIN WHERE AGENCY_CD = TA.AGENCY_CD AND USE_YN = 'Y' AND SVC_STAT IN ('R', 'O')), 0) AS chain_cnt
+                , IFNULL(TA.upt_user_id, TA.ent_user_id)                                      as upt_user_id
+                , DATE_FORMAT(IFNULL(TA.upt_dttm, TA.ent_dttm), '%Y-%m-%d %H:%i:%s')          as upt_dttm
+        FROM    TB_AGENCY TA	
+                JOIN TB_USER TU ON TU.USER_ID = TA.CEO_ID
+        WHERE  1 = 1 
+        <if test="schgb_agency_val != ''">
+            <choose>
+                <when test="schgb_agency == 'schgb_agency_cd'">
+                    AND TA.AGENCY_CD = #{schgb_agency_val}
+                </when>
+                <when test="schgb_agency == 'schgb_agency_nm'">
+                    AND TA.AGENCY_NM LIKE CONCAT('%', #{schgb_agency_val}, '%')
+                </when>
+            </choose>
 		</if>
-                <if test="sch_use_yn != null and sch_use_yn != ''">			
+        <if test="sch_use_yn != null and sch_use_yn != ''">			
 			AND TA.USE_YN = #{sch_use_yn}
 		</if>
-                <choose>
-                        <when test="sidx != '' and sidx != null ">
-                                ORDER BY ${sidx} ${sord}
-                        </when>
-                        <otherwise>
-                                ORDER BY agency_cd DESC
-                        </otherwise>
-                </choose>
-                LIMIT ${start}, ${end}
+        <choose>
+            <when test="sidx != '' and sidx != null ">
+                    ORDER BY ${sidx} ${sord}
+            </when>
+            <otherwise>
+                    ORDER BY agency_cd DESC
+            </otherwise>
+        </choose>
+        LIMIT ${start}, ${end}
 	</select> 
 
 	<select id="getNewAgencyNo" resultType="java.lang.String">
-	/* AgencyMapper.getNewAgencyNo */
+	        /* AgencyMapper.getNewAgencyNo 사용중지*/
 		SELECT GET_JOB_SEQ('TB_AGENCY', 'AGENCY_CD')
 	</select>
 
 	<insert id="InsertAgency" parameterType="com.web.manage.base.domain.AgencyVO">
-                INSERT INTO tb_agency (
-                        agency_cd             , agency_nm             , biz_no                , law_no            
-                        , uptae                 , upjong                , email
-                        , corp_zip_no           , corp_addr             , corp_addr_dtl         , corp_tel_no                       
-                        , ceo_id                , remark                , use_yn                
-                        , ent_user_id           , ent_dttm
-                ) VALUES (
-                        #{agency_cd}            , #{agency_nm}          , #{biz_no}             , #{law_no}         
-                        , #{uptae}              , #{upjong}             , #{email}
-                        , #{corp_zip_no}        , #{corp_addr}          , #{corp_addr_dtl}      , #{corp_tel_no}
-                        , #{ceo_id}             , #{remark}             , #{use_yn}  
-                        , #{ent_user_id}        , NOW()
-                )   
+        INSERT INTO tb_agency (
+                agency_cd             , agency_nm             , biz_no                , law_no            
+                , uptae                 , upjong                , email
+                , corp_zip_no           , corp_addr             , corp_addr_dtl         , corp_tel_no                       
+                , ceo_id                , remark                , use_yn                
+                , ent_user_id           , ent_dttm
+        ) VALUES (
+                #{agency_cd}            , #{agency_nm}          , #{biz_no}             , #{law_no}         
+                , #{uptae}              , #{upjong}             , #{email}
+                , #{corp_zip_no}        , #{corp_addr}          , #{corp_addr_dtl}      , #{corp_tel_no}
+                , #{ceo_id}             , #{remark}             , #{use_yn}  
+                , #{ent_user_id}        , NOW()
+        )   
 	</insert>
 	<update id="UpdateAgency" parameterType="com.web.manage.base.domain.AgencyVO">
-                UPDATE  tb_agency
-                SET  agency_nm       = #{agency_nm},
-                        biz_no          = #{biz_no},
-                        law_no          = #{law_no},
-                        uptae           = #{uptae},
-                        upjong          = #{upjong},
-                        email           = #{email},                
-                        corp_zip_no     = #{corp_zip_no},
-                        corp_addr       = #{corp_addr},
-                        corp_addr_dtl   = #{corp_addr_dtl}, 
-                        corp_tel_no     = #{corp_tel_no},
-                        remark          = #{remark},
-                        use_yn          = #{use_yn},
-                        upt_user_id     = #{upt_user_id},
-                        upt_dttm        = NOW()
-                WHERE  agency_cd = #{agency_cd}
-        </update> 
+        UPDATE  tb_agency
+        SET     agency_nm       = #{agency_nm},
+                biz_no          = #{biz_no},
+                law_no          = #{law_no},
+                uptae           = #{uptae},
+                upjong          = #{upjong},
+                email           = #{email},                
+                corp_zip_no     = #{corp_zip_no},
+                corp_addr       = #{corp_addr},
+                corp_addr_dtl   = #{corp_addr_dtl}, 
+                corp_tel_no     = #{corp_tel_no},
+                remark          = #{remark},
+                use_yn          = #{use_yn},
+                upt_user_id     = #{upt_user_id},
+                upt_dttm        = NOW()
+        WHERE  agency_cd = #{agency_cd}
+    </update> 
 
-        <update id="UpdateAgencyCont" parameterType="com.web.manage.base.domain.AgencyVO">
-                UPDATE  tb_agency
-                SET  cont_dt       = #{cont_dt},
-                        <!-- assure_amt      = #{assure_amt},
-                        insure_amt      = #{insure_amt},
-                        ass_sdate       = #{ass_sdate},
-                        ass_edate       = #{ass_edate},
-                        svc_stat        = #{svc_stat}, -->
-                        svc_fee_rate    = #{svc_fee_rate},
-                        crd_fee_rate    = #{crd_fee_rate},
-                        loan_fee_rate   = #{loan_fee_rate},
-                        bank_cd         = #{bank_cd},
-                        account_no      = #{account_no},
-                        depositor       = #{depositor},
-                        <!-- yubo_limit      = #{yubo_limit},
-                        yubo_rate       = #{yubo_rate},
-                        tot_yubo_amt    = #{tot_yubo_amt}, -->
-                        upt_user_id     = #{upt_user_id},
-                        upt_dttm        = NOW()
-                WHERE  agency_cd = #{agency_cd}
-        </update> 
+    <update id="UpdateAgencyCont" parameterType="com.web.manage.base.domain.AgencyVO">
+        UPDATE  tb_agency
+        SET  cont_dt       = #{cont_dt},
+                <!-- assure_amt      = #{assure_amt},
+                insure_amt      = #{insure_amt},
+                ass_sdate       = #{ass_sdate},
+                ass_edate       = #{ass_edate},
+                svc_stat        = #{svc_stat}, -->
+                svc_fee_rate    = #{svc_fee_rate},
+                crd_fee_rate    = #{crd_fee_rate},
+                loan_fee_rate   = #{loan_fee_rate},
+                bank_cd         = #{bank_cd},
+                account_no      = #{account_no},
+                depositor       = #{depositor},
+                <!-- yubo_limit      = #{yubo_limit},
+                yubo_rate       = #{yubo_rate},
+                tot_yubo_amt    = #{tot_yubo_amt}, -->
+                upt_user_id     = #{upt_user_id},
+                upt_dttm        = NOW()
+        WHERE  agency_cd = #{agency_cd}
+    </update> 
 </mapper>

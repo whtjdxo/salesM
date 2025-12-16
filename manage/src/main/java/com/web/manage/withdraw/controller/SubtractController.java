@@ -350,7 +350,7 @@ public class SubtractController {
         try {
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
     	    subMstVo.setEnt_user_id(member.getUserId());
-            subMstVo.setSub_no(subtractService.getNewSubNo()); // 신규 생성 번호 
+            subMstVo.setSub_no(commonService.getJobSeq("TB_SUB_MST", "SUB_NO")); // 신규 생성 번호 
 
             subMstVo.setOccur_crd_amt(subMstVo.getOccur_crd_amt() == null ? "0" : subMstVo.getOccur_crd_amt().replaceAll(",", ""));
             subMstVo.setOccur_svc_amt(subMstVo.getOccur_svc_amt() == null ? "0" : subMstVo.getOccur_svc_amt().replaceAll(",", ""));

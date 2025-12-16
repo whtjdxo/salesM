@@ -4,8 +4,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.batch.BatchProperties.Job;
 import org.springframework.stereotype.Service;
 
+import com.web.manage.common.domain.JobSeqVO;
+import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.mapper.CommonMapper;
 
 @Service
@@ -72,6 +75,22 @@ public class CommonService {
 
     public String getToDay() {
         return commonMapper.getToDay();
+    }
+
+
+    public String getJobSeq(String main_code, String sub_code) {
+        JobSeqVO jobSeqVo = new JobSeqVO();
+        String jobSeq = "";
+        jobSeqVo.setMain_code(main_code);   
+        jobSeqVo.setSub_code(sub_code); 
+        try {
+            commonMapper.callProcGetJobSeq(jobSeqVo);  
+            jobSeq = jobSeqVo.getJob_seq();        
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jobSeq;
+        
     }
 
 }

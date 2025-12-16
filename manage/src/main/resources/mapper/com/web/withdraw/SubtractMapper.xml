@@ -244,10 +244,10 @@
                 STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
                                 AND TC.USE_YN  = 'Y'
         WHERE	SM.USE_YN = 'Y'          
-            AND   SM.CHAIN_NO =  #{sch_chain_no}
-            AND   SM.RESV_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d')   
-            AND  SM.SUB_STATUS IN ('000000', '100000')
-            AND  SM.REMAIN_AMT &gt;= 0 
+          AND   SM.CHAIN_NO =  #{sch_chain_no}
+          AND   SM.RESV_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d')   
+          AND   SM.SUB_STATUS IN ('000000', '100000')
+          AND   SM.REMAIN_AMT &gt;= 0 
         <choose>
             <when test="orderBy != '' and orderBy != null">
                 ORDER BY ${orderBy}
@@ -271,7 +271,7 @@
                 , IFNULL(RECV_BASE_AMT, 0)                      AS recv_base_amt 
                 , IFNULL(RECV_SVC_AMT, 0)                       AS recv_svc_amt
                 , IFNULL(RECV_CRD_AMT, 0)                       AS recv_crd_amt 
-                , MEMO                                          AS memo
+                , IFNULL(MEMO, '')                              AS memo
                 , TRANS_CHK                                     AS trans_chk
                 , ENT_USER_ID                                   AS ent_user_id            
                 , DATE_FORMAT(ENT_DTTM, '%Y-%m-%d %H:%i')       AS ent_dttm

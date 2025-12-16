@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,8 +18,10 @@ import com.web.manage.common.domain.PageingVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
 import com.web.manage.common.service.CommonService;
+import com.web.manage.loan.domain.LoanMstVO;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping(value="/common/")
@@ -295,6 +299,23 @@ public class CommonController {
 			nDate = commonService.getToDay();
 			result.setResultCode("S000");
 			result.setData(nDate);
+		} catch (Exception e) {
+			result.setResultMsg(null);
+			result.setResultCode("S999");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	@RequestMapping(value="/getJobSeq")	
+	public @ResponseBody ReturnDataVO getJobSeq(@RequestParam HashMap<String, String> hashmapParam){
+		String jobSeq ="";
+
+		ReturnDataVO result = new ReturnDataVO();
+		try {
+			jobSeq = commonService.getJobSeq(hashmapParam.get("main_code"), hashmapParam.get("sub_code"));
+			result.setResultCode("S000");
+			result.setData(jobSeq);
 		} catch (Exception e) {
 			result.setResultMsg(null);
 			result.setResultCode("S999");
