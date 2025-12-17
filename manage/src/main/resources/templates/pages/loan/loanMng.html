@@ -99,8 +99,20 @@
                 , { data: 'spot_loan_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { data: 'etc_loan_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
                 , { data: 'remain_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
-                , { data: 'svc_stat_nm' }
-                , { data: 'remit_stat_nm' }
+                , { data: 'svc_stat_nm', render: function(data, type, row) {
+                  if (type === 'display' && row.svc_stat === 'C') {
+                    return '<span style="background-color: red; color: white; padding: 2px 4px; border-radius: 3px;">' + data + '</span>';
+                  }
+                  return data;
+                  }
+                }
+                , { data: 'remit_stat_nm', render: function(data, type, row) {
+                  if (type === 'display' && row.remit_stat === 'N') {
+                    return '<span style="background-color: orange; padding: 2px 4px; border-radius: 3px;">' + data + '</span>';
+                  }
+                  return data;
+                  }
+                }
                 , { data: 'chain_no', visible: false }
               ],
             columnDefs: [
@@ -387,7 +399,7 @@
             } else {
               $('#btn_prepay_view').hide();
             }
-            $('#btn_create').hide();
+            $('#btn_prepay_create').hide();
             isListClick = false;
           }
         });
@@ -424,7 +436,7 @@
           $('#crud').val('create');
           $('#btn_delete').hide();
           $('#btn_prepay_view').hide();
-          $('#btn_create').show();
+          $('#btn_prepay_create').show();
         }
  
 
@@ -541,7 +553,7 @@
           $(this).select();
         });
 
-        $('#btn_create').click(function () {
+        $('#btn_prepay_create').click(function () {
           $('#crud').val('create');
           var checked = true;
           if($('#chain_no').val() == '') {
@@ -700,8 +712,21 @@
           if (resultCode == 'S000') {
             $('#modal_prepay').modal('hide');
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');            
-            tbl_loan_summary.ajax.reload();
-            tbl_chain_loan_list.ajax.reload();
+            // 현재 선택된 행의 데이터 저장
+            var selectedRowData = tbl_loan_summary.row('.selected').data();            
+            tbl_loan_summary.ajax.reload(function() {
+              // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
+              if (selectedRowData) {
+              tbl_loan_summary.rows().every(function() {
+                if (this.data().chain_no === selectedRowData.chain_no) {
+                $(this.node()).addClass('selected');
+                return false; // 찾으면 루프 중단
+                }
+              });
+              }
+            }, false);            
+            tbl_chain_loan_list.ajax.reload(null, false); // 현재 페이지 유지
+
             fn_frm_loan_mst_clear();
           } else { 
             swal('실패', resultMsg, 'error');
@@ -728,7 +753,7 @@
               }
             }, false);
             $('#sch_cont_edt').val($('#cont_dt').val()); // 계약일을 검색조건으로 설정
-            tbl_chain_loan_list.ajax.reload();
+            tbl_chain_loan_list.ajax.reload(null, false); // 현재 페이지 유지
             fn_frm_loan_mst_clear();
           } else { 
             swal('실패', resultMsg, 'error');
@@ -1447,7 +1472,7 @@
                     <!-- <button type="button" class="btn btn-info text-end" id="btn_counsel"><i class="fa fa-check"></i>상담 관리</button> -->
                     <button type="button" class="btn btn-info btn-sm" id="btn_clear"><i class="fa fa-check"></i>신규</button>
                     <button type="button" class="btn btn-primary btn-sm" id="btn_delete" style="display: none"><i class="fa fa-delete"></i>삭제</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="btn_create"><i class="fa fa-save"></i>저장</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="btn_prepay_create"><i class="fa fa-save"></i>저장</button>
                 </div>
               </div>
               <form class="needs-validation" id="frm_loan_mst" name="frm_loan_mst" onsubmit="return false;" method="post" novalidate=""> 

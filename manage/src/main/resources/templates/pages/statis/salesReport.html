@@ -36,48 +36,48 @@
             serverSide: true,
             select: true, 
             ajax: {
-                url: '/statis/report/salesReport/salesSummary',
-                contentType: 'application/json',
-                dataType: 'JSON',
-                type: 'POST',
-                data: function (postData) {
-                    var formData = $('#frm_sch').serializeObject(); 
-                    Object.assign(postData, formData);
-                    return JSON.stringify(postData);
-                },
-                dataSrc: function (json) {
-                    // totalSummary 저장
-                    totalSumm = json.totalSumm || {};
-                    return json.data;
-                },
-                // 서버 에러 처리 등 추가 가능
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.error("DataTables Ajax Error: ", textStatus, errorThrown);
-                    // 사용자에게 에러 메시지 표시 등
-                }
+              url: '/statis/report/salesReport/salesSummary',
+              contentType: 'application/json',
+              dataType: 'JSON',
+              type: 'POST',
+              data: function (postData) {
+                  var formData = $('#frm_sch').serializeObject(); 
+                  Object.assign(postData, formData);
+                  return JSON.stringify(postData);
+              },
+              dataSrc: function (json) {
+                  // totalSummary 저장
+                  totalSumm = json.totalSumm || {};
+                  return json.data;
+              },
+              // 서버 에러 처리 등 추가 가능
+              error: function(jqXHR, textStatus, errorThrown) {
+                  console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                  // 사용자에게 에러 메시지 표시 등
+              }
             },
             columns: [
-                {
-                    data: null,
-                    render: function (data, type, row, meta) {
-                      return meta.row + meta.settings._iDisplayStart + 1;
-                    },                    
-                }
-                , { data: 'close_date' , orderable: true}
-                , { data: 'rm_conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') , orderable: false }
-                , { data: 'rm_wd_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
-                , { data: 'rm_svc_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
-                , { data: 'rm_crd_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
-                , { data: 'rm_sales_total', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+              {
+                  data: null,
+                  render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                  },                    
+              }
+              , { data: 'close_date' , orderable: true}
+              , { data: 'rm_conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') , orderable: false }
+              , { data: 'rm_wd_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+              , { data: 'rm_svc_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+              , { data: 'rm_crd_fee_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+              , { data: 'rm_sales_total', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
 
-                , { data: 'dp_conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
-                , { data: 'db_bank_in_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
-                , { data: 'op_bank_in_svc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }                
-                , { data: 'op_bank_in_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
-                , { data: 'op_sales_total', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }    // # 매출금액
-                
-                // 총 사용금액
-                , { data: 'tot_use_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }                                
+              , { data: 'dp_conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+              , { data: 'db_bank_in_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+              , { data: 'op_bank_in_svc_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }                
+              , { data: 'op_bank_in_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
+              , { data: 'op_sales_total', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }    // # 매출금액
+              
+              // 총 사용금액
+              , { data: 'tot_use_amt', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }                                
             ],
             columnDefs: [
               { targets: 0,  width: '80px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
@@ -106,7 +106,7 @@
             responsive: true, 
             scrollCollapse: true,
             scrollY: '520px',
-            pageLength: 20,
+            pageLength: 30,
             language: {
                 emptyTable: '데이터가 없습니다.',
                 zeroRecords: '일치하는 데이터가 없습니다.',

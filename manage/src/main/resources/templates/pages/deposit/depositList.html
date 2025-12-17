@@ -229,7 +229,7 @@
           
           var formData ={
             sch_chain_no    : row.chain_no, 
-					  sch_adjust_date	: $('#sch_adjust_date').val(),
+					  sch_depo_date	: $('#sch_adjust_date').val(),
           }       
           callAjaxJson('/deposit/deposit/depoMng/chainDepositStatus', formData, fn_chainDepoStatus);           
           callAjax('/deposit/deposit/depoMng/getDepositConfDate', formData, fn_list_search_date_setting);

@@ -267,9 +267,9 @@
 				JOIN TB_CHAIN TC ON TC.CHAIN_NO = EM.CHAIN_NO
 								AND TC.USE_YN = 'Y'
 								AND TC.REMIT_OVER_STAT = 'Y'
-           SET  EM.EXC_STATUS       	= '100000'
-				, EM.UPT_USER_ID       = #{userId}
-               	, EM.UPT_DTTM         	= NOW()
+           SET  EM.EXC_STATUS       = '100000'
+				, EM.UPT_USER_ID    = #{userId}
+               	, EM.UPT_DTTM       = NOW()
          WHERE 	EM.CHAIN_NO 		= #{chainNo}
 		   AND 	EM.EXC_STATUS 		= '000000'
 		   AND  EM.USE_YN 			= 'Y'	

@@ -213,9 +213,9 @@ public class DepositController {
     }
 
     @RequestMapping(value="deposit/depoMng/chainDepositStatus", method = RequestMethod.POST)
-	public @ResponseBody ReturnDataVO totalCodelist(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session){
-        System.out.println("............. DepositController.chainDepositStatus ");
-        System.out.println("hashmapParam : " + hashmapParam);
+	public @ResponseBody ReturnDataVO getChainDepoStatus(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session){
+        // System.out.println("............. DepositController.chainDepositStatus ");
+        // System.out.println("hashmapParam : " + hashmapParam);
 		HashMap<String, Object> depoStatus = new HashMap<String, Object>();
 		ReturnDataVO result = new ReturnDataVO();
 		try {
@@ -231,7 +231,7 @@ public class DepositController {
 	}
 
     @RequestMapping(value = "deposit/depoMng/chainDepositStatus2", method = RequestMethod.POST)
-    public @ResponseBody String getChainDepositStatus(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+    public @ResponseBody String getChainDepositStatus2(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();         
         HashMap<String, Object> depoStatus = new HashMap<String, Object>();
         Gson gson = new Gson();

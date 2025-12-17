@@ -58,7 +58,6 @@
                 // 서버 에러 처리 등 추가 가능
                 error: function(jqXHR, textStatus, errorThrown) {
                     console.error("DataTables Ajax Error: ", textStatus, errorThrown);
-                    // 사용자에게 에러 메시지 표시 등
                 }
             },
             columns: [
@@ -121,14 +120,14 @@
                 , { data: 'sales_amt7', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }
             ],
             columnDefs: [
-              { targets: 0,  width: '50px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
-              { targets: 1,  width: '150px', className: 'text-left px-1' },
+              { targets: 0,  width: '40px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
+              { targets: 1,  width: '180px', className: 'text-left px-1' },
               { targets: 2,  width: '80px', className: 'text-right px-1 dt-body-right' },
               { targets: 3,  width: '110px', className: 'text-right px-1 dt-body-right' },
               { targets: 4,  width: '80px', className: 'text-right px-1 dt-body-right' },
               { targets: 5,  width: '110px', className: 'text-right px-1 dt-body-right' },
-              { targets: 6,  width: '90px', className: 'text-right px-1 dt-body-right' },
-              { targets: 7,  width: '90px', className: 'text-right px-1 dt-body-right' },
+              { targets: 6,  width: '80px', className: 'text-right px-1 dt-body-right' },
+              { targets: 7,  width: '80px', className: 'text-right px-1 dt-body-right' },
               { targets: 8,  width: '80px', className: 'text-right px-1 dt-body-right' },
               { targets: 9,  width: '110px', className: 'text-right px-1 dt-body-right' },
               { targets: 10, width: '80px', className: 'text-right px-1 dt-body-right' },
@@ -152,9 +151,8 @@
             autoWidth: false,
             responsive: true, 
             scrollCollapse: false,
-            scrollY: '520px',
-            
-            pageLength: 20,
+            scrollY: '300px',            
+            pageLength: 10,
             language: {
                 emptyTable: '데이터가 없습니다.',
                 zeroRecords: '일치하는 데이터가 없습니다.',
@@ -192,10 +190,10 @@
                   }
               });
           }, 
-            fixedColumns: {
-                left: 2, // 왼쪽에 고정할 열의 개수
-                right: 0 // 오른쪽에 고정할 열의 개수
-            } 
+          // fixedColumns: {
+          //   left: 2, // 왼쪽에 고정할 열의 개수
+          //   right: 0 // 오른쪽에 고정할 열의 개수
+          // } 
         }); 
  
         $('#tbl_sales').on('click', 'tr', function (e) {          
@@ -205,31 +203,63 @@
               tbl_sales.$('tr.selected').removeClass('selected');
               $(this).addClass('selected');
           }  
-        });    
+          
+          var rowData = tbl_sales.row(this).data();          
+          renderSalesChart(rowData);
+          // var formData = { 
+          //   sch_chain_cd: rowData.chain_cd,
+          //   sch_date_from: $('#sch_date_from').val(),
+          //   sch_date_to: $('#sch_date_to').val()
+          // };
+          // callAjaxJson('/statis/report/salesReport/chainSalesTransition', formData, renderSalesChart);   
+        }); 
+        
+        // Sales Trends 차트 렌더링
+        function renderSalesChart(data) {
+          console.log('Selected Row Data:', data); // 디버그용 로그 추가            
+          const salesTrend = {
+            close_date: [],
+            sales_cnt: [],
+            sales_amt: []
+          }; 
+          for (let i = 1; i <= 7; i++) {
+            const cntKey = 'sales_cnt' + i;
+            const amtKey = 'sales_amt' + i;
 
-        // // Excel download button click event
-        // $('#btn_excel').click(function () {
-        //   var formData = $('#frm_sch').serializeObject();
-        //   $.ajax({
-        //     url: '/statis/report/salesReport/downExcel',
-        //     type: 'POST',
-        //     contentType: 'application/json',
-        //     data: JSON.stringify(formData),
-        //     xhrFields: {
-        //       responseType: 'blob'
-        //     },
-        //     success: function (data, status, xhr) {
-        //       var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        //       var link = document.createElement('a');
-        //       link.href = window.URL.createObjectURL(blob);
-        //       link.download = '매출현황.xlsx';
-        //       link.click();
-        //     },
-        //     error: function (xhr, status, error) {
-        //       alert('Excel download failed.');
-        //     }
-        //   });
-        // }); 
+            salesTrend.close_date.push('D-' + i + '일');
+            console.log('cntKey:', cntKey, 'value:', data[cntKey]);
+            console.log('amtKey:', amtKey, 'value:', Math.floor(data[amtKey] / 1000));
+            salesTrend.sales_cnt.push(data[cntKey]);
+            salesTrend.sales_amt.push(Math.floor(data[amtKey] / 1000));
+          }
+
+          const chart = echarts.init(document.getElementById('salesTrendsChart'));                  
+          const option = {
+            tooltip: {trigger: 'axis'            },
+            legend: {data: ['건', '매출액'],  },
+            xAxis: {type: 'category', data: salesTrend.close_date},
+            yAxis: {type: 'value' },
+            series: [
+              {
+                name: '건',
+                type: 'line',
+                data: salesTrend.sales_cnt,
+                itemStyle: {
+                  color: '#17a2b8' // info 색상
+                }
+              },
+              {
+                name: '매출액',
+                type: 'line',
+                data: salesTrend.sales_amt,
+                itemStyle: {
+                  color: '#007bff' // primary 색상
+                }
+              }
+            ]
+          };          
+          chart.setOption(option);           
+        } 
       });   
     </script>
   </head>
@@ -338,13 +368,34 @@
                   <th class="text-right px-2"></th>
                   <th class="text-right px-2"></th> 
                 </tr>
-              </tfoot>
-              
+              </tfoot>              
             </table>
           </div>
         </div>
       </div> 
-    </div>  
+      <div class="row g-0 mb-1">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-header"> 
+            <div class="row flex-between-end">
+              <div class="input-group input-group-sm">
+                <div class="col-sm-6 text-left">
+                  <h3>매출 현황</h3>
+                </div>
+                <div class="col-sm-6 text-end">
+                  <label class="col-form-label col-form-label-sm">단위 : 천원</label>
+                </div>
+              </div>  
+            </div> 
+          </div>
+          <div class="card-body">                    
+            <div class="col-12 col-lg-12">
+              <div id="salesTrendsChart" style="width:100%; height:200px;"></div> 
+            </div>
+          </div>
+        </div>
+      </div> 
+    </div> 
   </div>
 </html>
 
