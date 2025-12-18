@@ -10,6 +10,7 @@
         SELECT  SQL_CALC_FOUND_ROWS
                 TC.CHAIN_NO                     AS chain_no
                 , TC.CHAIN_NM                   AS chain_nm
+                , TC.SVC_STAT                   AS svc_stat
                 , IFNULL(SM.MIN_REG_DATE, DATE_FORMAT(NOW(), '%Y-%m-%d'))               AS min_reg_date
                 , IFNULL(SM.MAX_REG_DATE, DATE_FORMAT(NOW(), '%Y-%m-%d'))               AS max_reg_date
                 , IFNULL(OCCUR_AMT, 0)  	AS occur_amt
@@ -42,33 +43,28 @@
                             , SUM(SM.REMAIN_SVC_AMT) 	AS REMAIN_SVC_AMT
                             , SUM(SM.REMAIN_CRD_AMT) 	AS REMAIN_CRD_AMT    
                     FROM 	TB_SUB_MST SM
-                            JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO 
-                                            AND TC.USE_YN = 'Y'
-                                            AND TC.SVC_STAT IN ('O', 'R')
-                    WHERE  SM.USE_YN = 'Y'
-                    <if test="sch_all == null or sch_all == ''">
-                            AND	SUB_STATUS IN ('000000', '100000', '900000')
-                    </if>                            
+                            <!-- JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO 
+                                            AND TC.USE_YN = 'Y'  -->
+                    WHERE  SM.USE_YN = 'Y' 
                     <if test="sch_reg_sdt != ''">
                             AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
                     </if>
                     <if test="sch_reg_edt != ''">
                             AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
+                    </if>                   
+                    <if test="sch_sub_type != ''">
+                            AND  SM.SUB_TYPE = #{sch_sub_type} 
                     </if>
-                <!--    
-                <if test="sch_sub_type != ''">
-                        AND  SM.SUB_TYPE = #{sch_sub_type} 
-                </if>
-                <if test="sch_sub_code != ''">
-                        AND  SM.SUB_CODE = #{sch_sub_code} 
-                </if>
-                <if test="sch_sub_status != ''">
-                        AND  SM.SUB_STATUS = #{sch_sub_status} 
-                </if>  -->
+                    <if test="sch_sub_code != ''">
+                            AND  SM.SUB_CODE = #{sch_sub_code} 
+                    </if>
+                    <if test="sch_sub_status != ''">
+                            AND  SM.SUB_STATUS = #{sch_sub_status} 
+                    </if> 
                     GROUP 	BY SM.CHAIN_NO
                 ) SM ON SM.CHAIN_NO = TC.CHAIN_NO
         WHERE	TC.USE_YN = 'Y'         
-        AND     TC.SVC_STAT IN ('O', 'R')
+        <!-- AND     TC.SVC_STAT IN ('O', 'R') -->
         <if test="sch_chain_nm != ''">                   
             AND     TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
         </if>                        
@@ -114,23 +110,28 @@
                             , SUM(SM.REMAIN_SVC_AMT) 	AS REMAIN_SVC_AMT
                             , SUM(SM.REMAIN_CRD_AMT) 	AS REMAIN_CRD_AMT    
                     FROM 	TB_SUB_MST SM
-                            JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO 
-                                        AND TC.USE_YN = 'Y'
-                                        AND TC.SVC_STAT IN ('O', 'R')
-                    WHERE   SM.USE_YN = 'Y'
-                    <if test="sch_all == null or sch_all == ''">
-                        AND	SUB_STATUS IN ('000000', '100000', '900000')
-                    </if>                  
+                            <!-- JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO 
+                                        AND TC.USE_YN = 'Y'  -->
+                    WHERE   SM.USE_YN = 'Y' 
                     <if test="sch_reg_sdt != ''">
                             AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
                     </if>
                     <if test="sch_reg_edt != ''">
                             AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
                     </if>  
+                    <if test="sch_sub_type != ''">
+                            AND  SM.SUB_TYPE = #{sch_sub_type} 
+                    </if>
+                    <if test="sch_sub_code != ''">
+                            AND  SM.SUB_CODE = #{sch_sub_code} 
+                    </if>
+                    <if test="sch_sub_status != ''">
+                            AND  SM.SUB_STATUS = #{sch_sub_status} 
+                    </if> 
                     GROUP 	BY SM.CHAIN_NO
                 ) SM ON SM.CHAIN_NO = TC.CHAIN_NO
         WHERE	TC.USE_YN = 'Y'         
-        AND     TC.SVC_STAT IN ('O', 'R')
+        <!-- AND     TC.SVC_STAT IN ('O', 'R') -->
         <if test="sch_chain_nm != ''">                   
             AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
         </if>
@@ -178,12 +179,12 @@
                 STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
                                 AND TC.USE_YN  = 'Y'
         WHERE	SM.USE_YN = 'Y'          
-        AND     SM.CHAIN_NO =  #{sch_chain_no}
-        <if test='sch_dtl_reg_sdt != null and sch_dtl_reg_sdt != ""'>
-            AND  SM.REG_DATE &gt;= #{sch_dtl_reg_sdt} 
+        AND     SM.CHAIN_NO =  #{chain_no}
+        <if test='sch_reg_sdt != null and sch_reg_sdt != ""'>
+            AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
         </if>
-        <if test='sch_dtl_reg_edt != null and sch_dtl_reg_edt != ""'>
-            AND  SM.REG_DATE &lt;= #{sch_dtl_reg_edt} 
+        <if test='sch_reg_edt != null and sch_reg_edt != ""'>
+            AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
         </if>
         <if test='sch_sub_code != null and sch_sub_type != ""'>
             AND  SM.SUB_TYPE = #{sch_sub_type} 
@@ -193,11 +194,7 @@
         </if>
         <if test='sch_sub_status != null and sch_sub_status != ""'>
             AND  SM.SUB_STATUS = #{sch_sub_status} 
-        </if>      
-        <if test='sch_unissu != null and sch_unissu == "Y"'>
-            AND  SM.SUB_STATUS IN ('000000', '100000', '900000')
-            AND  SM.REMAIN_AMT &gt;= 0
-        </if>          
+        </if>              
         <choose>
             <when test="orderBy != '' and orderBy != null">
                 ORDER BY ${orderBy}
@@ -251,7 +248,7 @@
                 STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
                                 AND TC.USE_YN  = 'Y'
         WHERE	SM.USE_YN = 'Y'          
-          AND   SM.CHAIN_NO =  #{sch_chain_no}
+          AND   SM.CHAIN_NO =  #{chain_no}
           AND   SM.RESV_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d')   
           AND   SM.SUB_STATUS IN ('000000', '100000')
           AND   SM.REMAIN_AMT &gt;= 0 

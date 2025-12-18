@@ -10,7 +10,8 @@
 				TC.CHAIN_NO                     AS chain_no
 				, TC.CHAIN_NM                   AS chain_nm
 				, TC.BIZ_NO                     AS biz_no
-				, TC.REMIT_OVER_STAT    		AS remit_over_stat        
+				, TC.REMIT_OVER_STAT    		AS remit_over_stat     
+				, TC.SVC_STAT					AS svc_stat   
 				, IFNULL(MIN_EXC_DATE, CURDATE())   AS min_exc_date
 				, IFNULL(MAX_EXC_DATE, CURDATE())	AS max_exc_date
 				, IFNULL(OCCUR_AMT, 0)     		AS occur_amt
@@ -26,6 +27,8 @@
 								, IFNULL(SUM(REMAIN_AMT), 0)    AS REMAIN_AMT
 						FROM 	TB_EXCEED_MST
 						WHERE 	USE_YN = 'Y'
+						AND  	EXC_DATE BETWEEN #{sch_exc_sdt} 
+		  									AND #{sch_exc_edt} 
 					<if test='sch_all == null'>
 						AND  EXC_STATUS IN ('100000', '000000')
 						AND  REMAIN_AMT  &gt; 0
@@ -64,6 +67,8 @@
 								, IFNULL(SUM(REMAIN_AMT), 0)    AS REMAIN_AMT
 						FROM 	TB_EXCEED_MST
 						WHERE 	USE_YN = 'Y'
+						AND  	EXC_DATE BETWEEN #{sch_exc_sdt} 
+		  									AND #{sch_exc_edt} 
 					<if test='sch_all == null'>
 						AND  EXC_STATUS IN ('100000', '000000')
 						AND  REMAIN_AMT  &gt; 0
@@ -100,7 +105,7 @@
 				, IFNULL(EM.UPT_USER_ID, EM.ENT_USER_ID)	AS upt_user_id
 		  FROM 	TB_EXCEED_MST EM
 				LEFT OUTER JOIN TB_REMIT_MST RM ON RM.REMIT_NO = EM.REMIT_NO  		
-		 WHERE 	EM.CHAIN_NO = #{sch_chain_no} 
+		 WHERE 	EM.CHAIN_NO = #{chain_no} 
 		   AND  EM.EXC_DATE BETWEEN #{sch_exc_sdt} 
 		  						AND #{sch_exc_edt} 
 		<if test="del_view == null">											
@@ -134,7 +139,7 @@
 				, IFNULL(SUM(REMAIN_AMT), 0) 	AS remain_amt 				
 		  FROM 	TB_EXCEED_MST EM
 				LEFT OUTER JOIN TB_REMIT_MST RM ON RM.REMIT_NO = EM.REMIT_NO  		
-		 WHERE 	EM.CHAIN_NO = #{sch_chain_no} 
+		 WHERE 	EM.CHAIN_NO = #{chain_no} 
 		   AND  EM.EXC_DATE BETWEEN #{sch_exc_sdt} 
 		  						AND #{sch_exc_edt} 
 		<if test="del_view == null">											

@@ -18,6 +18,7 @@
 	</select>
     
     <select id="getChainList" parameterType="java.util.HashMap" resultType="hashMap">
+        /* ChainMapper.getChainList */
         SELECT 	SQL_CALC_FOUND_ROWS
                 TC.CHAIN_NO         AS  chain_no
                 , TC.CHAIN_NM       AS  chain_nm
@@ -139,9 +140,9 @@
             <when test="sch_svc_stat != null and sch_svc_stat != ''">
                 AND TC.SVC_STAT = #{sch_svc_stat}
             </when>
-            <when test="sch_svc_stat == ''">
+            <!-- <when test="sch_svc_stat == ''">
                 AND TC.SVC_STAT IN ('O', 'R')
-            </when>
+            </when> -->
         </choose>
         <choose>
             <when test='userCorpType == "LN"'>
@@ -158,8 +159,8 @@
             </otherwise>
         </choose>    
         <choose>
-            <when test="sidx != '' and sidx != null ">
-                ORDER BY ${sidx} ${sord}
+            <when test="orderBy != '' and orderBy != null ">
+                ORDER BY ${orderBy}
             </when>
             <otherwise>
                 ORDER BY TC.CHAIN_NO DESC
@@ -169,6 +170,7 @@
     </select>
 
     <insert id="insertChain" parameterType="com.web.manage.base.domain.ChainVO">
+        /* ChainMapper.insertChain */
         INSERT INTO tb_chain (
             CHAIN_NO        , CHAIN_NM          , CORP_CD           , AGENCY_CD
             , BIZ_NO        , LAW_NO            , UPTAE             , UPJONG
@@ -187,6 +189,7 @@
     </insert>
 
     <update id="updateChain" parameterType="com.web.manage.base.domain.ChainVO">
+        /* ChainMapper.updateChain */
         UPDATE tb_chain
            SET CHAIN_NM          = #{chain_nm}
                , CORP_CD           = #{corp_cd}
@@ -211,6 +214,7 @@
     </update>
 
     <update id="updateChainCont" parameterType="com.web.manage.base.domain.ChainVO">
+        /* ChainMapper.updateChainCont */
         UPDATE  TB_CHAIN
            SET  ABANK_ACCOUNT_TP    = #{abank_account_tp}
                 , ABANK_CD            = #{abank_cd}                
@@ -277,6 +281,7 @@
 
 
     <select id="getChainVanList" parameterType="java.util.HashMap" resultType="hashMap">
+        /* ChainMapper.getChainVanList */
         SELECT  SQL_CALC_FOUND_ROWS
                 CV.VAN_SEQ                               AS van_seq
                 , CV.CHAIN_NO                           AS chain_no    
@@ -294,8 +299,8 @@
 			AND CV.VAN_CD = #{sch_van_cd}
 		</if>
         <choose>
-            <when test="sidx != '' and sidx != null ">
-                ORDER BY ${sidx} ${sord}
+            <when test="orderBy != '' and orderBy != null ">
+                ORDER BY ${orderBy}
             </when>
             <otherwise>
                 ORDER BY ent_dttm DESC
@@ -306,6 +311,7 @@
     
     
     <select id="getVanIdDupChk" parameterType="java.util.HashMap" resultType="int">
+        /* ChainMapper.getVanIdDupChk */
         SELECT  COUNT(1)
           FROM  TB_CHAIN_VAN
          WHERE  CHAIN_NO = #{chain_no}
@@ -314,6 +320,7 @@
     </select>
 
     <insert id="insertChainVan" parameterType="com.web.manage.base.domain.ChainVanVO">
+        /* ChainMapper.insertChainVan */
         INSERT INTO TB_CHAIN_VAN (
             CHAIN_NO        , VAN_CD          , VAN_ID           , VAN_PWD
             , TERM_ID       , USE_YN    
@@ -326,6 +333,7 @@
     </insert>
 
     <update id="updateChainVan" parameterType="com.web.manage.base.domain.ChainVanVO">
+        /* ChainMapper.updateChainVan */
         UPDATE TB_CHAIN_VAN
            SET  TERM_ID         = #{term_id}
                 , VAN_CD        = #{van_cd}  
@@ -338,6 +346,7 @@
     </update> 
 
     <select id="getChainCardList" parameterType="java.util.HashMap" resultType="hashMap">
+        /* ChainMapper.getChainCardList */
         SELECT  SQL_CALC_FOUND_ROWS
                 CC.CARD_SEQ							    AS card_seq
                 , CC.CHAIN_NO						    AS chain_no
@@ -360,8 +369,8 @@
 			AND CC.CARD_ACQ = #{sch_card_cd}
 		</if>
         <choose>
-            <when test="sidx != '' and sidx != null ">
-                ORDER BY ${sidx} ${sord}
+            <when test="orderBy != '' and orderBy != null ">
+                ORDER BY ${orderBy}
             </when>
             <otherwise>
                 ORDER BY use_yn DESC
@@ -372,6 +381,7 @@
     
     
     <select id="getCardDupChk" parameterType="java.util.HashMap" resultType="int">
+        /* ChainMapper.getCardDupChk */
         SELECT  COUNT(1)
           FROM  TB_CHAIN_CARD
          WHERE  CHAIN_NO    = #{card_chain_no}
@@ -380,6 +390,7 @@
     </select>
 
     <insert id="insertChainCard" parameterType="com.web.manage.base.domain.ChainCardVO">
+        /* ChainMapper.insertChainCard */
         INSERT INTO TB_CHAIN_CARD (
             CHAIN_NO        , CARD_ACQ          , CARD_REG_NO           
             , CARD_RATE     , CHECK_RATE        , ABROAD_RATE       , CARD_IN_CYCLE
@@ -394,6 +405,7 @@
     </insert>
 
     <update id="updateChainCard" parameterType="com.web.manage.base.domain.ChainCardVO">
+        /* ChainMapper.updateChainCard */
         UPDATE  TB_CHAIN_CARD
            SET  CARD_ACQ          = #{card_acq}
                 , CARD_REG_NO     = #{card_reg_no}
@@ -410,6 +422,7 @@
     </update>
 
     <select id="getLinkChainList" parameterType="java.util.HashMap" resultType="hashMap">
+        /* ChainMapper.getLinkChainList */
         SELECT  SQL_CALC_FOUND_ROWS
           	    L.LINK_CHAIN_NO 	    AS link_chain_no
                 , TC.CHAIN_NM			AS link_chain_nm
@@ -428,8 +441,8 @@
                 JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
          WHERE  L.CHAIN_NO = #{link_org_chain_no}
         <choose>
-            <when test="sidx != '' and sidx != null ">
-                ORDER BY ${sidx} ${sord}
+            <when test="orderBy != '' and orderBy != null ">
+                ORDER BY ${orderBy}
             </when>
             <otherwise>
                 ORDER BY 1 DESC
@@ -440,6 +453,7 @@
     
 
     <insert id="insertLinkChain" parameterType="com.web.manage.base.domain.LinkChainVO">
+        /* ChainMapper.insertLinkChain */
         INSERT INTO TB_CHAIN_LINK (
             CHAIN_NO            , LINK_CHAIN_NO         , MEMO              , USE_YN
             , ENT_DTTM          , ENT_USER_ID
@@ -454,6 +468,7 @@
     </insert>
 
     <update id="updateLinkChain" parameterType="com.web.manage.base.domain.LinkChainVO">
+        /* ChainMapper.updateLinkChain */
         UPDATE  TB_CHAIN_LINK
            SET  MEMO            = #{link_memo} 
                 , USE_YN        = #{link_use_yn} 
@@ -470,6 +485,7 @@
 	</select>
 
     <select id="getChainFileList" parameterType="java.util.HashMap" resultType="hashMap">
+        /* ChainMapper.getChainFileList */
         SELECT  SQL_CALC_FOUND_ROWS
                 CC.file_seq							        AS file_seq
                 , CC.chain_no						        AS chain_no
@@ -490,8 +506,8 @@
 			AND CC.FILE_GB = #{sch_file_gb}
 		</if>
         <choose>
-            <when test="sidx != '' and sidx != null ">
-                ORDER BY ${sidx} ${sord}
+            <when test="orderBy != '' and orderBy != null ">
+                ORDER BY ${orderBy}
             </when>
             <otherwise>
                 ORDER BY ent_dttm DESC
@@ -501,6 +517,7 @@
     </select>
 
     <insert id="insertChainFile" parameterType="com.web.manage.base.domain.ChainFileVO">
+        /* ChainMapper.insertChainFile */
         INSERT INTO TB_CHAIN_FILE (
             FILE_SEQ        , CHAIN_NO          , FILE_GB           , FILE_NM      
             , FILE_PATH     , ORIGIN_FILE_NM   
@@ -515,6 +532,7 @@
     </insert>
 
     <update id="updateChainFile" parameterType="com.web.manage.base.domain.ChainFileVO">
+        /* ChainMapper.updateChainFile */
         UPDATE  TB_CHAIN_FILE
            SET  FILE_GB           = #{file_gb}
                 , FILE_NM           = #{file_nm}
@@ -529,6 +547,7 @@
     </update>
 
     <update id="deleteChainFile" parameterType="com.web.manage.base.domain.ChainFileVO">
+        /* ChainMapper.deleteChainFile */
         UPDATE  TB_CHAIN_FILE
            SET  USE_YN = 'N'         
                 , UPT_USER_ID       = #{upt_user_id}
@@ -537,6 +556,7 @@
     </update> 
 
     <select id="getChainCounselList" parameterType="java.util.HashMap" resultType="hashMap">
+        /* ChainMapper.getChainCounselList */
         SELECT  SQL_CALC_FOUND_ROWS
                 CC.COUNSEL_NO               AS counsel_no
                 , CC.CHAIN_NO               AS chain_no
@@ -567,8 +587,8 @@
 			AND CC.COUNSEL_SDT &lt;= #{sch_counsel_edt}
 		</if>
         <choose>
-            <when test="sidx != '' and sidx != null ">
-                ORDER BY ${sidx} ${sord}
+            <when test="orderBy != '' and orderBy != null ">
+                ORDER BY ${orderBy}
             </when>
             <otherwise>
                 ORDER BY 1 DESC
@@ -578,6 +598,7 @@
     </select>
 
     <insert id="insertChainCounsel" parameterType="com.web.manage.base.domain.ChainCounselVO">
+        /* ChainMapper.insertChainCounsel */
         INSERT INTO TB_CHAIN_COUNSEL (
             CHAIN_NO        , COUNSEL_TP        , COUNSEL_CD    
             , COUNSEL_DT    , COUNSEL_CUST_NM   , COUNSEL_CONTS
@@ -590,6 +611,7 @@
     </insert>
 
     <update id="updateChainCounsel" parameterType="com.web.manage.base.domain.ChainCounselVO">
+        /* ChainMapper.updateChainCounsel */
         UPDATE  TB_CHAIN_COUNSEL
            SET  COUNSEL_CD          = #{counsel_cd}
                 , COUNSEL_CUST_NM   = #{counsel_cust_nm}
@@ -601,6 +623,7 @@
     </update>
 
     <update id="deleteChainCounsel" parameterType="com.web.manage.base.domain.ChainCounselVO">
+        /* ChainMapper.deleteChainCounsel */
         UPDATE  TB_CHAIN_COUNSEL
            SET  USE_YN = 'N'         
                 , UPT_USER_ID       = #{upt_user_id}

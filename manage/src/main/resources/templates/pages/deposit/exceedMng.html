@@ -16,7 +16,8 @@
     <script th:inline="none">      
        
       $(document).ready(function () {             
-        $('#frm_sch_exc').onLoadFunction();  
+        
+        $('#frm_sch_chain').onLoadFunction();        
         $('#frm_exc_mst').onLoadFunction();  
         $('#frm_exc_mng').onLoadFunction();  
         
@@ -79,16 +80,24 @@
                 , { data: 'remain_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
                 , { data: 'remit_over_stat' }
                 , { data: 'chain_no', visible: false }
+                , { data: 'svc_stat', visible: false }
               ],
             columnDefs: [           
-            { targets: 0, width: '160px', className: 'text-left' }
+            { targets: 0, width: '200px', className: 'text-left px-1 dt-body-left'
+              , render: function(data, type, row) {
+                  if (row.svc_stat === 'C') {
+                    return '<span style="background-color: red; color: white; padding: 2px 4px; border-radius: 3px;">' + data + '</span>';
+                  }
+                  return data;
+                }
+            }
             // , { targets: 1, width: '120px', className: 'text-center' }
-            , { targets: 1, width: '110px', className: 'text-right' }
-            , { targets: 2, width: '110px', className: 'text-right' }
-            , { targets: 3, width: '110px', className: 'text-right' }
+            , { targets: 1, width: '100px', className: 'text-right' }
+            , { targets: 2, width: '100px', className: 'text-right' }
+            , { targets: 3, width: '100px', className: 'text-right' }
             , { targets: 4, width: '60px', className: 'text-center' }
           ],  
-          order: [[5, 'desc']],
+          order: [[6, 'desc'],[5, 'desc']],
           paging: true,
           lengthChange: false,
           searching: false,
@@ -97,7 +106,7 @@
           responsive: true,
           scrollCollapse: false,
           pageLength: 20,
-          scrollY: '600px',
+          scrollY: '620px',
           info: false,
           language: {
             emptyTable: '데이터가 없습니다.',
@@ -176,12 +185,9 @@
           }
           var data = tbl_exc_summary.row(this).data();
 
-          if (data) {
-            $('#frm_sch_exc')[0].reset();
+          if (data) {            
             $('#frm_exc_mst')[0].reset();       
-            $('#sch_exc_sdt').val(data.min_exc_date);
-            $('#sch_exc_edt').val(data.max_exc_date);
-            $('#sch_chain_no').val(data.chain_no); 
+            $('#chain_no').val(data.chain_no); 
             $('#chain_remit_over_stat').val(data.remit_over_stat); 
             $('#chain_no').val(data.chain_no);                 
             $('#select_chain_nm').text(data.chain_nm);       
@@ -206,7 +212,7 @@
           $('#frm_exc_mst')[0].reset();          
         });
          
-        // --------------------------------------------------------------- frm_sch_exc 정보 처리 ---------------------------------------------------
+        // --------------------------------------------------------------- frm_sch_chain 정보 처리 ---------------------------------------------------
         var tbl_exc_list = $('#tbl_exc_list').DataTable({
             processing: true,
             serverSide: true,
@@ -218,7 +224,11 @@
               dataType: 'JSON',
               type: 'POST',
               data: function (postData) {
-                formData = $('#frm_sch_exc').serializeObject();
+                formData = $('#frm_sch_chain').serializeObject();
+                formData ={
+                  ...formData,
+                  chain_no : $('#chain_no').val(), 
+                }
                 Object.assign(postData, formData);
                 return JSON.stringify(postData);
               },
@@ -529,7 +539,7 @@
         });
 
         $('#btn_exceed_ready').click(function () {
-          if (!$('#sch_chain_no').val()) {
+          if (!$('#chain_no').val()) {
             swal('실패', '가맹점을 먼저 선택해주세요.', 'error');
             return;
           }
@@ -545,27 +555,27 @@
             return;
           }
           dataParam ={              
-            chainNo   : $('#sch_chain_no').val(),
+            chainNo   : $('#chain_no').val(),
             excNo     : selectedExcNo.join(','),
           }    
           ConfirmdialogToAjax('execute', '/deposit/exceed/excMng/setExceedReady', dataParam, fn_return_result);
         }); 
 
         $('#btn_exceed_ready_all').click(function () {
-          if (!$('#sch_chain_no').val()) {
+          if (!$('#chain_no').val()) {
             swal('실패', '가맹점을 먼저 선택해주세요.', 'error');
             return;
           }
            
           dataParam ={              
-            chainNo    : $('#sch_chain_no').val() 
+            chainNo    : $('#chain_no').val() 
           }    
           ConfirmdialogToAjax('execute', '/deposit/exceed/excMng/setExceedReadyAll', dataParam, fn_return_result);
         }); 
 
 
         $('#btn_exceed_cancel').click(function () {
-          if (!$('#sch_chain_no').val()) {
+          if (!$('#chain_no').val()) {
             swal('실패', '가맹점을 먼저 선택해주세요.', 'error');
             return;
           }
@@ -581,20 +591,20 @@
             return;
           }
           dataParam ={              
-            chainNo   : $('#sch_chain_no').val(),
+            chainNo   : $('#chain_no').val(),
             excNo     : selectedExcNo.join(','),
           }    
           ConfirmdialogToAjax('execute', '/deposit/exceed/excMng/setExceedCancel', dataParam, fn_return_result);
         }); 
 
         $('#btn_exceed_cancel_all').click(function () {
-          if (!$('#sch_chain_no').val()) {
+          if (!$('#chain_no').val()) {
             swal('실패', '가맹점을 먼저 선택해주세요.', 'error');
             return;
           }
            
           dataParam ={              
-            chainNo    : $('#sch_chain_no').val() 
+            chainNo    : $('#chain_no').val() 
           }    
           ConfirmdialogToAjax('execute', '/deposit/exceed/excMng/setExceedCancelAll', dataParam, fn_return_result);
         }); 
@@ -603,106 +613,29 @@
     </script>
   </head>
   <div class="content">
-    <div class="row g-3 mb-2">  
-      <div class="col-lg-4">
-        <div class="card">
-          <div class="card-header">
-            <div class="row flex-between-end">
-              <div class="col-auto align-self-center">
-                <h4 class="mb-0">과입금 관리</h4>
-              </div>              
-              <div class="col-lg-9">
-                <form id="frm_sch_chain" name="frm_sch_chain" onsubmit="return false;" novalidate="">
-                  <div class="row mb-0">
-                    
-                    <div class="col-sm-4">
-                      <div class="input-group input-group-sm mb-0">
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="checkbox" id="sch_all" name="sch_all" />
-                          <label class="form-check-label" for="sch_all">완료 포함</label>
-                        </div> 
-                      </div>
-                    </div>
-                    <div class="col-sm-8">
-                      <div class="input-group input-group-sm mb-0">
-                        <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_chain_nm">가맹점 명</label>
-                        <input type="text" class="form-control form-control-sm" id="sch_chain_nm" name="sch_chain_nm" />     
-                        <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
-                      </div>
+    <div class="row g-1 mb-1">   
+      <div class="card">
+        <div class="card-header"  style="height: 80px; padding-top: 20px; padding-bottom: 10px;">
+          <div class="row flex-between-end">
+            <div class="col-auto align-self-center">            
+              <h4 class="mb-0">과입금 관리</h4>
+            </div>              
+            <div class="col-lg-10">
+              <form id="frm_sch_chain" name="frm_sch_chain" onsubmit="return false;" novalidate="">
+                <div class="row mb-1">  
+                  <div class="col-sm-4">
+                    <div class="input-group input-group-sm mb-0">
+                      <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_dtl_reg_sdt">등록일</label>
+                      <div class="col-sm-4">
+                        <input class="form-control form-control-sm " id="sch_exc_sdt" type="text" name="sch_exc_sdt" istyle="date" maxlength="10" required />
+                      </div>   
+                      <span class="input-group-text">~</span>
+                      <div class="col-sm-4">
+                        <input class="form-control form-control-sm" id="sch_exc_edt" type="text" name="sch_exc_edt" istyle="date" maxlength="10" required />
+                      </div>  
                     </div>
                   </div>
-                </form>
-              </div>
-            </div>
-          </div>          
-          <div class="card-body pt-0 px-0" style="padding-top: 0px">
-            <div class="table-responsive scrollbar">
-              <table class="table table-striped table-sm fs-9 mb-0 table-hover table-bordered" id="tbl_exc_summary">
-                <thead>
-                  <tr>
-                    <th class="text-center">가맹점명</th>
-                    <!-- <th class="text-center">사업자번호</th> -->
-                    <th class="text-center">등록금액</th>
-                    <th class="text-center">출금액</th>
-                    <th class="text-center">미출금액</th>
-                    <th class="text-center">출금</th>
-                  </tr>
-                </thead>                
-                <tbody class="list"></tbody>
-                <tfoot>
-                  <tr>
-                    <th class="text-center">총계</th>
-                    <th class="text-right px-2"></th>
-                    <th class="text-right px-2"></th>
-                    <th class="text-right px-2"></th>
-                    <th class="text-right px-2"></th>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-8">
-        <div class="card">
-          <div class="card-header">
-            <div class="row flex-between-end">
-              <div class="col-auto align-self-center">
-                <h5 class="mb-0">과입 상세</h5>
-              </div>
-              <div class="col-sm-10">
-                <form id="frm_sch_exc" name="frm_sch_exc" onsubmit="return false;" novalidate="">
-                <div class="row mb-1">
-                  <div class="col-sm-6">
-                    <div class="input-group">
-                      <div class="input-group input-group-sm mb-1 me-1">
-                        <div class="col-sm-4">
-                          <div class="form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="del_view" name="del_view" />
-                            <label class="form-check-label" for="del_view">미사용 포함</label> 
-                          </div>  
-                        </div>     
-                        <!-- <label class="col-sm-2 col-form-label col-form-label-sm" for="sch_exc_sdt">발생일</label> -->
-                        <input class="form-control form-control-sm" id="sch_chain_no" type="hidden" name="sch_chain_no" readonly="readonly"/>
-                        <div class="col-sm-4">
-                          <input class="form-control form-control-sm " id="sch_exc_sdt" type="text" name="sch_exc_sdt" istyle="date" maxlength="10" required />
-                        </div>   
-                        <!-- <span class="input-group-text">~</span> -->
-                        <div class="col-sm-4">
-                          <input class="form-control form-control-sm" id="sch_exc_edt" type="text" name="sch_exc_edt" istyle="date" maxlength="10" required />
-                        </div>  
-                                            
-                      </div>            
-                    </div> 
-                  </div>
-                  <!-- </div>
-                  <div class="col-sm-1">  
-                    <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="checkbox" id="del_view" name="del_view" />
-                      <label class="form-check-label" for="del_view">N</label> 
-                    </div>                    
-                  </div> -->
-                  <div class="col-sm-6">
+                  <div class="col-sm-5">
                     <div class="input-group input-group-sm px-3">
                       <select class="form-select form-control-sm" id="sch_exc_type" name="sch_exc_type" style="width: 100px">
                         <option value="">선 택</option>
@@ -712,30 +645,81 @@
                       </select>                    
                       <select class="form-select form-control-sm" id="sch_exc_status" name="sch_exc_status" style="width: 100px">
                         <option value="">선택</option> 
-                      </select>
-                      <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_list_search" name="btn_list_search">조회</button></span> 
+                      </select>                    
+                    </div>   
+                  </div>  
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-0">
+                      <!-- <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_chain_nm">가맹점 명</label> -->
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="sch_all" name="sch_all" />
+                        <label class="form-check-label" for="sch_all">완료 포함</label>
+                      </div> 
+                      <input type="text" class="form-control form-control-sm" id="sch_chain_nm" name="sch_chain_nm" />     
+                      <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
                     </div>
-                  </div>                  
-                </div>
+                  </div> 
+                </div>  
               </form>
             </div>
           </div>
-          <div class="card-body pt-0 px-0" style="padding-top: 0px">
-            <div class="min-vh-50"> 
-              <div class="row mb-1">
-                <div class="col-sm-6">
-                  <div class="d-flex justify-content-start align-items-center">
-                    <button type="button" class="btn btn-success me-2" id="btn_exceed_ready">출금대기</button> 
-                    <button type="button" class="btn btn-primary me-2" id="btn_exceed_ready_all">모두 출금대기</button> 
-                  </div>
-                </div>
-                <div class="col-sm-6 text-end">  
-                  <div >
-                    <button type="button" class="btn btn-success me-2" id="btn_exceed_cancel">출금대기 취소</button> 
-                    <button type="button" class="btn btn-primary me-2" id="btn_exceed_cancel_all">모두 출금대기 취소</button> 
-                  </div>
-                </div>                
+        </div>       
+      </div>
+    </div>
+    <div class="card-body pt-0 px-0" style="padding-top: 0px">
+      <div class="row g-1 mb-1">
+        <div class="col-lg-4">
+          <div class="card">
+            <div class="card-body pt-0 px-0" style="padding-top: 0px">
+              <div class="table-responsive scrollbar">
+                <table class="table table-striped table-sm fs-9 mb-0 table-hover table-bordered" id="tbl_exc_summary">
+                  <thead>
+                    <tr>
+                      <th class="text-center">가맹점명</th>
+                      <!-- <th class="text-center">사업자번호</th> -->
+                      <th class="text-center">등록금액</th>
+                      <th class="text-center">출금액</th>
+                      <th class="text-center">미출금액</th>
+                      <th class="text-center">출금</th>
+                    </tr>
+                  </thead>                
+                  <tbody class="list"></tbody>
+                  <tfoot>
+                    <tr>
+                      <th class="text-center">총계</th>
+                      <th class="text-right px-2"></th>
+                      <th class="text-right px-2"></th>
+                      <th class="text-right px-2"></th>
+                      <th class="text-right px-2"></th>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-8">
+          <div class="card">
+            <div class="card-header" style="height: 60px; padding-top: 10px; padding-bottom: 10px;">
+              <div class="row flex-between-end">
+                <div class="col-auto align-self-center">
+                  <h5 class="mb-0">과입 상세</h5>
+                </div>
+                <div class="col-sm-10">  
+                  <div class="row mb-1">  
+                    <div class="col-sm-6 text-end"> 
+                      <button type="button" class="btn btn-success me-2" id="btn_exceed_ready">출금대기</button> 
+                      <button type="button" class="btn btn-primary me-2" id="btn_exceed_ready_all">모두 출금대기</button>  
+                    </div>
+                    <div class="col-sm-6 text-end">  
+                      <button type="button" class="btn btn-success me-2" id="btn_exceed_cancel">출금대기 취소</button> 
+                      <button type="button" class="btn btn-primary me-2" id="btn_exceed_cancel_all">모두 출금대기 취소</button>  
+                    </div>               
+                  </div>   
+                </div>
+              </div>
+            </div>
+            <div class="card-body pt-2 px-2" style="padding-top: 0px">
               <div class="table-responsive scrollbar">
                 <table class="table table-striped table-sm fs-9 mb-0 table-hover table-bordered" id="tbl_exc_list">
                   <thead class="bg-200">
@@ -763,132 +747,144 @@
                   </tfoot>
                 </table>
               </div> 
-              <div class="row flex-between-end">
-                <div class="d-flex justify-content-between align-items-center mt-3 mb-3 fw-bold fs-8 border-bottom pb-1 text-primary">
-                  <span  id="select_chain_nm">상세정보</span> 
-                </div>
-                
-                <form class="needs-validation" id="frm_exc_mst" name="frm_exc_mst" onsubmit="return false;" method="post" novalidate=""> 
-                  <div class="row mb-1">
-                    <div class="col-sm-3">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_no">관리번호</label> 
-                        <input class="form-control form-control-sm" id="chain_no" type="hidden" name="chain_no" readonly="readonly"/>
-                        <input class="form-control form-control-sm" id="chain_remit_over_stat" type="hidden" name="chain_remit_over_stat" readonly="readonly"/>
-                        <input class="form-control form-control-sm bg-light" id="exc_no" type="text" name="exc_no" readonly="readonly"/>                        
-                      </div>
-                    </div>
-                    <div class="col-sm-3">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_type">과입유형</label> 
-                        <select class="form-select form-control-sm" id="exc_type" name="exc_type" style="width: 120px" required>
-                          <option value="">선택</option> 
-                        </select>   
-                      </div>
-                    </div>
-                    <div class="col-sm-3">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_type">과입사유</label> 
-                        <select class="form-select form-control-sm" id="exc_code" name="exc_code" style="width: 120px" required>
-                          <option value="">선택</option> 
-                        </select>   
-                      </div>
-                    </div>
-
-                    <div class="col-sm-3">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_date">발생일</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm " id="exc_date" type="text" name="exc_date" istyle="date" maxlength="10" required />
-                        </div>    
-                      </div>
-                    </div>
-                  </div>
-                  <div class="row mb-1">
-                     <div class="col-sm-3">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_status">진행상태</label> 
-                        <select class="form-select form-control-sm" id="exc_status" name="exc_status" style="width: 120px" required>
-                          <option value="">선택</option> 
-                        </select>   
-                      </div>
-                    </div>
-                    <div class="col-sm-3">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="occur_amt">발생금액</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end " id="occur_amt" type="text" name="occur_amt" istyle="amount" value="0" 
-                          oninput="document.getElementById('remain_amt').value = this.value;" />
-                        </div>  
-                      </div>
-                    </div>
-                    <div class="col-sm-3">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="issue_amt">출금 액</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end bg-light" id="issue_amt" type="text" name="issue_amt" istyle="amount" value="0" readonly/>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-sm-3">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_amt">미 출금액</label> 
-                        <div class="col-sm-8">
-                          <input class="form-control form-control-sm text-end bg-light" id="remain_amt" type="text" name="remain_amt" istyle="amount" value="0" readonly/>
-                        </div>
-                      </div>
-                    </div>                   
-                  </div>
-                  <div class="row mb-1">                   
-                    <div class="col-sm-12">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-1 col-form-label col-form-label-sm" for="exc_memo">비고</label> 
-                        <input class="form-control form-control-sm" id="exc_memo" type="text" name="exc_memo" maxlength="50" />
-                      </div>
-                    </div>     
-                  </div>
-                  <div class="row mb-1">       
-                    <div class="col-sm-6">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-2 col-form-label col-form-label-sm" for="use_yn">사용여부</label>
-                        <div class="col-sm-8">
-                          <div class="form-check form-check-inline">
-                            <input class="form-check-input" id="use_yn_y" type="radio" name="use_yn" value="Y" required />
-                            <label class="form-check-label" for="use_yn_y">예</label>
-                          </div>
-                          <div class="form-check form-check-inline">
-                            <input class="form-check-input" id="use_yn_n" type="radio" name="use_yn" value="N" required />
-                            <label class="form-check-label" for="use_yn_n">아니요</label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>                                 
-                    <div class="col-sm-3">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="upt_user_id">최종수정자</label> 
-                        <input type="text" class="form-control form-control-sm" id="upt_user_id" name="upt_user_id" readonly="readonly" disabled />
-                      </div>
-                    </div>
-                    <div class="col-sm-3">
-                      <div class="input-group input-group-sm mb-1">
-                        <label class="col-sm-4 col-form-label col-form-label-sm" for="upt_dttm">최종 수정일</label>                         
-                        <input type="text" class="form-control form-control-sm" id="upt_dttm" name="upt_dttm" readonly="readonly" disabled /> 
-                      </div>
-                    </div>
-                  </div>    
-                  <div class="card-footer">
-                    <p class="text-end pb-1 mb-1 pd-1">
-                      <button type="button" class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
-                      <button type="button" class="btn btn-primary text-end" id="btn_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
-                      <button type="button" class="btn btn-primary text-end" id="btn_create"><i class="fa fa-paste"></i>저장</button>
-                    </p>
-                  </div>
-                </form>
-              </div>             
-            </div>  
+            </div>
           </div>
-        </div>
-      </div>      
-    </div>    
+          <div class="card">
+            <div class="card-header" style="height: 60px; padding-top: 10px; padding-bottom: 10px;">
+              <div class="row flex-between-end">
+                <div class="col-auto align-self-center">
+                  <h5 id="select_chain_nm">상세정보</h5>
+                </div>
+                <div class="col-sm-10 text-end">   
+                  <p class="text-end pb-1 mb-1 pd-1">
+                    <button type="button" class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
+                    <button type="button" class="btn btn-primary text-end" id="btn_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                    <button type="button" class="btn btn-primary text-end" id="btn_create"><i class="fa fa-paste"></i>저장</button>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="card-body pt-2 px-3" style="padding-top: 0px">               
+              <form class="needs-validation" id="frm_exc_mst" name="frm_exc_mst" onsubmit="return false;" method="post" novalidate=""> 
+                <div class="row mb-1">
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_no">관리번호</label> 
+                      <input class="form-control form-control-sm" id="chain_no" type="hidden" name="chain_no" readonly="readonly"/>
+                      <input class="form-control form-control-sm" id="chain_remit_over_stat" type="hidden" name="chain_remit_over_stat" readonly="readonly"/>
+                      <input class="form-control form-control-sm bg-light" id="exc_no" type="text" name="exc_no" readonly="readonly"/>                        
+                    </div>
+                  </div>
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_type">과입유형</label> 
+                      <select class="form-select form-control-sm" id="exc_type" name="exc_type" style="width: 120px" required>
+                        <option value="">선택</option> 
+                      </select>   
+                    </div>
+                  </div>
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_type">과입사유</label> 
+                      <select class="form-select form-control-sm" id="exc_code" name="exc_code" style="width: 120px" required>
+                        <option value="">선택</option> 
+                      </select>   
+                    </div>
+                  </div>
+
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_date">발생일</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm " id="exc_date" type="text" name="exc_date" istyle="date" maxlength="10" required />
+                      </div>    
+                    </div>
+                  </div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="exc_status">진행상태</label> 
+                      <select class="form-select form-control-sm" id="exc_status" name="exc_status" style="width: 120px" required>
+                        <option value="">선택</option> 
+                      </select>   
+                    </div>
+                  </div>
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="occur_amt">발생금액</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end " id="occur_amt" type="text" name="occur_amt" istyle="amount" value="0" 
+                        oninput="document.getElementById('remain_amt').value = this.value;" />
+                      </div>  
+                    </div>
+                  </div>
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="issue_amt">출금 액</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="issue_amt" type="text" name="issue_amt" istyle="amount" value="0" readonly/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="remain_amt">미 출금액</label> 
+                      <div class="col-sm-8">
+                        <input class="form-control form-control-sm text-end bg-light" id="remain_amt" type="text" name="remain_amt" istyle="amount" value="0" readonly/>
+                      </div>
+                    </div>
+                  </div>                   
+                </div>
+                <div class="row mb-1">                   
+                  <div class="col-sm-12">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-1 col-form-label col-form-label-sm" for="exc_memo">비고</label> 
+                      <input class="form-control form-control-sm" id="exc_memo" type="text" name="exc_memo" maxlength="50" />
+                    </div>
+                  </div>     
+                </div>
+                <div class="row mb-1">       
+                  <div class="col-sm-6">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-2 col-form-label col-form-label-sm" for="use_yn">사용여부</label>
+                      <div class="col-sm-8">
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" id="use_yn_y" type="radio" name="use_yn" value="Y" required />
+                          <label class="form-check-label" for="use_yn_y">예</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" id="use_yn_n" type="radio" name="use_yn" value="N" required />
+                          <label class="form-check-label" for="use_yn_n">아니요</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>                                 
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="upt_user_id">최종수정자</label> 
+                      <input type="text" class="form-control form-control-sm" id="upt_user_id" name="upt_user_id" readonly="readonly" disabled />
+                    </div>
+                  </div>
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <label class="col-sm-4 col-form-label col-form-label-sm" for="upt_dttm">최종 수정일</label>                         
+                      <input type="text" class="form-control form-control-sm" id="upt_dttm" name="upt_dttm" readonly="readonly" disabled /> 
+                    </div>
+                  </div>
+                </div>
+              </form>  
+            </div>
+            <!-- <div class="card-footer">
+              <p class="text-end pb-1 mb-1 pd-1">
+                <button type="button" class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
+                <button type="button" class="btn btn-primary text-end" id="btn_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
+                <button type="button" class="btn btn-primary text-end" id="btn_create"><i class="fa fa-paste"></i>저장</button>
+              </p>
+            </div> -->
+          </div>
+        </div>      
+      </div>    
+    </div>
   </div> 
 </html>
