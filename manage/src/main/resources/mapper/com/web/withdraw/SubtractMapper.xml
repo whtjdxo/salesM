@@ -49,12 +49,13 @@
                     <if test="sch_all == null or sch_all == ''">
                             AND	SUB_STATUS IN ('000000', '100000', '900000')
                     </if>                            
-                <!-- <if test="sch_reg_sdt != ''">
-                        AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
-                </if>
-                <if test="sch_reg_edt != ''">
-                        AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
-                </if>
+                    <if test="sch_reg_sdt != ''">
+                            AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
+                    </if>
+                    <if test="sch_reg_edt != ''">
+                            AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
+                    </if>
+                <!--    
                 <if test="sch_sub_type != ''">
                         AND  SM.SUB_TYPE = #{sch_sub_type} 
                 </if>
@@ -119,7 +120,13 @@
                     WHERE   SM.USE_YN = 'Y'
                     <if test="sch_all == null or sch_all == ''">
                         AND	SUB_STATUS IN ('000000', '100000', '900000')
-                    </if>                    
+                    </if>                  
+                    <if test="sch_reg_sdt != ''">
+                            AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
+                    </if>
+                    <if test="sch_reg_edt != ''">
+                            AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
+                    </if>  
                     GROUP 	BY SM.CHAIN_NO
                 ) SM ON SM.CHAIN_NO = TC.CHAIN_NO
         WHERE	TC.USE_YN = 'Y'         
@@ -172,11 +179,11 @@
                                 AND TC.USE_YN  = 'Y'
         WHERE	SM.USE_YN = 'Y'          
         AND     SM.CHAIN_NO =  #{sch_chain_no}
-        <if test='sch_reg_sdt != null and sch_reg_sdt != ""'>
-            AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
+        <if test='sch_dtl_reg_sdt != null and sch_dtl_reg_sdt != ""'>
+            AND  SM.REG_DATE &gt;= #{sch_dtl_reg_sdt} 
         </if>
-        <if test='sch_reg_edt != null and sch_reg_edt != ""'>
-            AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
+        <if test='sch_dtl_reg_edt != null and sch_dtl_reg_edt != ""'>
+            AND  SM.REG_DATE &lt;= #{sch_dtl_reg_edt} 
         </if>
         <if test='sch_sub_code != null and sch_sub_type != ""'>
             AND  SM.SUB_TYPE = #{sch_sub_type} 
