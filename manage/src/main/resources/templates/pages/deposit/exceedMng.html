@@ -135,9 +135,10 @@
 
         $('#btn_search').click(function () {
           tbl_exc_summary.ajax.reload();
+          $('#chain_no').val('');
           $('#tbl_exc_list').DataTable().clear().draw();
           $('#frm_exc_mst')[0].reset();   
-           $('#select_chain_nm').text("상세 정보");              
+          $('#select_chain_nm').text("상세 정보");              
         });
 
         $('#sch_chain_nm').on('keypress', function(e) {
@@ -147,6 +148,9 @@
         }); 
 
         $('#sch_all').change(function () {          
+          $('#btn_search').click();          
+        });
+        $('#sch_chain_all').change(function () {          
           $('#btn_search').click();          
         });
 
@@ -205,12 +209,7 @@
             tbl_exc_list.ajax.reload();            
           }
           fn_frm_exc_mst_clear();      
-        });     
-        
-        $('#btn_list_search').click(function () {
-          tbl_exc_list.ajax.reload();          
-          $('#frm_exc_mst')[0].reset();          
-        });
+        }); 
          
         // --------------------------------------------------------------- frm_sch_chain 정보 처리 ---------------------------------------------------
         var tbl_exc_list = $('#tbl_exc_list').DataTable({
@@ -635,7 +634,7 @@
                       </div>  
                     </div>
                   </div>
-                  <div class="col-sm-5">
+                  <div class="col-sm-4">
                     <div class="input-group input-group-sm px-3">
                       <select class="form-select form-control-sm" id="sch_exc_type" name="sch_exc_type" style="width: 100px">
                         <option value="">선 택</option>
@@ -648,12 +647,16 @@
                       </select>                    
                     </div>   
                   </div>  
-                  <div class="col-sm-3">
+                  <div class="col-sm-4">
                     <div class="input-group input-group-sm mb-0">
                       <!-- <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_chain_nm">가맹점 명</label> -->
                       <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="sch_all" name="sch_all" />
+                        <input class="form-check-input" type="checkbox" id="sch_all" name="sch_all" value="Y" />
                         <label class="form-check-label" for="sch_all">완료 포함</label>
+                      </div> 
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="sch_chain_all" name="sch_chain_all" value="Y" />
+                        <label class="form-check-label" for="sch_chain_all">해지 가맹점</label>
                       </div> 
                       <input type="text" class="form-control form-control-sm" id="sch_chain_nm" name="sch_chain_nm" />     
                       <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 

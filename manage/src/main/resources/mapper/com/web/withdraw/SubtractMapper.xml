@@ -64,7 +64,9 @@
                     GROUP 	BY SM.CHAIN_NO
                 ) SM ON SM.CHAIN_NO = TC.CHAIN_NO
         WHERE	TC.USE_YN = 'Y'         
-        <!-- AND     TC.SVC_STAT IN ('O', 'R') -->
+        <if test='sch_chain_all == null'>
+			AND  TC.SVC_STAT IN ('O', 'R')
+		</if>
         <if test="sch_chain_nm != ''">                   
             AND     TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
         </if>                        
@@ -131,10 +133,13 @@
                     GROUP 	BY SM.CHAIN_NO
                 ) SM ON SM.CHAIN_NO = TC.CHAIN_NO
         WHERE	TC.USE_YN = 'Y'         
-        <!-- AND     TC.SVC_STAT IN ('O', 'R') -->
+        <if test='sch_chain_all == null'>
+			AND  TC.SVC_STAT IN ('O', 'R')
+		</if>
         <if test="sch_chain_nm != ''">                   
             AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
         </if>
+
     </select>
 
     <select id="getChainSubList" parameterType="java.util.HashMap" resultType="java.util.HashMap">

@@ -42,6 +42,9 @@
 		<if test='sch_chain_nm != null and sch_chain_nm != ""'>
 			AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
 		</if>
+		<if test='sch_chain_all == null'>
+			AND  TC.SVC_STAT IN ('O', 'R')
+		</if>
         <choose>
 			<when test="orderBy != '' and orderBy != null">
                 ORDER BY ${orderBy}
@@ -81,6 +84,9 @@
 		</if>
 		<if test='sch_chain_nm != null and sch_chain_nm != ""'>
 			AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+		</if>
+		<if test='sch_chain_all == null'>
+			AND  TC.SVC_STAT IN ('O', 'R')
 		</if>
 	</select>
 

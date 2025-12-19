@@ -143,6 +143,7 @@
 
         $('#btn_search').click(function () {
           tbl_sub_summary.ajax.reload();
+          $('#chain_no').val('');
           $('#tbl_sub_list').DataTable().clear().draw();
           $('#frm_sub_mst')[0].reset();
           $('#tbl_sub_recv_list').DataTable().clear().draw();
@@ -150,6 +151,10 @@
         });
 
         $('#sch_all').change(function () {          
+          $('#btn_search').click();          
+        });
+
+        $('#sch_chain_all').change(function () {          
           $('#btn_search').click();          
         });
 
@@ -196,12 +201,6 @@
           }
           fn_frm_sub_mst_clear();      
         });    
-        
-        $('#btn_list_search').click(function () { 
-          tbl_sub_list.ajax.reload();
-          $('#frm_sub_mst')[0].reset();
-          $('#tbl_sub_recv_list').DataTable().clear().draw();
-        });
          
         // --------------------------------------------------------------- frm_sch_sub 정보 처리 ---------------------------------------------------
         var tbl_sub_list = $('#tbl_sub_list').DataTable({
@@ -643,7 +642,7 @@
                       </div>
                     </div> 
                   </div> 
-                  <div class="col-sm-5">
+                  <div class="col-sm-4">
                     <div class="input-group input-group-sm px-3">
                       <select class="form-select form-control-sm" id="sch_sub_type" name="sch_sub_type" style="width: 100px">
                         <option value="">선 택</option>
@@ -656,12 +655,16 @@
                       </select>                      
                     </div> 
                   </div>
-                  <div class="col-sm-3"> 
+                  <div class="col-sm-4"> 
                     <div class="input-group input-group-sm mb-0">
                       <!-- <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="sch_all" name="sch_all" />
                         <label class="form-check-label" for="sch_all">완료포함</label>
                       </div>  -->
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="sch_chain_all" name="sch_chain_all" value="Y" />
+                        <label class="form-check-label" for="sch_chain_all">해지 가맹점</label>
+                      </div> 
                       <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_chain_nm">가맹점 명</label>
                       <input type="text" class="form-control form-control-sm" id="sch_chain_nm" name="sch_chain_nm" />     
                       <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
