@@ -334,6 +334,7 @@
 		 		DA.CHAIN_NO							as chain_no
 				, TC.CHAIN_NM						as chain_nm
 				, TC.BIZ_NO 						as biz_no
+				, TC.SVC_STAT						as svc_stat
 				, IFNULL(SUM(TOT_SALES_AMT), 0)		as tot_sales_amt 
 				, IFNULL(SUM(CARD_FEE_AMT), 0)		as card_fee_amt
 				, IFNULL(SUM(ORG_CARD_RESV_AMT), 0)	as org_card_resv_amt 
@@ -358,7 +359,7 @@
 				, IFNULL(SUM(SUB_SVC_AMT), 0)		as sub_svc_amt
 				, IFNULL(SUM(SUB_CRD_AMT), 0)		as sub_crd_amt
 		FROM	TB_DEPOSIT_ADJUST DA
-				JOIN TB_CHAIN TC ON TC.CHAIN_NO = DA.CHAIN_NO 
+				JOIN TB_CHAIN TC ON TC.CHAIN_NO = DA.CHAIN_NO  
 				<if test='sch_corp_cd != null and sch_corp_cd != ""'>
 					AND  TC.CORP_CD = #{sch_corp_cd}
 				</if>
@@ -366,7 +367,7 @@
 					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
 				</if> 
 		WHERE	DA.ADJUST_DATE = #{sch_adjust_date} 
-		GROUP 	BY DA.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO
+		GROUP 	BY DA.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO, TC.SVC_STAT
         <choose>
 			<when test="orderBy != '' and orderBy != null">
                 ORDER BY ${orderBy}
@@ -403,7 +404,7 @@
 				, IFNULL(SUM(SUB_SVC_AMT), 0)		as sub_svc_amt
 				, IFNULL(SUM(SUB_CRD_AMT), 0)		as sub_crd_amt
 		FROM	TB_DEPOSIT_ADJUST DA
-				JOIN TB_CHAIN TC ON TC.CHAIN_NO = DA.CHAIN_NO 
+				JOIN TB_CHAIN TC ON TC.CHAIN_NO = DA.CHAIN_NO  
 				<if test='sch_corp_cd != null and sch_corp_cd != ""'>
 					AND  TC.CORP_CD = #{sch_corp_cd}
 				</if>

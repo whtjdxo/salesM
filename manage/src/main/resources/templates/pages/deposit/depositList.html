@@ -37,7 +37,7 @@
         $('#btn_search').click(function () {   
           fn_default_clear();
           tbl_depo_resv_summ.ajax.reload();
-        });  
+        });   
 
         $('#btn_list_search').click(function () {   
           tbl_depo_adjust_list.ajax.reload();
@@ -80,7 +80,15 @@
                     orderable: false,
                     className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
                 }
-                , { data: 'chain_nm' }
+                , { 
+                  data: 'chain_nm',
+                  render: function(data, type, row) {
+                  if (row.svc_stat === 'C') {
+                    return '<span style="background-color: red; color: white; padding: 2px 4px;">' + data + '</span>';
+                  }
+                  return data;
+                  }
+                }
                 , { data: 'biz_no' }                
                 , { data: 'tot_sales_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { data: 'card_resv_amt_remit', render: $.fn.dataTable.render.number(',', '.', 0, '') }
@@ -803,7 +811,7 @@
                         </div>   
                         <select class="form-select form-control-sm me-1" id="sch_corp_cd" name="sch_corp_cd" style="width: 75px">
                           <option value="">여신사</option>
-                        </select>
+                        </select> 
                         <input type="text" class="form-control form-control-sm me-1" id="sch_chain_nm" name="sch_chain_nm" style="width:100px" />
                         <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
                       </div>

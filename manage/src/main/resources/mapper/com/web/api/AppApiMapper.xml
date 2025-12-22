@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.web.manage.api.mapper.AppApiMapper">
+    <!-- App Api 관련 쿼리 map  -->
+	<!-- app 연동용 가앰점 정보 가져오기 -->
+	<select id="appApiGetStoreInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	TC.CEO_ID 			AS loginId
+				, TC.CHAIN_NO  		AS chainNo 
+				, TC.CHAIN_NM 		AS chainNm
+				, TC.BIZ_NO			AS bizNo
+				, TC.CEO_ID 		AS bossNo
+				, TU.USER_NM 		AS bossNm
+				, TU.HP_NO			AS bossHpno
+		  FROM 	TB_CHAIN  TC  
+		  		JOIN TB_USER TU ON TU.USER_ID  = TC.CEO_ID 
+		 WHERE 	TC.USE_YN = 'Y'
+		   AND 	TC.SVC_STAT IN ('O', 'R')
+      	  AND 	TC.CHAIN_NO = #{chainNo}
+    	ORDER 	BY TC.CHAIN_NO
+	</select>	
+	
+	<!-- App 연동 - 일간, 월간 Summary  -->
+	<select id="appApiGetDailySummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT GB 							AS remit_gb
+				, REMIT_DT					AS remit_dt
+				, IFNULL(APRV_CNT, 0) 		AS aprv_cnt
+				, IFNULL(APRV_AMT, 0) 		AS aprv_amt
+				, IFNULL(CARD_RESV_AMT, 0) 	AS card_resv_amt
+				, IFNULL(CARD_FEE_AMT, 0) 	AS card_fee_amt	
+				, IFNULL(SVC_FEE_AMT, 0) 	AS svc_fee_amt	
+				, IFNULL(CRD_FEE_AMT, 0) 	AS crd_fee_amt
+				, IFNULL(WD_BASE_AMT, 0) 	AS wd_base_amt
+				, IFNULL(EXCEED_AMT, 0) 	AS exceed_amt	
+				, IFNULL(SUB_AMT, 0) 		AS sub_amt1	
+				, IFNULL(APRV_AMT, 0) - IFNULL(REMITT_TOT_AMT, 0) + IFNULL(EXCEED_AMT, 0) AS sub_amt	
+				, IFNULL(REMITT_TOT_AMT, 0)	AS remitt_tot_amt
+		  FROM 	(		  
+				SELECT 	1 AS ORD
+						, 'REMI'								AS GB
+						, REMIT_DT 								AS REMIT_DT
+						, IFNULL(SUM(ADJUST_CNT ), 0)			AS APRV_CNT 
+						, IFNULL(SUM(CONF_AMT ), 0)				AS APRV_AMT 
+						, IFNULL(SUM(CARD_RESV_AMT), 0)         AS CARD_RESV_AMT
+						, IFNULL(SUM(CARD_FEE_AMT), 0)          AS CARD_FEE_AMT 
+						, IFNULL(SUM(SVC_FEE_AMT), 0)           AS SVC_FEE_AMT 
+						, IFNULL(SUM(CRD_FEE_AMT), 0)           AS CRD_FEE_AMT 
+						, IFNULL(SUM(WD_BASE_AMT), 0)           AS WD_BASE_AMT 
+						, IFNULL(SUM(EXC_REMIT_AMT), 0)         AS EXCEED_AMT 
+						, IFNULL(SUM(SUB_AMT), 0)             	AS SUB_AMT 
+						, IFNULL(SUM(REMIT_AMT), 0)            	AS REMITT_TOT_AMT 
+				  FROM 	TB_REMIT_MST
+				 WHERE 	CHAIN_NO =  #{chainNo}   
+				   AND 	REMIT_DT &gt;=  #{schSdt}
+				   AND 	REMIT_DT &lt;   DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
+				 GROUP 	BY REMIT_DT				 
+				 UNION 	ALL 
+				SELECT  2 AS ORD
+						, WD.GB
+						, REMIT_DT
+						, ADJUST_CNT
+						, APRV_AMT
+						, CARD_RESV_AMT
+						, CARD_FEE_AMT
+						, SVC_FEE_AMT
+						, CRD_FEE_AMT
+						, WD_BASE_AMT
+						, IFNULL(EC.EXCEED_AMT, 0)		AS EXCEED_AMT 
+						, IFNULL(SB.MINUS_AMT, 0)		AS MINUS_AMT
+						, REMITT_TOT_AMT + IFNULL(EC.EXCEED_AMT, 0) - IFNULL(SB.MINUS_AMT, 0)		AS REMITT_TOT_AMT
+				  FROM 	(
+						 SELECT	 'RESV'								AS GB
+						 		, CHAIN_NO							AS CHAIN_NO
+						 		, WORK_DATE 						AS REMIT_DT
+						 		, COUNT(1)							AS ADJUST_CNT
+								, IFNULL(SUM(CONF_AMT), 0) 			AS APRV_AMT 
+								, IFNULL(SUM(CARD_RESV_AMT), 0)        AS CARD_RESV_AMT
+								, IFNULL(SUM(CARD_FEE_AMT), 0)         AS CARD_FEE_AMT 
+								, IFNULL(SUM(SVC_FEE_AMT), 0)          AS SVC_FEE_AMT 
+								, IFNULL(SUM(CRD_FEE_AMT), 0)          AS CRD_FEE_AMT 
+								, IFNULL(SUM(WD_BASE_AMT), 0)          AS WD_BASE_AMT 
+								, IFNULL(SUM(REMIT_AMT), 0)           AS REMITT_TOT_AMT 
+						  FROM  TB_WITHDRAW  		
+						 WHERE 	WORK_DATE &gt;= #{schSdt}
+						   AND  WORK_DATE &lt; DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
+						   AND 	CHAIN_NO = #{chainNo}
+					       AND 	REMIT_NO IS NULL
+						   AND  WD_STATUS LIKE 'W%'
+						   AND 	USE_YN    = 'Y'
+						 GROUP 	BY CHAIN_NO, WORK_DATE
+						 ) WD  
+						LEFT OUTER JOIN (
+				  			SELECT CHAIN_NO 
+							       	, SUM(REMAIN_AMT)  AS MINUS_AMT
+							  FROM 	TB_SUB_MST
+							 WHERE 	SUB_STATUS IN ('000000', '100000')
+							   AND 	CHAIN_NO = #{chainNo}
+							   AND 	USE_YN = 'Y'
+							 GROUP BY CHAIN_NO
+				  		) SB ON SB.CHAIN_NO = WD.CHAIN_NO 
+				  		LEFT OUTER JOIN (
+				  			SELECT 	CHAIN_NO, SUM(REMAIN_AMT) AS EXCEED_AMT
+				  			  FROM 	TB_EXCEED_MST
+							 WHERE	EXC_STATUS = '100000'
+							   AND 	CHAIN_NO = #{chainNo}
+							   AND	USE_YN = 'Y'
+				   			 GROUP	BY CHAIN_NO
+				  		) EC ON EC.CHAIN_NO = WD.CHAIN_NO
+				) VT				
+		 LIMIT 	1
+	</select>
+	
+	
+	<!-- App 연동 - 일간, 월간 매출 정보  -->
+	<select id="appApiGetDailySalesInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	CASE VD.VAN_CD WHEN  'V050' THEN '배달의민족'
+							WHEN  'V051' THEN '요기요'
+							WHEN  'V053' THEN '쿠팡잇츠'
+				ELSE '카드' END 													AS van_gb
+				, COUNT(1)															AS tot_cnt
+				, IFNULL(SUM(CASE WHEN VD.CONF_GB = 'A' THEN 1 ELSE NULL END), 0) 	AS aprv_cnt
+				, IFNULL(SUM(CASE WHEN VD.CONF_GB = 'A' THEN NULL ELSE 1 END), 0) 	AS cncl_cnt
+				, IFNULL(SUM(WD.CONF_AMT), 0)										AS aprv_amt
+		  FROM 	TB_WITHDRAW WD
+		  		JOIN TB_VAN_DOCU VD ON VD.DOCU_SEQ  = WD.DOCU_SEQ 
+		 WHERE  WD.CHAIN_NO = #{chainNo}
+		   AND 	(
+		   			( WD.REMIT_NO IS NULL
+		   				AND  WD.WORK_DATE &gt;= #{schSdt}
+				   		AND  WD.WORK_DATE &lt; DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
+						AND  WD_STATUS LIKE 'W%'
+				   	)
+				   	OR
+				   	( WD.REMIT_NO IS NOT NULL
+		   				AND  REMIT_DT  &gt;= #{schSdt} 
+						AND  REMIT_DT  &lt;  DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
+				   	)
+				)
+		   AND 	USE_YN    = 'Y' 		
+		 GROUP 	BY CASE VD.VAN_CD WHEN  'V050' THEN '배달의민족'
+							WHEN  'V051' THEN '요기요'
+							WHEN  'V053' THEN '쿠팡잇츠'
+				ELSE '카드' END
+	</select>
+	
+	
+	<!-- App 연동 - 일간, 월간 정산 차감 정보  -->
+	<select id="appApiGetDailySettleInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	IFNULL(SUM(CARD_FEE_AMT), 0)		AS card_fee_amt 
+				, IFNULL(SUM(UNDEPO_SUB_AMT), 0)	AS undeepo_sub_amt
+				, IFNULL(SUM(LOAN_SUB_AMT), 0)		AS loan_sub_amt
+				, IFNULL(SUM(ETC_SUB_AMT), 0)		AS etc_sub_amt
+				, IFNULL(SUM(SVC_FEE_AMT), 0)		AS svc_fee_amt
+				, IFNULL(SUM(EXEC_AMT), 0)			AS exceed_amt
+		  FROM 	(		
+				SELECT 	SUM(CARD_FEE_AMT)          	AS CARD_FEE_AMT 
+						, NULL 						AS UNDEPO_SUB_AMT 
+						, NULL 						AS LOAN_SUB_AMT
+						, NULL 						AS ETC_SUB_AMT		
+						, SUM(SVC_FEE_AMT)         	AS SVC_FEE_AMT
+						, NULL 						AS EXEC_AMT
+				  FROM 	TB_WITHDRAW WD
+						JOIN TB_VAN_DOCU VD ON VD.DOCU_SEQ  = WD.DOCU_SEQ 
+				WHERE 	WD.CHAIN_NO = #{chainNo}
+				   AND 	(
+				   			( WD.REMIT_NO IS NULL
+								AND  WD.WORK_DATE &gt;= #{schSdt}
+								AND  WD.WORK_DATE &lt; DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
+							)
+							OR
+							( WD.REMIT_NO IS NOT NULL
+								AND  REMIT_DT  &gt;= #{schSdt} 
+								AND  REMIT_DT  &lt;  DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
+							)
+						)		
+				   AND 	USE_YN    = 'Y' 		 
+				 UNION 	ALL
+				SELECT 	NULL 																AS CARD_FEE_AMT
+						, SUM(CASE WHEN SUB_CODE = 'I05001' THEN MINUS_AMT ELSE NULL END)	AS UNDEPO_SUB_AMT
+						, SUM(CASE WHEN SUB_TYPE = 'L' THEN MINUS_AMT ELSE NULL END)  		AS LOAN_SUB_AMT
+						, SUM(CASE WHEN SUB_TYPE = 'I' AND SUB_CODE &lt;&gt; 'I05001' THEN MINUS_AMT ELSE NULL END) AS ETC_SUB_AMT
+						, NULL		AS SVC_FEE_AMT
+						, NULL 		AS EXEC_AMT
+				  FROM 	(
+				  			SELECT  'RESV' AS GB
+				  					, SUB_TYPE, SUB_CODE 
+				  					, SUM(REMAIN_AMT) AS MINUS_AMT
+							  FROM 	TB_SUB_MST SM
+							 WHERE 	SM.SUB_STATUS IN ('000000', '100000')
+							   AND  SM.CHAIN_NO = #{chainNo}
+							   AND 	SM.USE_YN = 'Y' 
+							 GROUP 	BY SM.SUB_TYPE, SUB_CODE
+							 UNION 	ALL
+							SELECT  'REMI' AS GB
+									, SM.SUB_TYPE, SUB_CODE
+									, SUM(SR.RECV_AMT) MINUS_AMT
+							  FROM 	TB_SUB_RECEIVE SR
+							  		JOIN TB_SUB_MST SM ON SM.SUB_NO = SR.SUB_NO 
+							 WHERE 	SR.CHAIN_NO = #{chainNo}
+							   AND 	SR.RECV_DATE &gt;= 	#{schSdt}
+							   AND  SR.RECV_DATE &lt; 	DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
+							 GROUP 	BY SM.SUB_TYPE, SM.SUB_CODE
+						) VT
+				 WHERE	VT.GB = #{remittGb}
+				 UNION  ALL   
+				SELECT 	  NULL 		AS CARD_FEE_AMT
+						, NULL 		AS UNDEPO_SUB_AMT
+						, NULL  	AS LOAN_SUB_AMT
+						, NULL 		AS ETC_SUB_AMT
+						, NULL		AS SVC_FEE_AMT
+						, SUM(EXCEED_AMT) 		AS EXEC_AMT
+				  FROM 	(		
+							SELECT 	'RESV'				AS GB
+									, SUM(OCCUR_AMT)	AS EXCEED_AMT
+							  FROM 	TB_EXCEED_MST EM
+							 WHERE	CHAIN_NO = #{chainNo}	
+							   AND 	EM.USE_YN = 'Y'
+							   AND 	EM.EXC_STATUS = '100000'
+							 UNION 	ALL 
+							SELECT  'REMI' AS GB
+									, IFNULL(SUM(T1.EXC_REMIT_AMT), 0)            AS EXCEED_AMT  
+							  FROM 	TB_REMIT_MST T1
+							 WHERE 	CHAIN_NO = #{chainNo}			   
+							   AND  REMIT_DT  &gt;= #{schSdt}
+							   AND  REMIT_DT  &lt;  DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
+					 	) VT
+				 WHERE VT.GB = #{remittGb}
+				) T
+	</select>
+	
+	
+	<!-- App 연동 - 미입금 차감 정보  -->
+	<select id="appApiGetUndepoSubList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	SUBSTR(SUBSTR(SUB_MEMO, INSTR(SUB_MEMO, '['), LENGTH(SUB_MEMO)), 1,  INSTR(SUBSTR(SUB_MEMO, INSTR(SUB_MEMO, '['), LENGTH(SUB_MEMO)), ']')) AS sub_gb
+				, IFNULL(MINUS_AMT, 0) 		AS sub_amt
+		  FROM 	(		
+		  			SELECT  'RESV' AS GB
+		  					, SUB_MEMO
+		  					, SUM(REMAIN_AMT) AS MINUS_AMT
+					  FROM 	TB_SUB_MST SM
+					 WHERE 	SM.SUB_STATUS IN ('000000', '100000')
+					   AND  SM.CHAIN_NO = #{chainNo}
+					   AND  SM.SUB_TYPE	=  'I'
+					   AND  SM.SUB_CODE = 'I05001'
+					   AND 	SM.USE_YN = 'Y' 
+					 GROUP 	BY SUB_MEMO
+					 UNION 	ALL
+					SELECT  'REMI' AS GB
+							, SM.SUB_MEMO
+							, SUM(SR.RECV_AMT) MINUS_AMT
+					  FROM 	TB_SUB_RECEIVE SR
+					  		JOIN TB_SUB_MST SM ON SM.SUB_SEQ = SR.SUB_SEQ 
+					 WHERE 	SR.CHAIN_NO = #{chainNo}
+					   AND  SM.SUB_TYPE	=  'I'
+					   AND  SM.SUB_CODE = 'I05001'
+					   AND 	SR.RECV_DATE &gt;= #{schSdt}
+					   AND  SR.RECV_DATE &lt; DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
+					 GROUP 	BY SM.SUB_MEMO
+				) VT
+		 WHERE	VT.GB = #{remittGb} 
+	</select>
+	
+	
+	<!-- App 연동 - 차감  내역  -->
+	<select id="appApiGetSubList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	 GB					AS gb
+				, REG_DATE			AS reg_date
+				, SUB_CODE			AS sub_code
+				, SUB_MEMO			AS sub_memo
+				, OCCUR_AMT			AS occur_amt
+				, RECV_AMT			AS recv_amt
+		  FROM 	(		
+		  			SELECT  'RESV' AS GB
+		  					, SM.REG_DATE
+		  					, SM.SUB_CODE
+		  					, SM.SUB_MEMO
+		  					, SM.OCCUR_AMT
+		  					, SM.RECV_AMT
+					  FROM 	TB_SUB_MST SM
+					 WHERE 	SM.SUB_STATUS IN ('000000', '100000')
+					   AND  SM.CHAIN_NO = #{chainNo}
+					   AND 	SM.USE_YN = 'Y' 			   
+					 UNION 	ALL			 
+					SELECT  'REMM' AS GB
+							, SM.REG_DATE
+		  					, SM.SUB_CODE
+		  					, SM.SUB_MEMO
+		  					, SM.OCCUR_AMT
+		  					, SR.RECV_AMT RECV_AMT
+					  FROM 	TB_SUB_RECEIVE SR
+					  		JOIN TB_SUB_MST SM ON SM.SUB_SEQ = SR.SUB_SEQ 
+					 WHERE 	SR.CHAIN_NO = #{chainNo}
+					   AND 	SR.RECV_DATE &gt;= #{schSdt}
+					   AND  SR.RECV_DATE &lt; DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
+				) VT
+		 WHERE	VT.GB = #{remittGb} 
+	</select>
+	
+	
+	
+	<!-- App 연동 - 월간 선정산 정보  -->
+	<select id="appApiGetMonthlySummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	IFNULL(SUM(CONF_CNT), 0) 			AS conf_cnt
+				, IFNULL(SUM(CONF_AMT), 0) 			AS conf_amt
+				, IFNULL(SUM(CARD_RESV_AMT), 0) 	AS card_resv_amt
+				, IFNULL(SUM(CARD_FEE_AMT), 0) 		AS card_fee_amt
+				, IFNULL(SUM(SVC_FEE_AMT), 0) 		AS svc_fee_amt
+				, IFNULL(SUM(CRD_FEE_AMT), 0) 		AS crd_fee_amt
+				, IFNULL(SUM(WD_BASE_AMT), 0) 		AS wd_base_amt
+				, IFNULL(SUM(EXCEED_AMT), 0) 		AS exceed_amt
+				, IFNULL(SUM(MINUS_AMT), 0) 		AS sub_amt1
+				, IFNULL(SUM(APRV_AMT), 0) -  IFNULL(SUM(REMIT_TOT_AMT), 0) + IFNULL(SUM(EXCEED_AMT), 0) AS sub_amt
+				, IFNULL(SUM(REMIT_TOT_AMT), 0) 	AS remit_tot_amt
+		  FROM  ( 
+				SELECT 	IFNULL(SUM(ADJUST_CNT ), 0)					AS CONF_CNT 
+						, IFNULL(SUM(CONF_AMT ), 0)					AS CONF_AMT 
+						, IFNULL(SUM(T1.CARD_RESV_AMT), 0)         	AS CARD_RESV_AMT
+						, IFNULL(SUM(T1.CARD_FEE_AMT), 0)          	AS CARD_FEE_AMT 
+						, IFNULL(SUM(T1.SVC_FEE_AMT), 0)           	AS SVC_FEE_AMT 
+						, IFNULL(SUM(T1.CRD_FEE_AMT), 0)          	AS CRD_FEE_AMT 
+						, IFNULL(SUM(T1.WD_BASE_AMT), 0)           	AS WD_BASE_AMT 
+						, IFNULL(SUM(T1.EXC_REMIT_AMT), 0)         	AS EXCEED_AMT 
+						, IFNULL(SUM(T1.SUB_AMT), 0)             	AS MINUS_AMT 
+						, IFNULL(SUM(T1.REMIT_AMT), 0)            	AS REMIT_TOT_AMT 
+				  FROM 	TB_REMIT_MST T1
+				 WHERE 	CHAIN_NO = #{chainNo}			    
+				   AND 	T1.REMIT_DT  &gt;=	CONCAT( #schMonth#, '-01')
+				   AND 	T1.REMIT_DT  &lt; 	CONCAT( #schMonth#, '-31')  
+				 UNION 	ALL 
+				SELECT  ADJUST_CNT
+						, APRV_AMT
+						, CARD_RESV_AMT
+						, CARD_FEE_AMT
+						, SVC_FEE_AMT
+						, CRD_FEE_AMT
+						, WD_BASE_AMT
+						, IFNULL(EC.EXCEED_AMT, 0)		AS EXCEED_AMT 
+						, IFNULL(SB.MINUS_AMT, 0)		AS MINUS_AMT
+						, REMIT_AMT + IFNULL(EC.EXCEED_AMT, 0) - IFNULL(SB.MINUS_AMT, 0)		AS REMIT_AMT
+				  FROM 	(		
+						 SELECT	 'RESV'								AS GB
+						 		, CHAIN_NO 
+						 		, COUNT(1)								AS ADJUST_CNT
+								, IFNULL(SUM(CONF_AMT), 0) 				AS APRV_AMT 
+								, IFNULL(SUM(CARD_RESV_AMT), 0)        AS CARD_RESV_AMT
+								, IFNULL(SUM(CARD_FEE_AMT), 0)         AS CARD_FEE_AMT 
+								, IFNULL(SUM(SVC_FEE_AMT), 0)          AS SVC_FEE_AMT 
+								, IFNULL(SUM(CRD_FEE_AMT), 0)          AS CRD_FEE_AMT 
+								, IFNULL(SUM(WD_BASE_AMT), 0)          AS WD_BASE_AMT 
+								, IFNULL(SUM(REMIT_AMT), 0)           AS REMIT_AMT 
+						  FROM  TB_WITHDRAW  		
+						 WHERE 	CONF_DTTM &gt;= CONCAT(#schMonth#, '-01 00:00:00')
+				           AND  CONF_DTTM &lt;  CONCAT(#schMonth#, '-31 23:59:59') 
+						   AND 	CHAIN_NO = #{chainNo}
+					       AND 	REMIT_NO IS NULL
+					       AND  WD_STATUS LIKE 'W%'
+						   AND 	USE_YN    = 'Y' 
+						) WD  
+						LEFT OUTER JOIN (
+				  			SELECT CHAIN_NO 
+							       	, SUM(REMAIN_AMT)  AS MINUS_AMT
+							  FROM 	TB_SUB_MST
+							 WHERE 	SUB_STATUS IN ('000000', '100000')
+							   AND 	USE_YN = 'Y'
+							   AND 	CHAIN_NO = #{chainNo}
+							 GROUP BY CHAIN_NO
+				  		) SB ON SB.CHAIN_NO = WD.CHAIN_NO 
+				  		LEFT OUTER JOIN (
+				  			SELECT 	CHAIN_NO, SUM(REMAIN_AMT) AS EXCEED_AMT
+				  			  FROM 	TB_EXCEED_MST
+							 WHERE	EXC_STATUS = '100000'
+							 AND 	CHAIN_NO = #{chainNo}
+							   AND	USE_YN = 'Y'
+				   			 GROUP	BY CHAIN_NO
+				  		) EC ON EC.CHAIN_NO = WD.CHAIN_NO 
+				 ) VT 
+ 	</select>
+	
+	<!-- App 연동 - 월간 선정산 정보  -->
+	<select id="appApiGetMonthlySalesList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	REMIT_GB							as remit_gb
+				, REMIT_DT							as remit_dt	
+				, IFNULL(SUM(CONF_CNT), 0) 			AS conf_cnt			
+				, IFNULL(SUM(CONF_AMT), 0) 			AS conf_amt
+				, IFNULL(SUM(CARD_RESV_AMT), 0) 	AS card_resv_amt
+				, IFNULL(SUM(CARD_FEE_AMT), 0) 		AS card_fee_amt
+				, IFNULL(SUM(SVC_FEE_AMT), 0) 		AS svc_fee_amt
+				, IFNULL(SUM(CRD_FEE_AMT), 0) 		AS crd_fee_amt
+				, IFNULL(SUM(WD_BASE_AMT), 0) 		AS wd_base_amt
+				, IFNULL(SUM(EXCEED_AMT), 0) 		AS exceed_amt
+				, IFNULL(SUM(SUB_AMT), 0) 		AS sub_amt1
+				, IFNULL(SUM(CONF_AMT), 0) -  IFNULL(SUM(REMIT_AMT), 0) + IFNULL(SUM(EXCEED_AMT), 0) AS sub_amt
+				, IFNULL(SUM(REMIT_AMT), 0) 	AS remit_amt
+		  FROM  ( 
+				SELECT 	'REMI'										AS REMIT_GB
+						, REMIT_DT 									AS REMIT_DT
+						, IFNULL(SUM(ADJUST_CNT ), 0)				AS CONF_CNT 
+						, IFNULL(SUM(CONF_AMT ), 0)					AS CONF_AMT 
+						, IFNULL(SUM(T1.CARD_RESV_AMT), 0)         	AS CARD_RESV_AMT
+						, IFNULL(SUM(T1.CARD_FEE_AMT), 0)          	AS CARD_FEE_AMT 
+						, IFNULL(SUM(T1.SVC_FEE_AMT), 0)           	AS SVC_FEE_AMT 
+						, IFNULL(SUM(T1.CRD_FEE_AMT), 0)           	AS CRD_FEE_AMT 
+						, IFNULL(SUM(T1.WD_BASE_AMT), 0)           	AS WD_BASE_AMT 
+						, IFNULL(SUM(T1.EXC_REMIT_AMT), 0)         	AS EXCEED_AMT 
+						, IFNULL(SUM(T1.SUB_AMT), 0)             	AS SUB_AMT 
+						, IFNULL(SUM(T1.REMIT_AMT), 0)            	AS REMIT_AMT 
+				  FROM 	TB_REMIT_MST T1
+				 WHERE 	CHAIN_NO = #{chainNo}			    
+				   AND 	T1.REMIT_DT  &gt;=	CONCAT(#schMonth#, '-01')
+				   AND 	T1.REMIT_DT  &lt; 	CONCAT(#schMonth#, '-31') 
+				 GROUP 	BY REMIT_DT
+				 UNION 	ALL 
+				SELECT  'RESV'			AS REMIT_GB
+						, WD.REMIT_DT
+						, WD.ADJUST_CNT
+						, WD.CONF_AMT
+						, WD.CARD_RESV_AMT
+						, WD.CARD_FEE_AMT
+						, WD.SVC_FEE_AMT
+						, WD.CRD_FEE_AMT
+						, WD.WD_BASE_AMT
+						, IFNULL(EC.EXCEED_AMT, 0)		AS EXCEED_AMT 
+						, IFNULL(SB.SUB_AMT, 0)		AS SUB_AMT
+						, WD.REMIT_AMT + IFNULL(EC.EXCEED_AMT, 0) - IFNULL(SB.SUB_AMT, 0)		AS REMITT_TOT_AMT
+				  FROM 	(		
+						 SELECT	CHAIN_NO								AS CHAIN_NO
+						 		, WORK_DATE 							AS REMIT_DT
+						 		, COUNT(1)								AS ADJUST_CNT
+								, IFNULL(SUM(CONF_AMT), 0) 				AS CONF_AMT 
+								, IFNULL(SUM(CARD_RESV_AMT), 0)        	AS CARD_RESV_AMT
+								, IFNULL(SUM(CARD_FEE_AMT), 0)         	AS CARD_FEE_AMT 
+								, IFNULL(SUM(SVC_FEE_AMT), 0)          	AS SVC_FEE_AMT 
+								, IFNULL(SUM(CRD_FEE_AMT), 0)          	AS CRD_FEE_AMT 
+								, IFNULL(SUM(WD_BASE_AMT), 0)          	AS WD_BASE_AMT 
+								, IFNULL(SUM(REMIT_AMT), 0)           	AS REMIT_AMT 
+						  FROM  TB_WITHDRAW  		
+						 WHERE 	CONF_DTTM &gt;= CONCAT(#schMonth#, '-01 00:00:00')
+				           AND  CONF_DTTM &lt;  CONCAT(#schMonth#, '-31 23:59:59') 
+						   AND 	CHAIN_NO = #{chainNo}
+					       AND 	REMIT_NO IS NULL
+					       AND  WD_STATUS LIKE 'W%'
+						   AND 	USE_YN    = 'Y'
+						 GROUP 	BY CHAIN_NO, WORK_DATE
+						) WD  
+						LEFT OUTER JOIN (
+				  			SELECT CHAIN_NO 
+							       	, SUM(REMAIN_AMT)  AS SUB_AMT
+							  FROM 	TB_SUB_MST
+							 WHERE 	SUB_STATUS IN ('000000', '100000')
+							   AND 	CHAIN_NO = #{chainNo}
+							   AND 	USE_YN = 'Y'
+							 GROUP BY CHAIN_NO
+				  		) SB ON SB.CHAIN_NO = WD.CHAIN_NO 
+				  		LEFT OUTER JOIN (
+				  			SELECT 	CHAIN_NO, SUM(REMAIN_AMT) AS EXCEED_AMT
+				  			  FROM 	TB_EXCEED_MST
+							 WHERE	EXC_STATUS = '100000'
+							   AND 	CHAIN_NO = #{chainNo}
+							   AND	USE_YN = 'Y'
+				   			 GROUP	BY CHAIN_NO
+				  		) EC ON EC.CHAIN_NO = WD.CHAIN_NO 
+				) VT  
+		 GROUP	BY REMIT_GB, REMIT_DT
+		 ORDER	BY REMIT_DT DESC 		 
+	</select>
+</mapper>

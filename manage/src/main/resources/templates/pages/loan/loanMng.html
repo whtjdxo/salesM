@@ -128,7 +128,7 @@
             , { targets: 8, width: '50px', className: 'text-center' }
             // , { targets: 9, width: '50px', className: 'text-center' }
           ],
-          order: [[9, 'desc']],
+          order: [[7, 'asc'],[9, 'desc']],
           paging: true,
           lengthChange: false,
           searching: false,
@@ -194,6 +194,10 @@
         });
 
         $('#sch_all').change(function () {
+          $('#btn_search').click();
+        });
+
+        $('#sch_chain_all').change(function () {
           $('#btn_search').click();
         });
 
@@ -1329,18 +1333,24 @@
               <div class="col-lg-9">
                 <form id="frm_sch_summ_list" name="frm_sch_summ_list" onsubmit="return false;" novalidate="">
                   <div class="row mb-0">
-                    <div class="col-sm-3">
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="sch_all" name="sch_all" value="Y" />
-                        <label class="form-check-label" for="sch_all">완납포함</label>
-                      </div> 
-                    </div>
                     <div class="col-sm-4">
                       <div class="input-group input-group-sm mb-0">
                         <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_corp_cd">여신사</label>
                         <select class="form-select form-control-sm" id="sch_corp_cd" name="sch_corp_cd" style="width: 100px">
                           <option value="">선택</option> 
                         </select>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-group input-group-sm mb-0">
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="checkbox" id="sch_all" name="sch_all" value="Y" />
+                          <label class="form-check-label" for="sch_all">완납</label>
+                        </div> 
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="checkbox" id="sch_chain_all" name="sch_chain_all" value="Y" />
+                          <label class="form-check-label" for="sch_chain_all">해지</label>
+                        </div> 
                       </div>
                     </div>
                     <div class="col-sm-5">

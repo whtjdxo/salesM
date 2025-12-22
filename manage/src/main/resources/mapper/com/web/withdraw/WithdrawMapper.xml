@@ -473,7 +473,8 @@
         /*WithdrawMapper.getRemitSummary*/
         SELECT  SQL_CALC_FOUND_ROWS
                 RM.CHAIN_NO                                             AS chain_no       
-                , TC.CHAIN_NM 		                                AS chain_nm
+                , TC.CHAIN_NM 		                                    AS chain_nm
+                , TC.SVC_STAT                                           AS svc_stat
                 , TC.BIZ_NO                                             AS biz_no
                 , RM.CORP_CD                                            AS corp_cd
                 , CO.CORP_NM                                            AS corp_nm
@@ -500,11 +501,7 @@
                 , DATE_FORMAT(IFNULL(RM.UPT_DTTM, RM.ENT_DTTM), '%Y-%m-%d %H:%i:%s')	AS upt_dttm
                 , IFNULL(RM.UPT_USER_ID, RM.ENT_USER_ID)		AS upt_user_id
         FROM    TB_REMIT_MST RM
-                STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = RM.CHAIN_NO                        
-                                AND TC.SVC_STAT = 'O'
-                                AND TC.USE_YN   = 'Y'
-                                AND TC.REMIT_STAT = 'Y'
-                                AND TC.CONT_TP = 'REMIT'                            
+                STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = RM.CHAIN_NO     
                             <if test="sch_agency_cd != ''"> 
                                     AND  TC.AGENCY_CD = #{sch_agency_cd} 
                             </if>
@@ -562,11 +559,16 @@
                 , DATE_FORMAT(IFNULL(RM.UPT_DTTM, RM.ENT_DTTM), '%Y-%m-%d %H:%i:%s')	AS upt_dttm
                 , IFNULL(RM.UPT_USER_ID, RM.ENT_USER_ID)		AS upt_user_id
         FROM  TB_REMIT_MST RM
-                STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = RM.CHAIN_NO                        
-                                AND TC.SVC_STAT = 'O'
-                                AND TC.USE_YN   = 'Y'
-                                AND TC.REMIT_STAT = 'Y'
-                                AND TC.CONT_TP = 'REMIT' 
+                STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = RM.CHAIN_NO         
+                            <if test="sch_agency_cd != ''"> 
+                                    AND  TC.AGENCY_CD = #{sch_agency_cd} 
+                            </if>
+                            <if test="sch_corp_no != null and sch_corp_no != ''"> 
+                                    AND  TC.CORP_CD = #{sch_corp_no} 
+                            </if> 
+                            <if test="sch_chain_nm != null and sch_chain_nm != ''"> 
+                                    AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                            </if> 
                 STRAIGHT_JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
                                 AND CO.USE_YN = 'Y'
         WHERE	FIND_IN_SET(RM.REMIT_NO, #{sch_remit_no}) 
@@ -587,10 +589,7 @@
                     , IFNULL(SUM(RM.SUB_AMT), 0)                                            AS sub_amt
                     , IFNULL(SUM(RM.REMIT_AMT), 0)                                          AS remit_amt                        
             FROM    TB_REMIT_MST RM
-                    STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = RM.CHAIN_NO                        
-                            AND TC.SVC_STAT = 'O'
-                            AND TC.USE_YN   = 'Y'
-                            AND TC.REMIT_STAT = 'Y'
+                    STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = RM.CHAIN_NO  
                     <if test="sch_agency_cd != ''"> 
                             AND  TC.AGENCY_CD = #{sch_agency_cd} 
                     </if>
