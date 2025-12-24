@@ -30,6 +30,9 @@
                         AND TC.USE_YN = 'Y'
          WHERE  1 = 1
            AND  TU.USE_YN = 'Y'
+        <if test="userAuthGrpCd != null and userAuthGrpCd != 'AG0001'">
+           AND TU.AUTH_GRP_CD != 'AG0001'       /* 시스템 관리자 제외 */ 
+        </if> 
         <if test="schgb_user_val != ''">
 			<choose>
 				<when test="schgb_user == 'schgb_user_id'">

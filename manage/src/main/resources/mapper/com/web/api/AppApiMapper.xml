@@ -21,8 +21,8 @@
 	
 	<!-- App 연동 - 일간, 월간 Summary  -->
 	<select id="appApiGetDailySummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-		SELECT GB 							AS remit_gb
-				, REMIT_DT					AS remit_dt
+		SELECT GB 							AS remitt_gb
+				, REMIT_DT					AS remitt_dt
 				, IFNULL(APRV_CNT, 0) 		AS aprv_cnt
 				, IFNULL(APRV_AMT, 0) 		AS aprv_amt
 				, IFNULL(CARD_RESV_AMT, 0) 	AS card_resv_amt
@@ -146,7 +146,7 @@
 	<!-- App 연동 - 일간, 월간 정산 차감 정보  -->
 	<select id="appApiGetDailySettleInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
 		SELECT 	IFNULL(SUM(CARD_FEE_AMT), 0)		AS card_fee_amt 
-				, IFNULL(SUM(UNDEPO_SUB_AMT), 0)	AS undeepo_sub_amt
+				, IFNULL(SUM(UNDEPO_SUB_AMT), 0)	AS undepo_sub_amt
 				, IFNULL(SUM(LOAN_SUB_AMT), 0)		AS loan_sub_amt
 				, IFNULL(SUM(ETC_SUB_AMT), 0)		AS etc_sub_amt
 				, IFNULL(SUM(SVC_FEE_AMT), 0)		AS svc_fee_amt
@@ -287,7 +287,7 @@
 		  					, SM.OCCUR_AMT
 		  					, SR.RECV_AMT RECV_AMT
 					  FROM 	TB_SUB_RECEIVE SR
-					  		JOIN TB_SUB_MST SM ON SM.SUB_SEQ = SR.SUB_SEQ 
+					  		JOIN TB_SUB_MST SM ON SM.SUB_NO = SR.SUB_NO 
 					 WHERE 	SR.CHAIN_NO = #{chainNo}
 					   AND 	SR.RECV_DATE &gt;= #{schSdt}
 					   AND  SR.RECV_DATE &lt; DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
@@ -299,8 +299,8 @@
 	
 	<!-- App 연동 - 월간 선정산 정보  -->
 	<select id="appApiGetMonthlySummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-		SELECT 	IFNULL(SUM(CONF_CNT), 0) 			AS conf_cnt
-				, IFNULL(SUM(CONF_AMT), 0) 			AS conf_amt
+		SELECT 	IFNULL(SUM(CONF_CNT), 0) 			AS aprv_cnt
+				, IFNULL(SUM(CONF_AMT), 0) 			AS aprv_amt
 				, IFNULL(SUM(CARD_RESV_AMT), 0) 	AS card_resv_amt
 				, IFNULL(SUM(CARD_FEE_AMT), 0) 		AS card_fee_amt
 				, IFNULL(SUM(SVC_FEE_AMT), 0) 		AS svc_fee_amt
@@ -309,7 +309,7 @@
 				, IFNULL(SUM(EXCEED_AMT), 0) 		AS exceed_amt
 				, IFNULL(SUM(MINUS_AMT), 0) 		AS sub_amt1
 				, IFNULL(SUM(APRV_AMT), 0) -  IFNULL(SUM(REMIT_TOT_AMT), 0) + IFNULL(SUM(EXCEED_AMT), 0) AS sub_amt
-				, IFNULL(SUM(REMIT_TOT_AMT), 0) 	AS remit_tot_amt
+				, IFNULL(SUM(REMIT_TOT_AMT), 0) 	AS remitt_tot_amt
 		  FROM  ( 
 				SELECT 	IFNULL(SUM(ADJUST_CNT ), 0)					AS CONF_CNT 
 						, IFNULL(SUM(CONF_AMT ), 0)					AS CONF_AMT 
@@ -377,10 +377,10 @@
 	
 	<!-- App 연동 - 월간 선정산 정보  -->
 	<select id="appApiGetMonthlySalesList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-		SELECT 	REMIT_GB							as remit_gb
-				, REMIT_DT							as remit_dt	
-				, IFNULL(SUM(CONF_CNT), 0) 			AS conf_cnt			
-				, IFNULL(SUM(CONF_AMT), 0) 			AS conf_amt
+		SELECT 	REMIT_GB							as remitt_gb
+				, REMIT_DT							as remitt_dt	
+				, IFNULL(SUM(CONF_CNT), 0) 			AS aprv_cnt			
+				, IFNULL(SUM(CONF_AMT), 0) 			AS aprv_amt
 				, IFNULL(SUM(CARD_RESV_AMT), 0) 	AS card_resv_amt
 				, IFNULL(SUM(CARD_FEE_AMT), 0) 		AS card_fee_amt
 				, IFNULL(SUM(SVC_FEE_AMT), 0) 		AS svc_fee_amt
@@ -389,7 +389,7 @@
 				, IFNULL(SUM(EXCEED_AMT), 0) 		AS exceed_amt
 				, IFNULL(SUM(SUB_AMT), 0) 		AS sub_amt1
 				, IFNULL(SUM(CONF_AMT), 0) -  IFNULL(SUM(REMIT_AMT), 0) + IFNULL(SUM(EXCEED_AMT), 0) AS sub_amt
-				, IFNULL(SUM(REMIT_AMT), 0) 	AS remit_amt
+				, IFNULL(SUM(REMIT_AMT), 0) 	AS remitt_amt
 		  FROM  ( 
 				SELECT 	'REMI'										AS REMIT_GB
 						, REMIT_DT 									AS REMIT_DT

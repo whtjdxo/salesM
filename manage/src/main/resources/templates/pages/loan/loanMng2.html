@@ -545,6 +545,7 @@
                 tbl_loan_summary.rows().every(function () {
                   if (this.data().chain_no === selectedRowData.chain_no) { // 저장된 데이터와 매칭
                     $(this.node()).addClass('selected'); // 다시 선택
+                    return false; // 루프 종료
                   }
                 });
               }

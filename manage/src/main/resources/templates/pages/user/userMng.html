@@ -17,17 +17,19 @@
              
       $(document).ready(function () {
         var isListClick = false; // 리스트 클릭 여부
+        var editMode = 'create';
         $('#frm_user_info').onLoadFunction();        
 
-        callAjax('/common/totalCodelist', "code_grp_cd=('AUTH_GRP_CD') AND chk_cd1 = '" + $('#corp_type').val() + "'", fn_auth_code_setting);
+        // callAjax('/common/totalCodelist', "code_grp_cd=('AUTH_GRP_CD') AND chk_cd1 = '" + $('#corp_type').val() + "' AND CODE != 'AG0001'", fn_auth_code_setting);
+        callAjax('/common/getUserAuthGroupList', "", fn_auth_code_setting);
         function fn_auth_code_setting(data) {
           codeSetting('AUTH_GRP_CD', data.data, '#auth_grp_cd', '1', '', '');
-        }
+        } 
 
         callAjax('/common/totalCodelist', "code_grp_cd=('CORP_TYPE')  AND chk_cd1 = 'OP'", fn_corptype_setting);
         function fn_corptype_setting(data) {
           codeSetting('CORP_TYPE', data.data, '#corp_type', '1', '', '');
-          codeSetting('CORP_TYPE', data.data, '#sch_corp_type', '여신사', '', '');
+          codeSetting('CORP_TYPE', data.data, '#sch_corp_type', '회사유형', '', '');
         } 
 
         var tbl_user = $('#tbl_user').DataTable({
@@ -70,12 +72,12 @@
             ],
           order: [1, 'desc'],
           paging: true,
-          lengthChange: true,
+          lengthChange: false,
           searching: false,
           ordering: true,
           autoWidth: false,
           responsive: true,
-          scrollCollapse: true,
+          scrollCollapse: false,
           pageLength: 20,
           scrollY: '550px',
           info: false,
@@ -104,7 +106,8 @@
             $('#corp_cd').val(data.corp_cd).prop('selected', true);
           });
           
-          callAjax('/common/totalCodelist', "code_grp_cd=('AUTH_GRP_CD') AND chk_cd1 = '" + data.corp_type + "'", fn_auth_code_setting)
+          // callAjax('/common/totalCodelist', "code_grp_cd=('AUTH_GRP_CD') AND chk_cd1 = '" + data.corp_type + "'  AND CODE != 'AG0001'", fn_auth_code_setting)
+          callAjax('/common/getUserAuthGroupList', "corp_type=" + data.corp_type, fn_auth_code_setting)
           .then(() => {
             $('#auth_grp_cd').val(data.auth_grp_cd).prop('selected', true);
           });
@@ -125,7 +128,7 @@
           $('#btn_update').show();
           $('#btn_create').hide();
           $('#user_pwd').removeAttr("required");          
-          $('#crud').val('update'); 
+          editMode = 'update';
 
           isListClick = false; // 리스트 클릭 상태 해제
         }); 
@@ -139,7 +142,8 @@
           var corp_type = $('#corp_type').val();  
           if (corp_type != '') {
             callAjaxCombo('/base/user/userMng/getCorpList', "corp_type="+corp_type, '#corp_cd', '1', '');
-            callAjax('/common/totalCodelist', "code_grp_cd=('AUTH_GRP_CD') AND chk_cd1 = '" + corp_type + "'", fn_auth_code_setting);
+            // callAjax('/common/totalCodelist', "code_grp_cd=('AUTH_GRP_CD') AND chk_cd1 = '" + corp_type + "'  AND CODE != 'AG0001'", fn_auth_code_setting);
+            callAjax('/common/getUserAuthGroupList', "corp_type=" + corp_type, fn_auth_code_setting);
           }
         });
 
@@ -150,12 +154,12 @@
           $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
           $('#btn_update').hide();
           $('#btn_create').show(); 
-          $('#crud').val('create'); 
+          editMode = 'create'; 
         }); 
 
 
         $('#btn_create').click(function () {
-          $('#crud').val('create');
+          editMode = 'create';
           var form = $('#frm_user_info');
           var checked = true;
           if (!form[0].checkValidity()) {
@@ -169,7 +173,7 @@
         });
 
         $('#btn_update').click(function () {
-          $('#crud').val('update');
+          editMode = 'update';
           var form = $('#frm_user_info');
           var checked = true;
           if (!form[0].checkValidity()) {
@@ -190,17 +194,30 @@
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
             $('#frm_user_info')[0].reset();    
             
-            // 현재 선택된 행의 데이터 저장
-            var selectedRowData = tbl_user.row('.selected').data();            
+            if (editMode === 'update') {
+              // 수정 모드일 때는 선택된 행을 유지
+              var selectedRowData = tbl_user.row('.selected').data();
+            } else {
+              // 생성 모드일 때는 선택된 행이 없음
+              var selectedRowData = null;
+            } 
+
+            if (editMode === 'update') {
+              // 수정 모드일 때는 선택된 행을 유지
+              var selectedRowData = tbl_user.row('.selected').data();
+            } else {
+              // 생성 모드일 때는 선택된 행이 없음
+              var selectedRowData = null;
+            } 
             tbl_user.ajax.reload(function() {
               // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
               if (selectedRowData) {
-              tbl_user.rows().every(function() {
-                if (this.data().user_id === selectedRowData.user_id) {
-                $(this.node()).addClass('selected');
-                return false; // 찾으면 루프 중단
-                }
-              });
+                tbl_user.rows().every(function() {
+                  if (this.data().user_id === selectedRowData.user_id) { 
+                    $(this.node()).click();
+                    return false; // 찾으면 루프 중단
+                  }
+                });
               }
             }, false);
             $("input:radio[name='use_yn'][value='Y']").prop('checked', true);

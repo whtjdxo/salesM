@@ -211,12 +211,13 @@
           tbl_wd_summ.ajax.reload(function() {
             // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
             if (selectedRowData) {
-            tbl_wd_summ.rows().every(function() {
-              if (this.data().chain_no === selectedRowData.chain_no) {
-              $(this.node()).addClass('selected');
-              return false; // 찾으면 루프 중단
-              }
-            });
+              tbl_wd_summ.rows().every(function() {
+                if (this.data().chain_no === selectedRowData.chain_no) {
+                  $(this.node()).addClass('selected');
+                  // $(this.node()).click();
+                  return false; // 찾으면 루프 중단
+                }
+              });
             }
           }, false); 
         }
@@ -532,12 +533,13 @@
           tbl_wd_summ.ajax.reload(function() {
             // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
             if (selectedRowData) {
-            tbl_wd_summ.rows().every(function() {
-              if (this.data().chain_no === selectedRowData.chain_no) {
-              $(this.node()).addClass('selected');
-              return false; // 찾으면 루프 중단
-              }
-            });
+              tbl_wd_summ.rows().every(function() {
+                if (this.data().chain_no === selectedRowData.chain_no) {
+                  $(this.node()).addClass('selected');
+                  // $(this.node()).click();
+                  return false; // 찾으면 루프 중단
+                }
+              });
             }
           }, false);
         }

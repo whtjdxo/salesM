@@ -184,7 +184,7 @@
                 STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
                                 AND TC.USE_YN  = 'Y'
         WHERE	SM.USE_YN = 'Y'          
-        AND     SM.CHAIN_NO =  #{chain_no}
+        AND     SM.CHAIN_NO =  #{sch_chain_no}
         <if test='sch_reg_sdt != null and sch_reg_sdt != ""'>
             AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
         </if>
@@ -253,7 +253,7 @@
                 STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
                                 AND TC.USE_YN  = 'Y'
         WHERE	SM.USE_YN = 'Y'          
-          AND   SM.CHAIN_NO =  #{chain_no}
+          AND   SM.CHAIN_NO =  #{sch_chain_no}
           AND   SM.RESV_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d')   
           AND   SM.SUB_STATUS IN ('000000', '100000')
           AND   SM.REMAIN_AMT &gt;= 0 

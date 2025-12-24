@@ -2,11 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="com.web.manage.common.mapper.CommonMapper">
-  <select id="getQueryTotalCnt" resultType="int">
+    <select id="getQueryTotalCnt" resultType="int">
 		SELECT FOUND_ROWS()
 	</select>
 
-  <select id="getTotalCodelist" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+    <select id="getTotalCodelist" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /*CommonMapper.getTotalCodelist*/
         SELECT code         AS code
              , code_nm      AS codeNm
              , code_grp_cd  AS group_code
@@ -18,7 +19,26 @@
            AND CODE !='CODE'
       ORDER BY CODE_GRP_CD, ORD_NO
 	</select>
-  <select id="getCreditCorpList" resultType="hashMap">
+
+    <select id="getUserAuthGroupList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /*CommonMapper.getUserAuthGroupList*/
+        SELECT  code         AS code
+                , code_nm      AS codeNm
+                , code_grp_cd  AS group_code
+                , chk_cd1      AS chk_cd1
+                , chk_cd2      AS chk_cd2
+          FROM TB_CODE
+         WHERE CODE_GRP_CD = 'AUTH_GRP_CD'
+           AND CHK_CD1 = #{corp_type}
+        <if test="userAuthGrpCd != null and userAuthGrpCd != 'AG0001'">
+           AND CODE != 'AG0001'
+        </if>           
+           AND USE_YN = 'Y'
+           AND CODE !='CODE'
+        ORDER BY CODE_GRP_CD, ORD_NO
+	</select>
+    <select id="getCreditCorpList" resultType="hashMap">
+        /*CommonMapper.getCreditCorpList*/
         SELECT  CORP_CD       as code
                 , CORP_NM     as codeNm
                 , 'CORP_CD'   AS group_code
@@ -38,9 +58,10 @@
           </otherwise>
         </choose>        
          ORDER  BY 2
-  </select>
+    </select>
 
-  <select id="getOpCorpList" resultType="hashMap">
+    <select id="getOpCorpList" resultType="hashMap">
+        /*CommonMapper.getOpCorpList*/
         SELECT  CORP_CD       as code
                 , CORP_NM     as codeNm
                 , 'CORP_CD'   AS group_code
@@ -49,9 +70,10 @@
            AND  CORP_TYPE = 'OP'
            AND  USE_YN  = 'Y'           
          ORDER  BY 2
-  </select>
+    </select>
 
-  <select id="getChainVanList" resultType="hashMap">
+    <select id="getChainVanList" resultType="hashMap">
+        /*CommonMapper.getChainVanList*/
         SELECT  CV.VAN_CD 		AS code
                 , CD.CODE_NM 	AS codeNm
                 , 'VAN_CD'		AS group_code
@@ -65,9 +87,10 @@
         </if>         
           
         ORDER 	BY CD.ORD_NO
-  </select>
+    </select>
 
-  <select id="getChainCardList" resultType="hashMap">
+    <select id="getChainCardList" resultType="hashMap">
+        /*CommonMapper.getChainCardList*/
         SELECT  CV.CARD_ACQ 		AS code
                 , CD.CODE_NM 		AS codeNm
                 , 'CARD_ACQ'		AS group_code
@@ -82,9 +105,10 @@
                     AND CD.CODE_GRP_CD = 'CARD_ACQ'
                     AND CD.USE_YN = 'Y'
          ORDER 	BY CD.ORD_NO
-  </select>
+    </select>
 
-  <select id="getChainList" resultType="hashMap">
+    <select id="getChainList" resultType="hashMap">
+        /*CommonMapper.getChainList*/
         SELECT 	CHAIN_NO		  AS code 
                 , CHAIN_NM		AS codeNm
                 , 'CHAIN_NO'  AS group_code
@@ -92,9 +116,10 @@
          WHERE 	USE_YN = 'Y'
            AND  SVC_STAT IN ('O', 'R')
          ORDER	BY CHAIN_NM
-  </select>
+    </select>
 
-  <select id="getChainSchList" parameterType="string" resultType="map">    
+    <select id="getChainSchList" parameterType="string" resultType="map">   
+        /*CommonMapper.getChainSchList*/ 
         SELECT 	CHAIN_NO		  AS code 
                 , CHAIN_NM		AS codeNm 
           FROM 	TB_CHAIN
@@ -102,29 +127,30 @@
            AND  SVC_STAT IN ('O', 'R')
            AND  CHAIN_NM LIKE CONCAT('%', #{keyword}, '%')
          ORDER	BY CHAIN_NM
-  </select>
+    </select>
 
-  <select id="getLinkChainList" resultType="hashMap">
-      SELECT 	SQL_CALC_FOUND_ROWS
-              TC.CHAIN_NO		            AS chain_no
-              , TC.CHAIN_NM             AS chain_nm
-              , TU.USER_NM              AS ceo_nm  
-              , TC.BIZ_NO               AS biz_no
-              , TC.CHAIN_ADDR           AS chain_addr
-              , TC.CHAIN_TEL_NO         AS chain_tel_no              
-              , TU.TEL_NO               AS ceo_tel_no
+    <select id="getLinkChainList" resultType="hashMap">
+        /*CommonMapper.getLinkChainList*/
+        SELECT 	SQL_CALC_FOUND_ROWS
+                TC.CHAIN_NO		            AS chain_no
+                , TC.CHAIN_NM             AS chain_nm
+                , TU.USER_NM              AS ceo_nm  
+                , TC.BIZ_NO               AS biz_no
+                , TC.CHAIN_ADDR           AS chain_addr
+                , TC.CHAIN_TEL_NO         AS chain_tel_no              
+                , TU.TEL_NO               AS ceo_tel_no
         FROM	TB_CHAIN TC
-              JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID 
-       WHERE  TC.USE_YN = 'Y'
-         AND 	TC.SVC_STAT IN ('O', 'R')  
-         AND  TC.CHAIN_NO != #{sch_help_chain_no}
-         AND 	NOT EXISTS (SELECT  1 
+                JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID 
+        WHERE  TC.USE_YN = 'Y'
+            AND 	TC.SVC_STAT IN ('O', 'R')  
+            AND  TC.CHAIN_NO != #{sch_help_chain_no}
+            AND 	NOT EXISTS (SELECT  1 
                             FROM  TB_CHAIN_LINK L
-                           WHERE  L.CHAIN_NO  = #{sch_help_chain_no}
-                             AND  L.LINK_CHAIN_NO = TC.CHAIN_NO
-                          ) 
+                            WHERE  L.CHAIN_NO  = #{sch_help_chain_no}
+                                AND  L.LINK_CHAIN_NO = TC.CHAIN_NO
+                            ) 
         <if test="sch_help_chain_nm != null and sch_help_chain_nm != ''">
-          AND TC.CHAIN_NM LIKE CONCAT('%', #{sch_help_chain_nm}, '%')
+            AND TC.CHAIN_NM LIKE CONCAT('%', #{sch_help_chain_nm}, '%')
         </if>
         <choose>
             <when test="sidx != '' and sidx != null ">
@@ -135,9 +161,10 @@
             </otherwise>
         </choose>
         LIMIT ${start}, ${end}
-  </select>
+    </select>
 
-  <select id="getShiftChainList" resultType="hashMap">
+    <select id="getShiftChainList" resultType="hashMap">
+        /*CommonMapper.getShiftChainList*/
         SELECT  CL.LINK_CHAIN_NO      AS code
                 , CONCAT(TC.CHAIN_NM, ' (', TC.BIZ_NO, ') ', TU.USER_NM)            as codeNm
                 , 'LINK_CHAIN'        AS group_code
@@ -149,9 +176,10 @@
          WHERE  CL.USE_YN  = 'Y'
            AND  CL.CHAIN_NO = #{chain_no}
          ORDER  BY 1
-  </select>
+    </select>
 
-  <select id="getAgencyList" resultType="hashMap">
+    <select id="getAgencyList" resultType="hashMap">
+        /*CommonMapper.getAgencyList*/
         SELECT  AGENCY_CD       as code
                 , AGENCY_NM     as codeNm
                 , 'AGENCY_CD'   AS group_code
@@ -170,39 +198,44 @@
         </choose>                 
            AND  USE_YN  = 'Y'
          ORDER  BY 2
-  </select>
+    </select>
 
-  <select id="getUserIdDupChk" parameterType="java.util.HashMap" resultType="int">
-    SELECT  COUNT(1)
-            FROM  tb_user
-          WHERE  user_id = #{user_id}
+    <select id="getUserIdDupChk" parameterType="java.util.HashMap" resultType="int">
+        /*CommonMapper.getUserIdDupChk*/    
+        SELECT  COUNT(1)
+          FROM  tb_user
+         WHERE  user_id = #{user_id}
 	</select>    
 
-  <select id="getPreWorkDay" parameterType="java.util.HashMap" resultType="String">
-    SELECT GET_PRE_WORKDAY(DATE_FORMAT(NOW(), '%Y-%m-%d')) AS pre_workday
+    <select id="getPreWorkDay" parameterType="java.util.HashMap" resultType="String">
+        /*CommonMapper.getPreWorkDay*/
+        SELECT GET_PRE_WORKDAY(DATE_FORMAT(NOW(), '%Y-%m-%d')) AS pre_workday
 	</select>
 
-  <select id="getNextWorkDay" parameterType="java.util.HashMap" resultType="String">
-    SELECT GET_NEXT_WORKDAY(DATE_FORMAT(NOW(), '%Y-%m-%d')) AS next_workday
+    <select id="getNextWorkDay" parameterType="java.util.HashMap" resultType="String">
+        /*CommonMapper.getNextWorkDay*/
+        SELECT GET_NEXT_WORKDAY(DATE_FORMAT(NOW(), '%Y-%m-%d')) AS next_workday
 	</select>
 
-  <select id="getNearWorkDay" parameterType="java.util.HashMap" resultType="String">
-    SELECT GET_NEAR_WORKDAY(DATE_FORMAT(NOW(), '%Y-%m-%d')) AS near_workday
+    <select id="getNearWorkDay" parameterType="java.util.HashMap" resultType="String">
+        /*CommonMapper.getNearWorkDay*/
+        SELECT GET_NEAR_WORKDAY(DATE_FORMAT(NOW(), '%Y-%m-%d')) AS near_workday
 	</select>
 
-  <select id="getToDay" parameterType="java.util.HashMap" resultType="String">
-    SELECT DATE_FORMAT(NOW(), '%Y-%m-%d') AS to_day
+    <select id="getToDay" parameterType="java.util.HashMap" resultType="String">
+        /*CommonMapper.getToDay*/
+        SELECT DATE_FORMAT(NOW(), '%Y-%m-%d') AS to_day
 	</select>
  
 
-  <update id="callProcGetJobSeq" parameterType="com.web.manage.common.domain.JobSeqVO" statementType="CALLABLE">
-    /* CommonMapper.callProcGetJobSeq */
-    { 
-        CALL PRC_GET_JOB_SEQ(
-              #{main_code   , mode=IN, jdbcType=VARCHAR} 
-            , #{sub_code    , mode=IN, jdbcType=VARCHAR}
-            , #{job_seq     , mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
-        ) 
-    }  
-  </update>   
+    <update id="callProcGetJobSeq" parameterType="com.web.manage.common.domain.JobSeqVO" statementType="CALLABLE">
+        /* CommonMapper.callProcGetJobSeq */
+        { 
+            CALL PRC_GET_JOB_SEQ(
+                #{main_code   , mode=IN, jdbcType=VARCHAR} 
+                , #{sub_code    , mode=IN, jdbcType=VARCHAR}
+                , #{job_seq     , mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+            ) 
+        }  
+    </update>   
 </mapper> 

@@ -129,10 +129,12 @@ public class AppApiController {
             String chainNo = request.getParameter("chainNo");
             String schSdt = request.getParameter("schSdt");
             String schEdt = request.getParameter("schEdt");
+            String remittGb = request.getParameter("remittGb");
             try {
                 params.put("chainNo", chainNo);
                 params.put("schSdt", schSdt);
                 params.put("schEdt", schEdt);
+                params.put("remittGb", remittGb);
                 List<HashMap<String, Object>> data = appApiService.getDailySalesInfo(params);
 
                 result.put("repCd", "0000");

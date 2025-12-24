@@ -46,6 +46,9 @@ public class UserMngController {
 		Gson gson = new Gson(); 
 		SessionVO member = (SessionVO) session.getAttribute("S_USER");
 		hashmapParam.put("user_id", member.getUserId());
+        hashmapParam.put("userCorpType", member.getUserCorpType());
+        hashmapParam.put("userCorpCd", member.getUserCorpCd());
+        hashmapParam.put("userAuthGrpCd", member.getAuthGrpCd());
 		String jString = null;
         System.out.println("..............");
         try {

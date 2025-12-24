@@ -15,7 +15,8 @@
 
     <script th:inline="none">      
        
-      $(document).ready(function () {             
+      $(document).ready(function () {        
+        var editMode = 'create'; // 기본 모드는 생성 모드로 설정     
         
         $('#frm_sch_chain').onLoadFunction();        
         $('#frm_exc_mst').onLoadFunction();  
@@ -419,7 +420,7 @@
             $('#upt_user_id').val(data.upt_user_id);
             $('#upt_dttm').val(data.upt_dttm);   
 
-            $('#crud').val('update');
+            editMode = 'create';
             $('#btn_update').show();
             $('#btn_create').hide();
             isListClick = false;
@@ -436,14 +437,14 @@
           $("input:radio[name='use_yn'][value='Y']").prop('checked', true); 
 
           $('#chain_no').val(chain_no); 
-          $('#crud').val('create');
+          editMode = 'create';
           $('#btn_update').hide();
           $('#btn_create').show();      
           
         }
         
         $('#btn_create').click(function () {    
-          $('#crud').val('create');      
+          editMode = 'create';      
           var checked = true;
           if($('#chain_no').val() == '') {
             swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
@@ -463,7 +464,7 @@
         });
 
         $('#btn_update').click(function () {
-          $('#crud').val('update');
+          editMode = 'create';
           var form = $('#frm_exc_mst');
           var checked = true;
           var exc_no = $('#exc_no').val();
@@ -514,16 +515,22 @@
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');       
 
             // 현재 선택된 행의 데이터 저장
-            var selectedRowData = tbl_exc_summary.row('.selected').data();            
+            if (editMode === 'update') {
+              // 수정 모드일 때는 선택된 행을 유지
+              var selectedRowData = tbl_exc_summary.row('.selected').data();
+            } else {
+              // 생성 모드일 때는 선택된 행이 없음
+              var selectedRowData = null;
+            } 
             tbl_exc_summary.ajax.reload(function() {
               // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
               if (selectedRowData) {
-              tbl_exc_summary.rows().every(function() {
-                if (this.data().chain_no === selectedRowData.chain_no) {
-                $(this.node()).addClass('selected');
-                return false; // 찾으면 루프 중단
-                }
-              });
+                tbl_exc_summary.rows().every(function() {
+                  if (this.data().chain_no === selectedRowData.chain_no) { 
+                    $(this.node()).click();
+                    return false; // 찾으면 루프 중단
+                  }
+                });
               }
             }, false);
             tbl_exc_list.ajax.reload(null, false);

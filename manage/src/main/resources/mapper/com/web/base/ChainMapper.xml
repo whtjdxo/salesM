@@ -117,6 +117,7 @@
           LEFT OUTER JOIN  TB_USER  TU     ON TU.USER_ID = TC.CEO_ID
 
         WHERE   1 = 1
+          AND   TC.USE_YN = 'Y'
         <if test="sch_corp_cd != null and sch_corp_cd != ''">			
 			AND TC.CORP_NO = #{sch_corp_cd}
 		</if>

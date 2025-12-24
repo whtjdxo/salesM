@@ -15,6 +15,7 @@
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script th:inline="none">      
       $(document).ready(function () {
+        var editMode = 'create'; // 기본 모드는 생성 모드로 설정
         $('#frm_corp_info').onLoadFunction();
         // console.log('문서 로드 완료 - 스크립트 실행 시작');
         callAjax('/common/totalCodelist', "code_grp_cd=('CORP_TYPE') AND CHK_CD1 = 'OP'", fn_corp_setting);      
@@ -130,7 +131,7 @@
 
             $('#btn_update').show();
             $('#btn_save').hide();
-            $('#crud').val('update'); 
+            editMode = 'update'; 
           }  
         });      
 
@@ -142,7 +143,7 @@
         }); 
         
         $('#btn_save').click(function () {
-          $('#crud').val('create');
+          editMode = 'create';
           var form = $('#frm_corp_info');
           var checked = true;
           if (!form[0].checkValidity()) {
@@ -156,7 +157,7 @@
         });
 
         $('#btn_update').click(function () {
-          $('#crud').val('update');
+          editMode = 'update';
           var form = $('#frm_corp_info');
           var checked = true;
           if (!form[0].checkValidity()) {
@@ -172,21 +173,29 @@
         function fn_return_result(data) {
           var resultCode = data.resultCode;
           var resultMsg = data.resultMsg;
+
+          console.log('resultCode:', resultCode);
           if (resultCode == 'S000') {
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
             $('#frm_corp_info')[0].reset();    
             // tbl_corp.ajax.reload();    
             // 현재 선택된 행의 데이터 저장
-            var selectedRowData = tbl_corp.row('.selected').data();            
+            if (editMode === 'update') {
+              // 수정 모드일 때는 선택된 행을 유지
+              var selectedRowData = tbl_corp.row('.selected').data();
+            } else {
+              // 생성 모드일 때는 선택된 행이 없음
+              var selectedRowData = null;
+            } 
             tbl_corp.ajax.reload(function() {
               // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
               if (selectedRowData) {
-              tbl_corp.rows().every(function() {
-                if (this.data().corp_cd === selectedRowData.corp_cd) {
-                $(this.node()).addClass('selected');
-                return false; // 찾으면 루프 중단
-                }
-              });
+                tbl_corp.rows().every(function() {
+                  if (this.data().corp_cd === selectedRowData.corp_cd) {
+                    $(this.node()).click();
+                    return false; // 찾으면 루프 중단
+                  }
+                });
               }
             }, false);    
             $("input:radio[name='use_yn'][value='Y']").prop('checked', true);

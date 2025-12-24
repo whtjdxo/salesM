@@ -24,6 +24,9 @@ public class CommonService {
     public List<HashMap<String, Object>> getTotalCodelist(HashMap<String, String> hashmapParam) {
         return commonMapper.getTotalCodelist(hashmapParam);
     }
+    public List<HashMap<String, Object>> getUserAuthGroupList(HashMap<String, String> hashmapParam) {
+        return commonMapper.getUserAuthGroupList(hashmapParam);
+    }
 
     public List<HashMap<String, Object>> getCreditCorpList(HashMap<String, String> hashmapParam) {
         return commonMapper.getCreditCorpList(hashmapParam);

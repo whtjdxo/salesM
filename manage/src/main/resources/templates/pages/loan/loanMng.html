@@ -18,6 +18,7 @@
     <script th:inline="none">
 
       $(document).ready(function () {
+        var editMode = 'create'; // create, update
         $('#frm_chain_list').onLoadFunction();
         $('#frm_loan_mst').onLoadFunction(); 
         $('#frm_prepay').onLoadFunction(); 
@@ -224,6 +225,7 @@
             tbl_chain_loan_list.ajax.reload();
             tbl_counsel_list.ajax.reload(); // 상담 목록도 초기화
           }
+          editMode = 'update';
           fn_frm_loan_mst_clear();
           fn_frm_counsel_reset();
         });
@@ -391,7 +393,7 @@
             //   $('#princ_amt').prop('readonly', false);
             // }
 
-            $('#crud').val('update');
+            editMode = 'update';
             if (data.delete_chk == 'Y') {
               $('#btn_delete').show();
             } else {
@@ -437,7 +439,7 @@
           $('#loan_type').prop('readonly', false).removeClass('bg-light');
           $('#delay_rate').prop('readonly', false).removeClass('bg-light');
 
-          $('#crud').val('create');
+          // editMode = 'create';
           $('#btn_delete').hide();
           $('#btn_prepay_view').hide();
           $('#btn_prepay_create').show();
@@ -557,8 +559,7 @@
           $(this).select();
         });
 
-        $('#btn_prepay_create').click(function () {
-          $('#crud').val('create');
+        $('#btn_prepay_create').click(function () {          
           var checked = true;
           if($('#chain_no').val() == '') {
             swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
@@ -716,17 +717,23 @@
           if (resultCode == 'S000') {
             $('#modal_prepay').modal('hide');
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');            
-            // 현재 선택된 행의 데이터 저장
-            var selectedRowData = tbl_loan_summary.row('.selected').data();            
+            
+            if (editMode === 'update') {
+              // 수정 모드일 때는 선택된 행을 유지
+              var selectedRowData = tbl_loan_summary.row('.selected').data();
+            } else {
+              // 생성 모드일 때는 선택된 행이 없음
+              var selectedRowData = null;
+            } 
             tbl_loan_summary.ajax.reload(function() {
               // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
               if (selectedRowData) {
-              tbl_loan_summary.rows().every(function() {
-                if (this.data().chain_no === selectedRowData.chain_no) {
-                $(this.node()).addClass('selected');
-                return false; // 찾으면 루프 중단
-                }
-              });
+                tbl_loan_summary.rows().every(function() {
+                  if (this.data().chain_no === selectedRowData.chain_no) {
+                    $(this.node()).click();
+                    return false; // 찾으면 루프 중단
+                  }
+                });
               }
             }, false);            
             tbl_chain_loan_list.ajax.reload(null, false); // 현재 페이지 유지
@@ -744,16 +751,22 @@
           if (resultCode == 'S000') {
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');             
             // 현재 선택된 행의 데이터 저장
-            var selectedRowData = tbl_loan_summary.row('.selected').data();            
+            if (editMode === 'update') {
+              // 수정 모드일 때는 선택된 행을 유지
+              var selectedRowData = tbl_loan_summary.row('.selected').data();
+            } else {
+              // 생성 모드일 때는 선택된 행이 없음
+              var selectedRowData = null;
+            } 
             tbl_loan_summary.ajax.reload(function() {
               // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
               if (selectedRowData) {
-              tbl_loan_summary.rows().every(function() {
-                if (this.data().chain_no === selectedRowData.chain_no) {
-                $(this.node()).addClass('selected');
-                return false; // 찾으면 루프 중단
-                }
-              });
+                tbl_loan_summary.rows().every(function() {
+                  if (this.data().chain_no === selectedRowData.chain_no) {
+                      $(this.node()).click();
+                      return false; // 찾으면 루프 중단
+                  }
+                });
               }
             }, false);
             $('#sch_cont_edt').val($('#cont_dt').val()); // 계약일을 검색조건으로 설정
@@ -880,8 +893,7 @@
             $('#counsel_cd').val(data.counsel_cd);
             $('#counsel_cust_nm').val(data.counsel_cust_nm);
             $('#counsel_conts').val(data.counsel_conts); 
-
-            $('#crud').val('create');
+ 
             $('#btn_counsel_delete').show();
             $('#btn_counsel_update').show();
             $('#btn_counsel_create').hide();
@@ -963,16 +975,22 @@
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');            
 
             // 현재 선택된 행의 데이터 저장
-            var selectedRowData = tbl_counsel_list.row('.selected').data();            
+            if (editMode === 'update') {
+              // 수정 모드일 때는 선택된 행을 유지
+              var selectedRowData = tbl_loan_summary.row('.selected').data();
+            } else {
+              // 생성 모드일 때는 선택된 행이 없음
+              var selectedRowData = null;
+            } 
             tbl_counsel_list.ajax.reload(function() {
               // 리로드 완료 후 이전에 선택되었던 행을 다시 선택
               if (selectedRowData) {
-              tbl_counsel_list.rows().every(function() {
-                if (this.data().counsel_no === selectedRowData.counsel_no) {
-                $(this.node()).addClass('selected');
-                return false; // 찾으면 루프 중단
-                }
-              });
+                tbl_counsel_list.rows().every(function() {
+                  if (this.data().counsel_no === selectedRowData.counsel_no) {
+                    $(this.node()).click();
+                    return false; // 찾으면 루프 중단
+                  }
+                });
               }
             }, false);
 
@@ -984,8 +1002,7 @@
         }
 
         function fn_frm_counsel_reset() { 
-          $('#frm_counsel_mst')[0].reset();
-          $('#crud').val('create');
+          $('#frm_counsel_mst')[0].reset(); 
           $('#btn_counsel_delete').hide();
           $('#btn_counsel_update').hide();
           $('#btn_counsel_create').show(); 
