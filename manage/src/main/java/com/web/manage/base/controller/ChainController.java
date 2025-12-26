@@ -156,7 +156,7 @@ public class ChainController {
             userVO.setZip_no(chainVo.getCeo_zip_no());
             userVO.setAddr(chainVo.getCeo_addr());
             userVO.setAddr_dtl(chainVo.getCeo_addr_dtl());
-            userVO.setUse_yn(chainVo.getUse_yn());
+            userVO.setUse_yn("Y");
             userVO.setEnt_user_id(member.getUserId());
 
             if (chainService.insertChain(chainVo, userVO)) {
@@ -193,8 +193,10 @@ public class ChainController {
             userVO.setZip_no(chainVo.getCeo_zip_no());
             userVO.setAddr(chainVo.getCeo_addr());
             userVO.setAddr_dtl(chainVo.getCeo_addr_dtl());
-            userVO.setUse_yn(chainVo.getUse_yn());
+            // userVO.setUse_yn(chainVo.getUse_yn());
             userVO.setUpt_user_id(member.getUserId());
+
+            System.out.println("chainVo : " + userVO);
 
             if (chainService.updateChain(chainVo, userVO)) {
                 System.out.println("chainUpdate  success");
@@ -464,17 +466,18 @@ public class ChainController {
     public @ResponseBody ReturnDataVO getCardDupChk(@RequestBody HashMap<String, Object> params) {        
         ReturnDataVO result = new ReturnDataVO();
         // System.out.println("call getCardDupChk");
+        params.put("card_reg_no", ((String)params.get("card_reg_no")).replaceAll("^0+", ""));   
         try {
             if (chainService.getCardDupChk(params) == 0) {
                 result.setResultCode("S000");
-                result.setResultMsg("Available VAN ID.");
+                result.setResultMsg("사용 가능한 가맹번호 입니다.");
             } else {
                 result.setResultCode("F000");
-                result.setResultMsg("Duplicate VAN ID.");
+                result.setResultMsg("중복 가맹번호 입니다.");
             }
         } catch (Exception e) {
             result.setResultCode("F000");
-            result.setResultMsg("VAN ID Check Error.");
+            result.setResultMsg("가맹번호 중복 체크 오류입니다.");
             e.printStackTrace();
         }        
         return result;
@@ -488,6 +491,9 @@ public class ChainController {
             chainCardVo.setChain_no(chainCardVo.getCard_chain_no());
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
     	    chainCardVo.setEnt_user_id(member.getUserId());
+            String cardRegNo = chainCardVo.getCard_reg_no();
+            cardRegNo = cardRegNo.replaceAll("^0+", "");
+            chainCardVo.setCard_reg_no(cardRegNo);
 
             if (chainService.insertChainCard(chainCardVo)) {
                 System.out.println("Chain Card Create success");
@@ -513,6 +519,11 @@ public class ChainController {
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
             chainCardVo.setChain_no(chainCardVo.getCard_chain_no());
     	    chainCardVo.setUpt_user_id(member.getUserId()); 
+            String cardRegNo = chainCardVo.getCard_reg_no();
+            // System.out.println("Before cardRegNo : " + cardRegNo);
+            cardRegNo = cardRegNo.replaceAll("^0+", "");
+            // System.out.println("After cardRegNo : " + cardRegNo);
+            chainCardVo.setCard_reg_no(cardRegNo);
 
             if (chainService.updateChainCard(chainCardVo)) {
                 System.out.println("Chain CardInfo Update  success");

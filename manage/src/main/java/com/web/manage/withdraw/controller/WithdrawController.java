@@ -806,7 +806,7 @@ public class WithdrawController {
             // Populate data rows
             int rowIndex = 0;
             for (HashMap<String, Object> row : list) {
-                Row dataRow = sheet.createRow(rowIndex++);                
+                Row dataRow = sheet.createRow(rowIndex);                
                 dataRow.createCell(0).setCellValue(String.valueOf(row.get("bbank_nm")));            // 은행명
                 dataRow.createCell(1).setCellValue(String.valueOf(row.get("bbank_account_no")));    // 계좌번호
                 
@@ -819,14 +819,16 @@ public class WithdrawController {
                 dataRow.createCell(5).setCellValue("");                                                 // 빈칸
                 dataRow.createCell(6).setCellValue(String.valueOf(row.get("chain_nm")));            // 가맹점명  
                 dataRow.createCell(7).setCellValue(String.valueOf(row.get("op_nm")));               // 송금처:운영사명    
+                rowIndex++;
+                 // 첫 번째 데이터 행이 작성된 후에 각 컬럼 너비 자동 조정
                 if (rowIndex==1){
-                    for (int i = 0; i < 7; i++) {
+                    for (int i = 0; i < 8; i++) {
                         sheet.autoSizeColumn(i);
                         sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
                     }
                 }
             }
-            excelStyle.setRegionBorder(sheet, 0, rowIndex, 0, 7);
+            excelStyle.setRegionBorder(sheet, 0, rowIndex -1, 0, 7);
 
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -836,7 +838,7 @@ public class WithdrawController {
             // Set response headers
             HttpHeaders hHeaders = new HttpHeaders();
             hHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            hHeaders.setContentDispositionFormData("attachment", "remitList.xlsx");
+            hHeaders.setContentDispositionFormData("attachment", "remittList.xlsx");
 
             return ResponseEntity.ok()
                     .headers(hHeaders)

@@ -385,9 +385,9 @@
         /* ChainMapper.getCardDupChk */
         SELECT  COUNT(1)
           FROM  TB_CHAIN_CARD
-         WHERE  CHAIN_NO    = #{card_chain_no}
-           AND  CARD_ACQ    = #{card_acq}
+         WHERE  CARD_ACQ    = #{card_acq}
            AND  CARD_REG_NO = #{card_reg_no}
+           <!-- AND  CHAIN_NO    = #{chain_no} -->
     </select>
 
     <insert id="insertChainCard" parameterType="com.web.manage.base.domain.ChainCardVO">

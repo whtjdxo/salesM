@@ -44,6 +44,8 @@ public class MainController {
 
 		try {
 			data = mainService.getSalesSummary(hashmapParam); 
+            HashMap<String, Object> chainCnt = mainService.getChainCount(hashmapParam);
+            data.putAll(chainCnt);
 			result.setResultCode("S000");
 			result.setData(data);
 		} catch (Exception e) {

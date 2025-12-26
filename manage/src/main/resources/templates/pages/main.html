@@ -32,14 +32,13 @@
             sch_work_date : data.data,  
           }; 
           callAjaxJson('/main/daySalesSumm', formData, fn_DaySalesSummSet);        
-          callAjaxJson('/main/dayDepoSumm', formData, fn_DayDepoSummSet);  
-
+          callAjaxJson('/main/dayDepoSumm', formData, fn_DayDepoSummSet); 
           callAjaxJson('/main/salesTrend', formData, renderSalesChart);   
         }
         
         function fn_DaySalesSummSet(data){
           var salesSumm = data.data || {};
-          $('#daysumm_chain_cnt').text(salesSumm.chain_cnt ? $.fn.dataTable.render.number(',', '.', 0, '').display(salesSumm.chain_cnt) : '0');
+          $('#daysumm_chain_cnt').text(salesSumm.sales_chain_cnt + " / " + salesSumm.open_cnt );
           $('#daysumm_conf_cnt').text(salesSumm.conf_cnt ? $.fn.dataTable.render.number(',', '.', 0, '').display(salesSumm.conf_cnt) : '0');
           $('#daysumm_conf_amt').text(salesSumm.conf_amt ? $.fn.dataTable.render.number(',', '.', 0, '').display(salesSumm.conf_amt) : '0'); 
           $('#daysumm_remit_amt').text(salesSumm.remit_tot_amt ? $.fn.dataTable.render.number(',', '.', 0, '').display(salesSumm.remit_tot_amt) : '0'); 
@@ -323,7 +322,7 @@
             <div class="col-6 col-md-4 col-xxl-2 text-center border-translucent border-start-xxl border-end-xxl-0 border-bottom-xxl-0 border-end border-bottom pb-4 pb-xxl-0 ">
               <span class="uil fs-5 lh-1 uil-clinic-medical text-primary"></span>
               <h1 class="fs-5 pt-3" id="daysumm_chain_cnt" >2,800</h1>
-              <p class="fs-9 mb-0">가맹점 수</p>
+              <p class="fs-9 mb-0">가맹점 수 (매출 / 운영)</p>
             </div>
             <div class="col-6 col-md-4 col-xxl-2 text-center border-translucent border-start-xxl border-end-xxl-0 border-bottom-xxl-0 border-end border-bottom pb-4 pb-xxl-0 ">
               <span class="uil fs-5 lh-1 far fa-credit-card text-primary"></span>

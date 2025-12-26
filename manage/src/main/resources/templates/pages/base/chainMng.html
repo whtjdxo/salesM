@@ -783,6 +783,7 @@
 
             $('#btn_card_update').show();
             $('#btn_card_create').hide();            
+            $('#card_id_dup_chk').val("Y");
             $('#btn_card_dupchk').hide(); 
           }  
         });      
@@ -802,11 +803,11 @@
         }
 
         $('#card_reg_no').on('change', function() {
-          var chk = $('#card_id_dup_chk').val();
-          if (chk == "Y") {
+          // var chk = $('#card_id_dup_chk').val();
+          // if (chk == "Y") {
             $('#card_id_dup_chk').val("N");
             $('#btn_card_dupchk').show();             
-          } 
+          // } 
         });
 
         $('#btn_card_dupchk').click(function () {
@@ -826,7 +827,7 @@
             swal('확인', '가맹번호를 정확히 입력하세요.', 'error');
             return;
           } 
-
+          
           var params = {
               chain_no: chain_no,
               card_acq: card_acq,
@@ -885,6 +886,12 @@
           var chain_no = $('#card_chain_no').val();
           if(chain_no == '') {
             swal('실패', "가맹점을 먼저 선택해주세요.", 'error');
+            checked = false;
+            return;
+          }
+          var dupChk = $('#card_id_dup_chk').val();
+          if(dupChk == "N" || dupChk ==''){
+            swal('확인', '가맹점 번호 중복 체크를 해주세요.', 'success');
             checked = false;
             return;
           }
@@ -1915,9 +1922,9 @@
                       </div>
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="bbank_account_no">계좌번호</label>  
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="bbank_depositor">예금주</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="bbank_account_no" type="text" name="bbank_account_no" istyle="number" maxlength="15" />
+                            <input class="form-control form-control-sm" id="bbank_depositor" type="text" name="bbank_depositor" maxlength="20" />      
                           </div>
                         </div>
                       </div>                      
@@ -1925,9 +1932,9 @@
                     <div class="row mb-1">
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
-                          <label class="col-sm-4 col-form-label col-form-label-sm" for="bbank_depositor">예금주</label>  
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="bbank_account_no">계좌번호</label>  
                           <div class="col-sm-8">
-                            <input class="form-control form-control-sm" id="bbank_depositor" type="text" name="bbank_depositor" maxlength="20" />      
+                            <input class="form-control form-control-sm" id="bbank_account_no" type="text" name="bbank_account_no" istyle="number" maxlength="15" />
                           </div>
                         </div>
                       </div>
@@ -2196,7 +2203,7 @@
                           <div class="col-sm-8">
                             <div class="input-group input-group-sm">
                               <input class="form-control form-control-sm" id="card_reg_no" type="text" name="card_reg_no" maxlength="20" required />
-                              <input id="card_id_dup_chk" type="hidden" name="card_id_dup_chk" />
+                              <input id="card_id_dup_chk" type="hidden" name="card_id_dup_chk" value = "N"/>
                               <button type="button" class="btn btn-primary" id="btn_card_dupchk">중복</button>
                             </div>                            
                           </div>

@@ -6,10 +6,34 @@
     <select id="getQueryTotalCnt" resultType="int">
 		SELECT FOUND_ROWS()
 	</select> 
-
+    <select id="getChainCount" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT 	COUNT(1)  	AS tot_cnt 
+                , IFNULL(SUM(CASE WHEN TC.SVC_STAT IN ('O', 'R') THEN 1 ELSE 0 END), 0) AS chain_cnt
+                , IFNULL(SUM(CASE WHEN TC.SVC_STAT = 'O' THEN 1 ELSE 0 END), 0) AS open_cnt
+                , IFNULL(SUM(CASE WHEN TC.SVC_STAT = 'R' THEN 1 ELSE 0 END), 0) AS ready_cnt
+                , IFNULL(SUM(CASE WHEN TC.SVC_STAT = 'C' THEN 1 ELSE 0 END), 0) AS close_cnt
+          FROM  TB_CHAIN TC                 
+        WHERE   TC.USE_YN = 'Y'
+        <choose>
+            <when test='userCorpType == "LN"'>
+                AND TC.CORP_CD = #{userCorpCd}
+            </when>
+            <when test='userCorpType == "OP"'>
+                AND 1 = 1
+            </when>
+            <when test='userCorpType == "AG"'>
+                AND TC.AGENCY_CD = #{userCorpCd}
+            </when>
+            <when test='userCorpType == "CH"'>
+                AND TC.CHAIN_NO = #{userCorpCd}
+            </when>
+            <otherwise>
+                AND  1 = 0
+            </otherwise>
+        </choose>     
+    </select>
     <select id="getSalesSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-		SELECT 	GB                                          AS remit_gb 
-                , IFNULL(COUNT(DISTINCT VT.CHAIN_NO), 0)  	AS chain_cnt 
+		SELECT 	IFNULL(COUNT(DISTINCT VT.CHAIN_NO), 0)  	AS sales_chain_cnt 
                 , IFNULL(SUM(CONF_CNT), 0) 					AS conf_cnt
                 , IFNULL(SUM(CONF_AMT), 0) 					AS conf_amt
                 , IFNULL(SUM(CARD_RESV_AMT), 0) 			AS card_resv_amt
@@ -21,96 +45,97 @@
                 , IFNULL(SUM(SUB_AMT), 0) 					AS sub_amrm	
                 , IFNULL(SUM(CONF_AMT), 0) - IFNULL(SUM(REMIT_TOT_AMT), 0) + IFNULL(SUM(EXC_REMIT_AMT), 0) AS sub_amt	
                 , IFNULL(SUM(REMIT_TOT_AMT), 0)				AS remit_tot_amt
-		  FROM 	(
-				SELECT 	1 AS ORD
-						, 'REMI'									AS GB
-						, CHAIN_NO 									AS CHAIN_NO
-						, IFNULL(SUM(ADJUST_CNT ), 0)				AS CONF_CNT 
-						, IFNULL(SUM(CONF_AMT ), 0)					AS CONF_AMT 
-						, IFNULL(SUM(RM.CARD_RESV_AMT), 0)         	AS CARD_RESV_AMT
-						, IFNULL(SUM(RM.CARD_FEE_AMT), 0)          	AS CARD_FEE_AMT 
-						, IFNULL(SUM(RM.SVC_FEE_AMT), 0)           	AS SVC_FEE_AMT 
-						, IFNULL(SUM(RM.CRD_FEE_AMT), 0)           	AS CRD_FEE_AMT 
-						, IFNULL(SUM(RM.WD_BASE_AMT), 0)           	AS WD_BASE_AMT 
-						, IFNULL(SUM(RM.EXC_REMIT_AMT), 0)          AS EXC_REMIT_AMT 
-						, IFNULL(SUM(RM.SUB_AMT), 0)             	AS SUB_AMT 
-						, IFNULL(SUM(RM.REMIT_AMT), 0)            	AS REMIT_TOT_AMT 
-				  FROM 	TB_REMIT_MST RM
-				 WHERE 	RM.REMIT_DT = #{sch_work_date}  
- 				   <!-- AND  CHAIN_NO = #chainNo#		      -->
-				 GROUP 	BY CHAIN_NO
-				 UNION 	ALL 
-				SELECT  2 AS ORD
-						, WD.GB
-						, WD.CHAIN_NO
-						, WD.ADJUST_CNT
-						, WD.CONF_AMT
-						, WD.CARD_RESV_AMT
-						, WD.CARD_FEE_AMT
-						, WD.SVC_FEE_AMT
-						, WD.CRD_FEE_AMT
-						, WD.WD_BASE_AMT
-						, IFNULL(EC.EXC_REMIT_AMT, 0)		AS EXC_REMIT_AMT 
-						, IFNULL(SB.SUB_AMT, 0)		AS SUB_AMT
-						, REMIT_TOT_AMT + IFNULL(EC.EXC_REMIT_AMT, 0) - IFNULL(SB.SUB_AMT, 0)		AS REMIT_TOT_AMT
-				  FROM 	(		
-						 SELECT	 'RESV'								AS GB
-						 		, CHAIN_NO							AS CHAIN_NO
-						 		, WORK_DATE 						AS REMIT_DT
-						 		, COUNT(1)							AS ADJUST_CNT
-								, IFNULL(SUM(CONF_AMT), 0) 				AS CONF_AMT 
-								, IFNULL(SUM(CARD_RESV_AMT), 0)        AS CARD_RESV_AMT
-								, IFNULL(SUM(CARD_FEE_AMT), 0)         AS CARD_FEE_AMT 
-								, IFNULL(SUM(SVC_FEE_AMT), 0)          AS SVC_FEE_AMT 
-								, IFNULL(SUM(CRD_FEE_AMT), 0)          AS CRD_FEE_AMT 
-								, IFNULL(SUM(WD_BASE_AMT), 0)          AS WD_BASE_AMT 
-								, IFNULL(SUM(REMIT_AMT), 0)           AS REMIT_TOT_AMT 
-						  FROM  TB_WITHDRAW WD  		
-						 WHERE 	WORK_DATE = #{sch_work_date}
-						   <!-- AND 	CHAIN_NO = #chainNo# -->
-					       AND 	REMIT_NO IS NULL
-						   AND 	USE_YN    = 'Y'
-						 GROUP 	BY CHAIN_NO, WORK_DATE
-						) WD  
-                        LEFT OUTER JOIN (
-				  			SELECT SM.CHAIN_NO 
-							       	, SUM(REMAIN_AMT)  AS SUB_AMT 
-							  FROM 	TB_SUB_MST SM
-							  		JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO 
-							  		   				AND TC.SVC_STAT = 'Y'
-							 WHERE 	SM.SUB_STATUS IN ('000000', '100000')
-							   AND 	SM.USE_YN = 'Y'
-							 GROUP BY SM.CHAIN_NO
-				  		) SB ON SB.CHAIN_NO = WD.CHAIN_NO 
-				  		LEFT OUTER JOIN (
-				  			SELECT 	EM.CHAIN_NO, SUM(REMAIN_AMT) AS EXC_REMIT_AMT
-				  			  FROM 	TB_EXCEED_MST EM
-				  			  		JOIN TB_CHAIN TC ON TC.CHAIN_NO = EM.CHAIN_NO 
-							  		   				AND TC.SVC_STAT = 'Y'
-							 WHERE	EM.EXC_STATUS = '100000'
-							   AND	EM.USE_YN = 'Y'
-				   			 GROUP	BY EM.CHAIN_NO
-				  		) EC ON EC.CHAIN_NO = WD.CHAIN_NO		
-				) VT  
-				STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = VT.CHAIN_NO
-                <choose>
-                    <when test='userCorpType == "LN"'>
-                        AND TC.CORP_CD = #{userCorpCd}
-                    </when>
-                    <when test='userCorpType == "OP"'>
-                        AND 1 = 1
-                    </when>
-                    <when test='userCorpType == "AG"'>
-                        AND TC.AGENCY_CD = #{userCorpCd}
-                    </when>
-                    <when test='userCorpType == "CH"'>
-                        AND TC.CHAIN_NO = #{userCorpCd}
-                    </when>
-                    <otherwise>
-                        AND  1 = 0
-                    </otherwise>
-                </choose>    
- 		 GROUP  BY 	GB  
+		  FROM 	TB_CHAIN TC
+                LEFT JOIN (
+                        SELECT 	1 AS ORD
+                                , 'REMI'									AS GB
+                                , CHAIN_NO 									AS CHAIN_NO
+                                , IFNULL(SUM(ADJUST_CNT ), 0)				AS CONF_CNT 
+                                , IFNULL(SUM(CONF_AMT ), 0)					AS CONF_AMT 
+                                , IFNULL(SUM(RM.CARD_RESV_AMT), 0)         	AS CARD_RESV_AMT
+                                , IFNULL(SUM(RM.CARD_FEE_AMT), 0)          	AS CARD_FEE_AMT 
+                                , IFNULL(SUM(RM.SVC_FEE_AMT), 0)           	AS SVC_FEE_AMT 
+                                , IFNULL(SUM(RM.CRD_FEE_AMT), 0)           	AS CRD_FEE_AMT 
+                                , IFNULL(SUM(RM.WD_BASE_AMT), 0)           	AS WD_BASE_AMT 
+                                , IFNULL(SUM(RM.EXC_REMIT_AMT), 0)          AS EXC_REMIT_AMT 
+                                , IFNULL(SUM(RM.SUB_AMT), 0)             	AS SUB_AMT 
+                                , IFNULL(SUM(RM.REMIT_AMT), 0)            	AS REMIT_TOT_AMT 
+                        FROM 	TB_REMIT_MST RM
+                        WHERE 	RM.REMIT_DT = #{sch_work_date}  
+                        <!-- AND  CHAIN_NO = #chainNo#		      -->
+                        GROUP 	BY CHAIN_NO
+                        UNION 	ALL 
+                        SELECT  2 AS ORD
+                                , WD.GB
+                                , WD.CHAIN_NO
+                                , WD.ADJUST_CNT
+                                , WD.CONF_AMT
+                                , WD.CARD_RESV_AMT
+                                , WD.CARD_FEE_AMT
+                                , WD.SVC_FEE_AMT
+                                , WD.CRD_FEE_AMT
+                                , WD.WD_BASE_AMT
+                                , IFNULL(EC.EXC_REMIT_AMT, 0)		AS EXC_REMIT_AMT 
+                                , IFNULL(SB.SUB_AMT, 0)		AS SUB_AMT
+                                , REMIT_TOT_AMT + IFNULL(EC.EXC_REMIT_AMT, 0) - IFNULL(SB.SUB_AMT, 0)		AS REMIT_TOT_AMT
+                        FROM 	(		
+                                SELECT	 'RESV'								AS GB
+                                        , CHAIN_NO							AS CHAIN_NO
+                                        , WORK_DATE 						AS REMIT_DT
+                                        , COUNT(1)							AS ADJUST_CNT
+                                        , IFNULL(SUM(CONF_AMT), 0) 				AS CONF_AMT 
+                                        , IFNULL(SUM(CARD_RESV_AMT), 0)        AS CARD_RESV_AMT
+                                        , IFNULL(SUM(CARD_FEE_AMT), 0)         AS CARD_FEE_AMT 
+                                        , IFNULL(SUM(SVC_FEE_AMT), 0)          AS SVC_FEE_AMT 
+                                        , IFNULL(SUM(CRD_FEE_AMT), 0)          AS CRD_FEE_AMT 
+                                        , IFNULL(SUM(WD_BASE_AMT), 0)          AS WD_BASE_AMT 
+                                        , IFNULL(SUM(REMIT_AMT), 0)           AS REMIT_TOT_AMT 
+                                FROM  TB_WITHDRAW WD  		
+                                WHERE 	WORK_DATE = #{sch_work_date}
+                                <!-- AND 	CHAIN_NO = #chainNo# -->
+                                AND 	REMIT_NO IS NULL
+                                AND 	USE_YN    = 'Y'
+                                GROUP 	BY CHAIN_NO, WORK_DATE
+                                ) WD  
+                                LEFT OUTER JOIN (
+                                    SELECT SM.CHAIN_NO 
+                                            , SUM(REMAIN_AMT)  AS SUB_AMT 
+                                    FROM 	TB_SUB_MST SM
+                                            JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO 
+                                                            AND TC.SVC_STAT = 'Y'
+                                    WHERE 	SM.SUB_STATUS IN ('000000', '100000')
+                                    AND 	SM.USE_YN = 'Y'
+                                    GROUP BY SM.CHAIN_NO
+                                ) SB ON SB.CHAIN_NO = WD.CHAIN_NO 
+                                LEFT OUTER JOIN (
+                                    SELECT 	EM.CHAIN_NO, SUM(REMAIN_AMT) AS EXC_REMIT_AMT
+                                    FROM 	TB_EXCEED_MST EM
+                                            JOIN TB_CHAIN TC ON TC.CHAIN_NO = EM.CHAIN_NO 
+                                                            AND TC.SVC_STAT = 'Y'
+                                    WHERE	EM.EXC_STATUS = '100000'
+                                    AND	EM.USE_YN = 'Y'
+                                    GROUP	BY EM.CHAIN_NO
+                                ) EC ON EC.CHAIN_NO = WD.CHAIN_NO		
+				) VT   ON VT.CHAIN_NO = TC.CHAIN_NO
+        WHERE   TC.SVC_STAT IN ('O', 'R')
+          AND   TC.USE_YN = 'Y'
+        <choose>
+            <when test='userCorpType == "LN"'>
+                AND TC.CORP_CD = #{userCorpCd}
+            </when>
+            <when test='userCorpType == "OP"'>
+                AND 1 = 1
+            </when>
+            <when test='userCorpType == "AG"'>
+                AND TC.AGENCY_CD = #{userCorpCd}
+            </when>
+            <when test='userCorpType == "CH"'>
+                AND TC.CHAIN_NO = #{userCorpCd}
+            </when>
+            <otherwise>
+                AND  1 = 0
+            </otherwise>
+        </choose>     
 		 LIMIT  1 
     </select>
 
@@ -136,7 +161,7 @@
                     WHERE BANK_IN_DATE = #{sch_work_date}
                     GROUP BY CHAIN_NO, CARD_ACQ 
                 ) VT
-                STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = VT.CHAIN_NO
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = VT.CHAIN_NO
                                 AND TC.SVC_STAT IN ('O', 'R')
                                 AND TC.USE_YN = 'Y'                
                 <choose>

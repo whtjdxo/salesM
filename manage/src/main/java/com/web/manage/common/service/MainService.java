@@ -33,6 +33,10 @@ public class MainService {
     public HashMap<String, Object> getDepositSummary(HashMap<String, Object> hashmapParam) {
         return mainMapper.getDepositSummary(hashmapParam);    
     } 
+    
+    public HashMap<String, Object> getChainCount(HashMap<String, Object> hashmapParam) {
+        return mainMapper.getChainCount(hashmapParam);    
+    }
 
     public List<HashMap<String, Object>> getSalesTrend(HashMap<String, Object> hashmapParam) {
         return mainMapper.getSalesTrend(hashmapParam); 

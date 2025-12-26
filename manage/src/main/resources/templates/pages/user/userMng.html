@@ -115,6 +115,9 @@
 
           $('#user_nm').val(data.user_nm);
           $('#user_id').val(data.user_id);
+          $('#user_id').attr("readonly", true); // user_id 수정 불가
+
+          $('#user_pwd').val(''); // 비밀번호는 공백으로 설정
           $('#hp_no').val(data.hp_no);
           $('#email').val(data.email);
           $('#zip_cd').val(data.user_id);
@@ -124,7 +127,8 @@
           $("input:radio[name='use_yn'][value='" + data.use_yn + "']").prop('checked', true);  
           $('#upt_user_id').val(data.upt_user_id);
           $('#upt_dttm').val(data.upt_dttm); 
-
+          $('#user_id_dup_chk').val('Y'); // 수정 시 중복 체크 통과로 설정
+          $('#btn_dupchk').hide();
           $('#btn_update').show();
           $('#btn_create').hide();
           $('#user_pwd').removeAttr("required");          
@@ -150,8 +154,11 @@
         $('#btn_clear').click(function () {
           $('#frm_user_info').clearForm();
           // $('#user_pwd').removeAttr("required");
+          $('#user_id').removeAttr("readonly");
           $('#user_pwd').attr("required", "required");
           $("input:radio[name='use_yn'][value='Y']").prop('checked', true);
+          $('#user_id_dup_chk').val('N');
+          $('#btn_dupchk').show();
           $('#btn_update').hide();
           $('#btn_create').show(); 
           editMode = 'create'; 
@@ -162,6 +169,11 @@
           editMode = 'create';
           var form = $('#frm_user_info');
           var checked = true;
+          if($('#user_id_dup_chk').val() != 'Y'){
+            swal('확인', '사용자 ID 중복 체크를 해주세요.', 'success');
+            checked = false;
+            return;
+          }
           if (!form[0].checkValidity()) {
             form[0].reportValidity(); // 브라우저가 어떤 항목이 잘못됐는지 보여줌
             checked = false;
@@ -233,10 +245,8 @@
           if (user_id == '') {
             swal('실패', '사용자자 ID를 입력하세요.', 'error');
             return;
-          } else {
-            // callAjax('/base/user/userMng/getUserIdDupChk', user_id, fn_userid_dupchk);
+          } else { 
             callAjax('/base/user/userMng/getUserIdDupChk', { user_id: user_id }, fn_userid_dupchk);
-
           }
         });
 
@@ -245,8 +255,10 @@
           var resultMsg = data.resultMsg;
           if (resultCode == 'S000') {
             swal('성공', '사용가능한 ID입니다.', 'success');
+            $('#user_id_dup_chk').val('Y');
           } else {
             swal('실패', resultMsg, 'error');
+            $('#user_id_dup_chk').val('N');
           }
         } 
  
@@ -341,6 +353,7 @@
               <label class="col-sm-3 col-form-label col-form-label-sm" for="user_id">사용자 ID</label>                     
               <div class="col-sm-9">
                 <div class="input-group input-group-sm">
+                  <input type="hidden" id="user_id_dup_chk" name="user_id_dup_chk" value="N" />
                   <input type="text" class="form-control form-control-sm" id="user_id" name="user_id" maxlength="15" required />
                   <button type="button" class="btn btn-primary" id="btn_dupchk">중복</button>
                 </div>
