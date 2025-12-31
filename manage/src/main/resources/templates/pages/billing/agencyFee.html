@@ -230,8 +230,7 @@
                     var formData = { 
                       sch_month     : $('#sch_year').val() + '-' + $('#sch_mon').val(),
                       sch_chain_no  : $('#sch_chain_no').val() 
-                    };
-                    // $('#frm_sch_list').serializeObject(); // serializeObject는 jQuery 플러그인일 수 있습니다.
+                    }; 
                     Object.assign(postData, formData);
                     return JSON.stringify(postData);
                 },
@@ -343,14 +342,17 @@
         $('#btn_list_excel').click(function () {
           // var formData = $('#frm_sch_list').serializeObject();
           var schChainNo = $('#sch_chain_no').val();
+          var schMonth = $('#sch_year').val() + '-' + $('#sch_mon').val();
+          var schChainNm = $('#sch_chain_nm').val();
           $('#globalLoadingBar').show();
           if (!schChainNo) {
             alert('가맹점을 선택해주세요');
             return;
           }
           var formData = { 
-            sch_month     : $('#sch_year').val() + '-' + $('#sch_mon').val(),
-            sch_chain_no  : $('#sch_chain_no').val() 
+            sch_month     : schMonth,
+            sch_chain_no  : schChainNo, 
+            sch_chain_nm  : schChainNm
           };
           $.ajax({
             url: '/statis/billing/agencyFee/downListExcel',
@@ -364,7 +366,7 @@
               var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
               var link = document.createElement('a');
               link.href = window.URL.createObjectURL(blob);
-              link.download = '영업수수료_'+ sch_month + '.xlsx';
+              link.download = schChainNm + '_영업수수료_'+ schMonth + '.xlsx';
               link.click();
             },
             error: function (xhr, status, error) {

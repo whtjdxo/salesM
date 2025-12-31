@@ -576,109 +576,111 @@
     </select>
 
     <select id="getRemitSummaryTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-            SELECT  SQL_CALC_FOUND_ROWS
-                    IFNULL(SUM(RM.CONF_AMT), 0)                                           AS conf_amt        
-                    , IFNULL(SUM(RM.CARD_FEE_AMT), 0)                                       AS card_fee_amt
-                    , IFNULL(SUM(RM.CARD_RESV_AMT), 0)                                      AS card_resv_amt
-                    , IFNULL(SUM(RM.WD_BASE_AMT), 0)                                        AS wd_base_amt        
-                    , IFNULL(SUM(RM.SVC_FEE_AMT), 0)                                        AS svc_fee_amt
-                    , IFNULL(SUM(RM.CRD_FEE_AMT), 0)                                        AS crd_fee_amt
-                    , IFNULL(SUM(RM.WD_REMIT_AMT), 0)                                       AS wd_remit_amt
-                    , IFNULL(SUM(RM.EXC_REMIT_AMT), 0)                                      AS exc_remit_amt
-                    , IFNULL(SUM(RM.TOT_REMIT_AMT), 0)                                      AS tot_remit_amt
-                    , IFNULL(SUM(RM.SUB_AMT), 0)                                            AS sub_amt
-                    , IFNULL(SUM(RM.REMIT_AMT), 0)                                          AS remit_amt                        
-            FROM    TB_REMIT_MST RM
-                    STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = RM.CHAIN_NO  
-                    <if test="sch_agency_cd != ''"> 
-                            AND  TC.AGENCY_CD = #{sch_agency_cd} 
-                    </if>
-                    <if test="sch_corp_no != null and sch_corp_no != ''"> 
-                            AND  TC.CORP_CD = #{sch_corp_no} 
-                    </if> 
-                    <if test="sch_chain_nm != null and sch_chain_nm != ''"> 
-                            AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
-                    </if>  
-                    STRAIGHT_JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID  
-                    STRAIGHT_JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
-                                    AND CO.USE_YN = 'Y'
-            WHERE	RM.REMIT_DT BETWEEN #{sch_remit_dt}
-                                    AND #{sch_remit_dt}
+        /*WithdrawMapper.getRemitSummaryTotal*/
+        SELECT  SQL_CALC_FOUND_ROWS
+                IFNULL(SUM(RM.CONF_AMT), 0)                                           AS conf_amt        
+                , IFNULL(SUM(RM.CARD_FEE_AMT), 0)                                       AS card_fee_amt
+                , IFNULL(SUM(RM.CARD_RESV_AMT), 0)                                      AS card_resv_amt
+                , IFNULL(SUM(RM.WD_BASE_AMT), 0)                                        AS wd_base_amt        
+                , IFNULL(SUM(RM.SVC_FEE_AMT), 0)                                        AS svc_fee_amt
+                , IFNULL(SUM(RM.CRD_FEE_AMT), 0)                                        AS crd_fee_amt
+                , IFNULL(SUM(RM.WD_REMIT_AMT), 0)                                       AS wd_remit_amt
+                , IFNULL(SUM(RM.EXC_REMIT_AMT), 0)                                      AS exc_remit_amt
+                , IFNULL(SUM(RM.TOT_REMIT_AMT), 0)                                      AS tot_remit_amt
+                , IFNULL(SUM(RM.SUB_AMT), 0)                                            AS sub_amt
+                , IFNULL(SUM(RM.REMIT_AMT), 0)                                          AS remit_amt                        
+        FROM    TB_REMIT_MST RM
+                STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = RM.CHAIN_NO  
+                <if test="sch_agency_cd != ''"> 
+                        AND  TC.AGENCY_CD = #{sch_agency_cd} 
+                </if>
+                <if test="sch_corp_no != null and sch_corp_no != ''"> 
+                        AND  TC.CORP_CD = #{sch_corp_no} 
+                </if> 
+                <if test="sch_chain_nm != null and sch_chain_nm != ''"> 
+                        AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                </if>  
+                STRAIGHT_JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID  
+                STRAIGHT_JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
+                                AND CO.USE_YN = 'Y'
+        WHERE	RM.REMIT_DT BETWEEN #{sch_remit_dt}
+                                AND #{sch_remit_dt}
     </select>
 
     <select id="getRemitList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-            SELECT  SQL_CALC_FOUND_ROWS
-                    WD.WD_NO                AS wd_no
-                    , WD.WD_STATUS          AS wd_status
-                    , GET_CODE_NM('WD_STATUS', WD.WD_STATUS)    AS wd_status_nm
-                    , WD.WORK_DATE          AS work_date
-                    , WD.CHAIN_NO           AS chain_no
-                    , TC.CHAIN_NM           AS chain_nm
-                    , WD.DOCU_SEQ           AS docu_seq
-                    , VD.VAN_CD             AS van_cd
-                    , GET_CODE_NM('VAN_CD', VD.VAN_CD)          AS van_cd_nm
-                    , WD.CARD_ACQ           AS card_acq
-                    , GET_CODE_NM('CARD_ACQ', WD.CARD_ACQ)      AS card_acq_nm
-                    , VD.CARD_NO            AS card_no        
-                    , WD.CARD_REG_NO        AS card_reg_no
-                    , VD.CARD_TYPE          AS card_type
-                    , GET_CODE_NM('CARD_TYPE', VD.CARD_TYPE)    AS card_type_nm
-                    , WD.CONF_NO            AS conf_no
-                    , WD.CONF_GB            AS conf_gb
-                    , CASE WHEN WD.CONF_GB = 'A' THEN '승인' ELSE '취소' END AS conf_gb_nm
-                    , WD.CONF_DTTM          AS conf_dttm
-                    , WD.CONF_AMT           AS conf_amt
-                    , WD.CARD_BUY_FLAG      AS card_buy_flag
-                    , WD.CARD_BUY_DATE      AS card_buy_date
-                    , WD.CARD_FEE_RATE      AS fard_fee_rate
-                    , WD.CARD_FEE_AMT       AS card_fee_amt
-                    , IFNULL(WD.CARD_RESV_AMT, 0)   AS card_resv_amt
-                    , IFNULL(WD.CARD_RESV_DAY, 0)   AS card_resv_day
-                    , IFNULL(WD.CARD_RESV_DATE, '') AS card_resv_date
-                    , IFNULL(WD.SVC_FEE_RATE, 0)    AS svc_fee_rate
-                    , IFNULL(WD.SVC_FEE_AMT, 0)     AS svc_fee_amt
-                    , IFNULL(WD.WD_BASE_AMT, 0)     AS wd_base_amt
-                    , IFNULL(WD.CRD_FEE_RATE, 0)    AS crd_fee_rate
-                    , IFNULL(WD.CRD_FEE_AMT, 0)     AS crd_fee_amt
-                    , IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
-                    , IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
-                    , IFNULL(WD.REMIT_NO, '')       AS remit_seq
-                    , IFNULL(WD.REMIT_DT, '')     AS remit_dt
-                    , IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
-                    , IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
-                    , IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg
-                    , WD.USE_YN                     AS use_yn
-                    , IFNULL(WD.WD_MEMO, '')        AS wd_memo
-                    , WD.CLOSE_YN                   AS close_yn
-                    , DATE_FORMAT(IFNULL(WD.UPT_DTTM, WD.ENT_DTTM), '%Y-%m-%d %H:%i:%s')              AS upt_dttm
-                    , DATE_FORMAT(IFNULL(WD.ENT_USER_ID,  WD.UPT_USER_ID), '%Y-%m-%d %H:%i:%s')       AS upt_user_id
-            FROM    TB_WITHDRAW WD
-                    STRAIGHT_JOIN TB_VAN_DOCU VD ON VD.DOCU_SEQ = WD.DOCU_SEQ
-                    STRAIGHT_JOIN TB_CHAIN   TC ON TC.CHAIN_NO = WD.CHAIN_NO 
-            WHERE   1=1
-            AND     WD.REMIT_NO    = #{sch_list_remit_no}            
-            <if test='sch_list_gb_val != ""'> 
-                <choose>
-                    <when test='sch_list_gb == "sch_list_gb_conf_no"'>
-                            AND  WD.CONF_NO  = #{sch_list_gb_val}
-                    </when> 
-                    <when test='sch_list_gb == "sch_list_gb_card_no"'>
-                            AND  WD.CARD_NO  = #{sch_list_gb_val}
-                    </when> 
-                    <when test='sch_list_gb == "sch_list_gb_conf_amt"'>
-                            AND  WD.CONF_AMT  = #{sch_list_gb_val}
-                    </when>  
-                </choose>                     
-            </if>  
+        /*WithdrawMapper.getRemitList*/
+        SELECT  SQL_CALC_FOUND_ROWS
+                WD.WD_NO                AS wd_no
+                , WD.WD_STATUS          AS wd_status
+                , GET_CODE_NM('WD_STATUS', WD.WD_STATUS)    AS wd_status_nm
+                , WD.WORK_DATE          AS work_date
+                , WD.CHAIN_NO           AS chain_no
+                , TC.CHAIN_NM           AS chain_nm
+                , WD.DOCU_SEQ           AS docu_seq
+                , VD.VAN_CD             AS van_cd
+                , GET_CODE_NM('VAN_CD', VD.VAN_CD)          AS van_cd_nm
+                , WD.CARD_ACQ           AS card_acq
+                , GET_CODE_NM('CARD_ACQ', WD.CARD_ACQ)      AS card_acq_nm
+                , VD.CARD_NO            AS card_no        
+                , WD.CARD_REG_NO        AS card_reg_no
+                , VD.CARD_TYPE          AS card_type
+                , GET_CODE_NM('CARD_TYPE', VD.CARD_TYPE)    AS card_type_nm
+                , WD.CONF_NO            AS conf_no
+                , WD.CONF_GB            AS conf_gb
+                , CASE WHEN WD.CONF_GB = 'A' THEN '승인' ELSE '취소' END AS conf_gb_nm
+                , WD.CONF_DTTM          AS conf_dttm
+                , WD.CONF_AMT           AS conf_amt
+                , WD.CARD_BUY_FLAG      AS card_buy_flag
+                , WD.CARD_BUY_DATE      AS card_buy_date
+                , WD.CARD_FEE_RATE      AS fard_fee_rate
+                , WD.CARD_FEE_AMT       AS card_fee_amt
+                , IFNULL(WD.CARD_RESV_AMT, 0)   AS card_resv_amt
+                , IFNULL(WD.CARD_RESV_DAY, 0)   AS card_resv_day
+                , IFNULL(WD.CARD_RESV_DATE, '') AS card_resv_date
+                , IFNULL(WD.SVC_FEE_RATE, 0)    AS svc_fee_rate
+                , IFNULL(WD.SVC_FEE_AMT, 0)     AS svc_fee_amt
+                , IFNULL(WD.WD_BASE_AMT, 0)     AS wd_base_amt
+                , IFNULL(WD.CRD_FEE_RATE, 0)    AS crd_fee_rate
+                , IFNULL(WD.CRD_FEE_AMT, 0)     AS crd_fee_amt
+                , IFNULL(WD.SUB_FLAG, 'N')      AS sub_flag
+                , IFNULL(WD.REMIT_AMT, 0)       AS remit_amt
+                , IFNULL(WD.REMIT_NO, '')       AS remit_seq
+                , IFNULL(WD.REMIT_DT, '')     AS remit_dt
+                , IFNULL(WD.DEPOSIT_FLAG, '')   AS deposit_flag
+                , IFNULL(WD.BANK_IN_DATE, '')   AS bank_in_date
+                , IFNULL(WD.CARDSALES_FG, '')   AS cardsales_fg
+                , WD.USE_YN                     AS use_yn
+                , IFNULL(WD.WD_MEMO, '')        AS wd_memo
+                , WD.CLOSE_YN                   AS close_yn
+                , DATE_FORMAT(IFNULL(WD.UPT_DTTM, WD.ENT_DTTM), '%Y-%m-%d %H:%i:%s')              AS upt_dttm
+                , DATE_FORMAT(IFNULL(WD.ENT_USER_ID,  WD.UPT_USER_ID), '%Y-%m-%d %H:%i:%s')       AS upt_user_id
+        FROM    TB_WITHDRAW WD
+                STRAIGHT_JOIN TB_VAN_DOCU VD ON VD.DOCU_SEQ = WD.DOCU_SEQ
+                STRAIGHT_JOIN TB_CHAIN   TC ON TC.CHAIN_NO = WD.CHAIN_NO 
+        WHERE   1=1
+        AND     WD.REMIT_NO    = #{sch_list_remit_no}            
+        <if test='sch_list_gb_val != ""'> 
             <choose>
-                <when test="orderBy != '' and orderBy != null">
-                    ORDER BY ${orderBy}
-                </when>
-                <otherwise>
-                    ORDER BY 1
-                </otherwise>
-            </choose>                
-            LIMIT  ${start}, ${end}
+                <when test='sch_list_gb == "sch_list_gb_conf_no"'>
+                        AND  WD.CONF_NO  = #{sch_list_gb_val}
+                </when> 
+                <when test='sch_list_gb == "sch_list_gb_card_no"'>
+                        AND  WD.CARD_NO  = #{sch_list_gb_val}
+                </when> 
+                <when test='sch_list_gb == "sch_list_gb_conf_amt"'>
+                        AND  WD.CONF_AMT  = #{sch_list_gb_val}
+                </when>  
+            </choose>                     
+        </if>  
+        <choose>
+            <when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY 1
+            </otherwise>
+        </choose>                
+        LIMIT  ${start}, ${end}
     </select>
     <select id="getRemitSubRecvList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
         /*WithdrawMapper.getRemitSubRecvList*/

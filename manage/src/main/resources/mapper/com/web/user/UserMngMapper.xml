@@ -29,7 +29,9 @@
                 JOIN TB_CORP TC ON TC.CORP_CD = TU.CORP_CD 
                         AND TC.USE_YN = 'Y'
          WHERE  1 = 1
+        <if test ="userAuthGrpCd != 'AG0001' and userAuthGrpCd != 'AG0002' ">            
            AND  TU.USE_YN = 'Y'
+        </if>
         <if test="userAuthGrpCd != null and userAuthGrpCd != 'AG0001'">
            AND TU.AUTH_GRP_CD != 'AG0001'       /* 시스템 관리자 제외 */ 
         </if> 

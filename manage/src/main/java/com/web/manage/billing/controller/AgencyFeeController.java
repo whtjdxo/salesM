@@ -236,7 +236,7 @@ public class AgencyFeeController {
             summTitle.setCellValue("합계");            
             summTitle.setCellStyle(excelStyle.getStyle("header"));
 
-            int[] sumCols = {4,5,6,7,8,9,10,11,12};
+            int[] sumCols = {4,5,6,7,8,9,10,11,12,13};
             for (int col : sumCols) {
                 String colLetter = CellReference.convertNumToColString(col);
                 String formula = String.format("SUM(%s2:%s%d)", colLetter, colLetter, rowIndex);
@@ -431,28 +431,35 @@ public class AgencyFeeController {
             hashmapParam.put("sord", "");
             hashmapParam.put("start", "0");
             hashmapParam.put("end", "9999");
-            List<HashMap<String, Object>> list = agencyFeeService.getAgencyFeeList(hashmapParam);
 
+            List<HashMap<String, Object>> list = agencyFeeService.getAgencyFeeList(hashmapParam);
+            System.out.println("=====list size=====>" + list.size());
             // Create an Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Docu List");
+            Sheet sheet = workbook.createSheet("수수료 상세내역");
             ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
 
+            String chainNm = "";
+            if (hashmapParam.containsKey("sch_chain_nm")) {
+                chainNm = String.valueOf(hashmapParam.get("sch_chain_nm"));
+            }
             // Create header row
             Row titleRow = sheet.createRow(0);
             sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("수수료 현황");            
+            titleCell.setCellValue(chainNm + " 수수료 상세내역");            
             titleCell.setCellStyle(excelStyle.getStyle("title"));
 
             // Create header row
             Row headerRow = sheet.createRow(1);
             String[] headers = {
-                "NO", "대리점 명", "가맹점 명", "대표자 명"                
+                "NO", "입금확인일"
                 , "승인건수", "승인금액","정산 원금액", "정산 수수료", "여신수수료", "비즈론수수료"
                 , "대리점-정산수수료", "대리점-여신수수료", "대리점-비즈론수수료", "대리점-지급총액"
             };
             
+            System.out.println("=====headers length=====>" + headers.length);
+
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
@@ -470,11 +477,9 @@ public class AgencyFeeController {
                 int colIndex = 0;
                 // 1. NO (row number)
                 dataRow.createCell(colIndex++).setCellValue(rowIndex - 1);                
-                // 2. 출금
-                dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("agency_nm", "").toString());
-                dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("chain_nm", "").toString());
-                dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("ceo_nm", "").toString());
-
+                // 2. 입금확인일
+                dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("adjust_date", "").toString());
+                
                 // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_cnt")))); 
                 Cell cell = dataRow.createCell(colIndex++);
                 cell.setCellValue(Double.parseDouble(String.valueOf(row.get("conf_cnt"))));
@@ -523,7 +528,7 @@ public class AgencyFeeController {
             summTitle.setCellValue("합계");            
             summTitle.setCellStyle(excelStyle.getStyle("header"));
 
-            int[] sumCols = {4,5,6,7,8,9,10,11,12};
+            int[] sumCols = {2,3,4,5,6,7,8,9,10,11};
             for (int col : sumCols) {
                 String colLetter = CellReference.convertNumToColString(col);
                 String formula = String.format("SUM(%s2:%s%d)", colLetter, colLetter, rowIndex);
@@ -533,12 +538,12 @@ public class AgencyFeeController {
             }
             
             // 테두리 그리기
-            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 13);
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 11);
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
             workbook.close();
-
+            System.out.println("=====Excel Created=====>");
             // Set response headers
             HttpHeaders hHeaders = new HttpHeaders();
             hHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);

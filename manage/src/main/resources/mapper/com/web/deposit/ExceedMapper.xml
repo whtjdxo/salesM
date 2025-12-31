@@ -6,6 +6,7 @@
 	</select> 
 	
     <select id="getExcSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		/* ExceedMapper.getExcSummary */
         SELECT  SQL_CALC_FOUND_ROWS
 				TC.CHAIN_NO                     AS chain_no
 				, TC.CHAIN_NM                   AS chain_nm
@@ -29,10 +30,10 @@
 						WHERE 	USE_YN = 'Y'
 						AND  	EXC_DATE BETWEEN #{sch_exc_sdt} 
 		  									AND #{sch_exc_edt} 
-					<if test='sch_all == null'>
+					<!-- <if test='sch_all == null'>
 						AND  EXC_STATUS IN ('100000', '000000')
 						AND  REMAIN_AMT  &gt; 0
-					</if> 			
+					</if> 			 -->
 						GROUP 	BY CHAIN_NO
 				) EM ON EM.CHAIN_NO = TC.CHAIN_NO 
 		WHERE 	TC.USE_YN = 'Y'
