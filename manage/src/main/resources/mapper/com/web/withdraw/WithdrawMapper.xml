@@ -681,46 +681,47 @@
             LIMIT  ${start}, ${end}
     </select>
     <select id="getRemitSubRecvList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-            SELECT  SQL_CALC_FOUND_ROWS
-                    SM.SUB_NO                                       AS sub_no
-                    , SM.SUB_CODE                                   AS sub_code
-                    , GET_CODE_NM ('SUB_CODE', SM.SUB_CODE) 	AS sub_code_nm
-                    , SM.CHAIN_NO                                   AS chain_no
-                    , SM.SUB_STATUS                                 AS sub_status
-                    , GET_CODE_NM ('SUB_STATUS', SM.SUB_STATUS) 	AS sub_status_nm
-                    , SM.OCCUR_AMT                                  AS occur_amt
-                    , SM.OCCUR_BASE_AMT                             AS occur_base_amt
-                    , SM.OCCUR_SVC_AMT                              AS occur_svc_amt
-                    , SM.OCCUR_CRD_AMT                              AS occur_crd_amt
-                    , IFNULL(SR.RECV_AMT, 0)		        AS recv_amt
-                    , IFNULL(SR.RECV_BASE_AMT, 0)			AS recv_base_amt
-                    , IFNULL(SR.RECV_SVC_AMT, 0)			AS recv_svc_amt
-                    , IFNULL(SR.RECV_CRD_AMT, 0)			AS recv_crd_amt
-                    , SM.REMAIN_AMT					        AS remain_amt
-                    , SM.REMAIN_BASE_AMT 				    AS remain_base_amt
-                    , SM.REMAIN_SVC_AMT				        AS remain_svc_amt
-                    , SM.REMAIN_CRD_AMT				        AS remain_crd_amt
-                    , IFNULL(SM.SUB_MEMO, '')               AS sub_memo
-            FROM    TB_SUB_MST SM 
-                    STRAIGHT_JOIN (
-                        SELECT SUB_NO, REMIT_NO
-                                , SUM(RECV_AMT) 	AS RECV_AMT
-                                , SUM(RECV_BASE_AMT) AS RECV_BASE_AMT 
-                                , SUM(RECV_SVC_AMT)		AS RECV_SVC_AMT 
-                                , SUM(RECV_CRD_AMT)		AS RECV_CRD_AMT   
-                        FROM 	TB_SUB_RECEIVE
-                        WHERE 	REMIT_NO = #{sch_sub_recv_remit_no}
-                        GROUP 	BY SUB_NO, REMIT_NO 
-                    ) SR ON SR.SUB_NO = SM.SUB_NO 
-            <choose>
-                <when test="orderBy != '' and orderBy != null">
-                    ORDER BY ${orderBy}
-                </when>
-                <otherwise>
-                    ORDER BY 1
-                </otherwise>
-            </choose>                
-            LIMIT  ${start}, ${end}
+        /*WithdrawMapper.getRemitSubRecvList*/
+        SELECT  SQL_CALC_FOUND_ROWS
+                SM.SUB_NO                                       AS sub_no
+                , SM.SUB_CODE                                   AS sub_code
+                , GET_CODE_NM ('SUB_CODE', SM.SUB_CODE) 	AS sub_code_nm
+                , SM.CHAIN_NO                                   AS chain_no
+                , SM.SUB_STATUS                                 AS sub_status
+                , GET_CODE_NM ('SUB_STATUS', SM.SUB_STATUS) 	AS sub_status_nm
+                , SM.OCCUR_AMT                                  AS occur_amt
+                , SM.OCCUR_BASE_AMT                             AS occur_base_amt
+                , SM.OCCUR_SVC_AMT                              AS occur_svc_amt
+                , SM.OCCUR_CRD_AMT                              AS occur_crd_amt
+                , IFNULL(SR.RECV_AMT, 0)		        AS recv_amt
+                , IFNULL(SR.RECV_BASE_AMT, 0)			AS recv_base_amt
+                , IFNULL(SR.RECV_SVC_AMT, 0)			AS recv_svc_amt
+                , IFNULL(SR.RECV_CRD_AMT, 0)			AS recv_crd_amt
+                , SM.REMAIN_AMT					        AS remain_amt
+                , SM.REMAIN_BASE_AMT 				    AS remain_base_amt
+                , SM.REMAIN_SVC_AMT				        AS remain_svc_amt
+                , SM.REMAIN_CRD_AMT				        AS remain_crd_amt
+                , IFNULL(SM.SUB_MEMO, '')               AS sub_memo
+        FROM    TB_SUB_MST SM 
+                JOIN (
+                    SELECT SUB_NO, REMIT_NO
+                            , SUM(RECV_AMT) 	AS RECV_AMT
+                            , SUM(RECV_BASE_AMT) AS RECV_BASE_AMT 
+                            , SUM(RECV_SVC_AMT)		AS RECV_SVC_AMT 
+                            , SUM(RECV_CRD_AMT)		AS RECV_CRD_AMT   
+                    FROM 	TB_SUB_RECEIVE
+                    WHERE 	REMIT_NO = #{sch_sub_recv_remit_no}
+                    GROUP 	BY SUB_NO, REMIT_NO 
+                ) SR ON SR.SUB_NO = SM.SUB_NO 
+        <choose>
+            <when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY 1
+            </otherwise>
+        </choose>                
+        LIMIT  ${start}, ${end}
     </select>       
     <update id="callProcRemitCancel" parameterType="com.web.manage.withdraw.domain.ProcRemitVO" statementType="CALLABLE">
             { 
