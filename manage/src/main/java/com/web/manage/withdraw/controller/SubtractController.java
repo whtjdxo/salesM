@@ -142,8 +142,9 @@ public class SubtractController {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
         Gson gson = new Gson();
-        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");        
         hashmapParam.put("user_id", member.getUserId());
+        hashmapParam.put("userAuthGrpCd", member.getAuthGrpCd());
         String jString = null; 
         try {
             PageingVO pageing = new PageingVO();

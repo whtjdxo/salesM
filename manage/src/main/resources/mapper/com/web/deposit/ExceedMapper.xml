@@ -115,9 +115,9 @@
 		 WHERE 	EM.CHAIN_NO = #{chain_no} 
 		   AND  EM.EXC_DATE BETWEEN #{sch_exc_sdt} 
 		  						AND #{sch_exc_edt} 
-		<if test="del_view == null">											
-		  AND  EM.USE_YN = 'Y'		
-		</if>
+		<if test ="userAuthGrpCd != 'AG0001' and userAuthGrpCd != 'AG0002' ">            
+           AND  EM.USE_YN = 'Y'
+        </if>
 		<if test="sch_exc_type != null and sch_exc_type != ''"> 
 			AND  EM.EXC_TYPE = #{sch_exc_type}  
 		</if>
@@ -149,9 +149,9 @@
 		 WHERE 	EM.CHAIN_NO = #{chain_no} 
 		   AND  EM.EXC_DATE BETWEEN #{sch_exc_sdt} 
 		  						AND #{sch_exc_edt} 
-		<if test="del_view == null">											
-		  AND  EM.USE_YN = 'Y'		
-		</if>
+		<if test ="userAuthGrpCd != 'AG0001' and userAuthGrpCd != 'AG0002' ">            
+           AND  EM.USE_YN = 'Y'
+        </if>
 		<if test="sch_exc_type != null and sch_exc_type != ''"> 
 			AND  EM.EXC_TYPE = #{sch_exc_type}  
 		</if>
@@ -186,7 +186,7 @@
 		  FROM 	TB_EXCEED_MST EM
 				LEFT OUTER JOIN TB_REMIT_MST RM ON RM.REMIT_NO = EM.REMIT_NO  		
 		 WHERE 	EM.CHAIN_NO = #{sch_chain_no} 		
-		   AND  EM.USE_YN = 'Y'
+		   AND  EM.USE_YN = 'Y' 
 		   AND 	EM.EXC_STATUS = '100000'
 		<choose>
 			<when test="orderBy != '' and orderBy != null">

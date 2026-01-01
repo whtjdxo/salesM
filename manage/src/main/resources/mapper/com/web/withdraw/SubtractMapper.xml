@@ -183,8 +183,11 @@
         FROM 	TB_SUB_MST SM
                 STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
                                 AND TC.USE_YN  = 'Y'
-        WHERE	SM.USE_YN = 'Y'          
+        WHERE	1 = 1
         AND     SM.CHAIN_NO =  #{sch_chain_no}
+        <if test ="userAuthGrpCd != 'AG0001' and userAuthGrpCd != 'AG0002' ">            
+              AND  SM.USE_YN = 'Y'
+        </if>        
         <if test='sch_reg_sdt != null and sch_reg_sdt != ""'>
             AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
         </if>

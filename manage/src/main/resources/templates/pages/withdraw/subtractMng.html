@@ -229,7 +229,14 @@
               },
             },
               columns: [
-                    { data: 'sub_code_nm' }
+                    { data: 'sub_code_nm' 
+                      , render: function(data, type, row) {
+                          if (row.use_yn === 'N') {
+                            return '<span style="background-color: red; color: white; padding: 2px 4px; border-radius: 3px;">' + data + '</span>';
+                          }
+                          return data;
+                        }
+                    }
                   , { data: 'reg_date' }
                   , { data: 'resv_date' }
                   , { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }

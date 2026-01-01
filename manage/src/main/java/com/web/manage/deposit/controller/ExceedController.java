@@ -127,6 +127,8 @@ public class ExceedController {
         Gson gson = new Gson();
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         hashmapParam.put("user_id", member.getUserId());
+        hashmapParam.put("userAuthGrpCd", member.getAuthGrpCd());
+        
         String jString = null; 
         try {
             PageingVO pageing = new PageingVO();

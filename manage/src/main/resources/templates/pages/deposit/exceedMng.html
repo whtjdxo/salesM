@@ -256,7 +256,13 @@
                       orderable: false,
                       className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
                     }
-                  , { data: 'exc_code_nm' }
+                    , { data: 'exc_code_nm', render: function(data, type, row) {
+                        if (row.use_yn === 'N') {
+                          return '<span style="background-color: red; color: white; padding: 2px 4px; border-radius: 3px;">' + data + '</span>';
+                        }
+                        return data;
+                    }
+                    }
                   , { data: 'exc_date' }
                   , { data: 'exc_status_nm' }
                   , { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
