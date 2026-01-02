@@ -146,6 +146,101 @@ public class LoanController {
         return jString;  
     }
 
+    @RequestMapping(value = "loanMng/loanSummaryExcel", method = RequestMethod.POST)
+    public ResponseEntity<byte[]> getLoanSummaryExcel(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        hashmapParam.put("userCorpCd", member.getUserCorpCd());
+        hashmapParam.put("userCorpType", member.getUserCorpType());        
+        try {
+            // Fetch data for the Excel file
+            hashmapParam.put("sidx", "");
+            hashmapParam.put("sord", "");
+            hashmapParam.put("start", "0");
+            hashmapParam.put("end", "9999");
+            List<HashMap<String, Object>> list = loanService.getLoanSummary(hashmapParam);
+
+            // Create an Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("List");
+            ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
+
+            // Create header row
+            Row titleRow = sheet.createRow(0);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("정산 상세 리스트");            
+            titleCell.setCellStyle(excelStyle.getStyle("title"));
+
+            // Create header row
+            Row headerRow = sheet.createRow(1);
+            String[] headers = {
+                "가 맹 점 명"        , "대 표 자"      , "즉 결 잔 고"     ,  "비즈론 대 출"       , "스팟자금 대출"
+                , "기타 대출"        , "전체 대출잔액"  , "계약상태"        , "출금상태"
+            };
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(excelStyle.getStyle("header"));
+                // 각 컬럼 너비 자동 조정
+                sheet.autoSizeColumn(i);                
+                // 한글의 경우 autoSizeColumn이 완벽하지 않을 수 있어 약간의 여백 추가
+                sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
+            }
+            // Populate data rows
+            int rowIndex = 2;
+            for (HashMap<String, Object> row : list) {
+                Row dataRow = sheet.createRow(rowIndex++);
+                dataRow.createCell(0).setCellValue(String.valueOf(row.get("chain_nm")));
+                dataRow.createCell(1).setCellValue(String.valueOf(row.get("ceo_nm")));
+                Cell c02 = dataRow.createCell(2);
+                c02.setCellValue(Double.parseDouble(String.valueOf(row.get("tot_use_amt"))));
+                c02.setCellStyle(excelStyle.getStyle("number"));
+                
+                Cell c03 = dataRow.createCell(3);
+                c03.setCellValue(Double.parseDouble(String.valueOf(row.get("biz_loan_amt"))));
+                c03.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c04 = dataRow.createCell(4);
+                c04.setCellValue(Double.parseDouble(String.valueOf(row.get("spot_loan_amt"))));
+                c04.setCellStyle(excelStyle.getStyle("number"));
+                
+                Cell c05 = dataRow.createCell(5);
+                c05.setCellValue(Double.parseDouble(String.valueOf(row.get("etc_loan_amt"))));
+                c05.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c06 = dataRow.createCell(6);
+                c06.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_amt"))));
+                c06.setCellStyle(excelStyle.getStyle("number"));
+
+                dataRow.createCell(7).setCellValue(String.valueOf(row.get("svc_stat_nm")));
+                dataRow.createCell(8).setCellValue(String.valueOf(row.get("remit_stat_nm")));
+ 
+            }
+            // 테두리 그리기
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 8);
+
+            // Write workbook to a byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            workbook.close();
+
+            // Set response headers
+            HttpHeaders hHeaders = new HttpHeaders();
+            hHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            hHeaders.setContentDispositionFormData("attachment", "chain_loan_list.xlsx");
+
+            return ResponseEntity.ok()
+                    .headers(hHeaders)
+                    .body(outputStream.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+ 
+    }
+
     @RequestMapping("loanMng/chainLoanList")    
     public @ResponseBody String getChainLoanList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();

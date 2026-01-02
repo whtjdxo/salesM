@@ -236,6 +236,33 @@
           fn_frm_counsel_reset();
         });
 
+        $('#btn_excel').click(function () {
+          var formData = $('#frm_sch_summ_list').serializeObject(); 
+          $('#globalLoadingBar').show();  
+          $.ajax({
+            url: '/loan/loan/loanMng/loanSummaryExcel',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            xhrFields: {
+              responseType: 'blob'
+            },
+            success: function (data, status, xhr) {
+              var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+              var link = document.createElement('a');
+              link.href = window.URL.createObjectURL(blob);
+              link.download = '대출 현황.xlsx';
+              link.click();
+            },
+            error: function (xhr, status, error) {
+              alert('Excel download failed.');
+            },
+            complete: function () {
+              $('#globalLoadingBar').hide();
+            }
+          });
+        }); 
+
         // --------------------------------------------------------------- frm_chain_list 정보 처리 ---------------------------------------------------
         var tbl_chain_loan_list = $('#tbl_chain_loan_list').DataTable({
             processing: true,
@@ -1350,9 +1377,9 @@
               <div class="col-lg-9">
                 <form id="frm_sch_summ_list" name="frm_sch_summ_list" onsubmit="return false;" novalidate="">
                   <div class="row mb-0">
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                       <div class="input-group input-group-sm mb-0">
-                        <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_corp_cd">여신사</label>
+                        <!-- <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_corp_cd">여신사</label> -->
                         <select class="form-select form-control-sm" id="sch_corp_cd" name="sch_corp_cd" style="width: 100px">
                           <option value="">선택</option> 
                         </select>
@@ -1370,13 +1397,17 @@
                         </div> 
                       </div>
                     </div>
-                    <div class="col-sm-5">
+                    <div class="col-sm-4">
                       <div class="input-group input-group-sm mb-0">
-                        <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_chain_nm">가맹점 명</label>
+                        <!-- <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_chain_nm">가맹점 명</label> -->
                         <input type="text" class="form-control form-control-sm" id="sch_chain_nm" name="sch_chain_nm" />
                         <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
                       </div>
                     </div>
+                    <div class="col-sm-2">
+                      <span class="input-group-btn"><button type="button" class="btn btn-success btn-sm" id="btn_excel" name="btn_excel">엑셀</button></span> 
+                    </div>
+
                   </div>
                 </form>
               </div>

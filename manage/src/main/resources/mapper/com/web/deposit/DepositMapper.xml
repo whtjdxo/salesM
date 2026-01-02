@@ -861,4 +861,61 @@
 		}
 	</update>
 
+	<select id="getAcqDepoResvAmtList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		/* DepositMapper.getAcqDepoResvAmtList  */
+		SELECT 	SQL_CALC_FOUND_ROWS
+				WD.CHAIN_NO								AS chain_no
+				, TC.CHAIN_NM							AS chain_nm
+				, WD.CARD_ACQ 							AS card_acq
+				, GET_CODE_NM('CARD_ACQ', WD.CARD_ACQ) 	AS card_acq_nm
+				, IFNULL(SUM(CASE WHEN DATEDIFF(DATE(CARD_RESV_DATE) , CURDATE()) = 1 THEN CARD_RESV_AMT ELSE NULL END ), 0) AS resv_amt_day1 
+				, IFNULL(SUM(CASE WHEN DATEDIFF(DATE(CARD_RESV_DATE) , CURDATE()) = 2 THEN CARD_RESV_AMT ELSE NULL END ), 0) AS resv_amt_day2
+				, IFNULL(SUM(CASE WHEN DATEDIFF(DATE(CARD_RESV_DATE) , CURDATE()) = 3 THEN CARD_RESV_AMT ELSE NULL END ), 0) AS resv_amt_day3
+				, IFNULL(SUM(CASE WHEN DATEDIFF(DATE(CARD_RESV_DATE) , CURDATE()) = 4 THEN CARD_RESV_AMT ELSE NULL END ), 0) AS resv_amt_day4
+				, IFNULL(SUM(CASE WHEN DATEDIFF(DATE(CARD_RESV_DATE) , CURDATE()) = 5 THEN CARD_RESV_AMT ELSE NULL END ), 0) AS resv_amt_day5
+				, IFNULL(SUM(CASE WHEN DATEDIFF(DATE(CARD_RESV_DATE) , CURDATE()) &lt;= 2 THEN CARD_RESV_AMT ELSE NULL END ), 0) AS resv_amt_in2day
+				, IFNULL(SUM(CARD_RESV_AMT), 0) 		AS tot_resv_amt
+		  FROM 	TB_WITHDRAW WD
+		  		STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = WD.CHAIN_NO
+		  						AND TC.USE_YN = 'Y'
+		  						AND TC.SVC_STAT IN ('O', 'R')
+		 WHERE 	WD.CARD_RESV_DATE &gt; DATE_FORMAT(NOW(), '%Y-%m-%d')
+		   AND  WD.CARD_RESV_DATE &lt; DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 6 DAY), '%Y-%m-%d')
+		   <if test="sch_acq != null and sch_acq != ''">
+ 		   		AND  WD.CARD_ACQ = #{sch_acq}
+		   </if>
+		   AND  WD.USE_YN    = 'Y'
+		   AND  WD.REMIT_NO IS NOT NULL			
+    	 GROUP 	BY WD.CHAIN_NO, WD.CARD_ACQ 
+		<choose>
+			<when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
+			<otherwise>
+				ORDER BY 1
+			</otherwise>
+		</choose>          
+		LIMIT  ${start}, ${end}       
+	</select> 
+
+	<select id="getAcqDepoResvAmtTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		/* DepositMapper.getAcqDepoResvAmtTotal  */
+		SELECT 	  IFNULL(SUM(CASE WHEN DATEDIFF(DATE(CARD_RESV_DATE) , CURDATE()) = 1 THEN CARD_RESV_AMT ELSE NULL END ), 0) AS resv_amt_day1 
+				, IFNULL(SUM(CASE WHEN DATEDIFF(DATE(CARD_RESV_DATE) , CURDATE()) = 2 THEN CARD_RESV_AMT ELSE NULL END ), 0) AS resv_amt_day2
+				, IFNULL(SUM(CASE WHEN DATEDIFF(DATE(CARD_RESV_DATE) , CURDATE()) = 3 THEN CARD_RESV_AMT ELSE NULL END ), 0) AS resv_amt_day3
+				, IFNULL(SUM(CASE WHEN DATEDIFF(DATE(CARD_RESV_DATE) , CURDATE()) = 4 THEN CARD_RESV_AMT ELSE NULL END ), 0) AS resv_amt_day4
+				, IFNULL(SUM(CASE WHEN DATEDIFF(DATE(CARD_RESV_DATE) , CURDATE()) = 5 THEN CARD_RESV_AMT ELSE NULL END ), 0) AS resv_amt_day5
+				, IFNULL(SUM(CASE WHEN DATEDIFF(DATE(CARD_RESV_DATE) , CURDATE()) &lt;= 2 THEN CARD_RESV_AMT ELSE NULL END ), 0) AS resv_amt_in2day
+				, IFNULL(SUM(CARD_RESV_AMT), 0) 		AS tot_resv_amt
+		  FROM 	TB_WITHDRAW WD
+		  		STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = WD.CHAIN_NO
+		  						AND TC.USE_YN = 'Y'
+		  						AND TC.SVC_STAT IN ('O', 'R')
+		 WHERE 	WD.CARD_RESV_DATE &gt; DATE_FORMAT(NOW(), '%Y-%m-%d')
+		   AND  WD.CARD_RESV_DATE &lt; DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 6 DAY), '%Y-%m-%d')
+ 		   AND  WD.CARD_ACQ = #{sch_acq}
+		   AND  WD.USE_YN    = 'Y'
+		   AND  WD.REMIT_NO IS NOT NULL			    	 
+	</select> 
+	
 </mapper>

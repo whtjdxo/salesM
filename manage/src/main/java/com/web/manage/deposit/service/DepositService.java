@@ -285,4 +285,13 @@ public class DepositService {
         } 
     }
 
+
+    public List<HashMap<String, Object>> getAcqDepoResvAmtList(HashMap<String, Object> hashmapParam) {
+        return depositMapper.getAcqDepoResvAmtList(hashmapParam);
+    }
+
+    public HashMap<String, Object> getAcqDepoResvAmtTotal(HashMap<String, Object> hashmapParam) {
+        return depositMapper.getAcqDepoResvAmtTotal(hashmapParam);
+    } 
+
 }

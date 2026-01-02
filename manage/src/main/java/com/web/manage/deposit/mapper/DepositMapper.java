@@ -50,4 +50,7 @@ public interface DepositMapper {
 
     boolean excelUploadBankData(DepositExcelRowDataVO excelRowdataVo);
     void callProcTransDepositBatch(ProcTransDepositVO procTransDepositVo);
+
+    List<HashMap<String, Object>> getAcqDepoResvAmtList(HashMap<String, Object> hashmapParam);
+    HashMap<String, Object> getAcqDepoResvAmtTotal(HashMap<String, Object> hashmapParam);
 }

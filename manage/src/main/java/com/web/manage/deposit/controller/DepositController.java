@@ -65,6 +65,11 @@ public class DepositController {
     public String depoExcelUploadview() {
         return "pages/deposit/depoExcelUpload";
     }
+    // 매입사별 입금예정리스트
+    @RequestMapping("deposit/acqResvAmt/view")
+    public String acqResvAmtListview() {
+        return "pages/deposit/acqResvAmtList";
+    }
 
     @RequestMapping(value = "deposit/depoMng/depositSummary", method = RequestMethod.POST)
     public @ResponseBody String getDepositSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
@@ -1016,4 +1021,172 @@ public class DepositController {
         }
         return result;
     }
+
+    @RequestMapping(value = "deposit/acqResvAmtList", method = RequestMethod.POST)
+    public @ResponseBody String getAcqDepoResvAmtList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> totalSumm = new HashMap<String, Object>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam); 
+
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                Object orderObj = pageing.getOrder();  // 타입이 List 또는 Map 둘 다 가능하다고 가정
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    // 다중 정렬
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    // 단일 정렬 → List로 감싸주기
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }  
+
+                StringBuilder orderBy = new StringBuilder();
+
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data")) ;
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1"); // 기본 정렬
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
+            } else {
+                hashmapParam.put("orderBy", "");    
+            }   
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = depositService.getAcqDepoResvAmtList(hashmapParam);
+            int records = depositService.getQueryTotalCnt();
+            totalSumm = depositService.getAcqDepoResvAmtTotal(hashmapParam);
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+            hashmapResult.put("totalSumm", totalSumm);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;  
+    }
+
+    @RequestMapping(value = "deposit/acqResvAmtExcel", method = RequestMethod.POST)
+    public ResponseEntity<byte[]> getAcqResvAmtExcel(@RequestBody HashMap<String, Object> hashmapParam) {
+        try {
+            // Fetch data for the Excel file
+            hashmapParam.put("sidx", "");
+            hashmapParam.put("sord", "");
+            hashmapParam.put("start", "0");
+            hashmapParam.put("end", "9999");
+            List<HashMap<String, Object>> list = depositService.getAcqDepoResvAmtList(hashmapParam);
+
+            // Create an Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("List");
+            ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
+
+            // Create header row
+            Row titleRow = sheet.createRow(0);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("가맹점 입금예정액");            
+            titleCell.setCellStyle(excelStyle.getStyle("title"));
+
+            Row headerRow = sheet.createRow(1);
+            String[] headers = {
+                  "번호"        , "가맹점 명"       , "매입사"          ,  "Day + 1"       , "Day + 2"
+                , "Day + 3"     , "Day + 4"        , "Day + 5"         , "2일내 예정액"       , "입금예정총액"
+            };
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(excelStyle.getStyle("header"));
+                sheet.autoSizeColumn(i);                
+                sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
+            }
+            // Populate data rows
+            System.out.println("list size : " + list.size());
+            int rowIndex = 2;
+            int rowNum = 1;
+            for (HashMap<String, Object> row : list) {
+                Row dataRow = sheet.createRow(rowIndex++);
+                System.out.println("table data : " + row);
+                dataRow.createCell(0).setCellValue(rowNum++);                
+                dataRow.createCell(1).setCellValue(String.valueOf(row.get("chain_nm")));
+                dataRow.createCell(2).setCellValue(String.valueOf(row.get("card_acq_nm"))); 
+
+                Cell c03 = dataRow.createCell(3);
+                c03.setCellValue(Double.parseDouble(String.valueOf(row.get("resv_amt_day1"))));
+                c03.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c04 = dataRow.createCell(4);
+                c04.setCellValue(Double.parseDouble(String.valueOf(row.get("resv_amt_day2"))));
+                c04.setCellStyle(excelStyle.getStyle("number"));
+                
+                Cell c05 = dataRow.createCell(5);
+                c05.setCellValue(Double.parseDouble(String.valueOf(row.get("resv_amt_day3"))));
+                c05.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c06 = dataRow.createCell(6);
+                c06.setCellValue(Double.parseDouble(String.valueOf(row.get("resv_amt_day4"))));
+                c06.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c07 = dataRow.createCell(7);
+                c07.setCellValue(Double.parseDouble(String.valueOf(row.get("resv_amt_day5"))));
+                c07.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c08 = dataRow.createCell(8);
+                c08.setCellValue(Double.parseDouble(String.valueOf(row.get("resv_amt_in2day"))));
+                c08.setCellStyle(excelStyle.getStyle("number"));
+
+                Cell c09 = dataRow.createCell(9);
+                c09.setCellValue(Double.parseDouble(String.valueOf(row.get("tot_resv_amt"))));
+                c09.setCellStyle(excelStyle.getStyle("number"));
+            }
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 9);
+            // Write workbook to a byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            workbook.close();
+
+            // Set response headers
+            HttpHeaders hHeaders = new HttpHeaders();
+            hHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            hHeaders.setContentDispositionFormData("attachment", "resvAmt.xlsx");
+
+            return ResponseEntity.ok()
+                    .headers(hHeaders)
+                    .body(outputStream.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
+
 }
