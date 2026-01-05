@@ -511,11 +511,14 @@
                 <if test="sch_chain_nm != null and sch_chain_nm != ''"> 
                         AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
                 </if>  
+                <if test="sch_chain_no != null and sch_chain_no != ''"> 
+                        AND  TC.CHAIN_NO = #{sch_chain_no} 
+                </if> 
                 STRAIGHT_JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID  
                 STRAIGHT_JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
                                 AND CO.USE_YN = 'Y'
-            WHERE	RM.REMIT_DT BETWEEN #{sch_remit_dt}
-                                    AND #{sch_remit_dt}
+            WHERE	RM.REMIT_DT BETWEEN #{sch_remit_sdt}
+                                    AND #{sch_remit_edt}
         <choose>
             <when test="orderBy != '' and orderBy != null">
                 ORDER BY ${orderBy}
@@ -567,7 +570,10 @@
                         AND  TC.CORP_CD = #{sch_corp_no} 
                 </if> 
                 <if test="sch_chain_nm != null and sch_chain_nm != ''"> 
-                        AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                        AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%') 
+                </if> 
+                <if test="sch_chain_no != null and sch_chain_no != ''"> 
+                        AND  TC.CHAIN_NO = #{sch_chain_no} 
                 </if> 
                 STRAIGHT_JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
                                 AND CO.USE_YN = 'Y'
@@ -600,11 +606,14 @@
                 <if test="sch_chain_nm != null and sch_chain_nm != ''"> 
                         AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
                 </if>  
+                <if test="sch_chain_no != null and sch_chain_no != ''"> 
+                        AND  TC.CHAIN_NO = #{sch_chain_no} 
+                </if> 
                 STRAIGHT_JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID  
                 STRAIGHT_JOIN TB_CORP CO ON CO.CORP_CD = TC.CORP_CD
                                 AND CO.USE_YN = 'Y'
-        WHERE	RM.REMIT_DT BETWEEN #{sch_remit_dt}
-                                AND #{sch_remit_dt}
+        WHERE	RM.REMIT_DT BETWEEN #{sch_remit_sdt}
+                                AND #{sch_remit_edt}
     </select>
 
     <select id="getRemitList" parameterType="java.util.HashMap" resultType="java.util.HashMap">

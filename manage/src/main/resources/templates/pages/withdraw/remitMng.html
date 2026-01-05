@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
-  <head>
+  
+  <head> 
     <title>송금 관리</title>
     <script src="/vendors/tinymce/tinymce.min.js"></script>
     <script src="/vendors/datatables.net/dataTables.min.js"></script>
@@ -9,8 +10,18 @@
     <script src="/vendors/dropzone/dropzone-min.js"></script>
     <script src="/js/jquery.form.js"></script> 
     <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />    
+    
+    <!-- ✅ Select2 추가 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- ✅ XLSX (SheetJS) 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Select2 Bootstrap5 Theme -->
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.1.1/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+    
     <!-- DataTables Select CSS 추가 -->
     <link rel="stylesheet" href="/css/custom-salesm.css" />
+     
 
     <script th:inline="none">      
       $(document).ready(function () {           
@@ -27,10 +38,11 @@
           codeSetting('AGENCY_CD', data.data, '#sch_agency_cd', '대리점', '', ''); 
         }   
         var toDay = returnDate('today'); // 오늘 날짜 계산 
-        $('#sch_remit_dt').val(toDay);        
+        $('#sch_remit_sdt').val(toDay);        
+        $('#sch_remit_edt').val(toDay);        
 
         $('#btn_search').click(function () {   
-          if ($('#sch_remit_dt').val() !== toDay) {
+          if ($('#sch_remit_sdt').val() !== toDay) {
             $('#btn_remit_cancel').hide();
           } else {
             $('#btn_remit_cancel').show();
@@ -38,7 +50,7 @@
           tbl_remit_summ.ajax.reload();
         });  
 
-        $('#sch_chain_nm').keypress(function(e) {
+        $('#sch_chain_no').keypress(function(e) {
           if (e.which === 13) { // Enter key
             $('#btn_search').click();
           }
@@ -47,6 +59,37 @@
         $('#btn_list_search').click(function () {   
           tbl_remit_list.ajax.reload();
         }); 
+
+        $('#sch_chain_no').select2({
+          theme: 'bootstrap-5',
+          placeholder: '가맹점 선택',
+          // allowClear: true,
+          minimumInputLength: 1,
+          width: 'resolve',
+          // selectionCssClass: 'form-select-sm',
+          // dropdownCssClass: 'form-select-sm',
+          ajax: {
+            url: '/common/getChainSchList',
+            type: 'GET',
+            dataType: 'json',
+            delay: 300,
+            data: function (params) {
+              return {
+                keyword: params.term || ''
+              };
+            },
+            processResults: function (data) {
+              return {
+                results: (data || []).map(function (item) {
+                  return {
+                    id: item.code,
+                    text: item.codeNm
+                  };
+                })
+              };
+            }
+          }
+        });
 
         var tbl_remit_summ = $('#tbl_remit_summ').DataTable({
           processing: true,
@@ -94,7 +137,7 @@
                     return '<span style="background-color: ' + (row.svc_stat === 'C' ? 'red' : 'transparent') + ';">' + data + '</span>';
                   }
                 }
-              , { data: 'biz_no' }
+              , { data: 'remit_dt' }
               , { data: 'ceo_nm' }
               
               , { data: 'remit_status_nm' } 
@@ -654,49 +697,48 @@
         <div class="card" style="height: 620px;">
           <div class="card-header" style="height:110px;">          
             <div class="row flex-between-end">
-              <div class="col-lg-2 align-self-center">
+              <div class="col-lg-1 align-self-center">
                 <h4 class="mb-0">출금 관리</h4>
               </div>            
-              <div class="col-lg-10">
+              <div class="col-lg-11">
                 <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
                   <div class="row mb-1">
-                    <div class="col-sm-7">
-                      <div class="input-group input-group-sm mb-1">
-                        <div class="col-sm-3">
-                          <input class="form-control form-control-sm" id="sch_remit_dt" type="text" name="sch_remit_dt" istyle="date" maxlength="10" required />
-                        </div>   
-                        <select class="form-select form-control-sm me-1" id="sch_corp_no" name="sch_corp_no" style="width: 75px">
+                    <div class="col-sm-4">
+                      <div class="input-group">
+                        <div class="input-group input-group-sm mb-1 me-1">
+                          <div class="col-sm-5">
+                            <input class="form-control form-control-sm " id="sch_remit_sdt" type="text" name="sch_remit_sdt" istyle="date" maxlength="10" required />
+                          </div>   
+                          <span class="input-group-text">~</span>
+                          <div class="col-sm-5">
+                            <input class="form-control form-control-sm" id="sch_remit_edt" type="text" name="sch_remit_edt" istyle="date" maxlength="10" required />
+                          </div>                           
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-4">
+                      <div class="input-group input-group-sm mb-1 me-1"> 
+                        <select class="form-select form-control-sm me-1" id="sch_corp_no" name="sch_corp_no" >
                           <option value="">여신사</option>
                         </select>
-                        <select class="form-select form-control-sm me-1" id="sch_agency_cd" name="sch_agency_cd" style="width: 75px">
+                        <select class="form-select form-control-sm me-1" id="sch_agency_cd" name="sch_agency_cd">
                           <option value="">대리점</option>
                         </select> 
-                        <input type="text" class="form-control form-control-sm me-1" id="sch_chain_nm" name="sch_chain_nm" style="width:100px" />
+                        <select class="form-select form-control-sm me-1" id="sch_chain_no" name="sch_chain_no">
+                          <!-- <option value=""></option> -->
+                        </select>
                         <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
-                      </div>
-                    </div> 
-                    <div class="col-sm-5 text-end">
+                      </div>                      
+                    </div>
+                    <div class="col-sm-4 text-end">
                       <!-- <div class="input-group mb-1"> -->
                         <button type="button" class="btn btn-success btn-sm" id="btn_remit_cancel" name="btn_remit_cancel">출금 취소</button>
                         <button type="button" class="btn btn-info btn-sm" id="btn_remit_chain" name="btn_remit_chain">송금 처리</button>
-                        <button type="button" class="btn btn-primary btn-sm" id="btn_remit_excel" name="btn_remit_excel">송금 EXCEL</button>
-                        <button type="button" class="btn btn-primary btn-sm" id="btn_bank_excel" name="btn_bank_excel">은행용 EXCEL</button>
+                        <button type="button" class="btn btn-primary btn-sm" id="btn_remit_excel" name="btn_remit_excel">송금 엑셀</button>
+                        <button type="button" class="btn btn-primary btn-sm" id="btn_bank_excel" name="btn_bank_excel">은행용엑셀</button>
                       <!-- </div> -->
                     </div>
-                  </div> 
-                  <!-- <div class="row mb-1">
-                    <div class="col-sm-8">
-                      <div class="col-sm-2">
-                        <button type="button" class="btn btn-success btn-sm" id="btn_remit_cancel" name="btn_remit_cancel">출금 정산 취소</button>
-                      </div>
-                    </div>                    
-                    <div class="col-sm-2">
-                      <button type="button" class="btn btn-info btn-sm" id="btn_remit_chain" name="btn_remit_chain">송금 완료 처리</button>
-                    </div>
-                    <div class="col-sm-2 text-end">
-                      <button type="button" class="btn btn-primary btn-sm" id="btn_bank_excel" name="btn_bank_excel">송금 자료 EXCEL</button>
-                    </div>
-                  </div> -->
+                  </div>                   
                 </form>                
               </div>
             </div>          
@@ -710,7 +752,7 @@
                         <input type="checkbox" id="check_all" class="form-check-input" />
                     </th>
                     <th rowspan="2" class="text-center">가맹점 명</th>
-                    <th rowspan="2" class="text-center">사업자 번호</th>
+                    <th rowspan="2" class="text-center">출금일자</th>
                     <th rowspan="2" class="text-center">대표자명</th>
                     <th rowspan="2" class="text-center">송금상태</th> 
                     <th rowspan="2" class="text-center">송금액</th> 

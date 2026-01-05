@@ -3,6 +3,7 @@
   <head th:replace="~{fragments/config :: config}">
     <title layout:title-pattern="$LAYOUT_TITLE : $CONTENT_TITLE">공통 타이틀</title>
   </head>
+  <meta name="viewport" content="width=1920" />
   <body>
     <main class="main" id="top">
       <!--Header 영역을 참조합니다.-->
@@ -30,5 +31,18 @@
     <script src="/js/phoenix.js"></script>
     <script src="/vendors/echarts/echarts.min.js"></script>
     <script src="/js/ecommerce-dashboard.js"></script>
+    <style>
+       /* 메인 컨테이너 너비 고정 */
+      .container, .container-fluid {
+          min-width: 1920px !important; /* 원하는 시스템의 최소 너비 */
+          width: 1920px !important;
+          overflow-x: auto; /* 화면이 작아지면 가로 스크롤바 허용 */
+      }
+
+      /* Phoenix 템플릿 특유의 본문 영역 고정 */
+      .content {
+          min-width: 1920px !important;
+      }
+    </style>
   </body>
 </html>

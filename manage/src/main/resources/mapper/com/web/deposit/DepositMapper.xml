@@ -913,7 +913,9 @@
 		  						AND TC.SVC_STAT IN ('O', 'R')
 		 WHERE 	WD.CARD_RESV_DATE &gt; DATE_FORMAT(NOW(), '%Y-%m-%d')
 		   AND  WD.CARD_RESV_DATE &lt; DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 6 DAY), '%Y-%m-%d')
- 		   AND  WD.CARD_ACQ = #{sch_acq}
+ 		   <if test="sch_acq != null and sch_acq != ''">
+ 		   		AND  WD.CARD_ACQ = #{sch_acq}
+		   </if>
 		   AND  WD.USE_YN    = 'Y'
 		   AND  WD.REMIT_NO IS NOT NULL			    	 
 	</select> 

@@ -67,3 +67,22 @@
   from { background-position: 40px 0; }
   to { background-position: 0 0; }
 }
+
+/* Select2 선택 영역 */
+/* .select2-container--bootstrap-5 .select2-selection {
+    font-size: 0.875rem;   /* Bootstrap form-control-sm */
+    min-height: 31px;
+    padding: 0.25rem 0.5rem;
+} */
+
+/* 선택된 텍스트 */
+/* .select2-container--bootstrap-5 .select2-selection__rendered {
+    line-height: 31px;
+    padding-left: 0.5rem;
+    color: #212529;
+} */
+
+/* 드롭다운 목록 */
+/* .select2-container--bootstrap-5 .select2-results__option {
+    font-size: 0.875rem;
+} */
