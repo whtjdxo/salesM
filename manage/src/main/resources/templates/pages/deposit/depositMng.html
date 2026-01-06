@@ -9,6 +9,13 @@
     <script src="/vendors/dropzone/dropzone-min.js"></script>
     <script src="/js/jquery.form.js"></script> 
     <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />    
+    <!-- ? Select2 추가 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- ? XLSX (SheetJS) 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Select2 Bootstrap5 Theme -->
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.1.1/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
     <!-- DataTables Select CSS 추가 -->
     <link rel="stylesheet" href="/css/custom-salesm.css" />
 
@@ -28,10 +35,38 @@
         // $('#sch_list_conf_date').val(toDay);
         $('#change_resv_date').val(toDay);
 
-        // Enter key event for sch_chain_nm
-        $('#sch_chain_nm').on('keypress', function(e) {
-          if (e.which === 13) {
-            $('#btn_search').click();
+        $('#sch_chain_no').on("change", function (e) {
+          $("#btn_search").click();
+        });
+
+				$('#sch_chain_no').select2({
+          theme: 'bootstrap-5',
+          placeholder: '가맹점 선택',
+          allowClear: true,
+          minimumInputLength: 1,
+          width: 'resolve',
+          // selectionCssClass: 'form-select-sm',
+          // dropdownCssClass: 'form-select-sm',
+          ajax: {
+            url: '/common/getChainSchList',
+            type: 'GET',
+            dataType: 'json',
+            delay: 300,
+            data: function (params) {
+              return {
+                keyword: params.term || ''
+              };
+            },
+            processResults: function (data) {
+              return {
+                results: (data || []).map(function (item) {
+                  return {
+                    id: item.code,
+                    text: item.codeNm
+                  };
+                })
+              };
+            }
           }
         });
 
@@ -1088,33 +1123,31 @@
               </div>            
               <div class="col-lg-10">
                 <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
-                  <div class="row mb-1">
-                    <div class="col-sm-12">
-                      <div class="input-group input-group-sm mb-1">
-                        <div class="col-sm-3">
+                  <div class="row mb-1">    
+                    <div class="col-sm-5">
+                      <div class="input-group input-group-sm mb-1">                
+                        <div class="col-sm-6">
                           <input class="form-control form-control-sm" id="sch_resv_date" type="text" name="sch_resv_date" istyle="date" maxlength="10" required />
                         </div>   
-                        <select class="form-select form-control-sm me-1" id="sch_corp_cd" name="sch_corp_cd" style="width: 75px">
+                        <select class="form-select form-control-sm me-1" id="sch_corp_cd" name="sch_corp_cd">
                           <option value="">여신사</option>
-                        </select>
-                        <input type="text" class="form-control form-control-sm me-1" id="sch_chain_nm" name="sch_chain_nm" style="width:100px" />
+                        </select>       
+                      </div>
+                    </div>            
+                    <div class="col-sm-4">
+                      <div class="input-group input-group-sm mb-1">
+                        <select class="form-select form-control-sm me-1" id="sch_chain_no" name="sch_chain_no">
+                          <option value=""></option>
+                        </select> 
                         <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
                       </div>
                     </div> 
-                  </div> 
-                  <div class="row mb-1">
-                    <div class="col-sm-3">                      
-                    </div>
-                    <div class="col-sm-3">
-                      <!-- <input type="checkbox" id="sch_deposit_chk" class="form-check-input" checked/>
-                      <label for="sch_deposit_chk" class="form-check-label">정산가맹점 만</label> -->
-                    </div>
-                    <div class="col-sm-3">
-                      <input type="checkbox" id="deposit_all" class="form-check-input" />
-                      <label for="deposit_all" class="form-check-label">모두 입금처리</label>
-                    </div>
                     <div class="col-sm-3 text-end">
-                      <button type="button" class="btn btn-success btn-sm" id="btn_deposit" name="btn_deposit">입금 처리</button>                      
+                      <div class="form-check form-check-inline me-2">
+                        <input type="checkbox" id="deposit_all" class="form-check-input" />
+                        <label for="deposit_all" class="form-check-label">모두</label>
+                      </div>
+                      <button type="button" class="btn btn-success btn-sm" id="btn_deposit" name="btn_deposit">입금 처리</button>
                     </div>
                   </div>
                 </form>                

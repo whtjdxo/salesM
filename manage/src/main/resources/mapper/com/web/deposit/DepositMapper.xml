@@ -50,6 +50,9 @@
 							, SUM(REMIT_AMT)			AS REMIT_AMT
 					  FROM  VW_DEPOSIT_RESV_LIST WD
 					 WHERE	WD.CARD_RESV_DATE = #{sch_resv_date} 
+					 <if test="sch_chain_no != null and sch_chain_no != ''">
+						AND  WD.CHAIN_NO = #{sch_chain_no}
+					</if>   
 					 GROUP 	BY WD.CHAIN_NO 
 				) VW 
 				LEFT OUTER JOIN (
@@ -62,11 +65,9 @@
 				STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = VW.CHAIN_NO 
 				<if test='sch_corp_cd != null and sch_corp_cd != ""'>
 					AND  TC.CORP_CD = #{sch_corp_cd}
-				</if>
-				<if test='sch_chain_nm != null and sch_chain_nm != ""'>
-					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
-				</if>				 
-		WHERE  1= 1       
+				</if> 		 
+		WHERE  1= 1   
+		 
         <choose>
 			<when test="orderBy != '' and orderBy != null">
                 ORDER BY ${orderBy}
@@ -115,6 +116,9 @@
 							, SUM(REMIT_AMT)			AS REMIT_AMT
 					FROM  VW_DEPOSIT_RESV_LIST WD
 					WHERE	WD.CARD_RESV_DATE = #{sch_resv_date} 
+					<if test="sch_chain_no != null and sch_chain_no != ''">
+						AND  WD.CHAIN_NO = #{sch_chain_no}
+					</if>
 					GROUP 	BY WD.CHAIN_NO 
 				) VW 
 				LEFT OUTER JOIN (
@@ -131,7 +135,7 @@
 				<if test='sch_chain_nm != null and sch_chain_nm != ""'>
 					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
 				</if> 
-		WHERE  1= 1
+		WHERE  1= 1		
 	</select>
 
 	<select id="getDepoCardSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
@@ -362,11 +366,11 @@
 				JOIN TB_CHAIN TC ON TC.CHAIN_NO = DA.CHAIN_NO  
 				<if test='sch_corp_cd != null and sch_corp_cd != ""'>
 					AND  TC.CORP_CD = #{sch_corp_cd}
-				</if>
-				<if test='sch_chain_nm != null and sch_chain_nm != ""'>
-					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
 				</if> 
 		WHERE	DA.ADJUST_DATE = #{sch_adjust_date} 
+		<if test="sch_chain_no != null and sch_chain_no != ''">
+            AND  DA.CHAIN_NO = #{sch_chain_no}
+        </if>   
 		GROUP 	BY DA.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO, TC.SVC_STAT
         <choose>
 			<when test="orderBy != '' and orderBy != null">
@@ -412,6 +416,9 @@
 					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
 				</if> 
 		WHERE	ADJUST_DATE = #{sch_adjust_date}  
+		<if test="sch_chain_no != null and sch_chain_no != ''">
+            AND  DA.CHAIN_NO = #{sch_chain_no}
+        </if>   
          
 	</select>
 

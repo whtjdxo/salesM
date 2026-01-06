@@ -9,7 +9,13 @@
     <script src="/vendors/dropzone/dropzone-min.js"></script>
     <script src="/js/jquery.form.js"></script>
     <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />
-     
+    <!-- ? Select2 추가 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- ? XLSX (SheetJS) 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Select2 Bootstrap5 Theme -->
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.1.1/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" /> 
     <!-- DataTables Select CSS 추가 -->
     <link rel="stylesheet" href="/css/custom-salesm.css" />
 
@@ -134,6 +140,41 @@
             },
         }); 
 
+        $('#sch_chain_no').on("change", function (e) {
+          $("#btn_search").click();
+        });
+
+				$('#sch_chain_no').select2({
+          theme: 'bootstrap-5',
+          placeholder: '가맹점 선택',
+          allowClear: true,
+          minimumInputLength: 1,
+          width: 'resolve',
+          // selectionCssClass: 'form-select-sm',
+          // dropdownCssClass: 'form-select-sm',
+          ajax: {
+            url: '/common/getChainSchList',
+            type: 'GET',
+            dataType: 'json',
+            delay: 300,
+            data: function (params) {
+              return {
+                keyword: params.term || ''
+              };
+            },
+            processResults: function (data) {
+              return {
+                results: (data || []).map(function (item) {
+                  return {
+                    id: item.code,
+                    text: item.codeNm
+                  };
+                })
+              };
+            }
+          }
+        });
+
         $('#btn_search').click(function () {
           tbl_exc_summary.ajax.reload();
           $('#chain_no').val('');
@@ -141,12 +182,7 @@
           $('#frm_exc_mst')[0].reset();   
           $('#select_chain_nm').text("상세 정보");              
         });
-
-        $('#sch_chain_nm').on('keypress', function(e) {
-          if (e.which === 13) { // Enter key 
-            $('#btn_search').click();
-          }
-        }); 
+ 
 
         $('#sch_all').change(function () {          
           $('#btn_search').click();          
@@ -660,19 +696,20 @@
                       </select>                    
                     </div>   
                   </div>  
-                  <div class="col-sm-4">
+                  <div class="col-sm-1">
                     <div class="input-group input-group-sm mb-0">
-                      <!-- <label class="col-sm-3 col-form-label col-form-label-sm" for="sch_chain_nm">가맹점 명</label> -->
-                      <!-- <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="sch_all" name="sch_all" value="Y" />
-                        <label class="form-check-label" for="sch_all">완료 포함</label>
-                      </div>  -->
                       <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="sch_chain_all" name="sch_chain_all" value="Y" />
-                        <label class="form-check-label" for="sch_chain_all">해지 가맹점</label>
-                      </div> 
-                      <input type="text" class="form-control form-control-sm" id="sch_chain_nm" name="sch_chain_nm" />     
-                      <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
+                        <label class="form-check-label" for="sch_chain_all">해지</label>
+                      </div>                       
+                    </div>
+                  </div> 
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <select class="form-select form-control-sm me-1" id="sch_chain_no" name="sch_chain_no">
+                        <option value=""></option>
+                      </select> 
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
                     </div>
                   </div> 
                 </div>  

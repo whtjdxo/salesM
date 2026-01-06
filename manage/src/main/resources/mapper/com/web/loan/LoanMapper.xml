@@ -84,12 +84,16 @@
         <if test='sch_chain_all == null'>
            AND  TC.SVC_STAT IN ('R', 'O')
         </if>  
-        <if test='sch_chain_nm != null and sch_chain_nm != ""'>
-            AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
-        </if>	
+        <if test="sch_chain_no != null and sch_chain_no != ''"> 
+            AND  TC.CHAIN_NO = #{sch_chain_no} 
+        </if>   
         <if test='sch_corp_cd != null and sch_corp_cd != ""'>
             AND  TC.CORP_CD = #{sch_corp_cd}
         </if>
+        <if test='sch_agency_cd != null and sch_agency_cd != ""'>
+            AND  TC.AGENCY_CD = #{sch_agency_cd}
+        </if>
+
         <choose>
             <when test="userCorpType == 'LN'">
                 AND TC.CORP_CD = #{userCorpCd}
@@ -154,11 +158,14 @@
         <if test='sch_chain_all == null'>
            AND  TC.SVC_STAT IN ('R', 'O')
         </if>  
-        <if test='sch_chain_nm != null and sch_chain_nm != ""'>
-            AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
-        </if>
+        <if test="sch_chain_no != null and sch_chain_no != ''"> 
+            AND  TC.CHAIN_NO = #{sch_chain_no} 
+        </if>   
         <if test='sch_corp_cd != null and sch_corp_cd != ""'>
             AND  TC.CORP_CD = #{sch_corp_cd}
+        </if>
+        <if test='sch_agency_cd != null and sch_agency_cd != ""'>
+            AND  TC.AGENCY_CD = #{sch_agency_cd}
         </if>
         <choose>
             <when test='userCorpType == "LN"'>
@@ -240,7 +247,7 @@
                             , SUM(CASE WHEN SC_DATE &gt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END)  	AS POST_INT_AMT 
                       FROM  TB_LOAN_REPAY_SCHEDULE LRS
                             JOIN TB_LOAN_MST TLM ON TLM.LOAN_NO = LRS.LOAN_NO
-                                            AND TLM.CHAIN_NO = #{sch_chain_no}
+                                            AND TLM.CHAIN_NO = #{sch_loan_chain_no}
                                             AND TLM.USE_YN = 'Y'
                      WHERE  LRS.USE_YN = 'Y' 
                      GROUP  BY LRS.LOAN_NO
@@ -260,7 +267,7 @@
                 JOIN TB_CORP CO ON CO.CORP_CD = LM.CORP_CD
                 JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
         WHERE   LM.USE_YN = 'Y'
-          AND 	LM.CHAIN_NO = #{sch_chain_no}
+          AND 	LM.CHAIN_NO = #{sch_loan_chain_no}
         <if test='sch_cont_sdt != null and sch_cont_sdt != ""'>
             AND  	LM.CONT_DT &gt;=  #{sch_cont_sdt}
         </if>            
@@ -314,7 +321,7 @@
                             , SUM(CASE WHEN SC_DATE &gt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END)  	AS POST_INT_AMT 
                       FROM  TB_LOAN_REPAY_SCHEDULE LRS
                             JOIN TB_LOAN_MST TLM ON TLM.LOAN_NO = LRS.LOAN_NO
-                                            AND TLM.CHAIN_NO = #{sch_chain_no}
+                                            AND TLM.CHAIN_NO = #{sch_loan_chain_no}
                                             AND TLM.USE_YN = 'Y'
                      WHERE  LRS.USE_YN = 'Y' 
                      GROUP  BY LRS.LOAN_NO
@@ -333,7 +340,7 @@
 			      				AND TC.SVC_STAT IN ('R', 'O')		
         		JOIN TB_CORP CO ON CO.CORP_CD = LM.CORP_CD
                 JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID				
-        WHERE 	LM.CHAIN_NO = #{sch_chain_no}
+        WHERE 	LM.CHAIN_NO = #{sch_loan_chain_no}
           AND   LM.USE_YN = 'Y'    
         <if test='sch_cont_sdt != null and sch_cont_sdt != ""'>
             AND  	LM.CONT_DT &gt;=  #{sch_cont_sdt}

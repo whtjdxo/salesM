@@ -306,7 +306,7 @@
                 , REMAIN_AMT            , REMAIN_BASE_AMT       , REMAIN_SVC_AMT        , REMAIN_CRD_AMT                        
                 , USE_YN                , ENT_USER_ID           , ENT_DTTM       
         )  VALUES  (
-                #{sub_no}               , #{chain_no}           , #{reg_date}           , #{resv_date}        
+                #{sub_no}               , #{chain_no}           , #{reg_date}           , IFNULL(#{resv_date}, #{reg_date})        
                 , #{sub_type}           , #{sub_status}         , #{sub_code}           , #{sub_memo}
                 , #{occur_amt}          , #{occur_base_amt}     , #{occur_svc_amt}      , #{occur_crd_amt}
                 , #{recv_amt}           , #{recv_base_amt}      , #{recv_svc_amt}       , #{recv_crd_amt}
@@ -318,8 +318,8 @@
 	<update id="updateSubMst" parameterType="com.web.manage.withdraw.domain.SubMstVO">
         /* SubtractMapper.updateSubMst */
         UPDATE  TB_SUB_MST
-            SET  REG_DATE        = #{reg_date},
-                RESV_DATE       = #{resv_date},
+            SET  REG_DATE       = #{reg_date},
+                RESV_DATE       = IFNULL(#{resv_date}, #{reg_date}),
                 SUB_TYPE        = #{sub_type},                        
                 SUB_CODE        = #{sub_code},
                 SUB_STATUS      = #{sub_status},
