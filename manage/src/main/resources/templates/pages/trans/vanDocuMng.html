@@ -67,10 +67,14 @@
           }
         }); 
 
+        $('#sch_chain_no').on("change", function (e) {          
+          $("#btn_search").click();          
+        });
+
         $('#sch_chain_no').select2({
           theme: 'bootstrap-5',
           placeholder: '가맹점 선택',
-          // allowClear: true,
+          allowClear: true,
           minimumInputLength: 1,
           width: 'resolve',
           // selectionCssClass: 'form-select-sm',

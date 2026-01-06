@@ -67,8 +67,8 @@
         <if test='sch_chain_all == null'>
 			AND  TC.SVC_STAT IN ('O', 'R')
 		</if>
-        <if test="sch_chain_nm != ''">                   
-            AND     TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+        <if test="sch_chain_no != null and sch_chain_no != ''"> 
+            AND  TC.CHAIN_NO = #{sch_chain_no} 
         </if>                        
         <choose>
             <when test="orderBy != '' and orderBy != null">
@@ -136,10 +136,9 @@
         <if test='sch_chain_all == null'>
 			AND  TC.SVC_STAT IN ('O', 'R')
 		</if>
-        <if test="sch_chain_nm != ''">                   
-            AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
-        </if>
-
+        <if test="sch_chain_no != null and sch_chain_no != ''"> 
+            AND  TC.CHAIN_NO = #{sch_chain_no} 
+        </if>   
     </select>
 
     <select id="getChainSubList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
@@ -393,9 +392,9 @@
                     , MAX(SM.REG_DATE)                      AS max_reg_dt        
             FROM    TB_SUB_MST SM
                     STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
-            <if test="sch_chain_nm != null and sch_chain_nm != ''"> 
-                    AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
-            </if>
+            <if test="sch_chain_no != null and sch_chain_no != ''"> 
+                AND  TC.CHAIN_NO = #{sch_chain_no} 
+            </if>        
             <if test="sch_agency_cd != null and sch_agency_cd != ''"> 
                     AND  TC.AGENCY_CD = #{sch_agency_cd} 
             </if>
@@ -449,9 +448,9 @@
                 , MAX(SM.REG_DATE)                      AS max_reg_dt        
         FROM    TB_SUB_MST SM
                 STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
-        <if test="sch_chain_nm != ''"> 
-                    AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
-        </if>
+        <if test="sch_chain_no != null and sch_chain_no != ''"> 
+            AND  TC.CHAIN_NO = #{sch_chain_no} 
+        </if>        
         <if test="sch_agency_cd != ''"> 
                     AND  TC.AGENCY_CD = #{sch_agency_cd} 
         </if>

@@ -89,6 +89,9 @@
                                 AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
                             </if> 
                     WHERE 	WORK_DATE = #{sch_work_date} 
+                    <if test="sch_chain_no != null and sch_chain_no != ''">
+                        AND  WL.CHAIN_NO = #{sch_chain_no}
+                    </if>
                     GROUP	BY WL.CHAIN_NO, WORK_DATE 
                 ) VW  
                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = VW.CHAIN_NO
@@ -173,7 +176,7 @@
                             , IFNULL(SUM(SVC_FEE_AMT), 0)       AS SVC_FEE_AMT
                             , IFNULL(SUM(CRD_FEE_AMT), 0)       AS CRD_FEE_AMT
                             , IFNULL(SUM(EXC_AMT), 0) 		AS EXC_AMT
-                    FROM	VW_WITHDRAW_RESV_LIST WL         
+                    FROM    VW_WITHDRAW_RESV_LIST WL         
                             STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = WL.CHAIN_NO
                                             AND TC.SVC_STAT = 'O'
                                             AND TC.USE_YN   = 'Y'
@@ -189,6 +192,9 @@
                                     AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
                             </if>                    
                     WHERE 	WL.WORK_DATE = #{sch_work_date} 
+                    <if test="sch_chain_no != null and sch_chain_no != ''">
+                        AND  WL.CHAIN_NO = #{sch_chain_no}
+                    </if>
                     GROUP	BY WL.CHAIN_NO, WORK_DATE 
                 ) VW
                 LEFT JOIN (
@@ -785,20 +791,13 @@
                 </if>
                 <if test="sch_corp_no != null and sch_corp_no != ''"> 
                         AND  TC.CORP_CD = #{sch_corp_no} 
-                </if> 
-                <if test="schgb_chain_val != null and schgb_chain_val != ''">
-                    <choose>
-                        <when test="schgb_chain == 'schgb_biz_no'">
-                                AND  TC.BIZ_NO  = #{schgb_chain_val}
-                        </when> 
-                        <when test="schgb_chain == 'schgb_chain_nm'">
-                                AND  TC.CHAIN_NM LIKE CONCAT('%', #{schgb_chain_val}, '%')
-                        </when>
-                    </choose>
-                </if>
+                </if>                 
         WHERE   WD.CONF_DTTM &gt;= #{sch_conf_sdt}
-        AND	WD.CONF_DTTM &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
+        AND	    WD.CONF_DTTM &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
         AND     WD.REMIT_NO IS NULL
+        <if test="sch_chain_no != null and sch_chain_no != ''">
+            AND  WD.CHAIN_NO = #{sch_chain_no}
+        </if>
         GROUP   BY SUBSTR(WD.CONF_DTTM, 1, 10), WD.CHAIN_NO, TC.CHAIN_NM                           
                 , TC.BIZ_NO, TC.REMIT_STAT, WD.WORK_DATE  
         <choose>
@@ -835,19 +834,12 @@
                 </if>
                 <if test="sch_corp_no != null and sch_corp_no != ''"> 
                         AND  TC.CORP_CD = #{sch_corp_no} 
-                </if> 
-                <if test="sch_chain_val != ''">
-                        <choose>
-                                <when test="sch_chain_gb == 'schgb_biz_no'">
-                                        AND  TC.BIZ_NO  = #{sch_chain_val}
-                                </when> 
-                                <when test="sch_chain_gb == 'schgb_chain_nm'">
-                                        AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_val}, '%')
-                                </when>
-                        </choose>
-                </if>
+                </if>                 
         WHERE   WD.CONF_DTTM &gt;= #{sch_conf_sdt}
         AND	WD.CONF_DTTM &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
+        <if test="sch_chain_no != null and sch_chain_no != ''">
+            AND  WD.CHAIN_NO = #{sch_chain_no}
+        </if>
         AND     WD.REMIT_NO IS NULL				
     </select>
 
