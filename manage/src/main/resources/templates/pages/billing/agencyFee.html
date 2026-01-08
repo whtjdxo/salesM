@@ -75,10 +75,10 @@
                 , { data: 'agent_tot_fee', render: $.fn.dataTable.render.number(',', '.', 0, ''), orderable: false }    // # 매출금액                                
             ],
             columnDefs: [
-              { targets: 0, width: '80px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
-              { targets: 1, width: '120px', className: 'text-left px-1' },
-              { targets: 2, width: '150px', className: 'text-left px-1' },
-              { targets: 3, width: '110px', className: 'text-center px-1' },
+              { targets: 0, width: '50px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
+              { targets: 1, width: '110px', className: 'text-left px-1' },
+              { targets: 2, width: '200px', className: 'text-left px-1' },
+              { targets: 3, width: '100px', className: 'text-center px-1' },
 
               { targets: 4, width: '130px', className: 'text-right px-1 dt-body-right' },
               { targets: 5, width: '130px', className: 'text-right px-1 dt-body-right' },
@@ -101,7 +101,7 @@
             autoWidth: false,
             responsive: true,  
             scrollCollapse: false,
-            scrollY: '290px',
+            scrollY: '310px',
             pageLength: 10,
             language: {
                 emptyTable: '데이터가 없습니다.',
@@ -388,7 +388,7 @@
         <div class="card-header" style="height:80px;">          
           <div class="row flex-between-end">
             <div class="col-lg-2 align-self-center">
-              <h4 class="mb-0">수수료 현황</h4>
+              <h4 class="mb-0">수수료 현황 조회</h4>
             </div>            
             <div class="col-lg-10">
               <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 

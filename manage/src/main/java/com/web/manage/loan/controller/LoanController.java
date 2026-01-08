@@ -170,7 +170,7 @@ public class LoanController {
             Row titleRow = sheet.createRow(0);
             sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("정산 상세 리스트");            
+            titleCell.setCellValue("지원금 관리");            
             titleCell.setCellStyle(excelStyle.getStyle("title"));
 
             // Create header row

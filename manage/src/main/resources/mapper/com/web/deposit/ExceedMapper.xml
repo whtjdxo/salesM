@@ -43,6 +43,9 @@
 		<if test="sch_chain_no != null and sch_chain_no != ''">
             AND  TC.CHAIN_NO = #{sch_chain_no}
         </if>   
+		<if test='sch_chain_nm != null and sch_chain_nm != ""'>
+			AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+		</if>
 		<if test='sch_chain_all == null'>
 			AND  TC.SVC_STAT IN ('O', 'R')
 		</if>
@@ -86,6 +89,9 @@
 		<if test="sch_chain_no != null and sch_chain_no != ''">
 			AND  TC.CHAIN_NO = #{sch_chain_no}
 		</if> 
+		<if test='sch_chain_nm != null and sch_chain_nm != ""'>
+			AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+		</if>
 		<if test='sch_chain_all == null'>
 			AND  TC.SVC_STAT IN ('O', 'R')
 		</if>

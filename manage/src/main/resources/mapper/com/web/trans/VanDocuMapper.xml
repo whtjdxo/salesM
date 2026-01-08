@@ -233,24 +233,16 @@
                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = V.CHAIN_NO
                                 AND TC.USE_YN = 'Y'
                                 AND TC.SVC_STAT IN ('O', 'R')
-            WHERE  1 = 1
-        <if test="sch_agency_cd != ''">
-                AND TC.AGENCY_CD  = #{sch_agency_cd}
-        </if>
-        <if test="schgb_chain_val != ''">
-            <choose>
-                <when test="schgb_chain == 'schgb_biz_no'">
-                    AND TC.BIZ_NO  = #{schgb_chain_val}
-                </when>
-                <when test="schgb_chain == 'schgb_chain_nm'">
-                    AND TC.CHAIN_NM LIKE CONCAT('%', #{schgb_chain_val}, '%')
-                </when>
-            </choose>
-        </if>
+                                <if test='sch_chain_nm != null and sch_chain_nm != ""'>
+                                    AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                                </if>            
+                                <if test="sch_agency_cd != ''">
+                                        AND TC.AGENCY_CD  = #{sch_agency_cd}
+                                </if>
+            WHERE  1 = 1                
         <if test="sch_chain_no != null and sch_chain_no != ''">
-                AND V.CHAIN_NO = #{sch_chain_no}
+               AND V.CHAIN_NO = #{sch_chain_no}
         </if>
-
         GROUP  BY V.CHAIN_NO, TC.CHAIN_NM, V.CONF_DT 
         <choose>
             <when test="sidx != '' and sidx != null">
@@ -337,26 +329,19 @@
                         </if>
                             GROUP	BY CHAIN_NO,  SUBSTR(ORDER_DTTM, 1, 10) 
                     ) V
-                    JOIN TB_CHAIN TC ON TC.CHAIN_NO = V.CHAIN_NO
-                                    AND TC.USE_YN = 'Y'
-                                    AND TC.SVC_STAT IN ('O', 'R')
-            <if test="schgb_chain_val != ''">
-                <choose>
-                    <when test="schgb_chain == 'schgb_biz_no'">
-                            AND TC.BIZ_NO  = #{schgb_chain_val}
-                    </when>
-                    <when test="schgb_chain == 'schgb_chain_nm'">
-                            AND TC.CHAIN_NM LIKE CONCAT('%', #{schgb_chain_val}, '%')
-                    </when>
-                </choose>
-            </if>   
-            <if test="sch_chain_no != null and sch_chain_no != ''">
-                    AND V.CHAIN_NO = #{sch_chain_no}
-            </if>   
-            <if test="sch_agency_cd != ''">
-                    AND  TC.AGENCY_CD = #{sch_agency_cd}
-            </if>                                                           
-        WHERE  1 = 1                                 
+                    JOIN    TB_CHAIN TC ON TC.CHAIN_NO = V.CHAIN_NO
+                                AND TC.USE_YN = 'Y'
+                                AND TC.SVC_STAT IN ('O', 'R')
+                                <if test='sch_chain_nm != null and sch_chain_nm != ""'>
+                                    AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                                </if>            
+                                <if test="sch_agency_cd != ''">
+                                        AND  TC.AGENCY_CD = #{sch_agency_cd}
+                                </if>                                                           
+        WHERE  1 = 1        
+        <if test="sch_chain_no != null and sch_chain_no != ''">
+            AND V.CHAIN_NO = #{sch_chain_no}
+        </if>                            
 	</select> 
         
 	<select id="getVanDocuSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
@@ -370,44 +355,35 @@
                 , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'A' THEN ABS(VD.CONF_AMT) ELSE NULL END), 0)        AS conf_amt
                 , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'C' THEN 1 ELSE NULL END), 0)                       AS cncl_cnt
                 , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'C' THEN ABS(VD.CONF_AMT) ELSE NULL END) * -1  , 0) AS cncl_amt
-            FROM  TB_VAN_DOCU VD
-                JOIN TB_CHAIN  TC ON TC.CHAIN_NO = VD.CHAIN_NO
-        
-        <if test="schgb_chain_val != ''">
-            <choose>
-                <when test="schgb_chain == 'schgb_biz_no'">
-                        AND TC.BIZ_NO  = #{schgb_chain_val}
-                </when>
-                <when test="schgb_chain == 'schgb_chain_nm'">
-                        AND TC.CHAIN_NM LIKE CONCAT('%', #{schgb_chain_val}, '%')
-                </when>
-            </choose>
-        </if>      
-        <if test="sch_chain_no != null and sch_chain_no != ''">
-                AND V.CHAIN_NO = #{sch_chain_no}
-        </if>
-        <if test="sch_agency_cd != ''">
+        FROM    TB_VAN_DOCU VD
+                JOIN TB_CHAIN  TC ON TC.CHAIN_NO = VD.CHAIN_NO        
+                <if test='sch_chain_nm != null and sch_chain_nm != ""'>
+                    AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                </if>
+                <if test="sch_agency_cd != ''">
                    AND  TC.AGENCY_CD = #{sch_agency_cd}
-        </if>         
-
-           WHERE  1 = 1      
-                AND  VD.CONF_DT   &gt;=  #{sch_conf_sdt} 
-                AND  VD.CONF_DT   &lt;=  #{sch_conf_edt}         
+                </if>         
+        WHERE  1 = 1      
+          AND  VD.CONF_DT   &gt;=  #{sch_conf_sdt} 
+          AND  VD.CONF_DT   &lt;=  #{sch_conf_edt}         
+        <if test="sch_chain_no != null and sch_chain_no != ''">
+           AND  VD.CHAIN_NO = #{sch_chain_no}
+        </if>
         <!-- <if test="sch_card_acq != ''">
                 AND  VD.CARD_ACQ = #{sch_card_acq})
         </if>      -->
         <if test="schgb_conf_val != ''">
-                <choose>
-                        <when test="schgb_conf == 'schgb_conf_no'">
-                                AND VD.CONF_NO  = #{schgb_conf_val}
-                        </when>
-                        <when test="schgb_conf == 'schgb_card_no'">
-                                AND VD.CARD_NO  = #{schgb_conf_val}
-                        </when>
-                        <when test="schgb_conf == 'schgb_conf_amt'">
-                                AND VD.CONF_AMT  = #{schgb_conf_val}
-                        </when>
-                </choose>
+            <choose>
+                <when test="schgb_conf == 'schgb_conf_no'">
+                        AND VD.CONF_NO  = #{schgb_conf_val}
+                </when>
+                <when test="schgb_conf == 'schgb_card_no'">
+                        AND VD.CARD_NO  = #{schgb_conf_val}
+                </when>
+                <when test="schgb_conf == 'schgb_conf_amt'">
+                        AND VD.CONF_AMT  = #{schgb_conf_val}
+                </when>
+            </choose>
         </if>               
          GROUP 	BY VD.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO, VD.CONF_DT
                 <choose>

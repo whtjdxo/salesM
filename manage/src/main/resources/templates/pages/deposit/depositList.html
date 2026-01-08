@@ -172,7 +172,7 @@
             autoWidth: false,
             // responsive: true, // 이미 위에서 설정됨
             // scrollCollapse: true,
-            scrollY: '340px',
+            scrollY: '380px',
             pageLength: 20,
             language: {
                 emptyTable: '데이터가 없습니다.',
@@ -844,7 +844,7 @@
     <div class="row g-1 mb-1">
       <div class="col-lg-7">
         <div class="card" style="height: 600px;">
-          <div class="card-header" style="height:110px;">          
+          <div class="card-header" style="height:80px;">          
             <div class="row flex-between-end">
               <div class="col-lg-2 align-self-center">
                 <h4 class="mb-0">입금 결과 조회</h4>
@@ -852,8 +852,7 @@
               <div class="col-lg-10">
                 <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
                   <div class="row mb-1">
-                    
-                    <div class="col-sm-6">
+                    <div class="col-sm-5">
                       <div class="input-group input-group-sm mb-1 me-1">
                         <div class="col-sm-5">
                           <input class="form-control form-control-sm " id="sch_adjust_sdt" type="text" name="sch_adjust_sdt" istyle="date" maxlength="10" required />
@@ -864,7 +863,7 @@
                         </div>                           
                       </div> 
                     </div>
-                    <div class="col-sm-6 text-start">
+                    <div class="col-sm-5 text-start">
                       <div class="input-group input-group-sm mb-1">
                         <input type="hidden" id="sch_chain_no" name="sch_chain_no" />
                         <input class="form-control form-control-sm me-1" id="sch_chain_nm" name="sch_chain_nm" placeholder="가맹점명" autocomplete="off" />
@@ -872,16 +871,11 @@
                         <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
                       </div>
                     </div>  
-                  </div> 
-                  <div class="row mb-1">
-                    <div class="col-sm-12 text-end">
-                      <!-- <div class="form-check form-check-inline me-2">
-                        <input type="checkbox" id="deposit_all" class="form-check-input" />
-                        <label for="deposit_all" class="form-check-label">모두 입금 취소</label>
-                      </div>                    -->
-                      <button type="button" class="btn btn-success btn-sm" id="btn_cancel_depo" name="btn_cancel_depo">입금 취소</button>                      
+                    <div class="col-sm-2 text-end">
+                      <button type="button" class="btn btn-success btn-sm" id="btn_cancel_depo" name="btn_cancel_depo">입금취소</button>
                     </div>
-                  </div>
+                  </div> 
+                   
                 </form>                
               </div>
             </div>          

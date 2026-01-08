@@ -73,8 +73,7 @@
 
     <select id="getAgencyFeeSummaryTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
         /*AgencyFeeMapper.getAgencyFeeSummaryTotal */
-        SELECT	SQL_CALC_FOUND_ROWS 
-                IFNULL(SUM(AF.CONF_CNT), 0)			    AS conf_cnt 
+        SELECT	IFNULL(SUM(AF.CONF_CNT), 0)			    AS conf_cnt 
                 , IFNULL(SUM(AF.CONF_AMT), 0)			    AS conf_amt
                 , IFNULL(SUM(AF.ORG_CARD_RESV_AMT), 0)	AS org_card_resv_amt
                 , IFNULL(SUM(AF.RESV_BASE_AMT), 0)		AS resv_base_amt

@@ -66,6 +66,9 @@
 				<if test='sch_corp_cd != null and sch_corp_cd != ""'>
 					AND  TC.CORP_CD = #{sch_corp_cd}
 				</if> 		 
+				<if test='sch_chain_nm != null and sch_chain_nm != ""'>
+					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+				</if>
 		WHERE  1= 1   
 		 
         <choose>
@@ -370,6 +373,9 @@
 				JOIN TB_CHAIN TC ON TC.CHAIN_NO = DA.CHAIN_NO  
 				<if test='sch_corp_cd != null and sch_corp_cd != ""'>
 					AND  TC.CORP_CD = #{sch_corp_cd}
+				</if>
+				<if test='sch_chain_nm != null and sch_chain_nm != ""'>
+					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
 				</if> 
 		WHERE	1= 1
 		  AND  	DA.ADJUST_DATE &gt;= #{sch_adjust_sdt} 

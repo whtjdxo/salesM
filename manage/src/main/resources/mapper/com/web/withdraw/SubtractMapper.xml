@@ -69,7 +69,10 @@
 		</if>
         <if test="sch_chain_no != null and sch_chain_no != ''"> 
             AND  TC.CHAIN_NO = #{sch_chain_no} 
-        </if>                        
+        </if>      
+        <if test='sch_chain_nm != null and sch_chain_nm != ""'>
+            AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+        </if>                  
         <choose>
             <when test="orderBy != '' and orderBy != null">
                 ORDER BY ${orderBy}
@@ -139,6 +142,9 @@
         <if test="sch_chain_no != null and sch_chain_no != ''"> 
             AND  TC.CHAIN_NO = #{sch_chain_no} 
         </if>   
+        <if test='sch_chain_nm != null and sch_chain_nm != ""'>
+            AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+        </if>
     </select>
 
     <select id="getChainSubList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
@@ -392,12 +398,15 @@
                     , MAX(SM.REG_DATE)                      AS max_reg_dt        
             FROM    TB_SUB_MST SM
                     STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
-            <if test="sch_chain_no != null and sch_chain_no != ''"> 
-                AND  TC.CHAIN_NO = #{sch_chain_no} 
-            </if>        
-            <if test="sch_agency_cd != null and sch_agency_cd != ''"> 
-                    AND  TC.AGENCY_CD = #{sch_agency_cd} 
-            </if>
+                    <if test="sch_chain_no != null and sch_chain_no != ''"> 
+                        AND  TC.CHAIN_NO = #{sch_chain_no} 
+                    </if>      
+                    <if test='sch_chain_nm != null and sch_chain_nm != ""'>
+                        AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                    </if>  
+                    <if test="sch_agency_cd != null and sch_agency_cd != ''"> 
+                        AND  TC.AGENCY_CD = #{sch_agency_cd} 
+                    </if>
             WHERE	SM.USE_YN		= 'Y'
             <if test="sch_reg_sdt != null and sch_reg_sdt != ''">
                 AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
@@ -448,12 +457,15 @@
                 , MAX(SM.REG_DATE)                      AS max_reg_dt        
         FROM    TB_SUB_MST SM
                 STRAIGHT_JOIN TB_CHAIN TC ON TC.CHAIN_NO = SM.CHAIN_NO
-        <if test="sch_chain_no != null and sch_chain_no != ''"> 
-            AND  TC.CHAIN_NO = #{sch_chain_no} 
-        </if>        
-        <if test="sch_agency_cd != ''"> 
+                <if test="sch_chain_no != null and sch_chain_no != ''"> 
+                    AND  TC.CHAIN_NO = #{sch_chain_no} 
+                </if>        
+                <if test="sch_agency_cd != ''"> 
                     AND  TC.AGENCY_CD = #{sch_agency_cd} 
-        </if>
+                </if>
+                <if test='sch_chain_nm != null and sch_chain_nm != ""'>
+                    AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                </if>                  
         WHERE	SM.USE_YN		= 'Y'
         <if test="sch_reg_sdt != ''">
             AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
