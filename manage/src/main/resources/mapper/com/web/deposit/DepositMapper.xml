@@ -339,6 +339,10 @@
 				, TC.CHAIN_NM						as chain_nm
 				, TC.BIZ_NO 						as biz_no
 				, TC.SVC_STAT						as svc_stat
+				, DA.ADJUST_DATE					as adjust_date
+				, CASE WHEN DA.CLOSE_YN = 'Y' THEN 'N' 
+					ELSE (CASE WHEN DA.ADJUST_DATE = DATE_FORMAT(NOW(), '%Y-%m-%d') THEN 'Y' ELSE 'N' END)
+					END 							AS cncl_flag
 				, IFNULL(SUM(TOT_SALES_AMT), 0)		as tot_sales_amt 
 				, IFNULL(SUM(CARD_FEE_AMT), 0)		as card_fee_amt
 				, IFNULL(SUM(ORG_CARD_RESV_AMT), 0)	as org_card_resv_amt 
@@ -367,11 +371,16 @@
 				<if test='sch_corp_cd != null and sch_corp_cd != ""'>
 					AND  TC.CORP_CD = #{sch_corp_cd}
 				</if> 
-		WHERE	DA.ADJUST_DATE = #{sch_adjust_date} 
+		WHERE	1= 1
+		  AND  	DA.ADJUST_DATE &gt;= #{sch_adjust_sdt} 
+		  AND  	DA.ADJUST_DATE &lt;= #{sch_adjust_edt}
 		<if test="sch_chain_no != null and sch_chain_no != ''">
             AND  DA.CHAIN_NO = #{sch_chain_no}
         </if>   
-		GROUP 	BY DA.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO, TC.SVC_STAT
+		GROUP 	BY DA.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO, TC.SVC_STAT, DA.ADJUST_DATE
+				, CASE WHEN DA.CLOSE_YN = 'Y' THEN 'N' 
+					ELSE (CASE WHEN DA.ADJUST_DATE = DATE_FORMAT(NOW(), '%Y-%m-%d') THEN 'Y' ELSE 'N' END)
+					END 
         <choose>
 			<when test="orderBy != '' and orderBy != null">
                 ORDER BY ${orderBy}
@@ -415,7 +424,9 @@
 				<if test='sch_chain_nm != null and sch_chain_nm != ""'>
 					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
 				</if> 
-		WHERE	ADJUST_DATE = #{sch_adjust_date}  
+		WHERE	1= 1
+		  AND  	DA.ADJUST_DATE &lt;= #{sch_adjust_sdt} 
+		  AND  	DA.ADJUST_DATE &gt;= #{sch_adjust_edt}
 		<if test="sch_chain_no != null and sch_chain_no != ''">
             AND  DA.CHAIN_NO = #{sch_chain_no}
         </if>   
@@ -489,7 +500,7 @@
 		  		STRAIGHT_JOIN (
 					SELECT 	CHAIN_NO , BANK_IN_DATE, SUM(IN_AMT) CHAIN_AMT
 					  FROM 	TB_CHAIN_DEPOSIT_LIST
-					 WHERE	BANK_IN_DATE = #{sch_depo_date}	
+					 WHERE	BANK_IN_DATE = #{sch_adjust_date}	
 					   AND  CHAIN_NO	 = #{sch_chain_no}				   
 					 GROUP 	BY CHAIN_NO , BANK_IN_DATE
 		        ) T2 ON T2.CHAIN_NO = T1.CHAIN_NO 
@@ -498,7 +509,7 @@
 							, BANK_IN_DATE
 							, SUM(IN_AMT)       CREDIT_AMT
 					  FROM 	TB_CREDIT_DEPOSIT_LIST
-					 WHERE	BANK_IN_DATE = #{sch_depo_date}
+					 WHERE	BANK_IN_DATE = #{sch_adjust_date}
 					   AND  TRANS_COMP	= #{sch_chain_no}
 					 GROUP 	BY TRANS_COMP, BANK_IN_DATE
 				) T3 ON T3.CHAIN_NO 	= T2.CHAIN_NO
@@ -510,7 +521,7 @@
 					  FROM 	TB_SUB_MST
 					 WHERE 	SUB_CODE  IN ('I06001', 'I07001')
 					   AND  CHAIN_NO	= #{sch_chain_no}
-					   AND  REG_DATE 	= #{sch_depo_date}
+					   AND  REG_DATE 	= #{sch_adjust_date}
 					   AND 	USE_YN  = 'Y'
 					   AND	SHIFT_FLAG = 'N'					
 					 GROUP 	BY CHAIN_NO, REG_DATE
@@ -521,13 +532,13 @@
 					  FROM 	TB_EXCEED_MST
 					 WHERE 	EXC_CODE  	= 'I05001'
 					   AND  CHAIN_NO	= #{sch_chain_no}
-					   AND  EXC_DATE 	= #{sch_depo_date}
+					   AND  EXC_DATE 	= #{sch_adjust_date}
 					   AND 	USE_YN  	= 'Y'
 					 GROUP 	BY CHAIN_NO, EXC_DATE
 				) T5 ON T5.CHAIN_NO = T2.CHAIN_NO
 					AND T5.EXC_DATE = T2.BANK_IN_DATE
 		 WHERE  T2.CHAIN_NO		= #{sch_chain_no}
-		   AND  T2.BANK_IN_DATE = #{sch_depo_date} 
+		   AND  T2.BANK_IN_DATE = #{sch_adjust_date} 
 
 	</select> 
 

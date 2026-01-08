@@ -68,21 +68,13 @@
   to { background-position: 0 0; }
 }
 
-/* Select2 선택 영역 */
-/* .select2-container--bootstrap-5 .select2-selection {
-    font-size: 0.875rem;   /* Bootstrap form-control-sm */
-    min-height: 31px;
-    padding: 0.25rem 0.5rem;
-} */
+/* Select2 클릭 투과 방지 세트 */
+.select2-container--open {
+  z-index: 10560 !important; /* bootstrap modal(1055) 보다 높게 */
+}
 
-/* 선택된 텍스트 */
-/* .select2-container--bootstrap-5 .select2-selection__rendered {
-    line-height: 31px;
-    padding-left: 0.5rem;
-    color: #212529;
-} */
+.select2-dropdown {
+  z-index: 10560 !important;
+  pointer-events: auto !important;
+}
 
-/* 드롭다운 목록 */
-/* .select2-container--bootstrap-5 .select2-results__option {
-    font-size: 0.875rem;
-} */

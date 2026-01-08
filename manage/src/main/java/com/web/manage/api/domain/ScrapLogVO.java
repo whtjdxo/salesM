@@ -7,6 +7,8 @@ public class ScrapLogVO {
     private String chain_no;
     private String scrap_gb;
     private String van_cd;
+    private String login_id;
+    private String login_pwd;
     private String last_scrap_dttm;
     private String upload_cnt;
     private String save_cnt;

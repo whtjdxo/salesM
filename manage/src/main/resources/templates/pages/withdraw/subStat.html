@@ -52,8 +52,8 @@
           theme: 'bootstrap-5',
           placeholder: '가맹점 선택',
           allowClear: true,
-          minimumInputLength: 1,
-          width: 'resolve',
+          minimumInputLength: 2,
+          // width: 'resolve',
           // selectionCssClass: 'form-select-sm',
           // dropdownCssClass: 'form-select-sm',
           ajax: {
@@ -61,6 +61,7 @@
             type: 'GET',
             dataType: 'json',
             delay: 300,
+            cache: true,
             data: function (params) {
               return {
                 keyword: params.term || ''
@@ -456,7 +457,7 @@
         <div class="card-header">          
           <div class="row flex-between-end">
             <div class="col-lg-2 align-self-center">
-              <h4 class="mb-0">차감 현황</h4>
+              <h4 class="mb-0">차감 정산 현황</h4>
             </div>            
             <div class="col-lg-10">
               <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 

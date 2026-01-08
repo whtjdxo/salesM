@@ -50,12 +50,13 @@
         $('#chain_no').select2({            
             theme: 'bootstrap-5',
             placeholder: '가맹점 선택',
-            minimumInputLength: 1, // 1글자 이상 입력해야 검색 시작
+            minimumInputLength: 2, // 1글자 이상 입력해야 검색 시작
             ajax: {
                 url: '/common/getChainSchList',  // 서버 API
                 type: 'GET',
                 dataType: 'json',
-                delay: 300,
+                delay: 500,
+                cache: true,
                 data: function (params) {
                     return {
                         keyword: params.term   // 검색어

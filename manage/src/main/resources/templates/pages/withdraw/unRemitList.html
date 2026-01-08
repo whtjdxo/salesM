@@ -62,14 +62,16 @@
           }
         });
 
-        
+        $('#sch_chain_no').on("change", function (e) {
+          $("#btn_search").click();
+        });
 
         $('#sch_chain_no').select2({
           theme: 'bootstrap-5',
           placeholder: '가맹점 선택',
           allowClear: true,
-          minimumInputLength: 1,
-          width: 'resolve',
+          minimumInputLength: 2,
+          // width: 'resolve',
           // selectionCssClass: 'form-select-sm',
           // dropdownCssClass: 'form-select-sm',
           ajax: {
@@ -77,6 +79,7 @@
             type: 'GET',
             dataType: 'json',
             delay: 300,
+            cache: true,
             data: function (params) {
               return {
                 keyword: params.term || ''
@@ -93,8 +96,7 @@
               };
             }
           }
-        });
- 
+        }); 
 
         $('#btn_search').click(function () {   
           fn_default_clear();

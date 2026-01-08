@@ -41,10 +41,14 @@
 
         <insert id="writeScrapLog" parameterType="com.web.manage.api.domain.ScrapLogVO">
                 INSERT INTO     TB_SCRAP_LOG (
-                        CHAIN_NO        , SCRAP_GB      , VAN_CD        , LAST_SCRAP_DTTM
+                        CHAIN_NO        , SCRAP_GB      , VAN_CD        
+                        <!-- , LOGIN_ID      , LOGIN_PWD      -->
+                        , LAST_SCRAP_DTTM
                         , UPLOAD_CNT    , SAVE_CNT      , DUP_CNT       , RSLT_MSG
                 ) VALUES (                                   
-                        #{chain_no}	, #{scrap_gb}   , #{van_cd}     , NOW()
+                        #{chain_no}	, #{scrap_gb}   , #{van_cd}     
+                        <!-- , #{login_id}   , #{login_pwd}	 -->
+                        , NOW()
                         , #{upload_cnt} , #{save_cnt}	, #{dup_cnt}    , #{rslt_msg}     
                 )    
         </insert>    

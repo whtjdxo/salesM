@@ -220,7 +220,7 @@ public class DepositController {
     @RequestMapping(value="deposit/depoMng/chainDepositStatus", method = RequestMethod.POST)
 	public @ResponseBody ReturnDataVO getChainDepoStatus(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session){
         // System.out.println("............. DepositController.chainDepositStatus ");
-        // System.out.println("hashmapParam : " + hashmapParam);
+        System.out.println("hashmapParam : " + hashmapParam);
 		HashMap<String, Object> depoStatus = new HashMap<String, Object>();
 		ReturnDataVO result = new ReturnDataVO();
 		try {

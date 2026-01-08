@@ -148,8 +148,8 @@
           theme: 'bootstrap-5',
           placeholder: '가맹점 선택',
           allowClear: true,
-          minimumInputLength: 1,
-          width: 'resolve',
+          minimumInputLength: 2,
+          // width: 'resolve',
           // selectionCssClass: 'form-select-sm',
           // dropdownCssClass: 'form-select-sm',
           ajax: {
@@ -157,6 +157,7 @@
             type: 'GET',
             dataType: 'json',
             delay: 300,
+            cache: true,
             data: function (params) {
               return {
                 keyword: params.term || ''
@@ -300,7 +301,15 @@
                     }
                     }
                   , { data: 'exc_date' }
-                  , { data: 'exc_status_nm' }
+                  , { data: 'exc_status_nm', render: function(data, type, row) {
+                      if (row.exc_status === '000000') {
+                        return '<span style="background-color: yellow; padding: 2px 4px; border-radius: 3px;">' + data + '</span>';
+                      } else if (row.exc_status === '100000') {
+                        return '<span style="background-color: blue; color: white; padding: 2px 4px; border-radius: 3px;">' + data + '</span>';
+                      }
+                      return data;
+                    }
+                    }
                   , { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                   , { data: 'remain_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                   , { data: 'exc_memo' }                  

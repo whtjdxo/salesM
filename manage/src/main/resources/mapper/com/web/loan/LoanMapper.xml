@@ -110,7 +110,7 @@
                 ORDER BY ${orderBy} 
             </when>
             <otherwise>
-                    ORDER BY 1
+                    ORDER BY TC.CHAIN_NO DESC
             </otherwise>
         </choose>                
         LIMIT  ${start}, ${end}

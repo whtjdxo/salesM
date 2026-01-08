@@ -48,44 +48,37 @@
             $('#btn_remit_cancel').show();
           }
           tbl_remit_summ.ajax.reload();
-        });  
-
-        $('#sch_chain_no').keypress(function(e) {
-          if (e.which === 13) { // Enter key
-            $('#btn_search').click();
-          }
-        }); 
+        });   
 
         $('#btn_list_search').click(function () {   
           tbl_remit_list.ajax.reload();
         }); 
 
+        $('#sch_chain_no').on("change", function (e) {          
+          $("#btn_search").click();          
+        });
+
         $('#sch_chain_no').select2({
           theme: 'bootstrap-5',
+          // width: '100%',
           placeholder: '가맹점 선택',
           allowClear: true,
-          minimumInputLength: 1,
-          width: 'resolve',
-          // selectionCssClass: 'form-select-sm',
-          // dropdownCssClass: 'form-select-sm',
+          minimumInputLength: 2,
           ajax: {
             url: '/common/getChainSchList',
             type: 'GET',
             dataType: 'json',
             delay: 300,
+            cache: true,
             data: function (params) {
-              return {
-                keyword: params.term || ''
-              };
+              return { keyword: params.term || '' };
             },
             processResults: function (data) {
               return {
-                results: (data || []).map(function (item) {
-                  return {
-                    id: item.code,
-                    text: item.codeNm
-                  };
-                })
+                results: (data || []).map(item => ({
+                  id: item.code,
+                  text: item.codeNm
+                }))
               };
             }
           }

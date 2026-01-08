@@ -186,8 +186,8 @@
           theme: 'bootstrap-5',
           placeholder: '가맹점 선택',
           allowClear: true,
-          minimumInputLength: 1,
-          width: 'resolve',
+          minimumInputLength: 2,
+          width: '100%',
           // selectionCssClass: 'form-select-sm',
           // dropdownCssClass: 'form-select-sm',
           ajax: {
@@ -195,6 +195,7 @@
             type: 'GET',
             dataType: 'json',
             delay: 300,
+            cache: true,
             data: function (params) {
               return {
                 keyword: params.term || ''
@@ -1412,7 +1413,7 @@
           <div class="card-header">
             <div class="row flex-between-end">
               <div class="col-auto align-self-center">
-                <h5 class="mb-0">가맹점 지원관리</h5>
+                <h5 class="mb-0">지원금 관리</h5>
               </div>
               <div class="col-lg-10">
                 <form id="frm_sch_summ_list" name="frm_sch_summ_list" onsubmit="return false;" novalidate="">

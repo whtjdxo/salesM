@@ -89,13 +89,7 @@
                 .css({ 'color': '', 'font-weight': '' });
             }
           }          
-        }
-
-        // $("#sch_chain_nm").on("keydown", function (e) {
-        //   if (e.key === "Enter") {
-        //     $("#btn_search").click();
-        //   }
-        // });
+        } 
 
         $('#sch_chain_no').on("change", function (e) {          
           $("#btn_search").click();          
@@ -105,32 +99,27 @@
           theme: 'bootstrap-5',
           placeholder: '가맹점 선택',
           allowClear: true,
-          minimumInputLength: 1,
-          width: 'resolve',
-          // selectionCssClass: 'form-select-sm',
-          // dropdownCssClass: 'form-select-sm',
+          minimumInputLength: 2,
           ajax: {
             url: '/common/getChainSchList',
             type: 'GET',
             dataType: 'json',
             delay: 300,
+            cache: true,
             data: function (params) {
-              return {
-                keyword: params.term || ''
-              };
+              return { keyword: params.term || '' };
             },
             processResults: function (data) {
               return {
-                results: (data || []).map(function (item) {
-                  return {
-                    id: item.code,
-                    text: item.codeNm
-                  };
-                })
+                results: (data || []).map(item => ({
+                  id: item.code,
+                  text: item.codeNm
+                }))
               };
             }
           }
         });
+
 
         $('#btn_search').click(function () {   
           fn_default_clear();
@@ -1098,7 +1087,7 @@
           <div class="card-header">          
             <div class="row flex-between-end">
               <div class="col-lg-2 align-self-center">
-                <h4 class="mb-0">사전 정산</h4>
+                <h4 class="mb-0">출금 사전 정산</h4>
               </div>            
               <div class="col-lg-10">
                 <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
@@ -1136,10 +1125,10 @@
                   <div class="row mb-0">
                     <div class="col-sm-8">&nbsp;</div>   
                     <div class="col-sm-4 text-end">
-                      <div class="form-check form-check-inline me-2">
+                      <!-- <div class="form-check form-check-inline me-2">
                         <input type="checkbox" id="remit_all" class="form-check-input" />
                         <label for="remit_all" class="form-check-label">모두 출금</label>
-                      </div>                      
+                      </div>                       -->
                       <button type="button" class="btn btn-success btn-sm" id="btn_remit" name="btn_remit">출금 정산 처리</button>                      
                     </div>
                   </div>

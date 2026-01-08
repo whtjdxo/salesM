@@ -31,8 +31,8 @@
         }
         // Set default values for sch_reg_sdt and sch_reg_edt
         var toDay = returnDate('today');        
-        $('#sch_adjust_date').val(toDay); 
-        $('#change_resv_date').val(toDay);
+        $('#sch_adjust_sdt').val(toDay); 
+        $('#sch_adjust_edt').val(toDay);  
 
         $('#sch_chain_no').on("change", function (e) {
           $("#btn_search").click();
@@ -42,8 +42,8 @@
           theme: 'bootstrap-5',
           placeholder: '가맹점 선택',
           allowClear: true,
-          minimumInputLength: 1,
-          width: 'resolve',
+          minimumInputLength: 2,
+          // width: 'resolve',
           // selectionCssClass: 'form-select-sm',
           // dropdownCssClass: 'form-select-sm',
           ajax: {
@@ -51,6 +51,7 @@
             type: 'GET',
             dataType: 'json',
             delay: 300,
+            cache: true,
             data: function (params) {
               return {
                 keyword: params.term || ''
@@ -108,9 +109,12 @@
                 {
                     data: 'chain_no',
                     render: function(data, type, row, meta) {
-                        // 각 행의 체크박스 생성. 고유 값(여기서는 chain_no)을 value로 사용
-                        rowno = meta.row + meta.settings._iDisplayStart + 1;
-                        return '<span>' + rowno + '&nbsp;<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '"></span>';
+                      // 각 행의 체크박스 생성. 고유 값(여기서는 chain_no)을 value로 사용
+                      rowno = meta.row + meta.settings._iDisplayStart + 1;
+                      var checkbox = row.cncl_flag === 'Y' 
+                        ? '<input type="checkbox" class="form-check-input row-checkbox" value="' + data + '" >' 
+                        : '';
+                      return '<span>' + rowno + '&nbsp;' + checkbox + '</span>';
                     },
                     orderable: false,
                     className: 'text-center dt-body-center' // DataTables 1.10+ 권장 클래스
@@ -124,7 +128,7 @@
                   return data;
                   }
                 }
-                , { data: 'biz_no' }                
+                , { data: 'adjust_date' }                
                 , { data: 'tot_sales_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { data: 'card_resv_amt_remit', render: $.fn.dataTable.render.number(',', '.', 0, '') }
                 , { data: 'bank_in_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
@@ -144,13 +148,13 @@
             columnDefs: [
                 { targets: 0, width: '40px', className: 'text-center dt-body-center' } // 중앙 정렬 확인
                 , { targets: 1, width: '180px', className: 'text-left px-1' }
-                , { targets: 2, width: '120px', className: 'text-left px-1' } // DataTables 권장 클래스
+                , { targets: 2, width: '100px', className: 'text-center px-1' } // DataTables 권장 클래스
                 , { targets: 3, width: '110px', className: 'text-right px-1 dt-body-right' }
                 , { targets: 4, width: '110px', className: 'text-right px-1 dt-body-right' }
                 , { targets: 5, width: '110px', className: 'text-right px-1 dt-body-right' }
                 , { targets: 6, width: '110px', className: 'text-right px-1 dt-body-right' }
             ],
-            order: [[0, 'desc']], // 기본 정렬 설정
+            order: [[0, 'desc'], [2, 'desc']], // 기본 정렬 설정
             paging: true,
             lengthChange: false,
             searching: false,
@@ -258,22 +262,22 @@
           var clickedCell = $(e.target).closest('td');
           var clickedColumnIndex = clickedCell.index();
           var row = tbl_depo_resv_summ.row(this).data();
+ 
+          fn_card_clear();
+          fn_list_clear();
 
-          $('#frm_sch_card')[0].reset();   
-          $('#frm_sch_list')[0].reset();
-          
-          $('#sch_card_adjust_date').val($('#sch_adjust_date').val());   // 카드 작업일 설정
+          $('#sch_card_adjust_date').val(row.adjust_date);   // 카드 작업일 설정
           $('#sch_card_chain_no').val(row.chain_no);
           
-          $('#sch_list_adjust_date').val($('#sch_adjust_date').val());   // list 작업일 설정   
+          $('#sch_list_adjust_date').val(row.adjust_date);   // list 작업일 설정   
           $('#sch_list_chain_no').val(row.chain_no);   // list 검색 조건
 
           $('#select_chain_nm').text(row.chain_nm); // 가맹점명 설정  
           
           var formData ={
-            sch_chain_no    : row.chain_no, 
-					  sch_depo_date	: $('#sch_adjust_date').val(),
-          }       
+            sch_chain_no  : row.chain_no, 
+					  sch_adjust_date	: row.adjust_date,
+          }        
           callAjaxJson('/deposit/deposit/depoMng/chainDepositStatus', formData, fn_chainDepoStatus);           
           callAjax('/deposit/deposit/depoMng/getDepositConfDate', formData, fn_list_search_date_setting);
  
@@ -291,33 +295,34 @@
         }
 
         $('#btn_cancel_depo').click(function () {
-          var selectedChainNos = [];
+          let selectedChainNos = [];
+          let selectedDate = toDay;     // 당일입금만 취소 할 수 있음
           // Iterate through checked checkboxes in the current page
           tbl_depo_resv_summ.rows({ page: 'current' }).nodes().to$().find('.row-checkbox:checked').each(function () {
             selectedChainNos.push($(this).val());
           });
           
           var dataParam ="";
-          if ($('#deposit_all').is(':checked')) {  
-            if (!confirm("모두 입금 처리하시겠습니까?")) {              
-              return;
-            }
-            dataParam ={
-              adjustDate : $('#sch_adjust_date').val(),
-              chain_no : 'ALL',
-              cardAcq : 'ALL',
-            }
-          } else {
+          // if ($('#deposit_all').is(':checked')) {  
+          //   if (!confirm("모두 취소 처리하시겠습니까?")) {              
+          //     return;
+          //   }
+          //   dataParam ={
+          //     adjustDate : selectedDate,
+          //     chainNo : 'ALL',
+          //     cardAcq : 'ALL',
+          //   }
+          // } else {
             if (selectedChainNos.length === 0) {
-              alert('입금 처리할 가맹점을 선택하세요.');
+              alert('입금 취소 할 가맹점을 선택하세요.');
               return;
             }
             dataParam ={              
-              adjustDate : $('#sch_adjust_date').val(),
+              adjustDate : selectedDate,
               chainNo : selectedChainNos.join(','),
               cardAcq : 'ALL',
             }  
-          } 
+          // } 
           ConfirmdialogToAjax("execute","/deposit/deposit/depoList/procDepoAdjustCancel", dataParam, fn_deposit_result); 
         });
 
@@ -361,15 +366,13 @@
           });
           fn_default_clear();
           tbl_depo_resv_summ.ajax.reload();
-        }
-
-        
+        } 
 
         function fn_default_clear(){           
           fn_card_clear();
           fn_list_clear(); 
           $('#select_chain_nm').text('매입사별 입금 리스트');
-          $('#deposit_all').prop('checked', false); 
+          // $('#deposit_all').prop('checked', false); 
         }
 
         function fn_card_clear(){
@@ -381,6 +384,7 @@
         }
 
         function fn_list_clear(){  
+          $('#frm_sch_list')[0].reset();
           $('#sch_list_chain_no').val('');
           $('#sch_list_chain_nm').val('');
           $('#sch_list_adjust_date').val('');
@@ -839,17 +843,19 @@
               <div class="col-lg-10">
                 <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
                   <div class="row mb-1">
-                    <div class="col-sm-7">
-                      <div class="input-group input-group-sm mb-1">
+                    
+                    <div class="col-sm-6">
+                      <div class="input-group input-group-sm mb-1 me-1">
                         <div class="col-sm-5">
-                          <input class="form-control form-control-sm" id="sch_adjust_date" type="text" name="sch_adjust_date" istyle="date" maxlength="10" required />
+                          <input class="form-control form-control-sm " id="sch_adjust_sdt" type="text" name="sch_adjust_sdt" istyle="date" maxlength="10" required />
                         </div>   
-                        <select class="form-select form-control-sm me-1" id="sch_corp_cd" name="sch_corp_cd" style="width: 75px">
-                          <option value="">여신사</option>
-                        </select> 
-                      </div>
+                        <span class="input-group-text">~</span>
+                        <div class="col-sm-5">
+                          <input class="form-control form-control-sm" id="sch_adjust_edt" type="text" name="sch_adjust_edt" istyle="date" maxlength="10" required />
+                        </div>                           
+                      </div> 
                     </div>
-                    <div class="col-sm-5 text-end">
+                    <div class="col-sm-6 text-start">
                       <div class="input-group input-group-sm mb-1">
                         <select class="form-select form-control-sm me-1" id="sch_chain_no" name="sch_chain_no">
                           <option value=""></option>
@@ -860,10 +866,10 @@
                   </div> 
                   <div class="row mb-1">
                     <div class="col-sm-12 text-end">
-                      <div class="form-check form-check-inline me-2">
+                      <!-- <div class="form-check form-check-inline me-2">
                         <input type="checkbox" id="deposit_all" class="form-check-input" />
                         <label for="deposit_all" class="form-check-label">모두 입금 취소</label>
-                      </div>                   
+                      </div>                    -->
                       <button type="button" class="btn btn-success btn-sm" id="btn_cancel_depo" name="btn_cancel_depo">입금 취소</button>                      
                     </div>
                   </div>
@@ -880,7 +886,7 @@
                         <input type="checkbox" id="check_all" class="form-check-input" />
                     </th>
                     <th class="text-center">가맹점 명</th>
-                    <th class="text-center">사업자 번호</th>
+                    <th class="text-center">입금일</th>
                     <th class="text-center">매출액</th>
                     <th class="text-center">입금 예정액</th>
                     <th class="text-center">입  금  액</th>
