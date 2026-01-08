@@ -514,16 +514,16 @@
               { targets: 2, width: '120px', className: 'text-center' },
               { targets: 3, width: '80px', className: 'text-center' },
             ],
-            order: [[1, 'desc']],
+            order: [[0, 'ASC']],
             paging: true,
             lengthChange: false,
             searching: false,
             ordering: true,
             autoWidth: false,
             responsive: true,
-            scrollCollapse: true,
-            pageLength: 10,
-            scrollY: '450px',
+            scrollCollapse: false,
+            pageLength: 5,
+            scrollY: '200px',
             info: false,
             language: {
               emptyTable: '데이터가 없습니다.',
@@ -554,6 +554,7 @@
             $('#van_upt_user_id').val(data.upt_user_id);
             $('#van_upt_dttm').val(data.upt_dttm);   
 
+            $('#van_url').text(data.van_url);
             $('#btn_van_update').show();
             $('#btn_van_create').hide();            
             $('#btn_van_dupchk').hide(); 
@@ -562,6 +563,13 @@
 
         $('#btn_van_clear').click(function () {     
           fn_frm_van_info_clear(); 
+        });
+
+        $('#btn_url').on('click', function() {
+          var vanUrl = $('#van_url').text();
+          if (vanUrl && vanUrl.trim() !== '') {
+            window.open(vanUrl, '_blank');
+          }
         });
 
         function fn_frm_van_info_clear(){
@@ -2124,7 +2132,18 @@
                           <textarea class="form-control"  id="term_id" rows="2" name="term_id"></textarea> 
                         </div>
                       </div>
-                    </div>                    
+                    </div>    
+                    <div class="row mb-1">
+                      <div class="input-group input-group-sm mb-2">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="van_url">URL</label>
+                        <div class="col-sm-10">
+                          <div class="input-group input-group-sm mb-2">
+                            <label class="col-sm-10 col-form-label col-form-label-sm" id="van_url"></label>
+                            <button type="button" class="btn btn-info text-end" id="btn_url">Go</button> 
+                          </div>                           
+                        </div>
+                      </div>
+                    </div>                     
                     <div class="row mb-1"> 
                       <div class="input-group input-group-sm mb-2"> 
                         <label class="col-sm-2 col-form-label col-form-label-sm" for="addr">수정자 / 일</label>

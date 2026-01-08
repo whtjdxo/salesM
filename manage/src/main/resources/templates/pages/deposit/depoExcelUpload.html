@@ -8,12 +8,8 @@
   <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
   <script src="/vendors/dropzone/dropzone-min.js"></script>
   <script src="/js/jquery.form.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <!-- ✅ XLSX (SheetJS) 추가 -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- Select2 Bootstrap5 Theme -->
-  <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.1.1/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 
   <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />    
   <link rel="stylesheet" href="/css/custom-salesm.css" />
@@ -31,7 +27,7 @@
           codeSetting('CORP_CD', data.data, '#corp_cd', '1', 'OP00001', '');
         }
         
-        $('#corp_type').change(function() {
+                $('#corp_type').change(function() {
           var corpType = $('#corp_type').val();
           if (corpType === '') {
             alert('구분을 선택해주세요.');
@@ -47,31 +43,37 @@
           }          
         }); 
 
-        $('#chain_no').select2({            
-            theme: 'bootstrap-5',
-            placeholder: '가맹점 선택',
-            minimumInputLength: 2, // 1글자 이상 입력해야 검색 시작
-            ajax: {
-                url: '/common/getChainSchList',  // 서버 API
-                type: 'GET',
-                dataType: 'json',
-                delay: 500,
-                cache: true,
-                data: function (params) {
-                    return {
-                        keyword: params.term   // 검색어
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.map(item => ({
-                            id: item.code,
-                            text: item.codeNm
-                        }))
-                    };
+                $('#chain_nm').on('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); triggerChainSearch(); }});
+                $('#btn_chain_find').on('click', function(){ triggerChainSearch(); });
+
+                function triggerChainSearch(){
+                    var keyword = ($('#chain_nm').val()||'').trim();
+                    if(!keyword){ alert('가맹점명을 입력하세요.'); return; }
+                    if(keyword.length<2){ alert('가맹점명은 2자 이상 입력하세요.'); return; }
+                    $.ajax({ url:'/common/getChainSchList', type:'GET', dataType:'json', data:{ keyword: keyword },
+                        success:function(list){
+                            var results = list||[];
+                            if(results.length===0){ alert('검색 결과가 없습니다.'); $('#chain_no').val(''); return; }
+                            if(results.length===1){ $('#chain_no').val(results[0].code); $('#chain_nm').val(results[0].codeNm); return; }
+                            openChainSelectModal(results);
+                        },
+                        error:function(){ alert('가맹점 검색 중 오류가 발생했습니다.'); }
+                    });
                 }
-            }
-        });
+
+                function openChainSelectModal(results){
+                    var $tbody = $('#tbl_chain_select tbody');
+                    $tbody.empty();
+                    results.forEach(function(item){
+                        var $tr = $('<tr/>')
+                            .append($('<td/>',{text:item.code, class:'text-center'}))
+                            .append($('<td/>',{text:item.codeNm}))
+                            .css('cursor','pointer')
+                            .on('click', function(){ $('#chain_no').val(item.code); $('#chain_nm').val(item.codeNm); $('#modal_chain_select').modal('hide'); });
+                        $tbody.append($tr);
+                    });
+                    $('#modal_chain_select').modal('show');
+                }
 
 
         // DataTable 초기화
@@ -271,7 +273,11 @@
                                             </select>
                                         </div> 
                                         <div class="col-sm-6" id="corp_select_chain">
-                                            <select class="form-select form-control-sm me-1" id="chain_no" name="chain_no"></select>                                            
+                                            <input type="hidden" id="chain_no" name="chain_no" />
+                                            <div class="input-group input-group-sm">
+                                                <input class="form-control form-control-sm me-1" id="chain_nm" name="chain_nm" placeholder="가맹점명" autocomplete="off" />
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" id="btn_chain_find" name="btn_chain_find">검색</button>
+                                            </div>
                                         </div>                             
                                         <div class="col-sm-6" id="corp_select_op" style="display: none;">
                                             <select class="form-select form-control-sm me-1"   id="corp_cd" name="corp_cd">
@@ -333,4 +339,34 @@
         </div>
     </div> 
 </div>
+
+<!-- 가맹점 선택 모달 -->
+<div class="modal fade" id="modal_chain_select" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">가맹점 선택</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive scrollbar">
+                    <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_chain_select">
+                        <thead>
+                            <tr>
+                                <th class="text-center">코드</th>
+                                <th class="text-center">가맹점명</th>
+                            </tr>
+                        </thead>
+                        <tbody class="list"></tbody>
+                    </table>
+                </div>
+                <div class="text-muted mt-2">원하는 항목을 클릭하여 선택하세요.</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </html>

@@ -425,8 +425,8 @@
 					AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
 				</if> 
 		WHERE	1= 1
-		  AND  	DA.ADJUST_DATE &lt;= #{sch_adjust_sdt} 
-		  AND  	DA.ADJUST_DATE &gt;= #{sch_adjust_edt}
+		  AND  	DA.ADJUST_DATE &gt;= #{sch_adjust_sdt} 
+		  AND  	DA.ADJUST_DATE &lt;= #{sch_adjust_edt}
 		<if test="sch_chain_no != null and sch_chain_no != ''">
             AND  DA.CHAIN_NO = #{sch_chain_no}
         </if>   

@@ -35,41 +35,50 @@
         // $('#sch_list_conf_date').val(toDay);
         $('#change_resv_date').val(toDay);
 
-        $('#sch_chain_no').on("change", function (e) {
-          $("#btn_search").click();
-        });
-
-				$('#sch_chain_no').select2({
-          theme: 'bootstrap-5',
-          placeholder: '가맹점 선택',
-          allowClear: true,
-          minimumInputLength: 2,
-          // width: 'resolve',
-          // selectionCssClass: 'form-select-sm',
-          // dropdownCssClass: 'form-select-sm',
-          ajax: {
-            url: '/common/getChainSchList',
-            type: 'GET',
-            dataType: 'json',
-            delay: 300,
-            cache: true,
-            data: function (params) {
-              return {
-                keyword: params.term || ''
-              };
-            },
-            processResults: function (data) {
-              return {
-                results: (data || []).map(function (item) {
-                  return {
-                    id: item.code,
-                    text: item.codeNm
-                  };
-                })
-              };
-            }
+        // 체인 검색 입력/버튼 처리
+        $('#sch_chain_nm').on('keydown', function(e){
+          if(e.key === 'Enter'){
+            e.preventDefault();
+            triggerChainSearch();
           }
         });
+        $('#btn_chain_find').on('click', function(){
+          triggerChainSearch();
+        });
+
+        function triggerChainSearch(){
+          var keyword = ($('#sch_chain_nm').val() || '').trim();
+          if(!keyword){ alert('가맹점명을 입력하세요.'); return; }
+          if(keyword.length < 2){ alert('가맹점명은 2자 이상 입력하세요.'); return; }
+          $.ajax({
+            url: '/common/getChainSchList', type: 'GET', dataType: 'json', data: { keyword: keyword },
+            success: function(list){
+              var results = list || [];
+              if(results.length === 0){ alert('검색 결과가 없습니다.'); $('#sch_chain_no').val(''); return; }
+              if(results.length === 1){ $('#sch_chain_no').val(results[0].code); $('#sch_chain_nm').val(results[0].codeNm); return; }
+              openChainSelectModal(results);
+            },
+            error: function(){ alert('가맹점 검색 중 오류가 발생했습니다.'); }
+          });
+        }
+
+        function openChainSelectModal(results){
+          var $tbody = $('#tbl_chain_select tbody');
+          $tbody.empty();
+          results.forEach(function(item){
+            var $tr = $('<tr/>')
+              .append($('<td/>',{text:item.code, class:'text-center'}))
+              .append($('<td/>',{text:item.codeNm}))
+              .css('cursor','pointer')
+              .on('click', function(){
+                $('#sch_chain_no').val(item.code);
+                $('#sch_chain_nm').val(item.codeNm);
+                $('#modal_chain_select').modal('hide');
+              });
+            $tbody.append($tr);
+          });
+          $('#modal_chain_select').modal('show');
+        }
 
         $('#btn_search').click(function () {             
           tbl_depo_resv_summ.ajax.reload();
@@ -282,7 +291,7 @@
           // var formData = $('#frm_sch_card').serializeObject();    
           var formData ={
             sch_chain_no   : row.chain_no, 
-					  sch_depo_date	 : $('#sch_resv_date').val(),
+					  sch_adjust_date	 : $('#sch_resv_date').val(),
           }      
           callAjaxJson('/deposit/deposit/depoMng/chainDepositStatus', formData, fn_chainDepoStatus);
 
@@ -1137,9 +1146,9 @@
                     </div>            
                     <div class="col-sm-4">
                       <div class="input-group input-group-sm mb-1">
-                        <select class="form-select form-control-sm me-1" id="sch_chain_no" name="sch_chain_no">
-                          <option value=""></option>
-                        </select> 
+                        <input type="hidden" id="sch_chain_no" name="sch_chain_no" />
+                        <input class="form-control form-control-sm me-1" id="sch_chain_nm" name="sch_chain_nm" placeholder="가맹점명" autocomplete="off" />
+                        <button type="button" class="btn btn-outline-secondary btn-sm me-1" id="btn_chain_find" name="btn_chain_find">검색</button>
                         <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
                       </div>
                     </div> 

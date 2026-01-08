@@ -198,7 +198,7 @@ public class DepositController {
 
             list = depositService.getDepoCardSummary(hashmapParam);
             int records = depositService.getQueryTotalCnt();
-            depoStatus = depositService.getChainDepoStatus(hashmapParam);
+            // depoStatus = depositService.getChainDepoStatus(hashmapParam);
 
             pageing.setRecords(records);
             pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
@@ -799,7 +799,7 @@ public class DepositController {
 
             list = depositService.getDepoAdjustCardSummary(hashmapParam);
             int records = depositService.getQueryTotalCnt();
-            depoStatus = depositService.getChainDepoStatus(hashmapParam);
+            // depoStatus = depositService.getChainDepoStatus(hashmapParam);
 
             pageing.setRecords(records);
             pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));

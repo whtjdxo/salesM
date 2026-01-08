@@ -291,10 +291,13 @@
                 , CV.VAN_ID                             AS van_id
                 , CV.VAN_PWD                            AS van_pwd
                 , CV.TERM_ID                            AS term_id
+                , IFNULL(TC.CHK_CD1, '')                AS van_url
                 , IFNULL(CV.USE_YN, 'N')                AS use_yn
                 , IFNULL(CV.UPT_USER_ID, CV.ENT_USER_ID) AS upt_user_id
                 , DATE_FORMAT(IFNULL(CV.UPT_DTTM, CV.ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
           FROM	TB_CHAIN_VAN CV 
+                JOIN TB_CODE TC ON TC.CODE = CV.VAN_CD
+                                AND TC.CODE_GRP_CD = 'VAN_CD'
         WHERE   CHAIN_NO = #{van_chain_no}
         <if test="sch_van_cd != null and sch_van_cd != ''">			
 			AND CV.VAN_CD = #{sch_van_cd}
