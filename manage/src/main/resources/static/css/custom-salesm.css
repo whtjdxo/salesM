@@ -68,13 +68,9 @@
   to { background-position: 0 0; }
 }
 
-/* Select2 클릭 투과 방지 세트 */
-.select2-container--open {
-  z-index: 10560 !important; /* bootstrap modal(1055) 보다 높게 */
-}
-
+.select2-container--open,
 .select2-dropdown {
-  z-index: 10560 !important;
+  z-index: 1051 !important;
   pointer-events: auto !important;
 }
 
