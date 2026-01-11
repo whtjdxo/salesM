@@ -56,11 +56,11 @@
 
     <select id="getScrapList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
         SELECT	SQL_CALC_FOUND_ROWS
-                TC.CORP_CD 					AS chain_no 
-                , TC.CORP_NM 					AS chain_nm
-                , IFNULL(VL.LOGIN_ID, ' ')			AS site_cd
-                , IFNULL(VL.LOGIN_PWD, ' ')			AS login_pwd
-                , TML.VAN_CD					AS van_cd
+                TC.CORP_CD 							AS chain_no 
+                , TC.CORP_NM 						AS chain_nm                
+                , TML.VAN_CD						AS van_cd
+                , IFNULL(TML.VAN_ID, VL.LOGIN_ID)	AS van_id
+                , IFNULL(TML.VAN_PWD, VL.LOGIN_PWD)	AS van_pwd
                 , IFNULL(CASE TML.GUBUN WHEN 'APRV' THEN GET_CODE_NM('VAN_CD', TML.VAN_CD)
                                     WHEN 'BANK' THEN  GET_CODE_NM('BANK_CD', TML.VAN_CD)
                                     WHEN 'CARD' THEN  '여신협'
@@ -81,34 +81,32 @@
                 , IFNULL(DATE_FORMAT(VL.LAST_SCRAP_DTTM, '%Y-%m-%d %H:%i:%s'), '')	 	AS last_scrap_dttm
         FROM 	VW_CORP TC
                 JOIN (
-                        SELECT 	'APRV'	AS GUBUN, CHAIN_NO, VAN_CD AS VAN_CD, COUNT(1) AS CNT
-                            FROM 	TB_CHAIN_VAN
-                            WHERE 	USE_YN = 'Y'  
-                            GROUP 	BY CHAIN_NO, VAN_CD 
-                            UNION 	ALL 
-                        SELECT  'BANK'	AS GUBUN, CHAIN_NO, ABANK_CD	AS VAN_CD, 1 AS CNT
-                            FROM 	(
-                                SELECT  CHAIN_NO, ABANK_CD 
-                                    FROM 	TB_CHAIN 
-                                    WHERE 	SVC_STAT IN ('O', 'R')
-                                    AND  USE_YN = 'Y'
-                                    AND 	ABANK_SPEED_YN = 'Y'
-                                    UNION	ALL
-                                SELECT 	CORP_CD,  BANK_CD
-                                    FROM 	TB_CORP
-                                    WHERE	USE_YN = 'Y'
-                                    AND  CORP_TYPE  = 'OP'
-                                ) VC
-                            <!-- UNION 	ALL 
-                            SELECT  'CARD'	AS GUBUN, CHAIN_NO, 'CARDSALES' AS VAN_CD, 1 AS CNT
-                            FROM 	TB_CHAIN 
-                            WHERE 	SVC_STAT IN ('O', 'R')
-                            AND     USE_YN = 'Y'
-                            AND 	LENGTH(CARDSALES_ID) &gt; 5 
-                            AND     LENGTH(CARDSALES_PWD) &gt; 5  -->
+                        SELECT 	'APRV'	AS GUBUN, CHAIN_NO, VAN_CD AS VAN_CD
+                        		, VAN_ID, VAN_PWD 	 
+                        FROM 	TB_CHAIN_VAN
+                        WHERE 	USE_YN = 'Y'   
+                        UNION 	ALL 
+                        SELECT  'BANK'	AS GUBUN, CHAIN_NO, ABANK_CD	AS VAN_CD
+                        		, VAN_ID	 , VAN_PWD
+                        FROM 	(
+	                            	SELECT  CHAIN_NO, ABANK_CD
+	                            			, ABANK_ACCOUNT_NO 	AS VAN_ID  
+	                            			, ABANK_PWD 		AS VAN_PWD
+	                                FROM 	TB_CHAIN 
+	                                WHERE 	SVC_STAT IN ('O', 'R')
+	                                AND  	USE_YN = 'Y'
+	                                AND 	ABANK_SPEED_YN = 'Y'
+	                                UNION	ALL
+		                            SELECT 	CORP_CD,  BANK_CD
+		                            		, ACCOUNT_NO 	AS VAN_ID
+		                            		, ACCOUNT_PWD  	AS VAN_PWD
+	                                FROM 	TB_CORP
+	                                WHERE	USE_YN = 'Y'
+	                                AND  	CORP_TYPE  = 'OP'
+                            	) VC 
                 ) TML ON TML.CHAIN_NO = TC.CORP_CD
                 LEFT OUTER JOIN (
-                        SELECT 	ROW_NUMBER() OVER (PARTITION BY CHAIN_NO, VAN_CD ORDER BY LAST_SCRAP_DTTM DESC) AS CHAIN_RNO
+                        SELECT 	ROW_NUMBER() OVER (PARTITION BY CHAIN_NO, VAN_CD, LOGIN_ID ORDER BY LAST_SCRAP_DTTM DESC) AS CHAIN_RNO
                                 , SCRAP_GB	, CHAIN_NO	
                                 , VAN_CD	, LOGIN_ID	, LOGIN_PWD	
                                 , RSLT_MSG	, LAST_SCRAP_DTTM
@@ -116,20 +114,21 @@
                         WHERE 	1 = 1                                  
                 ) VL ON VL.CHAIN_NO     = TML.CHAIN_NO 
                 AND VL.VAN_CD 		= TML.VAN_CD
+                AND VL.LOGIN_ID		= TML.VAN_ID
                 AND VL.CHAIN_RNO 	= 1
-        WHERE	1 = 1         
-            AND  TC.SVC_STAT IN ('O', 'R')       
+        WHERE	1 = 1     
+          AND  TC.SVC_STAT IN ('O', 'R')       
         <if test="sch_gubun != null and sch_gubun != ''">                   
-                AND  TML.GUBUN = #{sch_gubun}
+            AND  TML.GUBUN = #{sch_gubun}
         </if>
         <if test="sch_chain_nm != null and sch_chain_nm != ''">                   
-                AND TC.CORP_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+            AND TC.CORP_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
         </if>
         <if test="sch_van_cd != null and sch_van_cd != ''">                   
-                AND  TML.VAN_CD = #{sch_van_cd} 
+            AND  TML.VAN_CD = #{sch_van_cd} 
         </if>
         <if test="sch_rslt != null and sch_rslt != ''">
-                AND  IFNULL(VL.SCRAP_GB, 'N') = #{sch_rslt}
+            AND  IFNULL(VL.SCRAP_GB, 'N') = #{sch_rslt}
         </if>
         <choose>
             <when test="sidx != '' and sidx != null ">

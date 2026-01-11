@@ -257,8 +257,8 @@ public class ScrapController {
     public @ResponseBody ResponseEntity<String> scrapUploadVanData(@RequestParam("vanCd") String vanCd
                                                     , @RequestParam("chainNo") String chainNo
                                                     , @RequestParam("userId") String userId
-                                                    // , @RequestParam("loginId") String loginId
-                                                    // , @RequestParam("loginPwd") String loginPwd
+                                                    , @RequestParam("loginId") String loginId
+                                                    , @RequestParam("loginPwd") String loginPwd
                                                     , @RequestParam("apiAuthKey") String apiAuthKey
                                                     , @RequestParam("authKey") String authKey
                                                     , @RequestParam("uploadData") String uploadData
@@ -291,8 +291,8 @@ public class ScrapController {
             logVo.setChain_no(chainNo);
             logVo.setVan_cd(vanCd);
             logVo.setScrap_gb("VAN");
-            // logVo.setLogin_id(loginId);
-            // logVo.setLogin_pwd(loginPwd);
+            logVo.setLogin_id(loginId);
+            logVo.setLogin_pwd(loginPwd);
             // System.out.println(uploadData);
 
             if ( scrapService.scrapUploadVanData(uploadData, logVo)) {
@@ -323,8 +323,8 @@ public class ScrapController {
     public @ResponseBody ResponseEntity<String> scrapUploadDeliveryData(@RequestParam("vanCd") String vanCd
                                                     , @RequestParam("chainNo") String chainNo
                                                     , @RequestParam("userId") String userId
-                                                    // , @RequestParam("loginId") String loginId
-                                                    // , @RequestParam("loginPwd") String loginPwd
+                                                    , @RequestParam("loginId") String loginId
+                                                    , @RequestParam("loginPwd") String loginPwd
                                                     , @RequestParam("apiAuthKey") String apiAuthKey
                                                     , @RequestParam("authKey") String authKey
                                                     , @RequestParam("uploadData") String uploadData
@@ -354,8 +354,8 @@ public class ScrapController {
             logVo.setChain_no(chainNo);
             logVo.setVan_cd(vanCd);
             logVo.setScrap_gb("DELI");
-            // logVo.setLogin_id(loginId);
-            // logVo.setLogin_pwd(loginPwd);
+            logVo.setLogin_id(loginId);
+            logVo.setLogin_pwd(loginPwd);
             // System.out.println(uploadData);
 
             if ( scrapService.scrapUploadDeliData(uploadData, logVo)) {
@@ -388,8 +388,8 @@ public class ScrapController {
     public @ResponseBody ResponseEntity<String> scrapApiUploadBankData(@RequestParam("bankCd") String bankCd
                                                     , @RequestParam("chainNo") String chainNo
                                                     , @RequestParam("userId") String userId
-                                                    // , @RequestParam("loginId") String loginId
-                                                    // , @RequestParam("loginPwd") String loginPwd
+                                                    , @RequestParam("loginId") String loginId
+                                                    , @RequestParam("loginPwd") String loginPwd
                                                     , @RequestParam("apiAuthKey") String apiAuthKey
                                                     , @RequestParam("authKey") String authKey
                                                     , @RequestParam("uploadData") String uploadData
@@ -419,8 +419,8 @@ public class ScrapController {
             logVo.setChain_no(chainNo);
             logVo.setVan_cd(bankCd);
             logVo.setScrap_gb("BANK");
-            // logVo.setLogin_id(loginId);
-            // logVo.setLogin_pwd(loginPwd);
+            logVo.setLogin_id(loginId);
+            logVo.setLogin_pwd(loginPwd);
             System.out.println(uploadData);
 
             if ( scrapService.scrapUploadBankData(uploadData, logVo)) {
@@ -450,8 +450,8 @@ public class ScrapController {
     public @ResponseBody ResponseEntity<String> scrapApiUploadKsolutionData(
                                                       @RequestParam("userId") String userId
                                                     , @RequestParam("bankCd") String bankCd
-                                                    // , @RequestParam("loginId") String loginId
-                                                    // , @RequestParam("loginPwd") String loginPwd
+                                                    , @RequestParam("loginId") String loginId
+                                                    , @RequestParam("loginPwd") String loginPwd
                                                     , @RequestParam("apiAuthKey") String apiAuthKey
                                                     , @RequestParam("authKey") String authKey
                                                     , @RequestParam("uploadData") String uploadData
@@ -480,8 +480,8 @@ public class ScrapController {
         try {
             logVo.setChain_no("common");
             logVo.setVan_cd(bankCd);
-            // logVo.setLogin_id(loginId);
-            // logVo.setLogin_pwd(loginPwd);
+            logVo.setLogin_id(loginId);
+            logVo.setLogin_pwd(loginPwd);
             logVo.setScrap_gb("BANK");
             System.out.println(uploadData);
 

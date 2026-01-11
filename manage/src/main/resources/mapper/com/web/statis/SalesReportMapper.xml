@@ -160,7 +160,13 @@
             </if>                                       
             <if test="sch_agency_cd != null and sch_agency_cd != ''"> 
                 AND  TC.AGENCY_CD =  #{sch_agency_cd} 
-            </if>                                       
+            </if>
+            <if test="sch_chain_no != null and sch_chain_no != ''"> 
+                AND  TC.CHAIN_NO =  #{sch_chain_no} 
+            </if>
+            <if test="sch_chain_nm != null and sch_chain_nm != ''"> 
+                AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%') 
+            </if>
             <choose>
                 <when test='userCorpType == "LN"'>
                     AND TC.CORP_CD = #{userCorpCd}
@@ -303,7 +309,13 @@
             </if>                                       
             <if test="sch_agency_cd != null and sch_agency_cd != ''"> 
                 AND  TC.AGENCY_CD =  #{sch_agency_cd} 
-            </if>     
+            </if>
+            <if test="sch_chain_no != null and sch_chain_no != ''"> 
+                AND  TC.CHAIN_NO =  #{sch_chain_no} 
+            </if>
+            <if test="sch_chain_nm != null and sch_chain_nm != ''"> 
+                AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%') 
+            </if>
             <choose>
             <when test='userCorpType == "LN"'>
                 AND TC.CORP_CD = #{userCorpCd}

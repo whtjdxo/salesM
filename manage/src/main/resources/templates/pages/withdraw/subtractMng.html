@@ -439,7 +439,8 @@
         function fn_frm_sub_mst_clear(){
           var chain_no = $('#chain_no').val();           
           $('#frm_sub_mst')[0].reset();
-          $('#reg_date').val(toDay);
+          $('#reg_date').val(toDay);  
+          $('#resv_date').val(toDay); 
           $('#sub_type').val('M').prop('selected', true).trigger('change');                      
           $('#sub_status').val('000000');
           $("input:radio[name='use_yn'][value='Y']").prop('checked', true);

@@ -353,6 +353,10 @@ public class SubtractController {
     	    subMstVo.setEnt_user_id(member.getUserId());
             subMstVo.setSub_no(commonService.getJobSeq("TB_SUB_MST", "SUB_NO")); // 신규 생성 번호 
 
+            if (subMstVo.getResv_date() == null || subMstVo.getResv_date().isEmpty()) {
+                subMstVo.setResv_date(subMstVo.getReg_date());
+            }   
+
             subMstVo.setOccur_crd_amt(subMstVo.getOccur_crd_amt() == null ? "0" : subMstVo.getOccur_crd_amt().replaceAll(",", ""));
             subMstVo.setOccur_svc_amt(subMstVo.getOccur_svc_amt() == null ? "0" : subMstVo.getOccur_svc_amt().replaceAll(",", ""));
             subMstVo.setOccur_base_amt(subMstVo.getOccur_base_amt() == null ? "0" : subMstVo.getOccur_base_amt().replaceAll(",", ""));
@@ -391,6 +395,9 @@ public class SubtractController {
         try {
             SessionVO member = (SessionVO) session.getAttribute("S_USER");            
     	    subMstVo.setUpt_user_id(member.getUserId()); 
+            if (subMstVo.getResv_date() == null || subMstVo.getResv_date().isEmpty()) {
+                subMstVo.setResv_date(subMstVo.getReg_date());
+            } 
             
             subMstVo.setOccur_crd_amt(subMstVo.getOccur_crd_amt() == null ? "0" : subMstVo.getOccur_crd_amt().replaceAll(",", ""));
             subMstVo.setOccur_svc_amt(subMstVo.getOccur_svc_amt() == null ? "0" : subMstVo.getOccur_svc_amt().replaceAll(",", ""));

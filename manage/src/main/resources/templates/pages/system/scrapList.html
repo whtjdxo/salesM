@@ -55,6 +55,7 @@
                 , { data: 'van_nm' }
                 , { data: 'chain_no' }      
                 , { data: 'chain_nm' }      
+                , { data: 'van_id' }      
                 , { 
                   data: 'act_status',
                   render: function(data, type, row) {
@@ -72,13 +73,14 @@
                 , { data: 'last_scrap_dttm' }      
               ],
             columnDefs: [           
-            { targets: 0, width: '100px', className: 'text-center' },
-            { targets: 1, width: '100px', className: 'text-center' },
+            { targets: 0, width: '90px', className: 'text-center' },
+            { targets: 1, width: '90px', className: 'text-center' },
             { targets: 2, width: '120px', className: 'text-center' }, 
-            { targets: 3, width: '120px', className: 'text-center' }, 
-            { targets: 4, width: '150px', className: 'text-left' }, 
-            { targets: 5, width: '600px', className: 'text-left' }, 
-            { targets: 6, width: '130px', className: 'text-center' }, 
+            { targets: 3, width: '110px', className: 'text-center' }, 
+            { targets: 4, width: '160px', className: 'text-left' },
+            { targets: 5, width: '100px', className: 'text-left' },    
+            { targets: 6, width: '600px', className: 'text-left' }, 
+            { targets: 7, width: '130px', className: 'text-center' }, 
             
           ],  
           order: [[1, 'desc']],
@@ -188,7 +190,8 @@
                     <th class="text-center">VAN CODE</th>
                     <th class="text-center">VAN 명</th>
                     <th class="text-center">가맹점 번호</th>
-                    <th class="text-center">가맹점 명</th>                    
+                    <th class="text-center">가맹점 명</th>  
+                    <th class="text-center">Van ID</th>    
                     <th class="text-center">처리결과</th> 
                     <th class="text-center">최근작업시간</th>
                   </tr>

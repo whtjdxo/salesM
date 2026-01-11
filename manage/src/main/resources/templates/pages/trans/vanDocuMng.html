@@ -413,7 +413,18 @@
           // if ($('#schlist_chain_no').val() && $('#schlist_conf_dt').val()) {
           //   tbl_docu_list.ajax.reload();
           // } 
-        });   
+        });  
+
+       
+
+        $('#tbl_docu_list').on('click', 'tr', function () {
+          if ($(this).hasClass('selected')) {
+              $(this).removeClass('selected');
+          } else {              
+              tbl_docu_list.$('tr.selected').removeClass('selected');              
+              $(this).addClass('selected');
+          } 
+        });
 
         // Excel download button click event
         $('#btn_list_excel').click(function () {
