@@ -170,14 +170,15 @@ public class LoanController {
             Row titleRow = sheet.createRow(0);
             sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("지원금 관리");            
+            titleCell.setCellValue("대출 관리");            
             titleCell.setCellStyle(excelStyle.getStyle("title"));
 
             // Create header row
             Row headerRow = sheet.createRow(1);
             String[] headers = {
-                "가 맹 점 명"        , "대 표 자"      , "즉 결 잔 고"     ,  "비즈론 대 출"       , "스팟자금 대출"
-                , "기타 대출"        , "전체 대출잔액"  , "계약상태"        , "출금상태"
+                "대리점"        , "가 맹 점 명"     , "대 표 자"      
+                , "즉 결 잔 고" ,  "비즈론 대 출"   , "스팟자금 대출"
+                , "기타 대출"   , "전체 대출잔액"   , "계약상태"        , "출금상태"
             };
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -192,35 +193,36 @@ public class LoanController {
             int rowIndex = 2;
             for (HashMap<String, Object> row : list) {
                 Row dataRow = sheet.createRow(rowIndex++);
-                dataRow.createCell(0).setCellValue(String.valueOf(row.get("chain_nm")));
-                dataRow.createCell(1).setCellValue(String.valueOf(row.get("ceo_nm")));
-                Cell c02 = dataRow.createCell(2);
-                c02.setCellValue(Double.parseDouble(String.valueOf(row.get("tot_use_amt"))));
-                c02.setCellStyle(excelStyle.getStyle("number"));
+                dataRow.createCell(0).setCellValue(String.valueOf(row.get("agency_nm")));
+                dataRow.createCell(1).setCellValue(String.valueOf(row.get("chain_nm")));
+                dataRow.createCell(2).setCellValue(String.valueOf(row.get("ceo_nm")));
                 
                 Cell c03 = dataRow.createCell(3);
-                c03.setCellValue(Double.parseDouble(String.valueOf(row.get("biz_loan_amt"))));
+                c03.setCellValue(Double.parseDouble(String.valueOf(row.get("tot_use_amt"))));
                 c03.setCellStyle(excelStyle.getStyle("number"));
-
+                
                 Cell c04 = dataRow.createCell(4);
-                c04.setCellValue(Double.parseDouble(String.valueOf(row.get("spot_loan_amt"))));
+                c04.setCellValue(Double.parseDouble(String.valueOf(row.get("biz_loan_amt"))));
                 c04.setCellStyle(excelStyle.getStyle("number"));
                 
                 Cell c05 = dataRow.createCell(5);
-                c05.setCellValue(Double.parseDouble(String.valueOf(row.get("etc_loan_amt"))));
+                c05.setCellValue(Double.parseDouble(String.valueOf(row.get("spot_loan_amt"))));
                 c05.setCellStyle(excelStyle.getStyle("number"));
-
+                
                 Cell c06 = dataRow.createCell(6);
-                c06.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_amt"))));
+                c06.setCellValue(Double.parseDouble(String.valueOf(row.get("etc_loan_amt"))));
                 c06.setCellStyle(excelStyle.getStyle("number"));
 
-                dataRow.createCell(7).setCellValue(String.valueOf(row.get("svc_stat_nm")));
-                dataRow.createCell(8).setCellValue(String.valueOf(row.get("remit_stat_nm")));
+                Cell c07 = dataRow.createCell(7);
+                c07.setCellValue(Double.parseDouble(String.valueOf(row.get("remain_amt"))));
+                c07.setCellStyle(excelStyle.getStyle("number"));
+
+                dataRow.createCell(8).setCellValue(String.valueOf(row.get("svc_stat_nm")));
+                dataRow.createCell(9).setCellValue(String.valueOf(row.get("remit_stat_nm")));
  
             }
             // 테두리 그리기
-            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 8);
-
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 9);   
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);

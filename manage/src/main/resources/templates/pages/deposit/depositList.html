@@ -76,7 +76,7 @@
               });
             $tbody.append($tr);
           });
-          $('#modal_chain_select').modal('show');
+          // $('#modal_chain_select').modal('show');
         }
 
         $('#btn_search').click(function () {   
@@ -338,9 +338,13 @@
         $('#btn_cancel_depo_card').click(function () { 
 
           var selectedChainNo = "";
+          var selectedAdjustDate = "";
+          
           var selectedRow = tbl_depo_resv_summ.row('.selected').data();
-          if (selectedRow) {
-            selectedChainNo = selectedRow.chain_no;
+
+          if (selectedRow) {            
+            selectedAdjustDate = selectedRow.adjust_date;
+            selectedChainNo   = selectedRow.chain_no;
           }
 
           if (selectedChainNo == "") {
@@ -358,12 +362,14 @@
           if (selectedCardAcqs.length === 0) {
             alert('취소 처리 할 매입사를 선택하세요.');
             return;
-          }
+
+          } 
           dataParam ={              
-            adjustDate : $('#sch_adjust_date').val(),
+            adjustDate : selectedAdjustDate,
             chainNo : selectedChainNo,
             cardAcq : selectedCardAcqs.join(','),
           }   
+ 
           ConfirmdialogToAjax("execute","/deposit/deposit/depoList/procDepoAdjustCancel", dataParam, fn_deposit_result); 
         });
          
@@ -837,6 +843,18 @@
           } 
           return true; // 모달 닫기 허용
         });
+        
+        $('#modal_chain_select').on('shown.bs.modal', function() {  
+          $(this).find('button:not([disabled]), input:not([disabled])').first().focus();           
+        });
+
+        $('#modal_chain_select').on('hidden.bs.modal', function() {
+          var triggerElement = $(this).data('trigger-element');
+          if (triggerElement) {
+            $(triggerElement).focus();
+          } 
+          return true; // 모달 닫기 허용
+        });
       });
     </script>
   </head>
@@ -851,7 +869,7 @@
               </div>            
               <div class="col-lg-10">
                 <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
-                  <div class="row mb-1">
+                  <div class="row mb-0">
                     <div class="col-sm-5">
                       <div class="input-group input-group-sm mb-1 me-1">
                         <div class="col-sm-5">
@@ -1127,7 +1145,7 @@
   </div>
 
     <!-- 가맹점 선택 모달 -->
-    <div class="modal fade" id="modal_chain_select" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="modal_chain_select" tabindex="-2">
       <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">

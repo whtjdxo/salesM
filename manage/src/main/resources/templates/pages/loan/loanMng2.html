@@ -24,13 +24,13 @@
         var isListClick = false;
         callAjax('/common/totalCodelist', "code_grp_cd=('LOAN_TYPE')", fn_loan_type_setting);
         function fn_loan_type_setting(data) {
-          codeSetting('LOAN_TYPE', data.data, '#sch_loan_type', '▽ 지원유형', '', ''); 
+          codeSetting('LOAN_TYPE', data.data, '#sch_loan_type', '▽ 대출유형', '', ''); 
           codeSetting('LOAN_TYPE', data.data, '#loan_type', '1', '', ''); 
         }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('LOAN_CODE') AND CHK_CD1 = '" + $('#sch_loan_type').val() + "'", fn_sch_loan_code_setting);
         function fn_sch_loan_code_setting(data) {
-          codeSetting('LOAN_CODE', data.data, '#sch_loan_code', '▽ 지원구분', '', ''); 
+          codeSetting('LOAN_CODE', data.data, '#sch_loan_code', '▽ 대출구분', '', ''); 
         }
 
         callAjax('/common/totalCodelist', "code_grp_cd=('LOAN_STATUS')", fn_loan_status_setting);
@@ -971,7 +971,7 @@
           <div class="card-header">
             <div class="row flex-between-end">
               <div class="col-auto align-self-center">
-                <h5 class="mb-0">가맹점 지원 관리</h5>
+                <h5 class="mb-0">가맹점 대출 관리</h5>
               </div>
               <div class="col-lg-9">
                 <form id="frm_sch_summ_list" name="frm_sch_summ_list" onsubmit="return false;" novalidate="">
@@ -1043,7 +1043,7 @@
           <div class="card-header">
             <div class="row flex-between-end">
               <!-- <div class="col-auto align-self-center">
-                <h5 class="mb-0">지원금 상세</h5>
+                <h5 class="mb-0">대출금 상세</h5>
               </div> -->
               <div class="col-sm-12">
                 <form id="frm_chain_list" name="frm_chain_list" onsubmit="return false;" novalidate="">
