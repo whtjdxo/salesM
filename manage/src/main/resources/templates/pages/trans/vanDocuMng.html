@@ -60,6 +60,9 @@
           }
         }); 
 
+        $('#sch_chain_nm').on('input', function(){
+          $('#sch_chain_no').val('');
+        });
         $('#sch_chain_nm').on('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); triggerChainSearch(); }});
         $('#btn_chain_find').on('click', function(){ triggerChainSearch(); });
 

@@ -136,6 +136,9 @@
         }); 
 
         // 체인 검색 입력/버튼 처리
+        $('#sch_chain_nm').on('input', function(){
+          $('#sch_chain_no').val('');
+        });
         $('#sch_chain_nm').on('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); triggerChainSearch(); }});
         $('#btn_chain_find').on('click', function(){ triggerChainSearch(); });
 

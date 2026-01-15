@@ -55,6 +55,9 @@
         }); 
 
         // 체인 검색: sch_chain_nm 입력에서 엔터 시 검색 호출
+        $('#sch_chain_nm').on('input', function(){
+          $('#sch_chain_no').val('');
+        });
         $('#sch_chain_nm').on('keydown', function(e){
           if(e.key === 'Enter'){
             e.preventDefault();

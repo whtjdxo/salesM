@@ -36,6 +36,9 @@
         $('#change_resv_date').val(toDay);
 
         // 체인 검색 입력/버튼 처리
+        $('#sch_chain_nm').on('input', function(){
+          $('#sch_chain_no').val('');
+        });
         $('#sch_chain_nm').on('keydown', function(e){
           if(e.key === 'Enter'){
             e.preventDefault();
@@ -77,31 +80,8 @@
               });
             $tbody.append($tr);
           });
-          // $('#modal_chain_select').modal('show');
-        }
-        
-        // function openChainSelectModal(results) {
-        //   var $tbody = $('#tbl_chain_select tbody').empty();
-
-        //   results.forEach(item => {
-        //     $('<tr/>')
-        //       .append(`<td class="text-center">${item.code}</td>`)
-        //       .append(`<td>${item.codeNm}</td>`)
-        //       .css('cursor','pointer')
-        //       .on('click', function () {
-        //         $('#sch_chain_no').val(item.code);
-        //         $('#sch_chain_nm').val(item.codeNm);
-        //         bootstrap.Modal.getInstance(
-        //           document.getElementById('modal_chain_select')
-        //         ).hide();
-        //       })
-        //       .appendTo($tbody);
-        //   });
-
-        //   new bootstrap.Modal(
-        //     document.getElementById('modal_chain_select')
-        //   ).show();
-        // } 
+          $('#modal_chain_select').modal('show');
+        } 
 
         $('#btn_search').click(function () {             
           tbl_depo_resv_summ.ajax.reload();
@@ -1419,6 +1399,7 @@
       </div>     
     </div>    
   </div>    
+
   <th:block layout:fragment="Modal">
     <div class="modal fade" id="modal_depo" tabindex="-1">
       <div class="modal-dialog modal-xl"> 
@@ -1514,6 +1495,34 @@
         </div>
       </div>
     </div>  
+    <!-- 가맹점 선택 모달 -->
+    <div class="modal fade" id="modal_chain_select" tabindex="-1">
+      <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">가맹점 선택</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_chain_select">
+                <thead>
+                  <tr>
+                    <th class="text-center">코드</th>
+                    <th class="text-center">가맹점명</th>
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody>
+              </table>
+            </div>
+            <div class="text-muted mt-2">원하는 항목을 클릭하여 선택하세요.</div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
+          </div>
+        </div>
+      </div>
+    </div> 
   </th:block>  
   
 </html>

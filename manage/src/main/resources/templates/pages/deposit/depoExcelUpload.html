@@ -27,7 +27,7 @@
           codeSetting('CORP_CD', data.data, '#corp_cd', '1', 'OP00001', '');
         }
         
-                $('#corp_type').change(function() {
+        $('#corp_type').change(function() {
           var corpType = $('#corp_type').val();
           if (corpType === '') {
             alert('구분을 선택해주세요.');
@@ -43,37 +43,40 @@
           }          
         }); 
 
-                $('#chain_nm').on('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); triggerChainSearch(); }});
-                $('#btn_chain_find').on('click', function(){ triggerChainSearch(); });
+        $('#chain_nm').on('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); triggerChainSearch(); }});
+        $('#chain_nm').on('input', function(){
+          $('#chain_no').val('');
+        });
+        $('#btn_chain_find').on('click', function(){ triggerChainSearch(); });
 
-                function triggerChainSearch(){
-                    var keyword = ($('#chain_nm').val()||'').trim();
-                    if(!keyword){ alert('가맹점명을 입력하세요.'); return; }
-                    if(keyword.length<2){ alert('가맹점명은 2자 이상 입력하세요.'); return; }
-                    $.ajax({ url:'/common/getChainSchList', type:'GET', dataType:'json', data:{ keyword: keyword },
-                        success:function(list){
-                            var results = list||[];
-                            if(results.length===0){ alert('검색 결과가 없습니다.'); $('#chain_no').val(''); return; }
-                            if(results.length===1){ $('#chain_no').val(results[0].code); $('#chain_nm').val(results[0].codeNm); return; }
-                            openChainSelectModal(results);
-                        },
-                        error:function(){ alert('가맹점 검색 중 오류가 발생했습니다.'); }
-                    });
-                }
+        function triggerChainSearch(){
+            var keyword = ($('#chain_nm').val()||'').trim();
+            if(!keyword){ alert('가맹점명을 입력하세요.'); return; }
+            if(keyword.length<2){ alert('가맹점명은 2자 이상 입력하세요.'); return; }
+            $.ajax({ url:'/common/getChainSchList', type:'GET', dataType:'json', data:{ keyword: keyword },
+                success:function(list){
+                    var results = list||[];
+                    if(results.length===0){ alert('검색 결과가 없습니다.'); $('#chain_no').val(''); return; }
+                    if(results.length===1){ $('#chain_no').val(results[0].code); $('#chain_nm').val(results[0].codeNm); return; }
+                    openChainSelectModal(results);
+                },
+                error:function(){ alert('가맹점 검색 중 오류가 발생했습니다.'); }
+            });
+        }
 
-                function openChainSelectModal(results){
-                    var $tbody = $('#tbl_chain_select tbody');
-                    $tbody.empty();
-                    results.forEach(function(item){
-                        var $tr = $('<tr/>')
-                            .append($('<td/>',{text:item.code, class:'text-center'}))
-                            .append($('<td/>',{text:item.codeNm}))
-                            .css('cursor','pointer')
-                            .on('click', function(){ $('#chain_no').val(item.code); $('#chain_nm').val(item.codeNm); $('#modal_chain_select').modal('hide'); });
-                        $tbody.append($tr);
-                    });
-                    $('#modal_chain_select').modal('show');
-                }
+        function openChainSelectModal(results){
+            var $tbody = $('#tbl_chain_select tbody');
+            $tbody.empty();
+            results.forEach(function(item){
+                var $tr = $('<tr/>')
+                    .append($('<td/>',{text:item.code, class:'text-center'}))
+                    .append($('<td/>',{text:item.codeNm}))
+                    .css('cursor','pointer')
+                    .on('click', function(){ $('#chain_no').val(item.code); $('#chain_nm').val(item.codeNm); $('#modal_chain_select').modal('hide'); });
+                $tbody.append($tr);
+            });
+            $('#modal_chain_select').modal('show');
+        }
 
 
         // DataTable 초기화

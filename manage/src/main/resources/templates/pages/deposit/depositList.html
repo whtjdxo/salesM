@@ -19,11 +19,14 @@
     <!-- DataTables Select CSS 추가 -->
     <link rel="stylesheet" href="/css/custom-salesm.css" />
 
-    <script th:inline="none">      
+    <script th:inline="none">
       $(document).ready(function () {           
-        $('#frm_sch').onLoadFunction();      
-        $('#frm_sch_card').onLoadFunction();      
-        $('#frm_sch_list').onLoadFunction();      
+        // onLoadFunction이 존재하면 호출
+        if (typeof $.fn.onLoadFunction === 'function') {
+          $('#frm_sch').onLoadFunction();      
+          $('#frm_sch_card').onLoadFunction();      
+          $('#frm_sch_list').onLoadFunction();
+        }
 
         callAjax('/common/getCreditCorpList', "", fn_corp_list_setting);
         function fn_corp_list_setting(data) {
@@ -35,6 +38,9 @@
         $('#sch_adjust_edt').val(toDay);  
 
         // 체인 검색 입력/버튼 처리
+        $('#sch_chain_nm').on('input', function(){
+          $('#sch_chain_no').val('');
+        });
         $('#sch_chain_nm').on('keydown', function(e){
           if(e.key === 'Enter'){
             e.preventDefault();
@@ -43,41 +49,7 @@
         });
         $('#btn_chain_find').on('click', function(){
           triggerChainSearch();
-        });
-
-        function triggerChainSearch(){
-          var keyword = ($('#sch_chain_nm').val() || '').trim();
-          if(!keyword){ alert('가맹점명을 입력하세요.'); return; }
-          if(keyword.length < 2){ alert('가맹점명은 2자 이상 입력하세요.'); return; }
-          $.ajax({
-            url: '/common/getChainSchList', type: 'GET', dataType: 'json', data: { keyword: keyword },
-            success: function(list){
-              var results = list || [];
-              if(results.length === 0){ alert('검색 결과가 없습니다.'); $('#sch_chain_no').val(''); return; }
-              if(results.length === 1){ $('#sch_chain_no').val(results[0].code); $('#sch_chain_nm').val(results[0].codeNm); return; }
-              openChainSelectModal(results);
-            },
-            error: function(){ alert('가맹점 검색 중 오류가 발생했습니다.'); }
-          });
-        }
-
-        function openChainSelectModal(results){
-          var $tbody = $('#tbl_chain_select tbody');
-          $tbody.empty();
-          results.forEach(function(item){
-            var $tr = $('<tr/>')
-              .append($('<td/>',{text:item.code, class:'text-center'}))
-              .append($('<td/>',{text:item.codeNm}))
-              .css('cursor','pointer')
-              .on('click', function(){
-                $('#sch_chain_no').val(item.code);
-                $('#sch_chain_nm').val(item.codeNm);
-                $('#modal_chain_select').modal('hide');
-              });
-            $tbody.append($tr);
-          });
-          // $('#modal_chain_select').modal('show');
-        }
+        }); 
 
         $('#btn_search').click(function () {   
           fn_default_clear();
@@ -151,8 +123,7 @@
                     }
                     return $.fn.dataTable.render.number(',', '.', 0, '').display(data);
                   } 
-                }
-                
+                }                
             ],
             columnDefs: [
                 { targets: 0, width: '40px', className: 'text-center dt-body-center' } // 중앙 정렬 확인
@@ -842,20 +813,48 @@
             $(triggerElement).focus();
           } 
           return true; // 모달 닫기 허용
-        });
-        
-        $('#modal_chain_select').on('shown.bs.modal', function() {  
-          $(this).find('button:not([disabled]), input:not([disabled])').first().focus();           
-        });
-
-        $('#modal_chain_select').on('hidden.bs.modal', function() {
-          var triggerElement = $(this).data('trigger-element');
-          if (triggerElement) {
-            $(triggerElement).focus();
-          } 
-          return true; // 모달 닫기 허용
-        });
+        }); 
       });
+
+      // Global functions - outside document.ready for external accessibility
+      function triggerChainSearch(){
+        var keyword = ($('#sch_chain_nm').val() || '').trim();
+        if(!keyword){ alert('가맹점명을 입력하세요.'); return; }
+        if(keyword.length < 2){ alert('가맹점명은 2자 이상 입력하세요.'); return; }
+        $.ajax({
+          url: '/common/getChainSchList', type: 'GET', dataType: 'json', data: { keyword: keyword },
+          success: function(list){
+            var results = list || [];
+            if(results.length === 0){ alert('검색 결과가 없습니다.'); $('#sch_chain_no').val(''); return; }
+            if(results.length === 1){ $('#sch_chain_no').val(results[0].code); $('#sch_chain_nm').val(results[0].codeNm); return; }
+            console.log(results);
+            openChainSelectModal(results);
+          },
+          error: function(){ alert('가맹점 검색 중 오류가 발생했습니다.'); }
+        });
+      }
+
+      function openChainSelectModal(results){
+        var $tbody = $('#tbl_chain_select tbody');
+        $tbody.empty();
+        results.forEach(function(item){
+          var $tr = $('<tr/>')
+            .append($('<td/>',{text:item.code, class:'text-center'}))
+            .append($('<td/>',{text:item.codeNm}))
+            .css('cursor','pointer')
+            .on('click', function(){
+              $('#sch_chain_no').val(item.code);
+              $('#sch_chain_nm').val(item.codeNm);
+              $('#modal_chain_select').modal('hide');
+            });
+          $tbody.append($tr);
+        });
+        var modalElement = document.getElementById('modal_chain_select');
+        if (modalElement) {
+          var modal = new bootstrap.Modal(modalElement);
+          modal.show();
+        }
+      }
     </script>
   </head>
   <div class="content">     
@@ -881,7 +880,7 @@
                         </div>                           
                       </div> 
                     </div>
-                    <div class="col-sm-5 text-start">
+                    <div class="col-sm-4 text-start">
                       <div class="input-group input-group-sm mb-1">
                         <input type="hidden" id="sch_chain_no" name="sch_chain_no" />
                         <input class="form-control form-control-sm me-1" id="sch_chain_nm" name="sch_chain_nm" placeholder="가맹점명" autocomplete="off" />
@@ -1112,40 +1111,41 @@
     </div>    
   </div> 
 
-  <div class="modal fade" id="modal_depo" tabindex="-4">
-    <div class="modal-dialog modal-xl"> 
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">가맹점 입금 내역</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body"> 
-          <div class="table-responsive scrollbar">
-            <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_depo_list">
-              <thead class="bg-200">
-                <tr>
-                  <th class="text-center" style="width: 60px;">번호</th>
-                  <th class="text-center" style="width: 100px;">구분</th>
-                  <th class="text-center" style="width: 120px;">은행명</th>
-                  <th class="text-center" style="width: 120px;">입금처</th>
-                  <th class="text-center" style="width: 200px;">입금시간</th> 
-                  <th class="text-center" style="width: 120px;">입금액</th>
-                  <th class="text-center" style="width: 300px;">비고</th> 
-                </tr>
-              </thead>
-              <tbody class="list"></tbody>
-            </table>
-          </div> 
+  <th:block layout:fragment="Modal">
+    <div class="modal fade" id="modal_depo" tabindex="-1">
+      <div class="modal-dialog modal-xl"> 
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">가맹점 입금 내역</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body"> 
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_depo_list">
+                <thead class="bg-200">
+                  <tr>
+                    <th class="text-center" style="width: 60px;">번호</th>
+                    <th class="text-center" style="width: 100px;">구분</th>
+                    <th class="text-center" style="width: 120px;">은행명</th>
+                    <th class="text-center" style="width: 120px;">입금처</th>
+                    <th class="text-center" style="width: 200px;">입금시간</th> 
+                    <th class="text-center" style="width: 120px;">입금액</th>
+                    <th class="text-center" style="width: 300px;">비고</th> 
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody>
+              </table>
+            </div>
+          </div>
           <div class="modal-footer">            
             <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
           </div>          
-        </form>
+        </div>
       </div>
     </div>
-  </div>
 
     <!-- 가맹점 선택 모달 -->
-    <div class="modal fade" id="modal_chain_select" tabindex="-2">
+    <div class="modal fade" id="modal_chain_select" tabindex="-1">
       <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
@@ -1172,5 +1172,5 @@
         </div>
       </div>
     </div>
-
-  </html>
+  </th:block>
+</html>
