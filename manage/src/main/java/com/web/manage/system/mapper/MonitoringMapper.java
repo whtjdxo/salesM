@@ -11,4 +11,5 @@ public interface MonitoringMapper {
     List<HashMap<String, Object>> getBatchList(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getBatchDetailList(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getScrapList(HashMap<String, Object> hashmapParam);
+    int updateScrapClear(HashMap<String, Object> hashmapParam);
 }

@@ -81,6 +81,7 @@
                                    AND SL.SCRAP_GB  IN ('VAN', 'DELI')
                                    AND SL.VAN_CD    = #{vanCd}
                                    AND SL.LAST_SCRAP_DTTM &gt;= DATE_SUB(NOW(), INTERVAL 90 MINUTE)
+                                   AND SL.USE_YN = 'Y'
                         )                                       
                 ORDER 	BY TC.CHAIN_NO  
 	</select> 
@@ -116,14 +117,15 @@
                           AND   TC.ABANK_SPEED_YN  = 'Y'
                           AND   TC.USE_YN 	= 'Y'
                         <if test='chainNo != null and chainNo != ""'>   
-                            AND 	TC.CHAIN_NO = #{chainNo}
+                            AND TC.CHAIN_NO = #{chainNo}
                         </if>
                         AND  NOT EXISTS (
                                         SELECT 1 FROM TB_SCRAP_LOG SL                        
                                          WHERE SL.CHAIN_NO  = TC.CHAIN_NO                                
                                            AND SL.SCRAP_GB  = 'BANK'                                       
                                            AND SL.VAN_CD    = #{bankCd}
-                                           AND SL.LAST_SCRAP_DTTM &gt;= DATE_SUB(NOW(), INTERVAL '90' MINUTE)     
+                                           AND SL.LAST_SCRAP_DTTM &gt;= DATE_SUB(NOW(), INTERVAL '90' MINUTE)    
+                                           AND SL.USE_YN = 'Y' 
                                 	)
                          UNION  ALL
                         SELECT  CORP_CD           	AS CHAIN_CD                                 
@@ -147,6 +149,7 @@
                                            AND SL.SCRAP_GB  = 'BANK'                                       
                                            AND SL.VAN_CD    = #{bankCd}
                                            AND SL.LAST_SCRAP_DTTM &gt;= DATE_SUB(NOW(), INTERVAL '90' MINUTE)     
+                                           AND SL.USE_YN = 'Y'
                                         )                                                     
                         ) VT                                                                    
                 ORDER  BY VT.CHAIN_NO        
@@ -171,6 +174,7 @@
                                    AND SL.SCRAP_GB  IN ('CS')
                                    AND SL.VAN_CD    = 'CARDSALES'
                                    AND SL.LAST_SCRAP_DTTM &gt;= DATE_SUB(NOW(), INTERVAL 90 MINUTE)
+                                   AND SL.USE_YN = 'Y'
                         )                                       
                 ORDER 	BY TC.CHAIN_NO  
 	</select> 

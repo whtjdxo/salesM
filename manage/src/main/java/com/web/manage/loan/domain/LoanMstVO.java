@@ -25,7 +25,7 @@ public class LoanMstVO {
     private String pre_loan_amt;
     private String pre_pay_amt;
     private String use_yn;
-    private String memo;
+    private String loan_memo;
     private String ent_dttm;
     private String ent_user_id;
     private String upt_dttm;

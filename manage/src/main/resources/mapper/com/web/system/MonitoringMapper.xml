@@ -140,4 +140,32 @@
         </choose>                
         LIMIT  ${start}, ${end}
     </select>
+
+    <update id="updateScrapClear" parameterType="java.util.HashMap">
+        /* MonitoringMapper.updateScrapClear */
+        UPDATE  TB_SCRAP_LOG SL
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = SL.CHAIN_NO
+                <if test="sch_chain_nm != null and sch_chain_nm != ''">                   
+                    AND TC.CORP_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                </if>
+           SET  SL.USE_YN = 'N'
+         WHERE  SL.LAST_SCRAP_DTTM &gt;= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 90 MINUTE), '%Y-%m-%d %H:%i:%s')
+           AND  SL.USE_YN = 'Y'
+        <if test="sch_gubun != null and sch_gubun != ''">                   
+            <choose>
+                <when test="sch_gubun == 'VAN'">
+                    AND  SL.SCRAP_GB IN ('VAN', 'DELI') 
+                </when>
+                <otherwise>
+                    AND  SL.SCRAP_GB = #{sch_gubun}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="sch_van_cd != null and sch_van_cd != ''">                   
+            AND  SL.VAN_CD = #{sch_van_cd}
+        </if>
+        <if test="sch_chain_no != null and sch_chain_no != ''">                   
+            AND  SL.CHAIN_NO = #{sch_chain_no}
+        </if>
+    </update>
 </mapper>           

@@ -27,4 +27,8 @@ public class MonitoringService {
         return monitoringMapper.getScrapList(hashmapParam);
     }
 
+    public int updateScrapClear(HashMap<String, Object> hashmapParam) {
+        return monitoringMapper.updateScrapClear(hashmapParam);
+    }
+
 }
