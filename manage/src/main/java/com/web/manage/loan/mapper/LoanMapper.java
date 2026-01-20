@@ -18,6 +18,8 @@ public interface LoanMapper {
     HashMap<String, Object> getLoanSummTotal(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getChainLoanList(HashMap<String, Object> hashmapParam);
     HashMap<String, Object> getChainLoanListTotal(HashMap<String, Object> hashmapParam);
+
+    HashMap<String, Object> getChainLoanInfo(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getLoanRepaymentList(HashMap<String, Object> hashmapParam);
 
     List<HashMap<String, Object>> getLoanRecvLogList(HashMap<String, Object> hashmapParam);

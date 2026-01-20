@@ -228,7 +228,7 @@
                 , IFNULL(SC.POST_INT_AMT, 0)        AS post_int_amt    
                 , 0                                 AS prepay_post_int_amt        
                 , LM.DELAY_RATE                     AS delay_rate
-                , CASE WHEN IFNULL(DLY.DELAY_CNT, 0) > 0 THEN '연체' ELSE '정상' END      AS delay_yn
+                , CASE WHEN IFNULL(DLY.DELAY_CNT, 0) &gt; 0 THEN '연체' ELSE '정상' END      AS delay_yn
                 , CASE WHEN LM.DELAY_YN = 'Y'            THEN '연체' ELSE '정상' END      AS delay_yn2
                 , IFNULL(DLY.DELAY_CNT, 0)           AS delay_cnt
                 , IFNULL(DLY.DELAY_INT_AMT, 0)       AS delay_int_amt
@@ -300,6 +300,95 @@
             </otherwise>
         </choose>                
         LIMIT  ${start}, ${end}
+    </select> 
+
+    <select id="getChainLoanInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* LoanMapper.getChainLoanInfo */
+        SELECT  LM.CHAIN_NO                         AS chain_no
+                , LM.CORP_CD                        AS corp_cd
+                , CO.CORP_NM                        AS corp_nm
+                , TC.BIZ_NO                         AS biz_no
+                , TU.USER_NM                        AS ceo_nm
+                , LM.LOAN_NO                        AS loan_no
+                , LM.LOAN_STATUS                    AS loan_status
+                , GET_CODE_NM('LOAN_STATUS', LM.LOAN_STATUS)    AS loan_status_nm
+                , LM.LOAN_TYPE                      AS loan_type
+                , GET_CODE_NM('LOAN_TYPE', LM.LOAN_TYPE)    AS loan_type_nm
+                , GET_LOAN_DELETE_CHK(LM.LOAN_NO)   AS delete_chk
+                , LM.SUB_CODE                       AS sub_code
+                , LM.CONT_DT                        AS cont_dt
+                , LM.PRINC_AMT                      AS princ_amt
+                , LM.INT_RATE                       AS int_rate
+                , IFNULL(LM.LOAN_SDT, '')           AS loan_sdt
+                , LM.LOAN_DAY                       AS loan_day
+                , IFNULL(LM.LOAN_EDT, '')           AS loan_edt
+                , IFNULL(LM.LOAN_EXPR_DT, '')       AS loan_expr_dt
+                , LM.INT_AMT                        AS int_amt
+                , LM.TOT_LOAN_AMT                   AS tot_loan_amt                
+                , IFNULL(SC.SC_CNT, 0)            	AS sc_cnt
+                , IFNULL(SC.RECV_CNT, 0)          	AS recv_cnt
+                , IFNULL(SC.UNRECV_CNT, 0)          AS unrecv_cnt
+                , IFNULL(SC.RECV_PRINC_AMT, 0)      AS recv_princ_amt
+                , IFNULL(SC.RECV_INT_AMT, 0)        AS recv_int_amt
+                , IFNULL(SC.RECV_TOT_AMT, 0)        AS recv_tot_amt
+                , IFNULL(SC.REMAIN_PRINC_AMT, 0)    AS remain_princ_amt
+                , IFNULL(SC.REMAIN_INT_AMT, 0)      AS remain_int_amt
+                , IFNULL(SC.REMAIN_TOT_AMT, 0)      AS remain_tot_amt
+                , IFNULL(SC.PRE_PRINC_AMT, 0)       AS pre_princ_amt
+                , IFNULL(SC.PRE_INC_AMT, 0)         AS pre_int_amt
+                , IFNULL(SC.POST_PRINC_AMT, 0)      AS post_princ_amt
+                , IFNULL(SC.POST_INT_AMT, 0)        AS post_int_amt    
+                , 0                                 AS prepay_post_int_amt        
+                , LM.DELAY_RATE                     AS delay_rate
+                , CASE WHEN IFNULL(DLY.DELAY_CNT, 0) &gt; 0 THEN '연체' ELSE '정상' END      AS delay_yn
+                , CASE WHEN LM.DELAY_YN = 'Y'            THEN '연체' ELSE '정상' END      AS delay_yn2
+                , IFNULL(DLY.DELAY_CNT, 0)           AS delay_cnt
+                , IFNULL(DLY.DELAY_INT_AMT, 0)       AS delay_int_amt
+                , IFNULL(SC.PRE_PRINC_AMT, 0) 
+                    + IFNULL(SC.PRE_INC_AMT, 0) 
+                    + IFNULL(SC.POST_PRINC_AMT, 0)
+                    + IFNULL(DLY.DELAY_INT_AMT, 0)  AS prepay_tot_amt
+                , LM.MEMO                           AS loan_memo
+                , DATE_FORMAT(IFNULL(LM.UPT_DTTM, LM.ENT_DTTM), '%Y-%m-%d %H:%i:%s')    AS upt_dttm
+                , IFNULL(LM.UPT_USER_ID, LM.ENT_USER_ID )                       AS upt_user_id
+        FROM    TB_LOAN_MST LM
+                LEFT OUTER JOIN (
+                    SELECT  LRS.LOAN_NO
+                    		, COUNT(1)											AS SC_CNT
+                    		, SUM(CASE WHEN RECV_YN = 'Y' THEN 1 ELSE NULL END) AS RECV_CNT
+                    		, SUM(CASE WHEN RECV_YN = 'Y' THEN NULL ELSE 1 END) AS UNRECV_CNT                    		
+                            , SUM(RECV_PRINC_AMT)       AS RECV_PRINC_AMT
+                            , SUM(RECV_INT_AMT)       	AS RECV_INT_AMT
+                            , SUM(RECV_TOT_AMT)         AS RECV_TOT_AMT
+                            , SUM(REMAIN_PRINC_AMT)     AS REMAIN_PRINC_AMT
+                            , SUM(REMAIN_INT_AMT)       AS REMAIN_INT_AMT
+                            , SUM(REMAIN_TOT_AMT)       AS REMAIN_TOT_AMT
+                            , SUM(CASE WHEN SC_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_PRINC_AMT ELSE NULL END) 	AS PRE_PRINC_AMT
+                            , SUM(CASE WHEN SC_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END) 	AS PRE_INC_AMT
+                            , SUM(CASE WHEN SC_DATE &gt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_PRINC_AMT ELSE NULL END)  AS POST_PRINC_AMT
+                            , SUM(CASE WHEN SC_DATE &gt;  DATE_FORMAT(NOW(), '%Y-%m-%d') THEN REMAIN_INT_AMT ELSE NULL END)  	AS POST_INT_AMT 
+                      FROM  TB_LOAN_REPAY_SCHEDULE LRS
+                     WHERE  LRS.USE_YN = 'Y' 
+                       AND  LRS.LOAN_NO = #{sch_loan_no}
+                     GROUP  BY LRS.LOAN_NO
+                ) SC ON SC.LOAN_NO = LM.LOAN_NO         
+                LEFT OUTER JOIN (
+                	SELECT 	LOAN_NO
+		        			, COUNT(DISTINCT SC_SEQ ) 	AS DELAY_CNT 
+							, SUM(REMAIN_INT_AMT)		AS DELAY_INT_AMT
+					   FROM TB_LOAN_REPAY_DELAY 
+					 WHERE 	USE_YN = 'Y'
+					   AND  RECV_YN = 'N'
+                       AND  LOAN_NO = #{sch_loan_no}
+					GROUP 	BY LOAN_NO 
+                ) DLY ON DLY.LOAN_NO = LM.LOAN_NO 
+                JOIN TB_CHAIN TC ON TC.CHAIN_NO = LM.CHAIN_NO
+                                AND TC.USE_YN  = 'Y'
+                                AND TC.SVC_STAT IN ('R', 'O')
+                JOIN TB_CORP CO ON CO.CORP_CD = LM.CORP_CD
+                JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
+        WHERE   LM.USE_YN   = 'Y'
+          AND   LM.LOAN_NO  = #{sch_loan_no}
     </select> 
 
 

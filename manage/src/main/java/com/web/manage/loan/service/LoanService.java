@@ -54,6 +54,10 @@ public class LoanService {
         return loanMapper.getChainLoanListTotal(hashmapParam);
     }
 
+    public HashMap<String, Object> getChainLoanInfo(HashMap<String, Object> hashmapParam) {
+        return loanMapper.getChainLoanInfo(hashmapParam);
+    }
+
     public List<HashMap<String, Object>> getLoanRecvLogList(HashMap<String, Object> hashmapParam) {
         return loanMapper.getLoanRecvLogList(hashmapParam);
     }
@@ -143,6 +147,7 @@ public class LoanService {
                 // --------------------------------------
                 // 1) 이자 계산 (반올림)
                 // --------------------------------------
+                BigDecimal currBalanceAmt = balanceAmt;
                 BigDecimal dailyRepayIntCalc = balanceAmt.multiply(dailyInterestRate);
                 BigDecimal dailyRepayIntAmt = dailyRepayIntCalc.setScale(0, RoundingMode.DOWN);
                 // --------------------------------------
@@ -180,7 +185,8 @@ public class LoanService {
                 repayVo.setRepay_tot_amt(dailyPaymentAmt.toPlainString());
                 repayVo.setRepay_princ_amt(dailyRepayPrincAmt.toPlainString());
                 repayVo.setRepay_int_amt(dailyRepayIntAmt.toPlainString());
-                repayVo.setBalance_amt(balanceAmt.toPlainString());
+                // repayVo.setBalance_amt(balanceAmt.toPlainString());
+                repayVo.setBalance_amt(currBalanceAmt.toPlainString());
 
                 repayVo.setRecv_tot_amt("0");
                 repayVo.setRecv_princ_amt("0");
