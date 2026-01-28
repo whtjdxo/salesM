@@ -672,9 +672,15 @@
                 , DATE_FORMAT(IFNULL(WD.ENT_USER_ID,  WD.UPT_USER_ID), '%Y-%m-%d %H:%i:%s')       AS upt_user_id
         FROM    TB_WITHDRAW WD
                 STRAIGHT_JOIN TB_VAN_DOCU VD ON VD.DOCU_SEQ = WD.DOCU_SEQ
+                <if test="sch_list_van != null and sch_list_van != ''">
+                        AND VD.VAN_CD  = #{sch_list_van}
+                </if>    
                 STRAIGHT_JOIN TB_CHAIN   TC ON TC.CHAIN_NO = WD.CHAIN_NO 
         WHERE   1=1
         AND     WD.REMIT_NO    = #{sch_list_remit_no}            
+        <if test="sch_list_card_acq != null and sch_list_card_acq != ''">
+                AND VD.CARD_ACQ  = #{sch_list_card_acq}
+        </if>    
         <if test='sch_list_gb_val != ""'> 
             <choose>
                 <when test='sch_list_gb == "sch_list_gb_conf_no"'>

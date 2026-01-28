@@ -659,6 +659,7 @@
             { targets: 19, width: '100px', className: 'text-center' },            
           ],
           order: [[2, 'desc']],
+          orderMulti: true,
           paging: true,
           lengthChange: false,
           searching: false,
@@ -702,13 +703,48 @@
           // =============================================================
             // 중요: 테이블이 다시 그려질 때마다 체크박스 상태를 업데이트
             // =============================================================
+          initComplete: function(){
+              setWdResvListHeaderHints();
+          },
           drawCallback: function( settings ) {
               // 1. 헤더 체크박스 상태 초기화 (선택 사항: 페이지 넘길 때마다 초기화할지 결정)
               // $('#check_all_list').prop('checked', false); // 필요하다면 주석 해제
 
               // 2. 현재 페이지의 모든 행 체크박스가 선택되었는지 확인하여 헤더 체크박스 상태 업데이트
               updateCheckAllListState();
+              setWdResvListHeaderHints();
           }
+        });
+
+        function setWdResvListHeaderHints(){
+          $('#tbl_wd_resv_list thead th').attr('title','Ctrl/Cmd+클릭: 다중 정렬 추가/토글');
+        }
+
+        // Ctrl (or Cmd on macOS) + click to add/toggle multi-column sort
+        $('#tbl_wd_resv_list thead').on('click', 'th', function (e) {
+          if (!(e.ctrlKey || e.metaKey)) return;
+          if ($(this).hasClass('sorting_disabled')) return;
+
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          var colIdx = tbl_wd_resv_list.column(this).index();
+          var current = tbl_wd_resv_list.order();
+
+          var updated = false;
+          for (var i = 0; i < current.length; i++) {
+            if (current[i][0] === colIdx) {
+              current[i][1] = current[i][1] === 'asc' ? 'desc' : 'asc';
+              updated = true;
+              break;
+            }
+          }
+
+          if (!updated) {
+            current.push([colIdx, 'asc']);
+          }
+
+          tbl_wd_resv_list.order(current).draw();
         });
 
         // --- 전체 선택/해제 체크박스 클릭 이벤트 ---

@@ -474,7 +474,7 @@ public class LoanController {
             Row headerRow = sheet.createRow(1);
 
             String[] headers = {
-                "회차"          , "상환예정일"       , "거래전잔액"          ,  "청구원금"        , "청구이자"         , "총청구금액"
+                "회차"          , "상환예정일"       , "대출잔액"          ,  "청구원금"        , "청구이자"         , "총청구금액"
                 , "미수원금"    , "미수이자"      , "미수총액"       , "상환일"       , "비고"
             };
             for (int i = 0; i < headers.length; i++) {

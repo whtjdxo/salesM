@@ -599,6 +599,7 @@
             { targets: 18, width: '100px', className: 'text-center' },          
           ],
           order: [[1, 'desc']],
+          orderMulti: true,
           paging: true,
           lengthChange: false,
           searching: false,
@@ -616,13 +617,48 @@
             loadingRecords: '로딩중...',
             processing: '처리중...',
           },
+          initComplete: function(){
+            setDepoAdjustListHeaderHints();
+          },
           
           // =============================================================
           // 중요: 테이블이 다시 그려질 때마다 체크박스 상태를 업데이트
           // =============================================================
           drawCallback: function( settings ) {
               updateCheckAllListState();
+              setDepoAdjustListHeaderHints();
           }
+        });
+
+        function setDepoAdjustListHeaderHints(){
+          $('#tbl_depo_adjust_list thead th').attr('title','Ctrl/Cmd+클릭: 다중 정렬 추가/토글');
+        }
+
+        // Ctrl (or Cmd on macOS) + click to add/toggle multi-column sort
+        $('#tbl_depo_adjust_list thead').on('click', 'th', function (e) {
+          if (!(e.ctrlKey || e.metaKey)) return;
+          if ($(this).hasClass('sorting_disabled')) return;
+
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          var colIdx = tbl_depo_adjust_list.column(this).index();
+          var current = tbl_depo_adjust_list.order();
+
+          var updated = false;
+          for (var i = 0; i < current.length; i++) {
+            if (current[i][0] === colIdx) {
+              current[i][1] = current[i][1] === 'asc' ? 'desc' : 'asc';
+              updated = true;
+              break;
+            }
+          }
+
+          if (!updated) {
+            current.push([colIdx, 'asc']);
+          }
+
+          tbl_depo_adjust_list.order(current).draw();
         });
 
         // --- 전체 선택/해제 체크박스 클릭 이벤트 ---

@@ -119,19 +119,22 @@
                                         AND TC.USE_YN = 'Y'  -->
                     WHERE   SM.USE_YN = 'Y' 
                     <if test="sch_reg_sdt != ''">
-                            AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
+                        AND  SM.REG_DATE &gt;= #{sch_reg_sdt} 
                     </if>
                     <if test="sch_reg_edt != ''">
-                            AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
+                        AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
                     </if>  
+                    <if test="sch_chain_no != null and sch_chain_no != ''"> 
+                        AND  SM.CHAIN_NO = #{sch_chain_no} 
+                    </if>   
                     <if test="sch_sub_type != ''">
-                            AND  SM.SUB_TYPE = #{sch_sub_type} 
+                        AND  SM.SUB_TYPE = #{sch_sub_type} 
                     </if>
                     <if test="sch_sub_code != ''">
-                            AND  SM.SUB_CODE = #{sch_sub_code} 
+                        AND  SM.SUB_CODE = #{sch_sub_code} 
                     </if>
                     <if test="sch_sub_status != ''">
-                            AND  SM.SUB_STATUS = #{sch_sub_status} 
+                        AND  SM.SUB_STATUS = #{sch_sub_status} 
                     </if> 
                     GROUP 	BY SM.CHAIN_NO
                 ) SM ON SM.CHAIN_NO = TC.CHAIN_NO
@@ -199,6 +202,9 @@
         <if test='sch_reg_edt != null and sch_reg_edt != ""'>
             AND  SM.REG_DATE &lt;= #{sch_reg_edt} 
         </if>
+        <if test="sch_chain_no != null and sch_chain_no != ''"> 
+            AND  SM.CHAIN_NO = #{sch_chain_no} 
+        </if>   
         <if test='sch_sub_code != null and sch_sub_type != ""'>
             AND  SM.SUB_TYPE = #{sch_sub_type} 
         </if>

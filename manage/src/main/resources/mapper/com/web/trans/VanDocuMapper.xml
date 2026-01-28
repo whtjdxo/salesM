@@ -65,12 +65,12 @@
                    AND  M.USE_YN = 'Y'
                         
                 <choose>
-                        <when test="sidx != '' and sidx != null">
-                                ORDER BY ${sidx} ${sord}
-                        </when>
-                        <otherwise>
-                                ORDER BY 1
-                        </otherwise>
+                    <when test="orderBy != '' and orderBy != null">
+                        ORDER BY ${orderBy}
+                    </when>
+                    <otherwise>
+                        ORDER BY 1
+                    </otherwise>
                 </choose>                
                 LIMIT  ${start}, ${end}
         </select>
@@ -124,8 +124,8 @@
             WHERE	M.MAP_PCODE = #{map_pcode}
             AND  M.MAP_CODE  = #{map_code}
         <choose>
-                <when test="sidx != '' and sidx != null ">
-                        ORDER BY ${sidx} ${sord}
+                <when test="orderBy != '' and orderBy != null">
+                        ORDER BY ${orderBy}
                 </when>
                 <otherwise>
                         ORDER BY M.MAP_PCODE, M.MAP_CODE
@@ -180,9 +180,9 @@
                     WHERE	CONF_DTTM  &gt;=  #{sch_conf_sdt}
                     AND     CONF_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
                     AND     PROC_FG = 'Y'
-                    <!-- <if test="sch_card_acq != ''">
-                            AND T1.CARD_ACQ  = #{sch_card_acq}
-                    </if>     -->
+                    <if test="sch_van != null and sch_van != ''">
+                        AND T1.VAN_CD  = #{sch_van}
+                    </if>    
                     <if test="schgb_conf_val != ''">
                     <choose>
                             <when test="schgb_conf == 'schgb_conf_no'">
@@ -212,9 +212,9 @@
                     WHERE	ORDER_DTTM  &gt;=  #{sch_conf_sdt}
                     AND     ORDER_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
                     AND     PROC_FG = 'Y'
-                <!-- <if test="sch_card_acq != ''">
-                        AND CARD_ACQ  = #{sch_card_acq}
-                </if>                                    -->
+                <if test="sch_van != null and sch_van != ''">
+                        AND T1.VAN_CD  = #{sch_van}
+                </if>                                    
                 <if test="schgb_conf_val != ''">
                     <choose>
                         <when test="schgb_conf == 'schgb_conf_no'">
@@ -245,8 +245,8 @@
         </if>
         GROUP  BY V.CHAIN_NO, TC.CHAIN_NM, V.CONF_DT 
         <choose>
-            <when test="sidx != '' and sidx != null">
-                    ORDER BY ${sidx} ${sord}
+            <when test="orderBy != '' and orderBy != null">
+                    ORDER BY ${orderBy}
             </when>
             <otherwise>
                     ORDER BY V.CHAIN_NO, V.CONF_DT DESC
@@ -275,13 +275,13 @@
                                 , COUNT(1)								AS TOT_CNT
                                 , SUM((ABS(CONF_AMT) * CASE WHEN CONF_GB IN ('승인', '승인(취소)') THEN 1 ELSE -1 END))	        AS TOT_AMT
                                 , SUM((CASE WHEN PROC_FG = 'N' THEN 1 ELSE NULL END))			                                AS UN_SETTLE_CNT
-                            FROM  TB_SCRAP_VAN_DATA T1
-                            WHERE	CONF_DTTM  &gt;=  #{sch_conf_sdt}
-                            AND  CONF_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
-                            AND   PROC_FG = 'Y'
-                        <!-- <if test="sch_card_acq != ''">
-                                AND T1.CARD_ACQ  = #{sch_card_acq}
-                        </if>      -->
+                        FROM    TB_SCRAP_VAN_DATA T1
+                        WHERE	CONF_DTTM  &gt;=  #{sch_conf_sdt}
+                        AND     CONF_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
+                        AND     PROC_FG = 'Y'
+                        <if test="sch_van != null and sch_van != ''">
+                            AND T1.VAN_CD  = #{sch_van}
+                        </if>    
                         <if test="schgb_conf_val != ''">
                         <choose>
                                 <when test="schgb_conf == 'schgb_conf_no'">
@@ -307,13 +307,13 @@
                                 , COUNT(1) 			AS TOT_CNT
                                 , SUM(ORDER_AMT) 	AS TOT_AMT
                                 , SUM((CASE WHEN PROC_FG = 'N' THEN 1 ELSE NULL END))	AS SETTLE_CNT
-                            FROM  TB_SCRAP_DELI_DATA T1
-                            WHERE	ORDER_DTTM  &gt;=  #{sch_conf_sdt}
-                            AND  ORDER_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
-                            AND   PROC_FG = 'Y'
-                        <!-- <if test="sch_card_acq != ''">
-                                AND CARD_ACQ  = #{sch_card_acq}
-                        </if>                                    -->
+                        FROM    TB_SCRAP_DELI_DATA T1
+                        WHERE	ORDER_DTTM  &gt;=  #{sch_conf_sdt}
+                        AND     ORDER_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
+                        AND     PROC_FG = 'Y'
+                        <if test="sch_van != null and sch_van != ''">
+                            AND T1.VAN_CD  = #{sch_van}
+                        </if>                               
                         <if test="schgb_conf_val != ''">
                         <choose>
                                 <when test="schgb_conf == 'schgb_conf_no'">
@@ -369,9 +369,9 @@
         <if test="sch_chain_no != null and sch_chain_no != ''">
            AND  VD.CHAIN_NO = #{sch_chain_no}
         </if>
-        <!-- <if test="sch_card_acq != ''">
-                AND  VD.CARD_ACQ = #{sch_card_acq})
-        </if>      -->
+        <if test="sch_van != null and sch_van != ''">
+            AND VD.VAN_CD  = #{sch_van}
+        </if>    
         <if test="schgb_conf_val != ''">
             <choose>
                 <when test="schgb_conf == 'schgb_conf_no'">
@@ -387,8 +387,8 @@
         </if>               
          GROUP 	BY VD.CHAIN_NO, TC.CHAIN_NM, TC.BIZ_NO, VD.CONF_DT
                 <choose>
-                        <when test="sidx != '' and sidx != null ">
-                                ORDER BY ${sidx} ${sord}
+                        <when test="orderBy != '' and orderBy != null">
+                                ORDER BY ${orderBy}
                         </when>
                         <otherwise>
                                 ORDER BY 1 DESC
@@ -411,9 +411,9 @@
                   FROM  TB_VAN_DOCU VD
                  WHERE	VD.CHAIN_NO  = #{sch_sub_chain_no} 
                    AND  VD.CONF_DT   = #{sch_sub_conf_dt} 
-                <!-- <if test="sch_card_acq != ''">
-                   AND  VD.CARD_ACQ = #{sch_card_acq}
-                </if>                    -->
+                <if test="sch_van != null and sch_van != ''">
+                    AND VD.VAN_CD  = #{sch_van}
+                </if>
                 <if test="schgb_conf_val != ''">
                         <choose>
                                 <when test="schgb_conf == 'schgb_conf_no'">
@@ -429,8 +429,8 @@
                 </if>  
                  GROUP 	BY VD.CARD_ACQ,    GET_CODE_NM('CARD_ACQ', VD.CARD_ACQ) 
                 <choose>
-                        <when test="sidx != '' and sidx != null ">
-                                ORDER BY ${sidx} ${sord}
+                        <when test="orderBy != '' and orderBy != null">
+                                ORDER BY ${orderBy}
                         </when>
                         <otherwise>
                                 ORDER BY 1 DESC
@@ -479,9 +479,9 @@
                         LEFT OUTER JOIN TB_WITHDRAW W ON W.DOCU_SEQ = VD.DOCU_SEQ
                  WHERE	VD.CHAIN_NO  = #{sch_sub_chain_no} 
                    AND  VD.CONF_DT   = #{sch_sub_conf_dt} 
-                <!-- <if test="sch_card_acq != ''">
-                        AND  VD.CARD_ACQ = #{sch_card_acq}
-                </if>        -->
+                <if test="sch_list_van != null and sch_list_van != ''">
+                    AND VD.VAN_CD  = #{sch_list_van}
+                </if>
                 <if test="schlist_card_acq != ''">
                    AND  FIND_IN_SET(VD.CARD_ACQ, #{schlist_card_acq})
                 </if>   
@@ -499,8 +499,8 @@
                         </choose>
                 </if>  
                 <choose>
-                        <when test="sidx != '' and sidx != null ">
-                                ORDER BY ${sidx} ${sord}
+                        <when test="orderBy != '' and orderBy != null">
+                                ORDER BY ${orderBy}
                         </when>
                         <otherwise>
                                 ORDER BY VD.DOCU_SEQ DESC
@@ -544,8 +544,8 @@
                                         AND TC.SVC_STAT IN ('O', 'R')
                 GROUP 	BY VT.CHAIN_NO, TC.CHAIN_NM, VT.PROC_RESULT
                 <choose>
-                        <when test="sidx != '' and sidx != null ">
-                                ORDER BY ${sidx} ${sord}
+                        <when test="orderBy != '' and orderBy != null">
+                                ORDER BY ${orderBy}
                         </when>
                         <otherwise>
                                 ORDER BY 1 DESC
