@@ -26,23 +26,29 @@
                 , IFNULL(SUM(DC.TOT_USE_AMT), 0)             		        AS tot_use_amt
           FROM 	TB_DAY_CLOSE_REPORT DC
                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO 
-    <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
-				AND  TC.CORP_CD =  #{sch_corp_cd} 
-		</if>                                       
-    <choose>
-      <when test='userCorpType == "LN"'>
-          AND TC.CORP_CD = #{userCorpCd}
-      </when>
-      <when test='userCorpType == "OP"'>
-          AND 1 = 1
-      </when>
-      <when test='userCorpType == "AG"'>
-          AND TC.AGENCY_CD = #{userCorpCd}
-      </when>
-      <otherwise>
-          AND  1 = 0
-      </otherwise>
-    </choose>    
+                <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
+                    AND  TC.CORP_CD =  #{sch_corp_cd} 
+                </if>
+                <if test="sch_chain_no != null and sch_chain_no != ''"> 
+                    AND  TC.CHAIN_NO =  #{sch_chain_no} 
+                </if>
+                <if test="sch_chain_nm != null and sch_chain_nm != ''"> 
+                    AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%') 
+                </if>
+                <choose>
+                    <when test='userCorpType == "LN"'>
+                        AND TC.CORP_CD = #{userCorpCd}
+                    </when>
+                    <when test='userCorpType == "OP"'>
+                        AND 1 = 1
+                    </when>
+                    <when test='userCorpType == "AG"'>
+                        AND TC.AGENCY_CD = #{userCorpCd}
+                    </when>
+                    <otherwise>
+                        AND  1 = 0
+                    </otherwise>
+                </choose>    
          WHERE  DC.CLOSE_DATE BETWEEN #{sch_date_from}
                                   AND #{sch_date_to}
          GROUP  BY DC.CLOSE_DATE
@@ -73,23 +79,29 @@
                 , IFNULL(SUM(DC.TOT_USE_AMT), 0)             		        AS tot_use_amt
           FROM 	TB_DAY_CLOSE_REPORT DC
                 JOIN TB_CHAIN TC ON TC.CHAIN_NO = DC.CHAIN_NO 
-        <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
-				  AND  TC.CORP_CD =  #{sch_corp_cd} 
-		    </if>                                       
-        <choose>
-            <when test='userCorpType == "LN"'>
-                AND TC.CORP_CD = #{userCorpCd}
-            </when>
-            <when test='userCorpType == "OP"'>
-                AND 1 = 1
-            </when>
-            <when test='userCorpType == "AG"'>
-                AND TC.AGENCY_CD = #{userCorpCd}
-            </when>
-            <otherwise>
-                AND  1 = 0
-            </otherwise>
-        </choose>    
+                <if test="sch_corp_cd != null and sch_corp_cd != ''"> 
+                    AND  TC.CORP_CD =  #{sch_corp_cd} 
+                </if>                                       
+                <if test="sch_chain_no != null and sch_chain_no != ''"> 
+                    AND  TC.CHAIN_NO =  #{sch_chain_no} 
+                </if>
+                <if test="sch_chain_nm != null and sch_chain_nm != ''"> 
+                    AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%') 
+                </if>
+                <choose>
+                    <when test='userCorpType == "LN"'>
+                        AND TC.CORP_CD = #{userCorpCd}
+                    </when>
+                    <when test='userCorpType == "OP"'>
+                        AND 1 = 1
+                    </when>
+                    <when test='userCorpType == "AG"'>
+                        AND TC.AGENCY_CD = #{userCorpCd}
+                    </when>
+                    <otherwise>
+                        AND  1 = 0
+                    </otherwise>
+                </choose>    
          WHERE  DC.CLOSE_DATE BETWEEN #{sch_date_from}
                                   AND #{sch_date_to}
         
