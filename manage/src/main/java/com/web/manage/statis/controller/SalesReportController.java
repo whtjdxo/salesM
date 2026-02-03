@@ -146,7 +146,7 @@ public class SalesReportController {
                 Row dataRow = sheet.createRow(rowIndex++);
                 int colIndex = 0;
                 // 1. NO (row number)
-                dataRow.createCell(colIndex++).setCellValue(rowIndex - 1);                
+                dataRow.createCell(colIndex++).setCellValue(rowIndex - 2);                
                 // 2. 출금
                 dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("close_date", "").toString());
 

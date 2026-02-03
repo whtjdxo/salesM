@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>전문문 관리</title>
+    <script src="/vendors/tinymce/tinymce.min.js"></script>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/vendors/datatables.net-fixedcolumns/dataTables.fixedColumns.min.js"></script>
+    <script src="/vendors/dropzone/dropzone-min.js"></script>
+    <script src="/js/jquery.form.js"></script>
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />   
+    <!-- ✅ XLSX (SheetJS) 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- DataTables Select CSS 추가 -->
+    <link rel="stylesheet" href="/css/custom-salesm.css" />
+
+    <script th:inline="none">      
+      $(document).ready(function () {           
+        $('#frm_sch').onLoadFunction();      
+        callAjax('/common/getAgencyList', "", fn_agency_list_setting);
+        function fn_agency_list_setting(data) {
+          codeSetting('AGENCY_CD', data.data, '#sch_agency_cd', '대리점', '', ''); 
+        }
+        // callAjax('/common/totalCodelist', "code_grp_cd=('SUB_TYPE')", fn_sub_type_setting);      
+        // function fn_sub_type_setting(data) {
+        //   codeSetting('SUB_TYPE', data.data, '#sch_sub_type', '차감유형', '', '');
+        // }
+        
+        // callAjax('/common/totalCodelist', "code_grp_cd=('SUB_STATUS')", fn_sub_status_setting);      
+        // function fn_sub_status_setting(data) {
+        //   codeSetting('SUB_STATUS', data.data, '#sch_sub_status', '진행상태', '', '');
+        // } 
+
+        // Set default values for sch_reg_sdt and sch_reg_edt
+        var toDay = returnDate('today');
+        var thirtyDayAgo = returnDate('thirtyDayAgo');
+        $('#sch_reg_sdt').val(thirtyDayAgo);
+        $('#sch_reg_edt').val(toDay);  
+
+        $('#sch_chain_nm').on('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); triggerChainSearch(); }});
+        $('#btn_chain_find').on('click', function(){ triggerChainSearch(); });
+
+        function triggerChainSearch(){
+          var keyword = ($('#sch_chain_nm').val()||'').trim();
+          if(!keyword){ alert('가맹점명을 입력하세요.'); return; }
+          if(keyword.length<2){ alert('가맹점명은 2자 이상 입력하세요.'); return; }
+          $.ajax({ url:'/common/getChainSchList', type:'GET', dataType:'json', data:{ keyword: keyword },
+            success:function(list){
+              var results = list||[];
+              if(results.length===0){ alert('검색 결과가 없습니다.'); $('#sch_chain_no').val(''); return; }
+              if(results.length===1){ $('#sch_chain_no').val(results[0].code); $('#sch_chain_nm').val(results[0].codeNm); return; }
+              openChainSelectModal(results);
+            },
+            error:function(){ alert('가맹점 검색 중 오류가 발생했습니다.'); }
+          });
+        }
+
+        function openChainSelectModal(results){
+          var $tbody = $('#tbl_chain_select tbody');
+          $tbody.empty();
+          results.forEach(function(item){
+            var $tr = $('<tr/>')
+              .append($('<td/>',{text:item.code, class:'text-center'}))
+              .append($('<td/>',{text:item.codeNm}))
+              .css('cursor','pointer')
+              .on('click', function(){ $('#sch_chain_no').val(item.code); $('#sch_chain_nm').val(item.codeNm); $('#modal_chain_select').modal('hide'); });
+            $tbody.append($tr);
+          });
+          $('#modal_chain_select').modal('show');
+        }
+        
+        $('#btn_search').click(function () {   
+          tbl_sub_summary.ajax.reload();   
+          tbl_sub_list.ajax.reload();
+        });  
+ 
+        var tbl_sub_summary = $('#tbl_sub_summary').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          responsive: true,
+          ajax: {
+            url: '/loan/loan/loanSubList/loanSubSummary',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',
+            data: function (postData) {
+                var formData = $('#frm_sch').serializeObject(); // serializeObject는 jQuery 플러그인일 수 있습니다.
+                for (var key in formData) {
+                    postData[key] = formData[key];
+                }
+                return JSON.stringify(postData); 
+            },
+            dataSrc: function (json) {
+                // totalSummary 저장
+                totalSumm = json.totalSumm || {};
+                return json.data;
+            },
+            // 서버 에러 처리 등 추가 가능
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                // 사용자에게 에러 메시지 표시 등
+            }
+          },
+            columns: [
+                { data: 'chain_nm' }
+                , { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'recv_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+                , { data: 'remain_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
+                , { data: 'chain_no', visible: false }
+                , { data: 'svc_stat', visible: false }
+              ],
+            columnDefs: [           
+            { targets: 0, width: '200px', className: 'text-left px-1 dt-body-left'
+              , render: function(data, type, row) {
+                  if (row.svc_stat === 'C') {
+                    return '<span style="background-color: red; color: white; padding: 2px 4px; border-radius: 3px;">' + data + '</span>';
+                  }
+                  return data;
+                }
+            }
+            , { targets: 1, width: '110px', className: 'text-right px-1 dt-body-right' }
+            , { targets: 2, width: '110px', className: 'text-right px-1 dt-body-right' }
+            , { targets: 3, width: '110px', className: 'text-right px-1 dt-body-right' }
+          ],  
+          order: [[5, 'desc'],[4, 'desc']],
+          paging: true,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          autoWidth: false,
+          // responsive: true,
+          // scrollCollapse: true,
+          pageLength: 20,
+          scrollY: '580px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
+          footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+                const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+                const colMap = {
+                    1: 'occur_amt',
+                    2: 'recv_amt',
+                    3: 'remain_amt',
+                };
+
+                Object.entries(colMap).forEach(([colIdx, key]) => {
+                    const footer = api.column(Number(colIdx)).footer();
+                    if (footer) {
+                        const val = totalSumm[key] || 0;
+                        $(footer).html(renderNumber(val));
+                    }
+                }); 
+            },
+        }); 
+ 
+        $('#tbl_sub_summary').on('click', 'tr', function (e) {
+          if ($(this).hasClass('selected')) {
+              $(this).removeClass('selected');
+          } else {
+              tbl_sub_summary.$('tr.selected').removeClass('selected');
+              $(this).addClass('selected');
+          }          
+          // var row = tbl_sub_summary.row(this).data(); 
+          tbl_sub_list.ajax.reload(); 
+
+        });
+        
+        // Excel download button click event
+        $('#btn_list_excel').click(function () {
+          var formData = $('#frm_sch').serializeObject();
+          $('#globalLoadingBar').show();
+          $.ajax({
+            url: '/loan/loan/loanSubList/downExcelSubList',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            xhrFields: {
+              responseType: 'blob'
+            },
+            success: function (data, status, xhr) {
+              var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+              var link = document.createElement('a');
+              link.href = window.URL.createObjectURL(blob);
+              link.download = '차감내역.xlsx';
+              link.click();
+            },
+            error: function (xhr, status, error) {
+              alert('Excel download failed.');
+            }
+            , complete: function () {
+              // 🔴 로딩바 숨기기 (성공/실패 관계없이)
+              $('#globalLoadingBar').hide();
+            }
+          });
+        });  
+        
+        var tbl_sub_list = $('#tbl_sub_list').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          responsive: true,
+          ajax: {
+            url: '/loan/loan/loanSubList/chainLoanSubList',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',
+            data: function (postData) {
+              formData = $('#frm_sch').serializeObject();
+              formData['sch_list_chain_no'] = tbl_sub_summary.row('.selected').data() ? tbl_sub_summary.row('.selected').data().chain_no : '';
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
+            },
+
+            data: function (postData) {
+              formData = $('#frm_sch').serializeObject();
+              formData['sch_list_chain_no'] = tbl_sub_summary.row('.selected').data() ? tbl_sub_summary.row('.selected').data().chain_no : '';
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
+            },
+            dataSrc: function (json) {
+                totalSumm = json.totalSumm || {};
+                return json.data;
+            },
+            // 서버 에러 처리 등 추가 가능
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+                // 사용자에게 에러 메시지 표시 등
+            }
+          }, 
+          columns: [
+              { data: 'sub_code_nm' }
+            , { data: 'loan_no' }
+            , { data: 'loan_sc_seq' }
+            , { data: 'reg_date' }            
+            , { data: 'sub_status_nm' }
+            , { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+            , { data: 'occur_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }
+            , { data: 'occur_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') }             
+            , { data: 'remain_amt', render: function(data, type, row) {
+              if (data > 0) {
+                return '<span style="color: red; font-weight: bold;">' + $.fn.dataTable.render.number(',', '.', 0, '').display(data) + '</span>';
+              }
+              return $.fn.dataTable.render.number(',', '.', 0, '').display(data);
+              }}
+            , { data: 'sub_memo' }            
+            , { data: 'sub_no', visible: false }
+          ],
+          columnDefs: [
+              { targets: 0, width: '140px', className: 'text-left' }
+            , { targets: 1, width: '110px', className: 'text-center' }
+            , { targets: 2, width: '50px', className: 'text-left' }
+            , { targets: 3, width: '100px', className: 'text-center' }
+            , { targets: 4, width: '90px', className: 'text-center' }
+            , { targets: 5, width: '120px', className: 'text-right' }
+            , { targets: 6, width: '120px', className: 'text-right' }
+            , { targets: 7, width: '120px', className: 'text-right' }
+            , { targets: 8, width: '120px', className: 'text-right' }
+            , { targets: 9, width: '300px', className: 'text-left' } 
+          ],
+          order: [[10, 'desc']],
+          paging: true,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          autoWidth: false,
+          responsive: true,
+          scrollCollapse: false,
+          pageLength: 20,
+          scrollY: '580px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...',
+          },
+          footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+                const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+                const colMap = {
+                    5: 'occur_amt',
+                    6: 'occur_base_amt',
+                    7: 'occur_crd_amt',
+                    8: 'remain_amt',
+                };
+
+                Object.entries(colMap).forEach(([colIdx, key]) => {
+                    const footer = api.column(Number(colIdx)).footer();
+                    if (footer) {
+                        const val = totalSumm[key] || 0;
+                        $(footer).html(renderNumber(val));
+                    }
+                }); 
+            },
+        });         
+
+        $('#tbl_sub_list').on('click', 'tr', function (e) {
+          if ($(this).hasClass('selected')) {
+              $(this).removeClass('selected');
+          } else {
+              tbl_sub_list.$('tr.selected').removeClass('selected');
+              $(this).addClass('selected');
+          }          
+        });
+        
+      });
+    </script>
+  </head>
+
+  <div class="content">    
+    <div class="row g-1 mb-1">
+      <div class="card" style="height:80px;">
+        <div class="card-header">          
+          <div class="row flex-between-end">
+            <div class="col-lg-2 align-self-center">
+              <h4 class="mb-0">여신상환내역조회</h4>
+            </div>            
+            <div class="col-lg-10">
+              <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate=""> 
+                <div class="row mb-1">  
+                  <div class="col-sm-4">
+                    <div class="input-group">    
+                      <div class="input-group input-group-sm mb-1 me-1">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_birth_dt">등록일</label>
+                        <div class="col-sm-4">
+                          <input class="form-control form-control-sm " id="sch_reg_sdt" type="text" name="sch_reg_sdt" istyle="date" maxlength="10" required />
+                        </div>   
+                        <span class="input-group-text">~</span>
+                        <div class="col-sm-4">
+                          <input class="form-control form-control-sm" id="sch_reg_edt" type="text" name="sch_reg_edt" istyle="date" maxlength="10" required />
+                        </div>   
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <div class="input-group input-group-sm mb-1">
+                      <select class="form-select form-control-sm me-1" id="sch_agency_cd" name="sch_agency_cd" style="width: 75px">
+                        <option value="">대리점</option>
+                      </select>                      
+                    </div>                    
+                  </div> 
+                  <div class="col-sm-3">
+                    <div class="input-group input-group-sm mb-1">
+                      <input type="hidden" id="sch_chain_no" name="sch_chain_no" />
+                      <input class="form-control form-control-sm me-1" id="sch_chain_nm" name="sch_chain_nm" placeholder="가맹점명" autocomplete="off" />
+                      <button type="button" class="btn btn-outline-secondary btn-sm me-1" id="btn_chain_find" name="btn_chain_find">검색</button>
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
+                    </div>
+                  </div> 
+                  <div class="col-sm-3 text-center">
+                    <!-- <button type="button" class="btn btn-primary btn-sm" id="btn_list_excel" name="btn_list_excel">Excel</button> -->
+                  </div>
+                </div> 
+              </form>
+            </div>
+          </div>          
+        </div>
+      </div>
+    </div>   
+    <div class="row g-1 mb-1">
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-body pt-0 px-0" style="padding-top: 0px">
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_sub_summary">
+                <thead>
+                  <tr>
+                    <th class="text-center">가맹점명</th>
+                    <th class="text-center">등록금액</th>
+                    <th class="text-center">차감액</th>
+                    <th class="text-center">미차감액</th>
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody>
+                <tfoot>
+                  <tr>
+                    <th class="text-center">총계</th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="card">          
+          <div class="card-body pt-0 px-0" style="padding-top: 0px">            
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_sub_list" >
+                <thead >
+                  <tr>
+                    <th class="text-center" style="width: 150px;">차감종류</th>
+                    <th class="text-center" style="width: 100px;">관리번호</th>
+                    <th class="text-center" style="width: 50px;">회차</th>                    
+                    <th class="text-center" style="width: 120px;">차감등록일</th>
+                    <th class="text-center" style="width: 50px;">상태</th>
+                    <th class="text-center" style="width: 120px;">발생금액</th>
+                    <th class="text-center" style="width: 120px;">원금</th>
+                    <th class="text-center" style="width: 120px;">이자</th>
+                    <th class="text-center" style="width: 120px;">미차감</th>
+                    <th class="text-center" style="width: 300px;">비고</th> 
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody>
+                <tfoot>
+                  <tr>
+                    <th class="text-center" colspan="5">총계</th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                    <th class="text-right px-2"></th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div> 
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 가맹점 선택 모달 -->
+  <div class="modal fade" id="modal_chain_select" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">가맹점 선택</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="table-responsive scrollbar">
+            <table class="table table-striped table-sm fs-9 mb-0 table-hover" id="tbl_chain_select">
+              <thead>
+                <tr>
+                  <th class="text-center">코드</th>
+                  <th class="text-center">가맹점명</th>
+                </tr>
+              </thead>
+              <tbody class="list"></tbody>
+            </table>
+          </div>
+          <div class="text-muted mt-2">원하는 항목을 클릭하여 선택하세요.</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</html>

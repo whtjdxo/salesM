@@ -252,7 +252,7 @@
                 , UNIT_LIMIT_AMT      = #{unit_limit_amt}
                 , DAY_USE_RATE        = #{day_use_rate}
                 , DAY_USE_AMT         = #{day_use_amt}
-                , TOT_USE_AMT         = #{tot_use_amt}
+                <!-- , TOT_USE_AMT         = #{tot_use_amt} -->
                 <!-- , REMIT_TYPE          = #{remit_type}
                 , REMIT_CYCLE         = #{remit_cycle} -->
                 , REMIT_STAT          = #{remit_stat}

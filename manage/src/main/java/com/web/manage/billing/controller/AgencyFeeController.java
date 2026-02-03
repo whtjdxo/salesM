@@ -182,7 +182,7 @@ public class AgencyFeeController {
                 Row dataRow = sheet.createRow(rowIndex++);
                 int colIndex = 0;
                 // 1. NO (row number)
-                dataRow.createCell(colIndex++).setCellValue(rowIndex - 1);                
+                dataRow.createCell(colIndex++).setCellValue(rowIndex - 2);                
                 // 2. 출금
                 dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("agency_nm", "").toString());
                 dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("chain_nm", "").toString());
@@ -476,7 +476,7 @@ public class AgencyFeeController {
                 Row dataRow = sheet.createRow(rowIndex++);
                 int colIndex = 0;
                 // 1. NO (row number)
-                dataRow.createCell(colIndex++).setCellValue(rowIndex - 1);                
+                dataRow.createCell(colIndex++).setCellValue(rowIndex - 2);                
                 // 2. 입금확인일
                 dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("adjust_date", "").toString());
                 

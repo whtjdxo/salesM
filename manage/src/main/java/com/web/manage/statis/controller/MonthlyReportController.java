@@ -219,7 +219,7 @@ public class MonthlyReportController {
                 Row dataRow = sheet.createRow(rowIndex++);
                 int colIndex = 0;
                 // 1. NO (row number)
-                dataRow.createCell(colIndex++).setCellValue(rowIndex - 1);                
+                dataRow.createCell(colIndex++).setCellValue(rowIndex - 2);                
                 // 2. 마감-정산일자
                 dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("chain_nm", "").toString());
                 // 3. 출금마감-매출-총건
@@ -602,7 +602,7 @@ public class MonthlyReportController {
                 Row dataRow = sheet.createRow(rowIndex++);
                 int colIndex = 0;
                 // 1. NO (row number)
-                dataRow.createCell(colIndex++).setCellValue(rowIndex - 1);                
+                dataRow.createCell(colIndex++).setCellValue(rowIndex - 2);                
                 // 2. 마감-정산일자
                 dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("close_date", "").toString());
                 // 3. 출금마감-매출-총건
