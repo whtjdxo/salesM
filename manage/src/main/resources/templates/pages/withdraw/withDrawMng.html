@@ -956,8 +956,9 @@
               type: 'POST',
               data: function (postData) {
                 var formData = { 
-                    sch_chain_no: $('#sch_card_chain_no').val()
-                    , sch_unissu : "Y" 
+                    sch_chain_no: $('#sch_card_chain_no').val(),
+                    sch_work_date: $('#sch_work_date').val(),
+                    sch_unissu : "Y" 
                   };
                 Object.assign(postData, formData);
                 return JSON.stringify(postData);

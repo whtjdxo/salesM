@@ -271,7 +271,7 @@
                                 AND TC.USE_YN  = 'Y'
         WHERE	SM.USE_YN = 'Y'          
           AND   SM.CHAIN_NO =  #{sch_chain_no}
-          AND   SM.RESV_DATE &lt;= DATE_FORMAT(NOW(), '%Y-%m-%d')   
+          AND   SM.RESV_DATE &lt;= DATE_FORMAT(#{sch_work_date}, '%Y-%m-%d')   
           AND   SM.SUB_STATUS IN ('000000', '100000')
           AND   SM.REMAIN_AMT &gt;= 0 
         <choose>
