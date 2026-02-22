@@ -38,6 +38,11 @@
         $('#sch_reg_edt').val(toDay);  
 
         $('#sch_chain_nm').on('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); triggerChainSearch(); }});
+        $('#sch_chain_nm').on('input', function(){
+          if (!$(this).val().trim()) {
+            $('#sch_chain_no').val('');
+          }
+        });
         $('#btn_chain_find').on('click', function(){ triggerChainSearch(); });
 
         function triggerChainSearch(){

@@ -131,13 +131,13 @@
             AND  IFNULL(VL.SCRAP_GB, 'N') = #{sch_rslt}
         </if>
         <choose>
-            <when test="sidx != '' and sidx != null ">
-                    ORDER BY ${sidx} ${sord}
+            <when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
             </when>
             <otherwise>
-                    ORDER BY 1
+                ORDER BY 1
             </otherwise>
-        </choose>                
+        </choose>             
         LIMIT  ${start}, ${end}
     </select>
 

@@ -288,6 +288,13 @@
               , { targets: 4, width: '120px', className: 'text-right' }
               , { targets: 5, width: '120px', className: 'text-right' }
               , { targets: 6, width: '300px', className: 'text-left' }
+              , { targets: 6, width: '300px', className: 'text-left', render: function(data, type, row) {
+                  if (data && data.length > 30) {
+                      return data.substring(0, 30) + '...';
+                    }
+                    return data;
+                  }
+              }
               , { targets: 7, width: '100px', className: 'align-middle white-space-nowrap text-center pe-0' }
             ],
             order: [[1, 'desc']],

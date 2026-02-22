@@ -78,10 +78,10 @@
 		  </choose>
 		   AND code != 'CODE'
 		 <if test="srch_low_tp != ''">
-			<if test="srch_low_tp == 'srch_low_code'">
+			<if test="srch_low_tp == 'srch_gr_code'">
 				AND code LIKE  CONCAT('%',#{srch_low_val},'%')
 			</if>
-			<if test="srch_low_tp == 'srch_low_nm'">
+			<if test="srch_low_tp == 'srch_gr_nm'">
 				AND code_nm LIKE  CONCAT('%',#{srch_low_val},'%')
 			</if>
 		</if>

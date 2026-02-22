@@ -126,6 +126,7 @@
 
         $('#btn_board_create').click(function () {
           $('#brd_status').val('create');
+          tinymce.triggerSave();
           // $('#frm_board_info').attr('action', '/manage/system/board/boardCreate');
           // $('#frm_board_info').submit();
           var form = $('#frm_board_info');
@@ -158,6 +159,7 @@
 
         $('#btn_board_update').click(function () {
           $('#brd_status').val('update');
+          tinymce.triggerSave();
           var form = $('#frm_board_info');
           var checked = true;
           var board_seq = $('#board_seq').val();
@@ -171,15 +173,19 @@
             checked = false;
             return;
           }
-          if (checked) {
-            swal({
+          
+          if (checked) {            
+            Swal.fire({
               title: "수정하시겠습니까?",
               text: "입력하신 내용으로 저장합니다.",
               icon: "warning",
-              buttons: true,
-              dangerMode: true,
-            }).then((willSave) => {
-              if (willSave) {
+              showCancelButton: true,
+              confirmButtonText: '예',
+              cancelButtonText: '아니오',
+              confirmButtonColor: '#d33',
+              cancelButtonColor: '#3085d6'
+            }).then((result) => {
+              if (result.isConfirmed) {
                 var formData = new FormData($('#frm_board_info')[0]);
                 $.ajax({
                   url: '/manage/system/board/boardUpdate',
@@ -191,7 +197,7 @@
                     fn_return_board(response);
                   },
                   error: function (xhr, status, error) {
-                    swal('실패', resultMsg, 'error');
+                    Swal.fire('실패', resultMsg, 'error');
                   }
                 });
               }
@@ -362,32 +368,20 @@
           });
         }
 
-        $('#file_upload').change(function (e) {
-          var files = e.target.files;
-          console.log(files.length);
-          if (files.length > 0) {
-            var uploadFile = $(this);
-            var filename = this.files[0].name;
-            var files = !!this.files ? this.files : [];
-            var maxSize = 50 * 1024 * 1024;
-            var fileSize = files[0].size;
+        $('#file_upload').on('change', function (e) {
+          var files = e.target.files || [];
+          var maxSize = 50 * 1024 * 1024;
 
-            if (!files.length || !window.FileReader) return;
-            var fileExt = filename.slice(filename.indexOf('.') + 1).toLowerCase();
-            if (fileSize > maxSize) {
-              $('#upload_file').val('');
+          if (!files.length) {
+            return;
+          }
+
+          for (var index = 0; index < files.length; index++) {
+            if (files[index].size > maxSize) {
+              $('#file_upload').val('');
               swal('경고', '업로드 파일은 50MB까지만 가능합니다.', 'error');
               return;
             }
-
-            var reader = new FileReader();
-            reader.readAsDataURL(files[0]);
-            reader.onloadend = function () {
-              if (files.length > 1) {
-                filename = filename + ' 외 ' + (files.length - 1) + '개';
-              }
-              $('#upload_file').val(filename);
-            };
           }
         }); 
         
@@ -496,10 +490,8 @@
                   </div>                
                 </div>            
                 <div class="row mb-3">
-                  <!-- <label class="col-form-label col-form-label-sm" for="conts">내용</label> -->
                   <textarea class="tinymce d-none" id="conts" name="conts"></textarea>
-                </div>
-                
+                </div>                
                 <div class="row mb-3">
                   <label class="col-sm-2 col-form-label col-form-label-sm" for="file_upload">파일</label>
                   <div class="col-sm-10">

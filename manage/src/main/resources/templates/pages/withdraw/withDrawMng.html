@@ -98,6 +98,12 @@
             triggerChainSearch();
           }
         });
+        // 가맹점명 입력을 지우면 hidden chain_no도 초기화
+        $('#sch_chain_nm').on('input', function(){
+          if (!$(this).val().trim()) {
+            $('#sch_chain_no').val('');
+          }
+        });
         // 체인 검색 버튼 클릭 시 검색
         $('#btn_chain_find').on('click', function(){
           triggerChainSearch();
@@ -251,15 +257,15 @@
             ],
             columnDefs: [
                 { targets: 0, width: '40px', className: 'text-center dt-body-center' }, // 중앙 정렬 확인
-                { targets: 1, width: '150px', className: 'text-left px-1' },
+                { targets: 1, width: '190px', className: 'text-left px-1' },
                 { targets: 2, width: '100px', className: 'text-right px-1 dt-body-center' }, // DataTables 권장 클래스
-                { targets: 3, width: '70px', className: 'text-right px-1 dt-body-right' }, // 숫자 데이터는 오른쪽 정렬이 일반적
+                { targets: 3, width: '60px', className: 'text-right px-1 dt-body-right' }, // 숫자 데이터는 오른쪽 정렬이 일반적
                 { targets: 4, width: '110px', className: 'text-right px-1 dt-body-right' },
-                { targets: 5, width: '70px', className: 'text-right px-1 dt-body-right' },
+                { targets: 5, width: '60px', className: 'text-right px-1 dt-body-right' },
                 { targets: 6, width: '110px', className: 'text-right px-1 dt-body-right' },
-                { targets: 7, width: '70px', className: 'text-right px-1 dt-body-right' },
+                { targets: 7, width: '60px', className: 'text-right px-1 dt-body-right' },
                 { targets: 8, width: '110px', className: 'text-right px-1 dt-body-right' },
-                { targets: 9, width: '70px', className: 'text-right px-1 dt-body-right' }
+                { targets: 9, width: '60px', className: 'text-right px-1 dt-body-right' }
             ],
             order: [[0, 'desc']], // 기본 정렬 설정
             paging: true,

@@ -279,7 +279,8 @@
           var row = tbl_board_list.row(this).data();
           
           $('#board_title').val(row.title);          
-          $('#board_conts').val(row.conts); 
+          alert(row.conts);
+          $('#board_conts').text(row.conts); // textarea는 val() 대신 text() 사용
           $('#modal_board').modal('show'); // Show the modal             
         });   
 
@@ -470,13 +471,13 @@
           <div class="row mb-3">
             <label class="col-sm-2 col-form-label col-form-label-sm" for="title">제목</label>
             <div class="col-sm-10">
-              <input class="form-control form-control-sm" id="title" type="text" name="title" readonly />
+              <input class="form-control form-control-sm" id="board_title" type="text" name="board_title" readonly />
             </div>
           </div>          
           <div class="row mb-3">
             <label class="col-sm-2 col-form-label col-form-label-sm" for="board_conts">내용</label>
             <div class="col-sm-10">
-              <textarea class="form-control form-control-sm" id="board_conts" name="conts" rows="15" readonly></textarea>
+              <textarea class="form-control form-control-sm" id="board_conts" name="board_conts" rows="15" readonly></textarea>
             </div>
           </div>          
           <div class="modal-footer">            

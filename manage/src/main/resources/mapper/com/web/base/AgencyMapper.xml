@@ -15,7 +15,7 @@
 	<select id="getAgencyList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
         SELECT  SQL_CALC_FOUND_ROWS
                 TA.agency_cd
-		        , TA.agency_nm
+		, TA.agency_nm
                 , TA.biz_no
                 , TA.law_no
                 , TA.uptae

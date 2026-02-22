@@ -53,6 +53,14 @@ public class BoardController {
 	@Value("${global.fileBoardPath}")
 	String origin_fileBoardPath;
 
+	private boolean isRealUploadFile(MultipartFile file) {
+		if (file == null || file.isEmpty()) {
+			return false;
+		}
+		String originalFilename = file.getOriginalFilename();
+		return originalFilename != null && !originalFilename.trim().isEmpty();
+	}
+
 	@RequestMapping(value="/view")
 	public String view() {
 		return "pages/system/board";
@@ -176,10 +184,12 @@ public class BoardController {
 			String seq = commonService.getJobSeq("TB_BOARD", "BOARD_SEQ");
 			boardVO.setBoard_seq(String.valueOf(seq));
 			
-			// 첨부파일			
-			if(boardVO.getFile_upload() != null) {
-				if(boardVO.getFile_upload().size() > 0) {					
-					for(MultipartFile file : boardVO.getFile_upload()) {						 
+			// 첨부파일
+			if(boardVO.getFile_upload() != null && boardVO.getFile_upload().size() > 0) {
+				for(MultipartFile file : boardVO.getFile_upload()) {
+					if (!isRealUploadFile(file)) {
+						continue;
+					}
 						String pathString = Paths.get(origin_fileBoardPath, boardVO.getBoard_seq()).toString();
                         // System.out.println("pathString : " + pathString);    
 	                   
@@ -188,18 +198,18 @@ public class BoardController {
 	                        saveFolder.mkdirs();
 	                    }
 	                    
-	                    String originName = file.getOriginalFilename();
+						String originName = file.getOriginalFilename();
 	                    String fileSize = String.valueOf(file.getSize());
 
-                        int pos = originName.lastIndexOf(".");
-	                    String fileExt = originName.substring(pos + 1);
+	                    int pos = originName.lastIndexOf(".");
+	                    String fileExt = (pos > -1) ? originName.substring(pos + 1) : "";
 						
 						int file_seq = boardService.getChkFileSeq(boardVO);
 	                    // int file_seq = boardService.generateFileSeq();
 	                    String newName = boardVO.getBoard_seq() + "_"+ file_seq + Math.round(Math.random() * 100);
 	                    
 	                    // filePath = File.separator + newName + "." + fileExt;
-                        String savePath = pathString + File.separator + newName + "." + fileExt;
+	                    String savePath = pathString + File.separator + newName + (fileExt.isEmpty() ? "" : "." + fileExt);
 
                         System.out.println("newName : " + newName);
                         System.out.println("filePath : " + savePath);
@@ -220,7 +230,6 @@ public class BoardController {
 	        			    boardVO.setFile_path(savePath);	        			    
 	        			    boardService.insertBoardFileInfo(boardVO);
 	                    }	                    
-					}					
 				}
 			}
 			boardVO.setConts(StringEscapeUtils.unescapeHtml4(cnts));
@@ -248,7 +257,6 @@ public class BoardController {
 			, MultipartHttpServletRequest multiRequest, HttpSession session){
 
 				ReturnDataVO result = new ReturnDataVO();
-
 				SessionVO member = (SessionVO) session.getAttribute("S_USER");
 				boardVO.setUser_id(member.getUserId());
 		
@@ -261,9 +269,11 @@ public class BoardController {
 						return result;
 					}					
 					// 첨부파일
-					if(boardVO.getFile_upload() != null) {
-						if (boardVO.getFile_upload().size() > 0) {		
-							for(MultipartFile file : boardVO.getFile_upload()) {						 
+					if(boardVO.getFile_upload() != null && boardVO.getFile_upload().size() > 0) {
+						for(MultipartFile file : boardVO.getFile_upload()) {
+							if (!isRealUploadFile(file)) {
+								continue;
+							}
 								String pathString = Paths.get(origin_fileBoardPath, boardVO.getBoard_seq()).toString();
 								// System.out.println("pathString : " + pathString);    
 							
@@ -276,14 +286,14 @@ public class BoardController {
 								String fileSize = String.valueOf(file.getSize());
 
 								int pos = originName.lastIndexOf(".");
-								String fileExt = originName.substring(pos + 1);
+								String fileExt = (pos > -1) ? originName.substring(pos + 1) : "";
 								
 								int file_seq = boardService.getChkFileSeq(boardVO);
 								// int file_seq = boardService.generateFileSeq();
 								String newName = boardVO.getBoard_seq() + "_"+ file_seq + Math.round(Math.random() * 100);
 								
 								// filePath = File.separator + newName + "." + fileExt;
-								String savePath = pathString + File.separator + newName + "." + fileExt;
+								String savePath = pathString + File.separator + newName + (fileExt.isEmpty() ? "" : "." + fileExt);
 
 								System.out.println("newName : " + newName);
 								System.out.println("filePath : " + savePath);
@@ -304,8 +314,7 @@ public class BoardController {
 									boardVO.setFile_path(savePath);	        			    
 									boardService.insertBoardFileInfo(boardVO);
 								}	                    
-							}	
-						}
+							}
 					}
 		
 					boardService.boardUpdate(boardVO);		
