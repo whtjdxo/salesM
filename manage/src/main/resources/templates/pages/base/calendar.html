@@ -222,12 +222,12 @@
                 <label class="col-sm-3 col-form-label col-form-label-sm" for="working">휴일</label>
                 <div class="col-sm-9">
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" id="working_y" type="radio" name="working" value="Y" required />
-                    <label class="form-check-label" for="working_y">예</label>
+                    <input class="form-check-input" id="working_n" type="radio" name="working" value="N" required />
+                    <label class="form-check-label" for="working_n">예</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" id="working_n" type="radio" name="working" value="N" required />
-                    <label class="form-check-label" for="working_n">아니요</label>
+                    <input class="form-check-input" id="working_y" type="radio" name="working" value="Y" required />
+                    <label class="form-check-label" for="working_y">아니요</label>
                 </div>
                 </div>
             </div>         
@@ -438,12 +438,12 @@
             if (rslt.data) {
                 const dayInfo = rslt.data;        
                 document.getElementById('day_nm').value = dayInfo.day_nm;
-                if (dayInfo.working === "N") {
-                    document.getElementById('working_y').checked = true;
-                    document.getElementById('working_n').checked = false;
-                } else {
-                    document.getElementById('working_y').checked = false;
+                if (dayInfo.working === "N") {              // 휴일인 경우
                     document.getElementById('working_n').checked = true;
+                    document.getElementById('working_y').checked = false;
+                } else {
+                    document.getElementById('working_n').checked = false;
+                    document.getElementById('working_y').checked = true;
                 }
                 document.getElementById('upt_dttm').value = dayInfo.upt_dttm;
                 eventModal.style.display = 'block';
@@ -493,8 +493,8 @@
         
         const date      = eventDateInput.value;
         const day_nm    = document.getElementById('day_nm').value.trim();
-        const working   = document.getElementById('working_y').checked ? "N" : "Y"; 
-        alert(date);
+        const working   = document.getElementById('working_y').checked ? "Y" : "N"; 
+ 
         if (!day_nm) {
             alert('제목을 입력해주세요.');
             return;
@@ -506,6 +506,7 @@
                 day_nm: day_nm, 
                 working: working
             };
+            
             console.log(params);
 
             try {

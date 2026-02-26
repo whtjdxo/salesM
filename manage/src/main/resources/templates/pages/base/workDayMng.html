@@ -269,12 +269,12 @@
 
             if (parts[1]) {
               if(parts[1] == "N") {
-                $("input:radio[name='working'][value='Y']").prop('checked', true);
-              } else {
                 $("input:radio[name='working'][value='N']").prop('checked', true);
+              } else {
+                $("input:radio[name='working'][value='Y']").prop('checked', true);
               }
             }else{
-              $("input:radio[name='working'][value='N']").prop('checked', true);
+              $("input:radio[name='working'][value='Y']").prop('checked', true);
             }
             // 세번째 값(있으면 줄바꿈, 중앙정렬)
             if (parts[2]) {
@@ -436,12 +436,12 @@
                   <label class="col-sm-3 col-form-label col-form-label-sm" for="working">휴일</label>
                   <div class="col-sm-9">
                     <div class="form-check form-check-inline">
-                      <input class="form-check-input" id="working_y" type="radio" name="working" value="Y" required />
-                      <label class="form-check-label" for="working_y">예</label>
+                      <input class="form-check-input" id="working_n" type="radio" name="working" value="N" required />
+                      <label class="form-check-label" for="working_n">예</label>
                     </div>
                     <div class="form-check form-check-inline">
-                      <input class="form-check-input" id="working_n" type="radio" name="working" value="N" required />
-                      <label class="form-check-label" for="working_n">아니요</label>
+                      <input class="form-check-input" id="working_y" type="radio" name="working" value="Y" required />
+                      <label class="form-check-label" for="working_y">아니요</label>
                     </div>
                   </div>
                 </div>
