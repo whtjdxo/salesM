@@ -31,7 +31,7 @@
 				, IFNULL(CRD_FEE_AMT, 0) 	AS crd_fee_amt
 				, IFNULL(WD_BASE_AMT, 0) 	AS wd_base_amt
 				, IFNULL(EXCEED_AMT, 0) 	AS exceed_amt	
-				, IFNULL(SUB_AMT, 0) 		AS sub_amt1	
+				<!-- , IFNULL(SUB_AMT, 0) 		AS sub_amt1 -->
 				, IFNULL(APRV_AMT, 0) - IFNULL(REMITT_TOT_AMT, 0) + IFNULL(EXCEED_AMT, 0) AS sub_amt	
 				, IFNULL(REMITT_TOT_AMT, 0)	AS remitt_tot_amt
 		  FROM 	(		  

@@ -364,7 +364,7 @@ jQuery(function ($) {
           var fVal = $(this).val();
           if (!isValidFloat(fVal)) {
             if (!$(this).data('alerted')) {
-              alert('유효하지않은 형식입니다.\nEX) 000.00');
+              alert('유효하지않은 형식입니다.\nEX) 000.000');
               $(this).data('alerted', true);
             }
             $(this).focus();
@@ -516,7 +516,7 @@ function isValidDate(dateStr) {
 function isValidFloat(floatVal) {
   if (floatVal.indexOf('.') >= 0) {
     var aryVal = floatVal.split('.');
-    if (aryVal[0].length > 3 || aryVal[1].length > 2) {
+    if (aryVal[0].length > 3 || aryVal[1].length > 4) {
       return false;
     }
   } else {
