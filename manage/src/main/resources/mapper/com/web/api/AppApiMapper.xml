@@ -4,6 +4,7 @@
     <!-- App Api 관련 쿼리 map  -->
 	<!-- app 연동용 가앰점 정보 가져오기 -->
 	<select id="appApiGetStoreInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		/* AppApiMapper.appApiGetStoreInfo */
 		SELECT 	TC.CEO_ID 			AS loginId
 				, TC.CHAIN_NO  		AS chainNo 
 				, TC.CHAIN_NM 		AS chainNm
@@ -21,6 +22,7 @@
 	
 	<!-- App 연동 - 일간, 월간 Summary  -->
 	<select id="appApiGetDailySummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		/* AppApiMapper.appApiGetDailySummary */
 		SELECT GB 							AS remitt_gb
 				, REMIT_DT					AS remitt_dt
 				, IFNULL(APRV_CNT, 0) 		AS aprv_cnt
@@ -112,6 +114,7 @@
 	
 	<!-- App 연동 - 일간, 월간 매출 정보  -->
 	<select id="appApiGetDailySalesInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		/* AppApiMapper.appApiGetDailySalesInfo */
 		SELECT 	CASE VD.VAN_CD WHEN  'V050' THEN '배달의민족'
 							WHEN  'V051' THEN '요기요'
 							WHEN  'V053' THEN '쿠팡잇츠'
@@ -145,6 +148,7 @@
 	
 	<!-- App 연동 - 일간, 월간 정산 차감 정보  -->
 	<select id="appApiGetDailySettleInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		/*AppApiMapper.appApiGetDailySettleInfo*/
 		SELECT 	IFNULL(SUM(CARD_FEE_AMT), 0)		AS card_fee_amt 
 				, IFNULL(SUM(UNDEPO_SUB_AMT), 0)	AS undepo_sub_amt
 				, IFNULL(SUM(LOAN_SUB_AMT), 0)		AS loan_sub_amt
@@ -196,7 +200,7 @@
 							  FROM 	TB_SUB_RECEIVE SR
 							  		JOIN TB_SUB_MST SM ON SM.SUB_NO = SR.SUB_NO 
 							 WHERE 	SR.CHAIN_NO = #{chainNo}
-							   AND 	SR.RECV_DATE &gt;= 	#{schSdt}
+							   AND 	SR.RECV_DATE &gt;= 	#{schSdt}							   
 							   AND  SR.RECV_DATE &lt; 	DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
 							 GROUP 	BY SM.SUB_TYPE, SM.SUB_CODE
 						) VT
@@ -230,6 +234,7 @@
 	
 	<!-- App 연동 - 미입금 차감 정보  -->
 	<select id="appApiGetUndepoSubList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		/*AppApiMapper.appApiGetUndepoSubList*/
 		SELECT 	SUBSTR(SUBSTR(SUB_MEMO, INSTR(SUB_MEMO, '['), LENGTH(SUB_MEMO)), 1,  INSTR(SUBSTR(SUB_MEMO, INSTR(SUB_MEMO, '['), LENGTH(SUB_MEMO)), ']')) AS sub_gb
 				, IFNULL(MINUS_AMT, 0) 		AS sub_amt
 		  FROM 	(		
@@ -262,6 +267,7 @@
 	
 	<!-- App 연동 - 차감  내역  -->
 	<select id="appApiGetSubList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		/*AppApiMapper.appApiGetSubList*/
 		SELECT 	 GB					AS gb
 				, REG_DATE			AS reg_date
 				, SUB_CODE			AS sub_code
@@ -293,12 +299,11 @@
 					   AND  SR.RECV_DATE &lt; DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
 				) VT
 		 WHERE	VT.GB = #{remittGb} 
-	</select>
-	
-	
+	</select> 
 	
 	<!-- App 연동 - 월간 선정산 정보  -->
 	<select id="appApiGetMonthlySummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		/*AppApiMapper.appApiGetMonthlySummary*/
 		SELECT 	IFNULL(SUM(CONF_CNT), 0) 			AS aprv_cnt
 				, IFNULL(SUM(CONF_AMT), 0) 			AS aprv_amt
 				, IFNULL(SUM(CARD_RESV_AMT), 0) 	AS card_resv_amt
@@ -308,7 +313,7 @@
 				, IFNULL(SUM(WD_BASE_AMT), 0) 		AS wd_base_amt
 				, IFNULL(SUM(EXCEED_AMT), 0) 		AS exceed_amt
 				, IFNULL(SUM(MINUS_AMT), 0) 		AS sub_amt1
-				, IFNULL(SUM(APRV_AMT), 0) -  IFNULL(SUM(REMIT_TOT_AMT), 0) + IFNULL(SUM(EXCEED_AMT), 0) AS sub_amt
+				, IFNULL(SUM(CONF_AMT), 0) -  IFNULL(SUM(REMIT_TOT_AMT), 0) + IFNULL(SUM(EXCEED_AMT), 0) AS sub_amt
 				, IFNULL(SUM(REMIT_TOT_AMT), 0) 	AS remitt_tot_amt
 		  FROM  ( 
 				SELECT 	IFNULL(SUM(ADJUST_CNT ), 0)					AS CONF_CNT 
@@ -323,11 +328,11 @@
 						, IFNULL(SUM(T1.REMIT_AMT), 0)            	AS REMIT_TOT_AMT 
 				  FROM 	TB_REMIT_MST T1
 				 WHERE 	CHAIN_NO = #{chainNo}			    
-				   AND 	T1.REMIT_DT  &gt;=	CONCAT( #schMonth#, '-01')
-				   AND 	T1.REMIT_DT  &lt; 	CONCAT( #schMonth#, '-31')  
+				   AND 	T1.REMIT_DT  &gt;=	CONCAT( #{schMonth}, '-01')
+				   AND 	T1.REMIT_DT  &lt;=	CONCAT( #{schMonth}, '-31')  
 				 UNION 	ALL 
 				SELECT  ADJUST_CNT
-						, APRV_AMT
+						, CONF_AMT
 						, CARD_RESV_AMT
 						, CARD_FEE_AMT
 						, SVC_FEE_AMT
@@ -340,7 +345,7 @@
 						 SELECT	 'RESV'								AS GB
 						 		, CHAIN_NO 
 						 		, COUNT(1)								AS ADJUST_CNT
-								, IFNULL(SUM(CONF_AMT), 0) 				AS APRV_AMT 
+								, IFNULL(SUM(CONF_AMT), 0) 				AS CONF_AMT 
 								, IFNULL(SUM(CARD_RESV_AMT), 0)        AS CARD_RESV_AMT
 								, IFNULL(SUM(CARD_FEE_AMT), 0)         AS CARD_FEE_AMT 
 								, IFNULL(SUM(SVC_FEE_AMT), 0)          AS SVC_FEE_AMT 
@@ -348,8 +353,8 @@
 								, IFNULL(SUM(WD_BASE_AMT), 0)          AS WD_BASE_AMT 
 								, IFNULL(SUM(REMIT_AMT), 0)           AS REMIT_AMT 
 						  FROM  TB_WITHDRAW  		
-						 WHERE 	CONF_DTTM &gt;= CONCAT(#schMonth#, '-01 00:00:00')
-				           AND  CONF_DTTM &lt;  CONCAT(#schMonth#, '-31 23:59:59') 
+						 WHERE 	CONF_DTTM &gt;= CONCAT(#{schMonth}, '-01 00:00:00')
+				           AND  CONF_DTTM &lt;=  CONCAT(#{schMonth}, '-31 23:59:59') 
 						   AND 	CHAIN_NO = #{chainNo}
 					       AND 	REMIT_NO IS NULL
 					       AND  WD_STATUS LIKE 'W%'
@@ -377,6 +382,7 @@
 	
 	<!-- App 연동 - 월간 선정산 정보  -->
 	<select id="appApiGetMonthlySalesList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		/*AppApiMapper.appApiGetMonthlySalesList*/
 		SELECT 	REMIT_GB							as remitt_gb
 				, REMIT_DT							as remitt_dt	
 				, IFNULL(SUM(CONF_CNT), 0) 			AS aprv_cnt			
@@ -405,8 +411,8 @@
 						, IFNULL(SUM(T1.REMIT_AMT), 0)            	AS REMIT_AMT 
 				  FROM 	TB_REMIT_MST T1
 				 WHERE 	CHAIN_NO = #{chainNo}			    
-				   AND 	T1.REMIT_DT  &gt;=	CONCAT(#schMonth#, '-01')
-				   AND 	T1.REMIT_DT  &lt; 	CONCAT(#schMonth#, '-31') 
+				   AND 	T1.REMIT_DT  &gt;=	CONCAT(#{schMonth}, '-01')
+				   AND 	T1.REMIT_DT  &lt;= 	CONCAT(#{schMonth}, '-31') 
 				 GROUP 	BY REMIT_DT
 				 UNION 	ALL 
 				SELECT  'RESV'			AS REMIT_GB
@@ -433,8 +439,8 @@
 								, IFNULL(SUM(WD_BASE_AMT), 0)          	AS WD_BASE_AMT 
 								, IFNULL(SUM(REMIT_AMT), 0)           	AS REMIT_AMT 
 						  FROM  TB_WITHDRAW  		
-						 WHERE 	CONF_DTTM &gt;= CONCAT(#schMonth#, '-01 00:00:00')
-				           AND  CONF_DTTM &lt;  CONCAT(#schMonth#, '-31 23:59:59') 
+						 WHERE 	CONF_DTTM &gt;= CONCAT(#{schMonth}, '-01 00:00:00')
+				           AND  CONF_DTTM &lt;= CONCAT(#{schMonth}, '-31 23:59:59') 
 						   AND 	CHAIN_NO = #{chainNo}
 					       AND 	REMIT_NO IS NULL
 					       AND  WD_STATUS LIKE 'W%'

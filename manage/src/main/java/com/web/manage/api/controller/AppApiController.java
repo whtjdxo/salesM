@@ -243,11 +243,13 @@ public class AppApiController {
     /**
      * 차감 내역
      */
-    @RequestMapping(value = "/getSubList.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @RequestMapping(value = "/appApiGetSubList.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public @ResponseBody ResponseEntity<String> getSubList(HttpServletRequest request, HttpServletResponse response) {
         HashMap<String, Object> result = new HashMap<String, Object>();
         HashMap<String, Object> params = new HashMap<String, Object>();
         Gson gson = new Gson();
+        
+        System.out.println("appApiGetSubList called" + request.getParameter("chainNo") + ", " + request.getParameter("schSdt") + ", " + request.getParameter("schEdt") + ", " + request.getParameter("remittGb"));
 
         boolean apiValid = isValidApiKey(request);
         if (!apiValid) {

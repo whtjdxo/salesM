@@ -4,76 +4,77 @@
 	<select id="getQueryTotalCnt" resultType="int">
 		SELECT FOUND_ROWS()
 	</select>
-        <select id="getMapPcodeList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-                SELECT  SQL_CALC_FOUND_ROWS
-                        M.CODE			AS map_pcode
-                        , M.CODE_NM		AS map_pcode_nm
-                        , C.CODE_NO		AS map_code
-                        , C.CODE_NM		AS map_code_nm
-                FROM 	TB_CODE M
-                        , (
-                <choose>
-                        <when test="sch_map_pcode == 'ACQ'">
-                                SELECT 	CODE			AS CODE_NO
-                                        , CODE_NM		AS CODE_NM
-                                FROM 	TB_CODE 
-                                WHERE	CODE_GRP_CD  = 'CARD_ACQ'
-                                AND 	CODE != 'CODE'
-                                AND	USE_YN 	= 'Y'
-                        </when>
-                        <when test="sch_map_pcode == 'ISS'">
-                                SELECT 	CODE			AS CODE_NO
-                                        , CODE_NM		AS CODE_NM
-                                FROM 	TB_CODE 
-                                WHERE	CODE_GRP_CD  = 'CARD_ISS'
-                                AND 	CODE != 'CODE'
-                                AND	USE_YN 	= 'Y'
-                        </when>
-                        <when test="sch_map_pcode == 'DEP'">
-                                SELECT 	CODE			AS CODE_NO
-                                        , CODE_NM		AS CODE_NM
-                                FROM 	TB_CODE 
-                                WHERE	CODE_GRP_CD  = 'CARD_ACQ'
-                                AND 	CODE != 'CODE'
-                                AND	USE_YN 	= 'Y'
-                        </when>
-                        <when test="sch_map_pcode == 'CRD'">
-                                        SELECT 	CHAIN_NO        AS CODE_NO
-                                                , CHAIN_NM      AS CODE_NM
-                                          FROM 	TB_CHAIN
-                                         WHERE 	USE_YN = 'Y' 
-                                           AND  SVC_STAT IN ('O', 'R')
-                        </when>
-                        <when test="sch_map_pcode == 'BNK'">
-                                SELECT 	CORP_CD         AS CODE_NO
-                                        , CORP_NM       AS CODE_NM
-                                FROM 	TB_CORP
-                                WHERE 	CORP_TYPE = 'LN'
-                                AND 	CODE != 'CODE'
-                                AND 	USE_YN = 'Y'
-                        </when>
-                        
-                        <otherwise>
-                                SELECT  '' AS CODE_NO
-                                        , '' AS CODE_NM
-                        </otherwise>
-                </choose>
-                        ) C
-                 WHERE  M.CODE_GRP_CD  = 'MAP_PCODE'
-                   AND  M.CODE  != 'CODE'
-                   AND  M.CODE   = #{sch_map_pcode}
-                   AND  M.USE_YN = 'Y'
-                        
-                <choose>
-                    <when test="orderBy != '' and orderBy != null">
-                        ORDER BY ${orderBy}
-                    </when>
-                    <otherwise>
-                        ORDER BY 1
-                    </otherwise>
-                </choose>                
-                LIMIT  ${start}, ${end}
-        </select>
+    <select id="getMapPcodeList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* VanDocuMapper.getMapPcodeList */
+        SELECT  SQL_CALC_FOUND_ROWS
+                M.CODE			AS map_pcode
+                , M.CODE_NM		AS map_pcode_nm
+                , C.CODE_NO		AS map_code
+                , C.CODE_NM		AS map_code_nm
+        FROM 	TB_CODE M
+                , (
+        <choose>
+                <when test="sch_map_pcode == 'ACQ'">
+                        SELECT 	CODE			AS CODE_NO
+                                , CODE_NM		AS CODE_NM
+                        FROM 	TB_CODE 
+                        WHERE	CODE_GRP_CD  = 'CARD_ACQ'
+                        AND 	CODE != 'CODE'
+                        AND	USE_YN 	= 'Y'
+                </when>
+                <when test="sch_map_pcode == 'ISS'">
+                        SELECT 	CODE			AS CODE_NO
+                                , CODE_NM		AS CODE_NM
+                        FROM 	TB_CODE 
+                        WHERE	CODE_GRP_CD  = 'CARD_ISS'
+                        AND 	CODE != 'CODE'
+                        AND	USE_YN 	= 'Y'
+                </when>
+                <when test="sch_map_pcode == 'DEP'">
+                        SELECT 	CODE			AS CODE_NO
+                                , CODE_NM		AS CODE_NM
+                        FROM 	TB_CODE 
+                        WHERE	CODE_GRP_CD  = 'CARD_ACQ'
+                        AND 	CODE != 'CODE'
+                        AND	USE_YN 	= 'Y'
+                </when>
+                <when test="sch_map_pcode == 'CRD'">
+                                SELECT 	CHAIN_NO        AS CODE_NO
+                                        , CHAIN_NM      AS CODE_NM
+                                    FROM 	TB_CHAIN
+                                    WHERE 	USE_YN = 'Y' 
+                                    AND  SVC_STAT IN ('O', 'R')
+                </when>
+                <when test="sch_map_pcode == 'BNK'">
+                        SELECT 	CORP_CD         AS CODE_NO
+                                , CORP_NM       AS CODE_NM
+                        FROM 	TB_CORP
+                        WHERE 	CORP_TYPE = 'LN'
+                        AND 	CODE != 'CODE'
+                        AND 	USE_YN = 'Y'
+                </when>
+                
+                <otherwise>
+                        SELECT  '' AS CODE_NO
+                                , '' AS CODE_NM
+                </otherwise>
+        </choose>
+                ) C
+            WHERE  M.CODE_GRP_CD  = 'MAP_PCODE'
+            AND  M.CODE  != 'CODE'
+            AND  M.CODE   = #{sch_map_pcode}
+            AND  M.USE_YN = 'Y'
+                
+        <choose>
+            <when test="orderBy != '' and orderBy != null">
+                ORDER BY ${orderBy}
+            </when>
+            <otherwise>
+                ORDER BY 1
+            </otherwise>
+        </choose>                
+        LIMIT  ${start}, ${end}
+    </select>
 
     <select id="getMapCodeList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
         /* VanDocuMapper.getMapCodeList */
@@ -135,6 +136,7 @@
     </select>
 
     <insert id="insertMapCode" parameterType="com.web.manage.trans.domain.MapCodeVO">
+        /* VanDocuMapper.insertMapCode * /
 		INSERT INTO TB_MAP_CODE (
                         MAP_PCODE        , MAP_CODE      , MAP_TEXT      , USE_YN        , ENT_USER_ID, ENT_DTTM
 		)
@@ -144,12 +146,12 @@
 	</insert>
 
 	<update id="updateMapCode" parameterType="com.web.manage.trans.domain.MapCodeVO">
-                UPDATE  TB_MAP_CODE
-                   SET  MAP_TEXT          = #{map_text}
-                        , USE_YN          = #{use_yn}
-                        , UPT_USER_ID     = #{upt_user_id}
-                        , UPT_DTTM        = NOW()
-                 WHERE  MAP_SEQ  = ${map_seq}
+        /* VanDocuMapper.updateMapCode * /
+        SET  MAP_TEXT          = #{map_text}
+            , USE_YN          = #{use_yn}
+            , UPT_USER_ID     = #{upt_user_id}
+            , UPT_DTTM        = NOW()
+        WHERE  MAP_SEQ  = ${map_seq}
 	</update>
 
     <select id="getScrapDataSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
@@ -255,89 +257,89 @@
         LIMIT  ${start}, ${end}
 	</select>
         
-        <select id="getScrapDataSummTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-            /* VanDocuMapper.getScrapDataSummTotal */
-            SELECT	IFNULL(SUM(V.CONF_CNT), 0) 		AS conf_cnt
-                    , IFNULL(SUM(V.CONF_AMT), 0) 		AS conf_amt
-                    , IFNULL(SUM(V.CNCL_CNT), 0) 		AS cncl_cnt
-                    , IFNULL(SUM(V.CNCL_AMT), 0) 		AS cncl_amt
-                    , IFNULL(SUM(V.TOT_CNT), 0) 		AS tot_cnt
-                    , IFNULL(SUM(V.TOT_AMT), 0) 		AS tot_amt
-                    , IFNULL(SUM(V.UN_SETTLE_CNT), 0)       AS error_cnt
-            FROM 	(        
-                        SELECT 'VAN'				AS GB
-                                , CHAIN_NO
-                                , SUBSTR(CONF_DTTM, 1, 10) 						AS CONF_DT
-                                , SUM(CASE WHEN CONF_GB IN ('승인', '승인(취소)') THEN 1 ELSE NULL END)	                        AS CONF_CNT
-                                , SUM(CASE WHEN CONF_GB IN ('승인', '승인(취소)') THEN ABS(CONF_AMT) ELSE NULL END)		        AS CONF_AMT
-                                , SUM(CASE WHEN CONF_GB IN ('승인', '승인(취소)') THEN NULL ELSE 1 END)			                AS CNCL_CNT
-                                , SUM(CASE WHEN CONF_GB IN ('승인', '승인(취소)') THEN NULL ELSE ABS(CONF_AMT) END  * -1)	    AS CNCL_AMT                
-                                , COUNT(1)								AS TOT_CNT
-                                , SUM((ABS(CONF_AMT) * CASE WHEN CONF_GB IN ('승인', '승인(취소)') THEN 1 ELSE -1 END))	        AS TOT_AMT
-                                , SUM((CASE WHEN PROC_FG = 'N' THEN 1 ELSE NULL END))			                                AS UN_SETTLE_CNT
-                        FROM    TB_SCRAP_VAN_DATA T1
-                        WHERE	CONF_DTTM  &gt;=  #{sch_conf_sdt}
-                        AND     CONF_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
-                        AND     PROC_FG = 'Y'
-                        <if test="sch_van != null and sch_van != ''">
-                            AND T1.VAN_CD  = #{sch_van}
-                        </if>    
-                        <if test="schgb_conf_val != ''">
-                        <choose>
-                                <when test="schgb_conf == 'schgb_conf_no'">
-                                        AND T1.CONF_NO  = #{schgb_conf_val}
-                                </when>
-                                <when test="schgb_conf == 'schgb_card_no'">
-                                        AND T1.CARD_NO  = #{schgb_conf_val}
-                                </when>
-                                <when test="schgb_conf == 'schgb_conf_amt'">
-                                        AND T1.CONF_AMT  = #{schgb_conf_val}
-                                </when>
-                        </choose>
-                        </if>  
-                            GROUP	BY CHAIN_NO, SUBSTR(CONF_DTTM, 1, 10) 	
-                            UNION	ALL
-                        SELECT  'DELI'				AS GB
-                                , CHAIN_NO
-                                , SUBSTR(ORDER_DTTM, 1, 10) 											AS CONF_DT
-                                , COUNT(1) 			AS CONF_CNT
-                                , SUM(ORDER_AMT) 	AS CONF_AMT
-                                , 0 				AS CNCL_CNT
-                                , 0					AS CNCL_AMT  
-                                , COUNT(1) 			AS TOT_CNT
-                                , SUM(ORDER_AMT) 	AS TOT_AMT
-                                , SUM((CASE WHEN PROC_FG = 'N' THEN 1 ELSE NULL END))	AS SETTLE_CNT
-                        FROM    TB_SCRAP_DELI_DATA T1
-                        WHERE	ORDER_DTTM  &gt;=  #{sch_conf_sdt}
-                        AND     ORDER_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
-                        AND     PROC_FG = 'Y'
-                        <if test="sch_van != null and sch_van != ''">
-                            AND T1.VAN_CD  = #{sch_van}
-                        </if>                               
-                        <if test="schgb_conf_val != ''">
-                        <choose>
-                                <when test="schgb_conf == 'schgb_conf_no'">
-                                        AND T1.ORDER_NO  = #{schgb_conf_val}
-                                </when>
-                                <when test="schgb_conf == 'schgb_card_no'">
-                                        AND T1.ORDER_NO  = #{schgb_conf_val}
-                                </when>
-                                <when test="schgb_conf == 'schgb_conf_amt'">
-                                        AND T1.ORDER_AMT  = #{schgb_conf_val}
-                                </when>
-                        </choose>
-                        </if>
-                            GROUP	BY CHAIN_NO,  SUBSTR(ORDER_DTTM, 1, 10) 
-                    ) V
-                    JOIN    TB_CHAIN TC ON TC.CHAIN_NO = V.CHAIN_NO
-                                AND TC.USE_YN = 'Y'
-                                AND TC.SVC_STAT IN ('O', 'R')
-                                <if test='sch_chain_nm != null and sch_chain_nm != ""'>
-                                    AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
-                                </if>            
-                                <if test="sch_agency_cd != ''">
-                                        AND  TC.AGENCY_CD = #{sch_agency_cd}
-                                </if>                                                           
+    <select id="getScrapDataSummTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* VanDocuMapper.getScrapDataSummTotal */
+        SELECT	IFNULL(SUM(V.CONF_CNT), 0) 		AS conf_cnt
+                , IFNULL(SUM(V.CONF_AMT), 0) 		AS conf_amt
+                , IFNULL(SUM(V.CNCL_CNT), 0) 		AS cncl_cnt
+                , IFNULL(SUM(V.CNCL_AMT), 0) 		AS cncl_amt
+                , IFNULL(SUM(V.TOT_CNT), 0) 		AS tot_cnt
+                , IFNULL(SUM(V.TOT_AMT), 0) 		AS tot_amt
+                , IFNULL(SUM(V.UN_SETTLE_CNT), 0)       AS error_cnt
+        FROM 	(        
+                    SELECT 'VAN'				AS GB
+                            , CHAIN_NO
+                            , SUBSTR(CONF_DTTM, 1, 10) 						AS CONF_DT
+                            , SUM(CASE WHEN CONF_GB IN ('승인', '승인(취소)') THEN 1 ELSE NULL END)	                        AS CONF_CNT
+                            , SUM(CASE WHEN CONF_GB IN ('승인', '승인(취소)') THEN ABS(CONF_AMT) ELSE NULL END)		        AS CONF_AMT
+                            , SUM(CASE WHEN CONF_GB IN ('승인', '승인(취소)') THEN NULL ELSE 1 END)			                AS CNCL_CNT
+                            , SUM(CASE WHEN CONF_GB IN ('승인', '승인(취소)') THEN NULL ELSE ABS(CONF_AMT) END  * -1)	    AS CNCL_AMT                
+                            , COUNT(1)								AS TOT_CNT
+                            , SUM((ABS(CONF_AMT) * CASE WHEN CONF_GB IN ('승인', '승인(취소)') THEN 1 ELSE -1 END))	        AS TOT_AMT
+                            , SUM((CASE WHEN PROC_FG = 'N' THEN 1 ELSE NULL END))			                                AS UN_SETTLE_CNT
+                    FROM    TB_SCRAP_VAN_DATA T1
+                    WHERE	CONF_DTTM  &gt;=  #{sch_conf_sdt}
+                    AND     CONF_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
+                    AND     PROC_FG = 'Y'
+                    <if test="sch_van != null and sch_van != ''">
+                        AND T1.VAN_CD  = #{sch_van}
+                    </if>    
+                    <if test="schgb_conf_val != ''">
+                    <choose>
+                            <when test="schgb_conf == 'schgb_conf_no'">
+                                    AND T1.CONF_NO  = #{schgb_conf_val}
+                            </when>
+                            <when test="schgb_conf == 'schgb_card_no'">
+                                    AND T1.CARD_NO  = #{schgb_conf_val}
+                            </when>
+                            <when test="schgb_conf == 'schgb_conf_amt'">
+                                    AND T1.CONF_AMT  = #{schgb_conf_val}
+                            </when>
+                    </choose>
+                    </if>  
+                        GROUP	BY CHAIN_NO, SUBSTR(CONF_DTTM, 1, 10) 	
+                        UNION	ALL
+                    SELECT  'DELI'				AS GB
+                            , CHAIN_NO
+                            , SUBSTR(ORDER_DTTM, 1, 10) 											AS CONF_DT
+                            , COUNT(1) 			AS CONF_CNT
+                            , SUM(ORDER_AMT) 	AS CONF_AMT
+                            , 0 				AS CNCL_CNT
+                            , 0					AS CNCL_AMT  
+                            , COUNT(1) 			AS TOT_CNT
+                            , SUM(ORDER_AMT) 	AS TOT_AMT
+                            , SUM((CASE WHEN PROC_FG = 'N' THEN 1 ELSE NULL END))	AS SETTLE_CNT
+                    FROM    TB_SCRAP_DELI_DATA T1
+                    WHERE	ORDER_DTTM  &gt;=  #{sch_conf_sdt}
+                    AND     ORDER_DTTM  &lt;=  CONCAT(#{sch_conf_edt}, ' 23:59:59')
+                    AND     PROC_FG = 'Y'
+                    <if test="sch_van != null and sch_van != ''">
+                        AND T1.VAN_CD  = #{sch_van}
+                    </if>                               
+                    <if test="schgb_conf_val != ''">
+                    <choose>
+                            <when test="schgb_conf == 'schgb_conf_no'">
+                                    AND T1.ORDER_NO  = #{schgb_conf_val}
+                            </when>
+                            <when test="schgb_conf == 'schgb_card_no'">
+                                    AND T1.ORDER_NO  = #{schgb_conf_val}
+                            </when>
+                            <when test="schgb_conf == 'schgb_conf_amt'">
+                                    AND T1.ORDER_AMT  = #{schgb_conf_val}
+                            </when>
+                    </choose>
+                    </if>
+                        GROUP	BY CHAIN_NO,  SUBSTR(ORDER_DTTM, 1, 10) 
+                ) V
+                JOIN    TB_CHAIN TC ON TC.CHAIN_NO = V.CHAIN_NO
+                            AND TC.USE_YN = 'Y'
+                            AND TC.SVC_STAT IN ('O', 'R')
+                            <if test='sch_chain_nm != null and sch_chain_nm != ""'>
+                                AND  TC.CHAIN_NM LIKE CONCAT('%', #{sch_chain_nm}, '%')
+                            </if>            
+                            <if test="sch_agency_cd != ''">
+                                    AND  TC.AGENCY_CD = #{sch_agency_cd}
+                            </if>                                                           
         WHERE  1 = 1        
         <if test="sch_chain_no != null and sch_chain_no != ''">
             AND V.CHAIN_NO = #{sch_chain_no}
@@ -399,243 +401,244 @@
 	</select> 
 
 
-        <select id="getChainDocuSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-                SELECT  SQL_CALC_FOUND_ROWS 
-                        VD.CARD_ACQ             					AS card_acq
-                        , GET_CODE_NM('CARD_ACQ', VD.CARD_ACQ)                          AS card_acq_nm 
-                        , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'A' THEN 1 ELSE NULL END), 0)                       AS conf_cnt
-                        , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'A' THEN ABS(VD.CONF_AMT) ELSE NULL END), 0)        AS conf_amt
-                        , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'C' THEN 1 ELSE NULL END), 0)                       AS cncl_cnt
-                        , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'C' THEN ABS(VD.CONF_AMT) ELSE NULL END) * -1  , 0) AS cncl_amt
-                        , IFNULL(SUM((ABS(VD.CONF_AMT) * CASE WHEN VD.CONF_GB = 'A' THEN 1 ELSE -1 END)), 0)    AS tot_amt 
-                  FROM  TB_VAN_DOCU VD
-                 WHERE	VD.CHAIN_NO  = #{sch_sub_chain_no} 
-                   AND  VD.CONF_DT   = #{sch_sub_conf_dt} 
-                <if test="sch_van != null and sch_van != ''">
-                    AND VD.VAN_CD  = #{sch_van}
-                </if>
-                <if test="schgb_conf_val != ''">
-                        <choose>
-                                <when test="schgb_conf == 'schgb_conf_no'">
-                                        AND VD.CONF_NO  = #{schgb_conf_val}
-                                </when>
-                                <when test="schgb_conf == 'schgb_card_no'">
-                                        AND VD.CARD_NO  = #{schgb_conf_val}
-                                </when>
-                                <when test="schgb_conf == 'schgb_conf_amt'">
-                                        AND VD.CONF_AMT  = #{schgb_conf_val}
-                                </when>
-                        </choose>
-                </if>  
-                 GROUP 	BY VD.CARD_ACQ,    GET_CODE_NM('CARD_ACQ', VD.CARD_ACQ) 
-                <choose>
-                        <when test="orderBy != '' and orderBy != null">
-                                ORDER BY ${orderBy}
-                        </when>
-                        <otherwise>
-                                ORDER BY 1 DESC
-                        </otherwise>
-                </choose>                
-                <!-- LIMIT  ${start}, ${end} -->
-	</select> 
+    <select id="getChainDocuSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* VanDocuMapper.getChainDocuSumm * /
+        SELECT  SQL_CALC_FOUND_ROWS 
+                VD.CARD_ACQ             					AS card_acq
+                , GET_CODE_NM('CARD_ACQ', VD.CARD_ACQ)                          AS card_acq_nm 
+                , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'A' THEN 1 ELSE NULL END), 0)                       AS conf_cnt
+                , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'A' THEN ABS(VD.CONF_AMT) ELSE NULL END), 0)        AS conf_amt
+                , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'C' THEN 1 ELSE NULL END), 0)                       AS cncl_cnt
+                , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'C' THEN ABS(VD.CONF_AMT) ELSE NULL END) * -1  , 0) AS cncl_amt
+                , IFNULL(SUM((ABS(VD.CONF_AMT) * CASE WHEN VD.CONF_GB = 'A' THEN 1 ELSE -1 END)), 0)    AS tot_amt 
+            FROM  TB_VAN_DOCU VD
+            WHERE	VD.CHAIN_NO  = #{sch_sub_chain_no} 
+            AND  VD.CONF_DT   = #{sch_sub_conf_dt} 
+        <if test="sch_van != null and sch_van != ''">
+            AND VD.VAN_CD  = #{sch_van}
+        </if>
+        <if test="schgb_conf_val != ''">
+            <choose>
+                <when test="schgb_conf == 'schgb_conf_no'">
+                        AND VD.CONF_NO  = #{schgb_conf_val}
+                </when>
+                <when test="schgb_conf == 'schgb_card_no'">
+                        AND VD.CARD_NO  = #{schgb_conf_val}
+                </when>
+                <when test="schgb_conf == 'schgb_conf_amt'">
+                        AND VD.CONF_AMT  = #{schgb_conf_val}
+                </when>
+            </choose>
+        </if>  
+            GROUP 	BY VD.CARD_ACQ,    GET_CODE_NM('CARD_ACQ', VD.CARD_ACQ) 
+        <choose>
+            <when test="orderBy != '' and orderBy != null">
+                    ORDER BY ${orderBy}
+            </when>
+            <otherwise>
+                    ORDER BY 1 DESC
+            </otherwise>
+        </choose>                
+        <!-- LIMIT  ${start}, ${end} -->
+    </select> 
 
-        <select id="getChainVanDocuList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-                SELECT  SQL_CALC_FOUND_ROWS 
-                        VD.DOCU_SEQ                             AS docu_seq
-                        , VD.CHAIN_NO                           AS chain_no
-                        , VD.VAN_CD                             AS van_cd
-                        , GET_CODE_NM('VAN_CD', VD.VAN_CD)      AS van_cd_nm
-                        , VD.CARD_REG_NO                        AS card_reg_no
-                        , VD.TRANS_ID                           AS trans_id
-                        , VD.CARD_ISS                           AS card_iss									
-                        , GET_CODE_NM('CARD_ISS', VD.CARD_ISS)  AS card_iss_nm 
-                        , VD.CARD_ACQ                           AS card_acq
-                        , GET_CODE_NM('CARD_ACQ', VD.CARD_ACQ)  AS card_acq_nm 
-                        , VD.CARD_NO                            AS card_no
-                        , VD.INSTALL_MON                        AS install_mon
-                        , VD.CONF_NO                            AS conf_no
-                        , VD.CONF_GB                            AS conf_gb
-                        , GET_CODE_NM('CONF_GB', VD.CONF_GB)    AS conf_gb_nm 
-                        , VD.CONF_DT                            AS conf_dt
-                        , VD.CONF_TM                            AS conf_tm
-                        , CONCAT(VD.CONF_DT, ' ', VD.CONF_TM)   AS conf_dttm
-                        , VD.CONF_AMT * (CASE WHEN VD.CONF_GB = 'C' THEN -1 ELSE 1 END)AS conf_amt
-                        , VD.CARD_TYPE                          AS card_type
-                        , GET_CODE_NM('CARD_TYPE', VD.CARD_TYPE)      AS card_type_nm 
-                        , IFNULL(VD.ORG_CONF_DT, '')            AS org_conf_dt
-                        , VD.CNCL                               AS cncl_yn
-                        , VD.CNCL_DOCU_SEQ                      AS cncl_docu_seq
-                        , VD.CNCL_USER_ID                       AS cncl_user_id
-                        , VD.CNCL_DATE                          AS cncl_date
-                        , VD.CNCL_TIME                          AS cncl_time
-                        , CASE WHEN VD.PROC_FG = 'Y' THEN '사전정산' ELSE '대기중' END  AS proc_fg_nm
-                        , IFNULL(DATE_FORMAT(VD.PROC_DATE, '%Y-%m-%d %h:%i:%s'), '')  AS proc_date
-                        , VD.PROC_RESULT                        AS proc_result
-                        , VD.SC_SEQ                             AS sc_seq
-                        , IFNULL(GET_CODE_NM('WD_STATUS', W.WD_STATUS), '미정산')       AS wd_status_nm
-                        , VD.ENT_USER_ID                        AS ent_user_id
-                        , IFNULL(DATE_FORMAT(VD.ENT_DTTM, '%Y-%m-%d %h:%i:%s'), '')     AS ent_dttm
-                  FROM  TB_VAN_DOCU  VD
-                        LEFT OUTER JOIN TB_WITHDRAW W ON W.DOCU_SEQ = VD.DOCU_SEQ
-                 WHERE	VD.CHAIN_NO  = #{sch_sub_chain_no} 
-                   AND  VD.CONF_DT   = #{sch_sub_conf_dt} 
-                <if test="sch_list_van != null and sch_list_van != ''">
-                    AND VD.VAN_CD  = #{sch_list_van}
-                </if>
-                <if test="schlist_card_acq != ''">
-                   AND  FIND_IN_SET(VD.CARD_ACQ, #{schlist_card_acq})
-                </if>   
-                <if test="schgb_conf_val != ''">
-                        <choose>
-                                <when test="schgb_conf == 'schgb_conf_no'">
-                                        AND VD.CONF_NO  = #{schgb_conf_val}
-                                </when>
-                                <when test="schgb_conf == 'schgb_card_no'">
-                                        AND VD.CARD_NO  = #{schgb_conf_val}
-                                </when>
-                                <when test="schgb_conf == 'schgb_conf_amt'">
-                                        AND VD.CONF_AMT  = #{schgb_conf_val}
-                                </when>
-                        </choose>
-                </if>  
-                <choose>
-                        <when test="orderBy != '' and orderBy != null">
-                                ORDER BY ${orderBy}
-                        </when>
-                        <otherwise>
-                                ORDER BY VD.DOCU_SEQ DESC
-                        </otherwise>
-                </choose>                
-                LIMIT  ${start}, ${end}
-        </select>
-        <select id="getUnprocessedSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-                SELECT  SQL_CALC_FOUND_ROWS 
-                        VT.CHAIN_NO             AS chain_no
-                        , TC.CHAIN_NM           AS chain_nm
-                        , VT.PROC_RESULT        AS proc_result        
-                        , IFNULL(SUM(VT.UN_PROC_CNT), 0)      AS un_proc_cnt
-                FROM 	(						
-                                SELECT 'VAN'				AS GB
-                                        , CHAIN_NO			AS CHAIN_NO 
-                                        , IFNULL(PROC_RESULT, '미처리')   	AS PROC_RESULT
-                                                        , COUNT(1)							AS UN_PROC_CNT
-                                  FROM  TB_SCRAP_VAN_DATA T1
-                                 WHERE	CONF_DTTM  &gt;=  #{sch_unproc_conf_dt}
-                                   AND  CONF_DTTM  &lt;=  CONCAT(#{sch_unproc_conf_dt}, ' 23:59:59')                      
-                                   AND  CHAIN_NO        = #{sch_unproc_chain_no}
-                                   AND	USE_YN 	= 'Y'
-                                   AND  PROC_FG = 'N'
-                                 GROUP	BY CHAIN_NO,  IFNULL(PROC_RESULT, '미처리')	
-                                 UNION	ALL
-                                SELECT  'DELI'				AS GB
-                                        , CHAIN_NO
-                                        , IFNULL(PROC_RESULT, '미처리')   	AS proc_result
-                                        , COUNT(1)				AS unproc_cnt 
-                                  FROM  TB_SCRAP_DELI_DATA
-                                 WHERE	ORDER_DTTM  &gt;=  #{sch_unproc_conf_dt}
-                                   AND  ORDER_DTTM  &lt;=  CONCAT(#{sch_unproc_conf_dt}, ' 23:59:59')   
-                                   AND  CHAIN_NO        = #{sch_unproc_chain_no}
-                                   AND	USE_YN 	= 'Y'
-                                   AND  PROC_FG = 'N'
-                                 GROUP	BY CHAIN_NO,  IFNULL(PROC_RESULT, '미처리')   
-                        ) VT
-                JOIN	TB_CHAIN TC ON TC.CHAIN_NO  = VT.CHAIN_NO
-                                        AND TC.USE_YN = 'Y'       
-                                        AND TC.SVC_STAT IN ('O', 'R')
-                GROUP 	BY VT.CHAIN_NO, TC.CHAIN_NM, VT.PROC_RESULT
-                <choose>
-                        <when test="orderBy != '' and orderBy != null">
-                                ORDER BY ${orderBy}
-                        </when>
-                        <otherwise>
-                                ORDER BY 1 DESC
-                        </otherwise>
-                </choose>                
-                LIMIT  ${start}, ${end}
-        </select>
+    <select id="getChainVanDocuList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+            SELECT  SQL_CALC_FOUND_ROWS 
+                    VD.DOCU_SEQ                             AS docu_seq
+                    , VD.CHAIN_NO                           AS chain_no
+                    , VD.VAN_CD                             AS van_cd
+                    , GET_CODE_NM('VAN_CD', VD.VAN_CD)      AS van_cd_nm
+                    , VD.CARD_REG_NO                        AS card_reg_no
+                    , VD.TRANS_ID                           AS trans_id
+                    , VD.CARD_ISS                           AS card_iss									
+                    , GET_CODE_NM('CARD_ISS', VD.CARD_ISS)  AS card_iss_nm 
+                    , VD.CARD_ACQ                           AS card_acq
+                    , GET_CODE_NM('CARD_ACQ', VD.CARD_ACQ)  AS card_acq_nm 
+                    , VD.CARD_NO                            AS card_no
+                    , VD.INSTALL_MON                        AS install_mon
+                    , VD.CONF_NO                            AS conf_no
+                    , VD.CONF_GB                            AS conf_gb
+                    , GET_CODE_NM('CONF_GB', VD.CONF_GB)    AS conf_gb_nm 
+                    , VD.CONF_DT                            AS conf_dt
+                    , VD.CONF_TM                            AS conf_tm
+                    , CONCAT(VD.CONF_DT, ' ', VD.CONF_TM)   AS conf_dttm
+                    , VD.CONF_AMT * (CASE WHEN VD.CONF_GB = 'C' THEN -1 ELSE 1 END)AS conf_amt
+                    , VD.CARD_TYPE                          AS card_type
+                    , GET_CODE_NM('CARD_TYPE', VD.CARD_TYPE)      AS card_type_nm 
+                    , IFNULL(VD.ORG_CONF_DT, '')            AS org_conf_dt
+                    , VD.CNCL                               AS cncl_yn
+                    , VD.CNCL_DOCU_SEQ                      AS cncl_docu_seq
+                    , VD.CNCL_USER_ID                       AS cncl_user_id
+                    , VD.CNCL_DATE                          AS cncl_date
+                    , VD.CNCL_TIME                          AS cncl_time
+                    , CASE WHEN VD.PROC_FG = 'Y' THEN '사전정산' ELSE '대기중' END  AS proc_fg_nm
+                    , IFNULL(DATE_FORMAT(VD.PROC_DATE, '%Y-%m-%d %h:%i:%s'), '')  AS proc_date
+                    , VD.PROC_RESULT                        AS proc_result
+                    , VD.SC_SEQ                             AS sc_seq
+                    , IFNULL(GET_CODE_NM('WD_STATUS', W.WD_STATUS), '미정산')       AS wd_status_nm
+                    , VD.ENT_USER_ID                        AS ent_user_id
+                    , IFNULL(DATE_FORMAT(VD.ENT_DTTM, '%Y-%m-%d %h:%i:%s'), '')     AS ent_dttm
+                FROM  TB_VAN_DOCU  VD
+                    LEFT OUTER JOIN TB_WITHDRAW W ON W.DOCU_SEQ = VD.DOCU_SEQ
+                WHERE	VD.CHAIN_NO  = #{sch_sub_chain_no} 
+                AND  VD.CONF_DT   = #{sch_sub_conf_dt} 
+            <if test="sch_list_van != null and sch_list_van != ''">
+                AND VD.VAN_CD  = #{sch_list_van}
+            </if>
+            <if test="schlist_card_acq != ''">
+                AND  FIND_IN_SET(VD.CARD_ACQ, #{schlist_card_acq})
+            </if>   
+            <if test="schgb_conf_val != ''">
+                    <choose>
+                            <when test="schgb_conf == 'schgb_conf_no'">
+                                    AND VD.CONF_NO  = #{schgb_conf_val}
+                            </when>
+                            <when test="schgb_conf == 'schgb_card_no'">
+                                    AND VD.CARD_NO  = #{schgb_conf_val}
+                            </when>
+                            <when test="schgb_conf == 'schgb_conf_amt'">
+                                    AND VD.CONF_AMT  = #{schgb_conf_val}
+                            </when>
+                    </choose>
+            </if>  
+            <choose>
+                    <when test="orderBy != '' and orderBy != null">
+                            ORDER BY ${orderBy}
+                    </when>
+                    <otherwise>
+                            ORDER BY VD.DOCU_SEQ DESC
+                    </otherwise>
+            </choose>                
+            LIMIT  ${start}, ${end}
+    </select>
+    <select id="getUnprocessedSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+            SELECT  SQL_CALC_FOUND_ROWS 
+                    VT.CHAIN_NO             AS chain_no
+                    , TC.CHAIN_NM           AS chain_nm
+                    , VT.PROC_RESULT        AS proc_result        
+                    , IFNULL(SUM(VT.UN_PROC_CNT), 0)      AS un_proc_cnt
+            FROM 	(						
+                            SELECT 'VAN'				AS GB
+                                    , CHAIN_NO			AS CHAIN_NO 
+                                    , IFNULL(PROC_RESULT, '미처리')   	AS PROC_RESULT
+                                                    , COUNT(1)							AS UN_PROC_CNT
+                                FROM  TB_SCRAP_VAN_DATA T1
+                                WHERE	CONF_DTTM  &gt;=  #{sch_unproc_conf_dt}
+                                AND  CONF_DTTM  &lt;=  CONCAT(#{sch_unproc_conf_dt}, ' 23:59:59')                      
+                                AND  CHAIN_NO        = #{sch_unproc_chain_no}
+                                AND	USE_YN 	= 'Y'
+                                AND  PROC_FG = 'N'
+                                GROUP	BY CHAIN_NO,  IFNULL(PROC_RESULT, '미처리')	
+                                UNION	ALL
+                            SELECT  'DELI'				AS GB
+                                    , CHAIN_NO
+                                    , IFNULL(PROC_RESULT, '미처리')   	AS proc_result
+                                    , COUNT(1)				AS unproc_cnt 
+                                FROM  TB_SCRAP_DELI_DATA
+                                WHERE	ORDER_DTTM  &gt;=  #{sch_unproc_conf_dt}
+                                AND  ORDER_DTTM  &lt;=  CONCAT(#{sch_unproc_conf_dt}, ' 23:59:59')   
+                                AND  CHAIN_NO        = #{sch_unproc_chain_no}
+                                AND	USE_YN 	= 'Y'
+                                AND  PROC_FG = 'N'
+                                GROUP	BY CHAIN_NO,  IFNULL(PROC_RESULT, '미처리')   
+                    ) VT
+            JOIN	TB_CHAIN TC ON TC.CHAIN_NO  = VT.CHAIN_NO
+                                    AND TC.USE_YN = 'Y'       
+                                    AND TC.SVC_STAT IN ('O', 'R')
+            GROUP 	BY VT.CHAIN_NO, TC.CHAIN_NM, VT.PROC_RESULT
+            <choose>
+                    <when test="orderBy != '' and orderBy != null">
+                            ORDER BY ${orderBy}
+                    </when>
+                    <otherwise>
+                            ORDER BY 1 DESC
+                    </otherwise>
+            </choose>                
+            LIMIT  ${start}, ${end}
+    </select>
 
-        <select id="getUnprocessedList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-                SELECT	VD.SEQ                                  AS seq
-                        , VD.CHAIN_NO                           AS chain_no
-                        , TC.CHAIN_NM                           AS chain_nm
-                        , VD.VAN_CD                             AS van_cd
-                        , GET_CODE_NM('VAN_CD', VD.VAN_CD)      AS van_cd_nm
-                        , TC.SVC_STAT                           AS svc_stat 
-                        , DATE_FORMAT(NOW(), '%Y-%m-%d')  	AS recv_date 
-                        , DATE_FORMAT(NOW(), '%h-%m-%s')  	AS recv_time
-                        , CASE WHEN CAST(IFNULL(CARD_REG_NO, VD.MID) AS UNSIGNED) > 0 THEN CAST(IFNULL(CARD_REG_NO, VD.MID) AS UNSIGNED)
-                                        ELSE CARD_REG_NO END 		AS card_reg_no
-                        , TRADE_NO					AS trade_no
-                        , CAT_ID 					AS term_id
-                        , CARD_ISSUE					AS card_issue_val
-                        , IFNULL(GET_MATCH_CODE('ISS', VD.CARD_ISSUE), 'ERROR') AS card_iss
-                        , CARD_ACQ						AS card_acq_val
-                        , IFNULL(GET_MATCH_CODE('ACQ', VD.CARD_ACQ), 'ERROR')   AS card_acq
-                        , VD.CARD_NO 		                                AS card_no        
-                        , VD.INSTALL_MON		                        AS install_mon
-                        , CASE 	WHEN  VD.CARD_TYPE LIKE '%신용%'  AND VD.CARD_ISSUE NOT LIKE '%해외%' THEN 'N'
-                                                WHEN  (VD.CARD_TYPE LIKE '%GIFT%' OR VD.CARD_TYPE LIKE '%기프트%') THEN 'C'
-                                                WHEN  VD.CARD_TYPE LIKE '%체크%'  AND VD.CARD_ISSUE NOT LIKE '%해외%' THEN 'C'
-                                                WHEN (VD.CARD_TYPE LIKE '%해외%'  OR  VD.CARD_ISSUE LIKE '%해외%' )   THEN 'B'    
-                                                WHEN  VD.CARD_TYPE LIKE '%청구제외%' THEN 'X'
-                                                ELSE  'N'
-                                                END 		AS card_type
-                        , VD.CONF_NO                    AS conf_no    
-                        , VD.CONF_GB			AS conf_gb_val
-                        , CASE WHEN VD.CONF_GB like '%승인(취소)%'THEN 'A'
-                                        WHEN VD.CONF_GB like '%취소%' 	THEN 'C'
-                                        WHEN VD.CONF_GB like '%승인%' 	THEN 'A'
-                                        WHEN VD.CONF_GB = '환급' 			THEN 'C'
-                                        WHEN VD.CONF_GB ='원거래' 			THEN 'A'
-                                        WHEN VD.CONF_GB = '전화등록' 		THEN 'A'
-                                        WHEN VD.CONF_GB like '%BARO%' 	THEN 'A'
-                                        WHEN VD.CONF_GB like '%온라인 결제%' THEN 'A'
-                                        WHEN VD.CONF_GB = '전화취소' THEN 'C'
-                                        ELSE 'X'
-                                        END 				AS  CONF_GB
-                        , SUBSTR(VD.CONF_DTTM, 1, 10)		        AS CONF_DT		
-                        , SUBSTR(VD.CONF_DTTM, 11, 9)		        AS CONF_TM
-                        , VD.CONF_DTTM                                  AS conf_dttm        
-                        , ABS(VD.CONF_AMT)				AS conf_amt
-                        , IFNULL(VD.ORG_CONF_DT, '')	                AS org_conf_dt         
-                        , VD.PROC_FG                                    AS proc_fg   
-                        , VD.PROC_RESULT			        AS proc_result
-                  FROM 	TB_SCRAP_VAN_DATA  	VD
-                        JOIN TB_CHAIN		TC ON TC.CHAIN_NO = VD.CHAIN_NO		   	
-                 WHERE  VD.USE_YN 	= 'Y'
-                   AND 	VD.PROC_FG 	= 'N'
-                   AND  VD.CHAIN_NO        = #{schmodal_chain_no} 
-                   AND  VD.CONF_DTTM  &gt;=  #{schmodal_conf_dt}
-                   AND  VD.CONF_DTTM  &lt;=  CONCAT(#{schmodal_conf_dt}, ' 23:59:59')
-                   AND 	NOT EXISTS (
-                                SELECT 	'X'
-                                  FROM 	TB_VAN_DOCU TD
-                                 WHERE 	VD.SEQ 		= TD.SC_SEQ
-                                   AND 	VD.VAN_CD 	= TD.VAN_CD
-                                ) 				
-                 ORDER 	BY VD.SEQ 
-        </select> 
+    <select id="getUnprocessedList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+            SELECT	VD.SEQ                                  AS seq
+                    , VD.CHAIN_NO                           AS chain_no
+                    , TC.CHAIN_NM                           AS chain_nm
+                    , VD.VAN_CD                             AS van_cd
+                    , GET_CODE_NM('VAN_CD', VD.VAN_CD)      AS van_cd_nm
+                    , TC.SVC_STAT                           AS svc_stat 
+                    , DATE_FORMAT(NOW(), '%Y-%m-%d')  	AS recv_date 
+                    , DATE_FORMAT(NOW(), '%h-%m-%s')  	AS recv_time
+                    , CASE WHEN CAST(IFNULL(CARD_REG_NO, VD.MID) AS UNSIGNED) > 0 THEN CAST(IFNULL(CARD_REG_NO, VD.MID) AS UNSIGNED)
+                                    ELSE CARD_REG_NO END 		AS card_reg_no
+                    , TRADE_NO					AS trade_no
+                    , CAT_ID 					AS term_id
+                    , CARD_ISSUE					AS card_issue_val
+                    , IFNULL(GET_MATCH_CODE('ISS', VD.CARD_ISSUE), 'ERROR') AS card_iss
+                    , CARD_ACQ						AS card_acq_val
+                    , IFNULL(GET_MATCH_CODE('ACQ', VD.CARD_ACQ), 'ERROR')   AS card_acq
+                    , VD.CARD_NO 		                                AS card_no        
+                    , VD.INSTALL_MON		                        AS install_mon
+                    , CASE 	WHEN  VD.CARD_TYPE LIKE '%신용%'  AND VD.CARD_ISSUE NOT LIKE '%해외%' THEN 'N'
+                                            WHEN  (VD.CARD_TYPE LIKE '%GIFT%' OR VD.CARD_TYPE LIKE '%기프트%') THEN 'C'
+                                            WHEN  VD.CARD_TYPE LIKE '%체크%'  AND VD.CARD_ISSUE NOT LIKE '%해외%' THEN 'C'
+                                            WHEN (VD.CARD_TYPE LIKE '%해외%'  OR  VD.CARD_ISSUE LIKE '%해외%' )   THEN 'B'    
+                                            WHEN  VD.CARD_TYPE LIKE '%청구제외%' THEN 'X'
+                                            ELSE  'N'
+                                            END 		AS card_type
+                    , VD.CONF_NO                    AS conf_no    
+                    , VD.CONF_GB			AS conf_gb_val
+                    , CASE WHEN VD.CONF_GB like '%승인(취소)%'THEN 'A'
+                                    WHEN VD.CONF_GB like '%취소%' 	THEN 'C'
+                                    WHEN VD.CONF_GB like '%승인%' 	THEN 'A'
+                                    WHEN VD.CONF_GB = '환급' 			THEN 'C'
+                                    WHEN VD.CONF_GB ='원거래' 			THEN 'A'
+                                    WHEN VD.CONF_GB = '전화등록' 		THEN 'A'
+                                    WHEN VD.CONF_GB like '%BARO%' 	THEN 'A'
+                                    WHEN VD.CONF_GB like '%온라인 결제%' THEN 'A'
+                                    WHEN VD.CONF_GB = '전화취소' THEN 'C'
+                                    ELSE 'X'
+                                    END 				AS  CONF_GB
+                    , SUBSTR(VD.CONF_DTTM, 1, 10)		        AS CONF_DT		
+                    , SUBSTR(VD.CONF_DTTM, 11, 9)		        AS CONF_TM
+                    , VD.CONF_DTTM                                  AS conf_dttm        
+                    , ABS(VD.CONF_AMT)				AS conf_amt
+                    , IFNULL(VD.ORG_CONF_DT, '')	                AS org_conf_dt         
+                    , VD.PROC_FG                                    AS proc_fg   
+                    , VD.PROC_RESULT			        AS proc_result
+                FROM 	TB_SCRAP_VAN_DATA  	VD
+                    JOIN TB_CHAIN		TC ON TC.CHAIN_NO = VD.CHAIN_NO		   	
+                WHERE  VD.USE_YN 	= 'Y'
+                AND 	VD.PROC_FG 	= 'N'
+                AND  VD.CHAIN_NO        = #{schmodal_chain_no} 
+                AND  VD.CONF_DTTM  &gt;=  #{schmodal_conf_dt}
+                AND  VD.CONF_DTTM  &lt;=  CONCAT(#{schmodal_conf_dt}, ' 23:59:59')
+                AND 	NOT EXISTS (
+                            SELECT 	'X'
+                                FROM 	TB_VAN_DOCU TD
+                                WHERE 	VD.SEQ 		= TD.SC_SEQ
+                                AND 	VD.VAN_CD 	= TD.VAN_CD
+                            ) 				
+                ORDER 	BY VD.SEQ 
+    </select> 
 
-        <update id="callScrapTransVanDocu" parameterType="com.web.manage.trans.domain.TransProcessVO" statementType="CALLABLE">
-                { 
-                        CALL PRC_SCRAP_TRANS_VAN_DOCU(
-                                #{chainNo, mode=IN, jdbcType=VARCHAR}
-                                , #{userId, mode=IN, jdbcType=VARCHAR}
-                                , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-                                , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
-                        ) 
-                }
-        </update>
+    <update id="callScrapTransVanDocu" parameterType="com.web.manage.trans.domain.TransProcessVO" statementType="CALLABLE">
+            { 
+                    CALL PRC_SCRAP_TRANS_VAN_DOCU(
+                            #{chainNo, mode=IN, jdbcType=VARCHAR}
+                            , #{userId, mode=IN, jdbcType=VARCHAR}
+                            , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                            , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+                    ) 
+            }
+    </update>
 
-        <update id="callScrapTransDeliDocu" parameterType="com.web.manage.trans.domain.TransProcessVO" statementType="CALLABLE">
-                { 
-                        CALL PRC_SCRAP_TRANS_DELI_DOCU(
-                                #{chainNo, mode=IN, jdbcType=VARCHAR}
-                                , #{userId, mode=IN, jdbcType=VARCHAR}
-                                , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
-                                , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
-                        ) 
-                }
-        </update>
+    <update id="callScrapTransDeliDocu" parameterType="com.web.manage.trans.domain.TransProcessVO" statementType="CALLABLE">
+            { 
+                    CALL PRC_SCRAP_TRANS_DELI_DOCU(
+                            #{chainNo, mode=IN, jdbcType=VARCHAR}
+                            , #{userId, mode=IN, jdbcType=VARCHAR}
+                            , #{resultCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+                            , #{resultMsg, mode=OUT, jdbcType=VARCHAR, javaType=java.lang.String}
+                    ) 
+            }
+    </update>
 
 </mapper>
