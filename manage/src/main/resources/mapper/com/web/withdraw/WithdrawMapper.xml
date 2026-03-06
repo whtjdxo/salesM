@@ -708,6 +708,7 @@
         /*WithdrawMapper.getRemitSubRecvList*/
         SELECT  SQL_CALC_FOUND_ROWS
                 SM.SUB_NO                                       AS sub_no
+                , IFNULL(SM.REG_DATE, '')                      AS sub_reg_date
                 , SM.SUB_CODE                                   AS sub_code
                 , GET_CODE_NM ('SUB_CODE', SM.SUB_CODE) 	AS sub_code_nm
                 , SM.CHAIN_NO                                   AS chain_no
@@ -747,6 +748,39 @@
         </choose>                
         LIMIT  ${start}, ${end}
     </select>       
+
+    <select id="getRemitExcRecvList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+            /*WithdrawMapper.getRemitExcRecvList*/
+            SELECT  SQL_CALC_FOUND_ROWS
+                            EM.EXC_NO                                   AS exc_no
+                            , EM.CHAIN_NO                               AS chain_no
+                            , EM.EXC_DATE                               AS exc_date
+                            , EM.EXC_TYPE                               AS exc_type
+                            , GET_CODE_NM('EXC_TYPE', EM.EXC_TYPE)     AS exc_type_nm
+                            , EM.EXC_CODE                               AS exc_code
+                            , GET_CODE_NM('EXC_CODE', EM.EXC_CODE)     AS exc_code_nm
+                            , EM.EXC_STATUS                             AS exc_status
+                            , GET_CODE_NM('EXC_STATUS', EM.EXC_STATUS) AS exc_status_nm
+                            , IFNULL(EM.OCCUR_AMT, 0)                  AS occur_amt
+                            , IFNULL(EM.ISSUE_AMT, 0)                  AS issue_amt
+                            , IFNULL(EM.REMAIN_AMT, 0)                 AS remain_amt
+                            , IFNULL(EM.EXC_MEMO, '')                  AS exc_memo
+                            , IFNULL(RM.REMIT_DT, '')                  AS remit_dt
+                            , DATE_FORMAT(IFNULL(EM.UPT_DTTM, EM.ENT_DTTM), '%Y-%m-%d %H:%i:%s') AS upt_dttm
+            FROM    TB_EXCEED_MST EM
+                            LEFT OUTER JOIN TB_REMIT_MST RM ON RM.REMIT_NO = EM.REMIT_NO
+            WHERE   EM.REMIT_NO = #{sch_exc_recv_remit_no}
+            <choose>
+                    <when test="orderBy != '' and orderBy != null">
+                            ORDER BY ${orderBy}
+                    </when>
+                    <otherwise>
+                            ORDER BY EM.EXC_DATE DESC, EM.EXC_NO DESC
+                    </otherwise>
+            </choose>
+            LIMIT  ${start}, ${end}
+    </select>
+
     <update id="callProcRemitCancel" parameterType="com.web.manage.withdraw.domain.ProcRemitVO" statementType="CALLABLE">
             { 
                     CALL PRC_REMIT_CANCEL(

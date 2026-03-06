@@ -27,6 +27,7 @@ public interface WithdrawMapper {
     HashMap<String, Object> getRemitSummaryTotal(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getRemitList(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getRemitSubRecvList(HashMap<String, Object> hashmapParam);
+    List<HashMap<String, Object>> getRemitExcRecvList(HashMap<String, Object> hashmapParam);
     
     void callProcRemitCancel(ProcRemitVO procVo);
     void callProcRemitSend(ProcRemitVO procVo);

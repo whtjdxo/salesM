@@ -332,6 +332,7 @@
           $('#sch_list_chain_no').val(row.chain_no);   // list 검색 조건          
           $('#sch_list_remit_no').val(row.remit_no);
           $('#sch_sub_recv_remit_no').val(row.remit_no);
+          $('#sch_exc_recv_remit_no').val(row.remit_no);
           
           $('#chain_nm').val(row.chain_nm);
           $('#biz_no').val(row.biz_no);
@@ -688,6 +689,14 @@
             $('#modal_sub_recv_list').modal('show'); // Show the modal
           }
         });
+
+        // Add click event for exc_amt input field
+        $('#exc_amt').on('click', function () {
+          var excAmtValue = parseFloat($(this).val().replace(/,/g, '')) || 0;
+          if (excAmtValue > 0) {
+            $('#modal_exc_recv_list').modal('show');
+          }
+        });
         
         // 모달 창 표시될때 초기화 처리
         $('#modal_sub_recv_list').on('shown.bs.modal', function() {  
@@ -701,7 +710,7 @@
               processing: true,
               serverSide: true,
               select: true,
-              responsive: true,
+              responsive: false,
               ajax: {
                 url: '/withdraw/withdraw/remitMng/remitSubRecvList',
                 contentType: 'application/json',
@@ -715,6 +724,7 @@
               },
               columns: [
                   { data: 'sub_no' },
+                  { data: 'sub_reg_date' },
                   { data: 'sub_code_nm' },
                   { data: 'sub_status_nm' },
                   { data: 'recv_base_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },  
@@ -729,17 +739,18 @@
               ],
               columnDefs: [
                   { targets: 0, width: '120px', className: 'text-left' },
-                  { targets: 1, width: '150px', className: 'text-left' },
-                  { targets: 2, width: '100px', className: 'text-left' },                  
-                  { targets: 3, width: '110px', className: 'text-end' },
+                  { targets: 1, width: '100px', className: 'text-center' },
+                  { targets: 2, width: '150px', className: 'text-left' },
+                  { targets: 3, width: '100px', className: 'text-left' },                  
                   { targets: 4, width: '100px', className: 'text-end' },
-                  { targets: 5, width: '100px', className: 'text-end' },
-                  { targets: 6, width: '110px', className: 'text-end' },
-                  { targets: 7, width: '110px', className: 'text-end' },
+                  { targets: 5, width: '90px', className: 'text-end' },
+                  { targets: 6, width: '90px', className: 'text-end' },
+                  { targets: 7, width: '100px', className: 'text-end' },
                   { targets: 8, width: '100px', className: 'text-end' },
-                  { targets: 9, width: '100px', className: 'text-end' },
-                  { targets: 10, width: '110px', className: 'text-end' },
-                  { targets: 11, width: '200px', className: 'text-left' },
+                  { targets: 9, width: '90px', className: 'text-end' },
+                  { targets: 10, width: '90px', className: 'text-end' },
+                  { targets: 11, width: '110px', className: 'text-end' },
+                  { targets: 12, width: '200px', className: 'text-left' },
               ],
               order: [[0, 'desc']],
               paging: true,
@@ -747,7 +758,7 @@
               searching: false,
               ordering: true,
               autoWidth: false,
-              responsive: true,
+              scrollX: true,
               scrollCollapse: true,
               pageLength: 10,
               scrollY: '380px',
@@ -771,6 +782,83 @@
             $(triggerElement).focus();
           } 
           return true; // 모달 닫기 허용
+        });
+
+        // 과입상세 모달 표시 시 데이터테이블 초기화
+        $('#modal_exc_recv_list').on('shown.bs.modal', function() {
+          $(this).data('trigger-element', document.activeElement);
+          if ($.fn.DataTable.isDataTable('#tbl_exc_recv_list')) {
+            $('#tbl_exc_recv_list').DataTable().destroy();
+          }
+
+          $('#tbl_exc_recv_list').DataTable({
+            processing: true,
+            serverSide: true,
+            select: true,
+            responsive: false,
+            ajax: {
+              url: '/withdraw/withdraw/remitMng/remitExcRecvList',
+              contentType: 'application/json',
+              dataType: 'JSON',
+              type: 'POST',
+              data: function (postData) {
+                formData = $('#frm_modal_exc_recv').serializeObject();
+                Object.assign(postData, formData);
+                return JSON.stringify(postData);
+              },
+            },
+            columns: [
+              { data: 'exc_no' },
+              { data: 'exc_date' },
+              { data: 'exc_type_nm' },
+              { data: 'exc_code_nm' },
+              { data: 'exc_status_nm' },
+              { data: 'occur_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+              { data: 'issue_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+              { data: 'remain_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+              { data: 'exc_memo' },
+            ],
+            columnDefs: [
+              { targets: 0, width: '120px', className: 'text-left' },
+              { targets: 1, width: '110px', className: 'text-center' },
+              { targets: 2, width: '110px', className: 'text-center' },
+              { targets: 3, width: '140px', className: 'text-left' },
+              { targets: 4, width: '110px', className: 'text-center' },
+              { targets: 5, width: '120px', className: 'text-end' },
+              { targets: 6, width: '120px', className: 'text-end' },
+              { targets: 7, width: '120px', className: 'text-end' },
+              { targets: 8, width: '220px', className: 'text-left' },
+            ],
+            order: [[1, 'desc'], [0, 'desc']],
+            paging: true,
+            lengthChange: false,
+            searching: false,
+            ordering: true,
+            autoWidth: false,
+            scrollX: true,
+            scrollCollapse: true,
+            pageLength: 10,
+            scrollY: '380px',
+            info: false,
+            language: {
+              emptyTable: '데이터가 없습니다.',
+              search: '검색:',
+              zeroRecords: '일치하는 데이터가 없습니다.',
+              loadingRecords: '로딩중...',
+              processing: '처리중...',
+            },
+          });
+
+          $(this).find('button:not([disabled]), input:not([disabled])').first().focus();
+        });
+
+        // 과입상세 모달 닫힐 때 포커스 복원
+        $('#modal_exc_recv_list').on('hidden.bs.modal', function() {
+          var triggerElement = $(this).data('trigger-element');
+          if (triggerElement) {
+            $(triggerElement).focus();
+          }
+          return true;
         });
           
       });
@@ -1116,10 +1204,11 @@
           </div>
           <div class="modal-body"> 
             <div class="table-responsive scrollbar">
-              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_sub_recv_list">  
+              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_sub_recv_list" style="min-width: 1700px; border-collapse: collapse;">  
                 <thead>
                     <tr>
                       <th rowspan="2" class="text-center">차감번호</th> 
+                      <th rowspan="2" class="text-center">차감 발생일</th>
                       <th rowspan="2" class="text-center">차감 사유</th>
                       <th rowspan="2" class="text-center">진행상태</th> 
                       <th colspan="4" class="text-center">차감실행(당회)</th>   
@@ -1145,6 +1234,43 @@
           <div class="modal-footer">
             <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
           </div>          
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modal_exc_recv_list" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <form class="needs-validation" novalidate="" id="frm_modal_exc_recv" name="frm_modal_exc_recv" onsubmit="return false;">
+          <input id="sch_exc_recv_remit_no" type="hidden" name="sch_exc_recv_remit_no"/>
+          <div class="modal-header">
+            <h5 class="modal-title">과입 상세 내역</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="table-responsive scrollbar">
+              <table class="table table-striped table-sm fs-9 mb-0 selectable-table table-hover selectable table-bordered" id="tbl_exc_recv_list" style="min-width: 1400px; border-collapse: collapse;">
+                <thead>
+                  <tr>
+                    <th class="text-center">과입번호</th>
+                    <th class="text-center">발생일자</th>
+                    <th class="text-center">유형</th>
+                    <th class="text-center">사유</th>
+                    <th class="text-center">상태</th>
+                    <th class="text-center">발생금액</th>
+                    <th class="text-center">적용금액</th>
+                    <th class="text-center">잔액</th>
+                    <th class="text-center">메모</th>
+                  </tr>
+                </thead>
+                <tbody class="list"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal" aria-label="모달 닫기">닫기</button>
+          </div>
         </form>
       </div>
     </div>

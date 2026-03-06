@@ -136,7 +136,7 @@
     </select>
 
     <insert id="insertMapCode" parameterType="com.web.manage.trans.domain.MapCodeVO">
-        /* VanDocuMapper.insertMapCode * /
+                /* VanDocuMapper.insertMapCode */
 		INSERT INTO TB_MAP_CODE (
                         MAP_PCODE        , MAP_CODE      , MAP_TEXT      , USE_YN        , ENT_USER_ID, ENT_DTTM
 		)
@@ -146,12 +146,13 @@
 	</insert>
 
 	<update id="updateMapCode" parameterType="com.web.manage.trans.domain.MapCodeVO">
-        /* VanDocuMapper.updateMapCode * /
+        /* VanDocuMapper.updateMapCode */
+        UPDATE TB_MAP_CODE
         SET  MAP_TEXT          = #{map_text}
             , USE_YN          = #{use_yn}
             , UPT_USER_ID     = #{upt_user_id}
             , UPT_DTTM        = NOW()
-        WHERE  MAP_SEQ  = ${map_seq}
+        WHERE  MAP_SEQ  = #{map_seq}
 	</update>
 
     <select id="getScrapDataSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
@@ -402,7 +403,7 @@
 
 
     <select id="getChainDocuSumm" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-        /* VanDocuMapper.getChainDocuSumm * /
+        /* VanDocuMapper.getChainDocuSumm */
         SELECT  SQL_CALC_FOUND_ROWS 
                 VD.CARD_ACQ             					AS card_acq
                 , GET_CODE_NM('CARD_ACQ', VD.CARD_ACQ)                          AS card_acq_nm 
@@ -412,8 +413,8 @@
                 , IFNULL(SUM(CASE WHEN VD.CONF_GB = 'C' THEN ABS(VD.CONF_AMT) ELSE NULL END) * -1  , 0) AS cncl_amt
                 , IFNULL(SUM((ABS(VD.CONF_AMT) * CASE WHEN VD.CONF_GB = 'A' THEN 1 ELSE -1 END)), 0)    AS tot_amt 
             FROM  TB_VAN_DOCU VD
-            WHERE	VD.CHAIN_NO  = #{sch_sub_chain_no} 
-            AND  VD.CONF_DT   = #{sch_sub_conf_dt} 
+            WHERE VD.CHAIN_NO  = #{sch_sub_chain_no} 
+            AND   VD.CONF_DT   = #{sch_sub_conf_dt} 
         <if test="sch_van != null and sch_van != ''">
             AND VD.VAN_CD  = #{sch_van}
         </if>

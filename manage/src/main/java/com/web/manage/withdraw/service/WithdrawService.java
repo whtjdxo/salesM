@@ -106,6 +106,10 @@ public class WithdrawService {
     public List<HashMap<String, Object>> getRemitSubRecvList(HashMap<String, Object> hashmapParam) {
         return withdrawMapper.getRemitSubRecvList(hashmapParam);
     }
+
+    public List<HashMap<String, Object>> getRemitExcRecvList(HashMap<String, Object> hashmapParam) {
+        return withdrawMapper.getRemitExcRecvList(hashmapParam);
+    }
     
 
     //  transaction 처리 는 Procedure 에서 처리하도록 함

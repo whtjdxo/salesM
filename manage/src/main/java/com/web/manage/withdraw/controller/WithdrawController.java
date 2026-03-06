@@ -774,6 +774,75 @@ public class WithdrawController {
         return jString;  
     }
 
+    @RequestMapping("remitMng/remitExcRecvList")
+    public @ResponseBody String getRemitExcRecvList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        String jString = null;
+
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                Object orderObj = pageing.getOrder();
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }
+
+                StringBuilder orderBy = new StringBuilder();
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data"));
+                    String direction = String.valueOf(ord.get("dir"));
+
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1");
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
+            } else {
+                hashmapParam.put("orderBy", "");
+            }
+
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = withdrawService.getRemitExcRecvList(hashmapParam);
+            int records = withdrawService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;
+    }
+
     
 
     @RequestMapping(value = "remitMng/remitBankExcel", method = RequestMethod.POST)
