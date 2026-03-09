@@ -107,6 +107,20 @@
 							   AND	USE_YN = 'Y'
 				   			 GROUP	BY CHAIN_NO
 				  		) EC ON EC.CHAIN_NO = WD.CHAIN_NO
+				UNION ALL
+                SELECT  3 AS ORD
+                        , 'RESV'                                AS GB
+                        , DATE_FORMAT(NOW(), '%Y-%m-%d')        AS REMIT_DT
+                        , 0             AS APRV_CNT 
+                        , 0             AS APRV_AMT 
+                        , 0             AS CARD_RESV_AMT
+                        , 0             AS CARD_FEE_AMT 
+                        , 0             AS SVC_FEE_AMT 
+                        , 0             AS CRD_FEE_AMT 
+                        , 0             AS WD_BASE_AMT 
+                        , 0             AS EXCEED_AMT 
+                        , 0             AS SUB_AMT 
+                        , 0             AS REMITT_TOT_AM
 				) VT				
 		 LIMIT 	1
 	</select>
@@ -253,7 +267,7 @@
 							, SM.SUB_MEMO
 							, SUM(SR.RECV_AMT) MINUS_AMT
 					  FROM 	TB_SUB_RECEIVE SR
-					  		JOIN TB_SUB_MST SM ON SM.SUB_SEQ = SR.SUB_SEQ 
+					  		JOIN TB_SUB_MST SM ON SM.SUB_NO = SR.SUB_NO 
 					 WHERE 	SR.CHAIN_NO = #{chainNo}
 					   AND  SM.SUB_TYPE	=  'I'
 					   AND  SM.SUB_CODE = 'I05001'

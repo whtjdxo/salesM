@@ -34,6 +34,11 @@ public class AppApiController {
     	String apiKey = request.getParameter("authKey");
     	return GSAppApiAuthKey.equals(apiKey);
     }
+
+    private void putRepData(HashMap<String, Object> result, Object data) {
+        result.put("repData", data != null ? data : "");
+    }
+
     /**
      * 가맹점 정보 조회
      */
@@ -47,7 +52,7 @@ public class AppApiController {
         if (!apiValid) {
             result.put("repCd", "9999");
             result.put("repMsg", "Error: Invalid API Key");
-            result.put("repData", null);
+            putRepData(result, null);
         }else {
             String chainNo = request.getParameter("chainNo");      
             try {
@@ -56,11 +61,11 @@ public class AppApiController {
                 
                 result.put("repCd", "0000");
                 result.put("repMsg", "Success");
-                result.put("repData", data);
+                putRepData(result, data);
             } catch (Exception e) {
                 result.put("repCd", "9999");
                 result.put("repMsg", "Error: " + e.getMessage());
-                result.put("repData", null);
+                putRepData(result, null);
             }
         }
         String jsonResponse = gson.toJson(result);
@@ -83,7 +88,7 @@ public class AppApiController {
         if (!apiValid) {
             result.put("repCd", "9999");
             result.put("repMsg", "Error: Invalid API Key");
-            result.put("repData", null);
+            putRepData(result, null);
         } else {
             String chainNo = request.getParameter("chainNo");
             String schSdt = request.getParameter("schSdt");
@@ -96,11 +101,11 @@ public class AppApiController {
 
                 result.put("repCd", "0000");
                 result.put("repMsg", "Success");
-                result.put("repData", data);
+                putRepData(result, data);
             } catch (Exception e) {
                 result.put("repCd", "9999");
                 result.put("repMsg", "Error: " + e.getMessage());
-                result.put("repData", null);
+                putRepData(result, null);
             }
         }
 
@@ -124,7 +129,7 @@ public class AppApiController {
         if (!apiValid) {
             result.put("repCd", "9999");
             result.put("repMsg", "Error: Invalid API Key");
-            result.put("repData", null);
+            putRepData(result, null);
         } else {
             String chainNo = request.getParameter("chainNo");
             String schSdt = request.getParameter("schSdt");
@@ -139,11 +144,11 @@ public class AppApiController {
 
                 result.put("repCd", "0000");
                 result.put("repMsg", "Success");
-                result.put("repData", data);
+                putRepData(result, data);
             } catch (Exception e) {
                 result.put("repCd", "9999");
                 result.put("repMsg", "Error: " + e.getMessage());
-                result.put("repData", null);
+                putRepData(result, null);
             }
         }
 
@@ -167,7 +172,7 @@ public class AppApiController {
         if (!apiValid) {
             result.put("repCd", "9999");
             result.put("repMsg", "Error: Invalid API Key");
-            result.put("repData", null);
+            putRepData(result, null);
         } else {
             String chainNo = request.getParameter("chainNo");
             String schSdt = request.getParameter("schSdt");
@@ -182,11 +187,11 @@ public class AppApiController {
 
                 result.put("repCd", "0000");
                 result.put("repMsg", "Success");
-                result.put("repData", data);
+                putRepData(result, data);
             } catch (Exception e) {
                 result.put("repCd", "9999");
                 result.put("repMsg", "Error: " + e.getMessage());
-                result.put("repData", null);
+                putRepData(result, null);
             }
         }
 
@@ -198,9 +203,9 @@ public class AppApiController {
     }
     
     /**
-     * 미입금 차감 정보
+     * 미입금 차감 정보 appApiGetUndepoSubList
      */
-    @RequestMapping(value = "/getUndepoSubList.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @RequestMapping(value = "/appApiGetUndepoSubList.action", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public @ResponseBody ResponseEntity<String> getUndepoSubList(HttpServletRequest request, HttpServletResponse response) {
         HashMap<String, Object> result = new HashMap<String, Object>();
         HashMap<String, Object> params = new HashMap<String, Object>();
@@ -210,7 +215,7 @@ public class AppApiController {
         if (!apiValid) {
             result.put("repCd", "9999");
             result.put("repMsg", "Error: Invalid API Key");
-            result.put("repData", null);
+            putRepData(result, null);
         } else {
             String chainNo = request.getParameter("chainNo");
             String schSdt = request.getParameter("schSdt");
@@ -225,11 +230,11 @@ public class AppApiController {
 
                 result.put("repCd", "0000");
                 result.put("repMsg", "Success");
-                result.put("repData", data);
+                putRepData(result, data);
             } catch (Exception e) {
                 result.put("repCd", "9999");
                 result.put("repMsg", "Error: " + e.getMessage());
-                result.put("repData", null);
+                putRepData(result, null);
             }
         }
 
@@ -255,7 +260,7 @@ public class AppApiController {
         if (!apiValid) {
             result.put("repCd", "9999");
             result.put("repMsg", "Error: Invalid API Key");
-            result.put("repData", null);
+            putRepData(result, null);
         } else {
             String chainNo = request.getParameter("chainNo");
             String schSdt = request.getParameter("schSdt");
@@ -270,11 +275,11 @@ public class AppApiController {
 
                 result.put("repCd", "0000");
                 result.put("repMsg", "Success");
-                result.put("repData", data);
+                putRepData(result, data);
             } catch (Exception e) {
                 result.put("repCd", "9999");
                 result.put("repMsg", "Error: " + e.getMessage());
-                result.put("repData", null);
+                putRepData(result, null);
             }
         }
 
@@ -298,7 +303,7 @@ public class AppApiController {
         if (!apiValid) {
             result.put("repCd", "9999");
             result.put("repMsg", "Error: Invalid API Key");
-            result.put("repData", null);
+            putRepData(result, null);
         } else {
             String chainNo = request.getParameter("chainNo");
             String schMonth = request.getParameter("schMonth");
@@ -309,11 +314,11 @@ public class AppApiController {
 
                 result.put("repCd", "0000");
                 result.put("repMsg", "Success");
-                result.put("repData", data);
+                putRepData(result, data);
             } catch (Exception e) {
                 result.put("repCd", "9999");
                 result.put("repMsg", "Error: " + e.getMessage());
-                result.put("repData", null);
+                putRepData(result, null);
             }
         }
 
@@ -337,7 +342,7 @@ public class AppApiController {
         if (!apiValid) {
             result.put("repCd", "9999");
             result.put("repMsg", "Error: Invalid API Key");
-            result.put("repData", null);
+            putRepData(result, null);
         } else {
             String chainNo = request.getParameter("chainNo");
             String schMonth = request.getParameter("schMonth");
@@ -348,11 +353,11 @@ public class AppApiController {
 
                 result.put("repCd", "0000");
                 result.put("repMsg", "Success");
-                result.put("repData", data);
+                putRepData(result, data);
             } catch (Exception e) {
                 result.put("repCd", "9999");
                 result.put("repMsg", "Error: " + e.getMessage());
-                result.put("repData", null);
+                putRepData(result, null);
             }
         }
 

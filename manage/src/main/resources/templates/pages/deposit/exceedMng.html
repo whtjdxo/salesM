@@ -446,6 +446,7 @@
             } else {
               $('#exc_status').prop('disabled', false);
             }
+            
             $('#exc_date').val(data.exc_date);
             $('#exc_memo').val(data.exc_memo);
 
@@ -486,9 +487,11 @@
           $('#exc_date').val(toDay);
           $('#exc_type').val('I').prop('selected', true).trigger('change');                      
           $('#exc_status').val('000000');
+          $('#exc_status').prop('disabled', false);
+          $('#occur_amt').prop('readonly', false);
           $("input:radio[name='use_yn'][value='Y']").prop('checked', true); 
-
           $('#chain_no').val(chain_no); 
+
           editMode = 'create';
           $('#btn_update').hide();
           $('#btn_create').show();      
