@@ -249,7 +249,8 @@
 	<!-- App 연동 - 미입금 차감 정보  -->
 	<select id="appApiGetUndepoSubList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
 		/*AppApiMapper.appApiGetUndepoSubList*/
-		SELECT 	SUBSTR(SUBSTR(SUB_MEMO, INSTR(SUB_MEMO, '['), LENGTH(SUB_MEMO)), 1,  INSTR(SUBSTR(SUB_MEMO, INSTR(SUB_MEMO, '['), LENGTH(SUB_MEMO)), ']')) AS sub_gb
+		SELECT 	TRIM(SUBSTR(SUB_MEMO, INSTR(SUB_MEMO, ']') + 1, LENGTH(SUB_MEMO))) AS sub_gb
+				, SUBSTR(SUBSTR(SUB_MEMO, INSTR(SUB_MEMO, '['), LENGTH(SUB_MEMO)), 1,  INSTR(SUBSTR(SUB_MEMO, INSTR(SUB_MEMO, '['), LENGTH(SUB_MEMO)), ']')) AS sub_gb2
 				, IFNULL(MINUS_AMT, 0) 		AS sub_amt
 		  FROM 	(		
 		  			SELECT  'RESV' AS GB
