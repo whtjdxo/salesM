@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
  
 import com.web.manage.withdraw.domain.SubMstVO;
 import com.web.manage.withdraw.domain.ProcSubReceiveVO;
+import com.web.manage.withdraw.domain.ProcLoanTransRecvSeqVO;
 
 @Mapper
 public interface SubtractMapper {
@@ -24,6 +25,8 @@ public interface SubtractMapper {
     boolean updateSubMst(SubMstVO      subMstVo);
 
     void callProcSubReveive(ProcSubReceiveVO subReceiveVO);    
+
+    void callProcLoanTransRecvSeq(ProcLoanTransRecvSeqVO procLoanTransRecvSeqVO);
 
     List<HashMap<String, Object>> getSubStatSummary(HashMap<String, Object> hashmapParam);
     HashMap<String, Object> getSubStatSummaryTotal(HashMap<String, Object> hashmapParam);    

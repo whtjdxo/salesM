@@ -288,22 +288,27 @@
     <select id="getSubReceiveList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
         /* SubtractMapper.getSubReceiveList */
         SELECT  SQL_CALC_FOUND_ROWS
-                SR.SUB_NO                                       AS sub_no 
-                , RECV_DATE                                     AS recv_date
-                , RECV_TYPE                                     AS recv_type        
+                SR.SUB_NO                                       AS sub_no
+                , SR.RECV_SEQ                                   AS recv_seq
+                , SR.RECV_DATE                                  AS recv_date
+                , SR.RECV_TYPE                                  AS recv_type
                 , GET_CODE_NM('RECV_TYPE', SR.RECV_TYPE)        AS recv_type_nm
-                , IFNULL(REMIT_NO, '')                          AS remit_no
-                , IFNULL(RECV_AMT, 0)                           AS recv_amt
-                , IFNULL(RECV_BASE_AMT, 0)                      AS recv_base_amt 
-                , IFNULL(RECV_SVC_AMT, 0)                       AS recv_svc_amt
-                , IFNULL(RECV_CRD_AMT, 0)                       AS recv_crd_amt 
-                , IFNULL(MEMO, '')                              AS memo
-                , TRANS_CHK                                     AS trans_chk
-                , ENT_USER_ID                                   AS ent_user_id            
-                , DATE_FORMAT(ENT_DTTM, '%Y-%m-%d %H:%i')       AS ent_dttm
-            FROM  TB_SUB_RECEIVE SR
-            WHERE  SUB_NO = #{sub_no} 
-            ORDER  BY 1
+                , IFNULL(SR.REMIT_NO, '')                       AS remit_no
+                , IFNULL(SR.RECV_AMT, 0)                        AS recv_amt
+                , IFNULL(SR.RECV_BASE_AMT, 0)                   AS recv_base_amt
+                , IFNULL(SR.RECV_SVC_AMT, 0)                    AS recv_svc_amt
+                , IFNULL(SR.RECV_CRD_AMT, 0)                    AS recv_crd_amt
+                , IFNULL(SR.MEMO, '')                           AS memo
+                , SR.TRANS_CHK                                  AS trans_chk
+                , SM.SUB_TYPE                                   AS sub_type
+                , SM.SUB_CODE                                   AS sub_code
+                , IFNULL(SR.SEND_TRANS_NO, 'X')                 AS send_trans_no
+                , SR.ENT_USER_ID                                AS ent_user_id
+                , DATE_FORMAT(SR.ENT_DTTM, '%Y-%m-%d %H:%i')    AS ent_dttm
+        FROM    TB_SUB_RECEIVE SR
+                JOIN TB_SUB_MST SM ON SM.SUB_NO = SR.SUB_NO
+        WHERE   SR.SUB_NO = #{sub_no} 
+        ORDER   BY 1
     </select>
 
     <select id="getNewSubNo" resultType="java.lang.String">
@@ -357,7 +362,7 @@
         WHERE   SUB_NO  = #{sub_no};
 	</update>
 
-        <update id="callProcSubReveive" parameterType="com.web.manage.withdraw.domain.ProcSubReceiveVO" statementType="CALLABLE">
+    <update id="callProcSubReveive" parameterType="com.web.manage.withdraw.domain.ProcSubReceiveVO" statementType="CALLABLE">
         { 
                 CALL PRC_SUB_RECEIVE(
                         #{subNo         , mode=IN       , jdbcType=VARCHAR}
@@ -371,9 +376,20 @@
                         , #{resultMsg   , mode=OUT      , jdbcType=VARCHAR, javaType=java.lang.String}
                 ) 
         }
-        </update>
+    </update>
 
-        <select id="getSubStatSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
+    <update id="callProcLoanTransRecvSeq" parameterType="com.web.manage.withdraw.domain.ProcLoanTransRecvSeqVO" statementType="CALLABLE">
+        { 
+            CALL PRC_LOAN_TRANS_REPAY_RECV_SEQ(
+                    #{recvSeq       , mode=IN       , jdbcType=VARCHAR}
+                    , #{userId      , mode=IN       , jdbcType=VARCHAR}
+                    , #{resultCode  , mode=OUT      , jdbcType=INTEGER, javaType=java.lang.Integer} 
+                    , #{resultMsg   , mode=OUT      , jdbcType=VARCHAR, javaType=java.lang.String}
+            ) 
+        }
+    </update>
+
+    <select id="getSubStatSummary" parameterType="java.util.HashMap" resultType="java.util.HashMap">        
             /* SubtractMapper.getSubStatSummary */
             SELECT  SQL_CALC_FOUND_ROWS
                     SM.CHAIN_NO             AS chain_no

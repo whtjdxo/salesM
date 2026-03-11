@@ -407,7 +407,14 @@
                 , { data: 'recv_svc_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
                 , { data: 'recv_crd_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') } 
                 , { data: 'memo' }
-                , { data: 'trans_chk' }
+                , { data: 'trans_chk' 
+                  , render: function(data, type, row) {
+                    if (row.trans_chk === 'N' && row.sub_type === 'L' && row.send_trans_no === 'X') {
+                      return '<button type="button" class="btn btn-sm btn-warning" onclick="fn_send_trans_seq(' + row.recv_seq + ')">전송</button>';
+                    }
+                    return data;
+                  }
+                  }
               ],
             columnDefs: [
                 { targets: 0, width: '120px', className: 'text-left' }
@@ -442,6 +449,26 @@
         $('#btn_clear').click(function () {     
           fn_frm_sub_mst_clear(); 
         });
+
+        function fn_send_trans_seq(recv_seq) {          
+          formData ={
+              recvSeq: recv_seq
+          }
+          ConfirmdialogToAjax('create', '/withdraw/subtract/subMng/callProcLoanTransRecvSeq', formData, fn_send_trans_result);           
+        }
+
+        window.fn_send_trans_seq = fn_send_trans_seq;
+        
+        function fn_send_trans_result(data) {
+          var resultCode = data.resultCode;
+          var resultMsg = data.resultMsg;   
+          if (resultCode == 'S000') {                               
+            swal('성공', '차감 수납 정보가 성공적으로 전송되었습니다.', 'success');                         
+            tbl_sub_recv_list.ajax.reload(null, false); // 현재 페이지 유지
+          } else { 
+            swal('실패', resultMsg, 'error');
+          }
+        }
 
         function fn_frm_sub_mst_clear(){
           var chain_no = $('#chain_no').val();           

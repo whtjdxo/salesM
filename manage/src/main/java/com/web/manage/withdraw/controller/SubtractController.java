@@ -27,6 +27,7 @@ import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.common.domain.SessionVO;
 import com.web.manage.common.service.CommonService; 
 import com.web.manage.trans.domain.TransProcessVO;
+import com.web.manage.withdraw.domain.ProcLoanTransRecvSeqVO;
 import jakarta.validation.Valid;
 
 import com.web.common.util.DateUtil;
@@ -453,6 +454,27 @@ public class SubtractController {
             return result;
         } 
     }
+
+    @RequestMapping(value = "subMng/callProcLoanTransRecvSeq", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO callProcLoanTransRecvSeq(@ModelAttribute("ProcLoanTransRecvSeqVO") @Valid ProcLoanTransRecvSeqVO procLTRSVo, HttpSession session) {
+        
+        ReturnDataVO result = new ReturnDataVO();
+        System.out.println(procLTRSVo);
+        
+        try {
+            System.out.println("procVo : " + procLTRSVo);
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            procLTRSVo.setUserId(member.getUserId());
+            
+            return subtractService.callProcLoanTransRecvSeq(procLTRSVo);             
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("An error occurred while processing the loan transaction.");
+            e.printStackTrace();
+            return result;
+        } 
+    }
+
 
     @RequestMapping("subStat/view")
     public String statView() {

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.web.manage.withdraw.domain.SubMstVO;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.withdraw.domain.ProcSubReceiveVO;
+import com.web.manage.withdraw.domain.ProcLoanTransRecvSeqVO;
 import com.web.manage.withdraw.mapper.SubtractMapper;
 import ch.qos.logback.classic.Logger;
 
@@ -75,6 +76,31 @@ public class SubtractService {
             } else {
                 result.setResultCode("F000");
                 result.setResultMsg(subReceiveVO.getResultMsg());
+                return result;
+            }
+ 
+        } catch (Exception e) {
+            result.setResultCode("F500");
+            result.setResultMsg("시스템 오류가 발생했습니다: " + e.getMessage());
+            // 로깅 처리
+            // logger.error("Scrap transaction processing failed", e);
+        }
+        return result;
+    }
+
+    public ReturnDataVO callProcLoanTransRecvSeq(ProcLoanTransRecvSeqVO procLoanTransRecvSeqVO) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            // Van 스크래핑 데이터 이관 프로시저 호출
+            subtractMapper.callProcLoanTransRecvSeq(procLoanTransRecvSeqVO);
+            
+            // 프로시저에서 설정한 OUT 파라미터 확인
+            if (procLoanTransRecvSeqVO.getResultCode()== 0) {  
+                result.setResultCode("S000");
+                result.setResultMsg(procLoanTransRecvSeqVO.getResultMsg());
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg(procLoanTransRecvSeqVO.getResultMsg());
                 return result;
             }
  
