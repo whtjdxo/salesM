@@ -68,7 +68,13 @@
             processing: '처리중...',
           },
         });
-
+        $('#sch_code_nm').keypress(function (e) {
+          if (e.which == 13) {
+            $('#btn_search').click();
+            return false;
+          }
+        });
+        
         $('#btn_search').click(function () {
           tbl_map_pcode.ajax.reload();
           $('#frm_map_code')[0].reset();
@@ -253,15 +259,10 @@
               <div class="col-lg-8">
                 <form id="frm_sch" name="frm_sch" onsubmit="return false;" novalidate="">
                   <div class="input-group input-group-sm px-3">
-                    <select class="form-select form-control-sm" id="sch_map_pcode" name="sch_map_pcode" style="width: 150px">
+                    <select class="form-select form-control-sm" id="sch_map_pcode" name="sch_map_pcode" style="width: 100px">
                       <option value="">선 택</option>
-                    </select>                    
-                    <!-- <select class="form-select form-control-sm" id="schgb_map" name="schgb_map" style="width: 80px">
-                      <option value="">선택</option>
-                      <option value="schgb_code">매핑 코드</option>
-                      <option value="schgb_code_nm">매핑 Text</option> 
-                    </select>
-                    <input type="text" class="form-control form-control-sm" id="schgb_map_val" name="schgb_map_val" style="width: 15%" />          -->          
+                    </select>                                         
+                    <input type="text" class="form-control form-control-sm" id="sch_code_nm" name="sch_code_nm" />
                     <span class="input-group-btn"><button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button></span> 
                   </div>
                 </form>

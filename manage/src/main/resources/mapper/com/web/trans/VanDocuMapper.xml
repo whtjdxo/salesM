@@ -21,37 +21,52 @@
                         WHERE	CODE_GRP_CD  = 'CARD_ACQ'
                         AND 	CODE != 'CODE'
                         AND	USE_YN 	= 'Y'
+                    <if test = "sch_code_nm != null and sch_code_nm != ''">
+                        AND  CODE_NM LIKE CONCAT('%', #{sch_code_nm}, '%')
+                    </if>
                 </when>
                 <when test="sch_map_pcode == 'ISS'">
                         SELECT 	CODE			AS CODE_NO
                                 , CODE_NM		AS CODE_NM
-                        FROM 	TB_CODE 
-                        WHERE	CODE_GRP_CD  = 'CARD_ISS'
-                        AND 	CODE != 'CODE'
-                        AND	USE_YN 	= 'Y'
+                          FROM 	TB_CODE 
+                         WHERE	CODE_GRP_CD  = 'CARD_ISS'
+                           AND 	CODE != 'CODE'
+                           AND	USE_YN 	= 'Y'
+                    <if test = "sch_code_nm != null and sch_code_nm != ''">
+                           AND  CODE_NM LIKE CONCAT('%', #{sch_code_nm}, '%')
+                    </if>
                 </when>
                 <when test="sch_map_pcode == 'DEP'">
                         SELECT 	CODE			AS CODE_NO
                                 , CODE_NM		AS CODE_NM
-                        FROM 	TB_CODE 
-                        WHERE	CODE_GRP_CD  = 'CARD_ACQ'
-                        AND 	CODE != 'CODE'
-                        AND	USE_YN 	= 'Y'
+                          FROM 	TB_CODE 
+                         WHERE	CODE_GRP_CD  = 'CARD_ACQ'
+                           AND 	CODE != 'CODE'
+                           AND	USE_YN 	= 'Y'
+                    <if test = "sch_code_nm != null and sch_code_nm != ''">
+                           AND  CODE_NM LIKE CONCAT('%', #{sch_code_nm}, '%')
+                    </if>
                 </when>
                 <when test="sch_map_pcode == 'CRD'">
-                                SELECT 	CHAIN_NO        AS CODE_NO
-                                        , CHAIN_NM      AS CODE_NM
-                                    FROM 	TB_CHAIN
-                                    WHERE 	USE_YN = 'Y' 
-                                    AND  SVC_STAT IN ('O', 'R')
+                        SELECT 	CHAIN_NO        AS CODE_NO
+                                , CHAIN_NM      AS CODE_NM
+                          FROM 	TB_CHAIN
+                         WHERE 	USE_YN = 'Y' 
+                           AND  SVC_STAT IN ('O', 'R')
+                    <if test = "sch_code_nm != null and sch_code_nm != ''">
+                           AND  CHAIN_NM LIKE CONCAT('%', #{sch_code_nm}, '%')
+                    </if>
                 </when>
                 <when test="sch_map_pcode == 'BNK'">
                         SELECT 	CORP_CD         AS CODE_NO
                                 , CORP_NM       AS CODE_NM
-                        FROM 	TB_CORP
-                        WHERE 	CORP_TYPE = 'LN'
-                        AND 	CODE != 'CODE'
-                        AND 	USE_YN = 'Y'
+                          FROM 	TB_CORP
+                         WHERE 	CORP_TYPE = 'LN'
+                           AND 	CODE != 'CODE'
+                           AND 	USE_YN = 'Y'
+                    <if test = "sch_code_nm != null and sch_code_nm != ''">
+                           AND  CORP_NM LIKE CONCAT('%', #{sch_code_nm}, '%')
+                    </if>
                 </when>
                 
                 <otherwise>

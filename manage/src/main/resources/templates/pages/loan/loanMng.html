@@ -417,7 +417,11 @@
 
             $('#cont_dt').val(data.cont_dt);
             $('#loan_status').val(data.loan_status); 
-            $('#loan_status_nm').val(data.loan_status_nm); 
+            if (data.loan_status === '04') {
+              $('#loan_status_nm').val(data.loan_status_nm + ' : ' + Number(data.prepay_amt || 0).toLocaleString() + '원');
+            } else {
+              $('#loan_status_nm').val(data.loan_status_nm);
+            }
             $('#princ_amt').val(Number(data.princ_amt).toLocaleString());
             $('#int_amt').val(Number(data.int_amt).toLocaleString());
             $('#tot_loan_amt').val(Number(data.tot_loan_amt).toLocaleString());

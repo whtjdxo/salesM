@@ -236,9 +236,11 @@
                     + IFNULL(SC.PRE_INC_AMT, 0) 
                     + IFNULL(SC.POST_PRINC_AMT, 0)
                     + IFNULL(DLY.DELAY_INT_AMT, 0)  AS prepay_tot_amt
-                , CASE  WHEN LM.LOAN_STATUS = '04' THEN
+                , IFNULL(LM.PRE_PAY_AMT,  0)        AS prepay_amt
+                , LM.MEMO                           AS loan_memo
+                <!-- , CASE  WHEN LM.LOAN_STATUS = '04' THEN
                             CONCAT('중도상환 : ', FORMAT(IFNULL(LM.PRE_PAY_AMT, 0), 0), '원 ', IFNULL(LM.MEMO, ''))                         
-                        ELSE IFNULL(LM.MEMO, '')    END                                     AS loan_memo    
+                        ELSE IFNULL(LM.MEMO, '')    END                                     AS loan_memo     -->
                 , DATE_FORMAT(IFNULL(LM.UPT_DTTM, LM.ENT_DTTM), '%Y-%m-%d %H:%i:%s')    AS upt_dttm
                 , IFNULL(LM.UPT_USER_ID, LM.ENT_USER_ID )                       AS upt_user_id
         FROM    TB_LOAN_MST LM
@@ -350,10 +352,11 @@
                     + IFNULL(SC.PRE_INC_AMT, 0) 
                     + IFNULL(SC.POST_PRINC_AMT, 0)
                     + IFNULL(DLY.DELAY_INT_AMT, 0)  AS prepay_tot_amt
-                <!-- , LM.MEMO                           AS loan_memo -->
-                , CASE WHEN LM.LOAN_STATUS = '04' THEN
+                , IFNULL(LM.PRE_PAY_AMT,  0)        AS prepay_amt
+                , LM.MEMO                           AS loan_memo
+                <!-- , CASE WHEN LM.LOAN_STATUS = '04' THEN
                             CONCAT('중도상환 : ', FORMAT(IFNULL(LM.PRE_PAY_AMT, 0), 0), '원 ', IFNULL(LM.MEMO, '')) 
-                    ELSE IFNULL(LM.MEMO, '')    END                                     AS loan_memo    
+                    ELSE IFNULL(LM.MEMO, '')    END                                     AS loan_memo     -->
                 , DATE_FORMAT(IFNULL(LM.UPT_DTTM, LM.ENT_DTTM), '%Y-%m-%d %H:%i:%s')    AS upt_dttm
                 , IFNULL(LM.UPT_USER_ID, LM.ENT_USER_ID )                               AS upt_user_id
         FROM    TB_LOAN_MST LM
