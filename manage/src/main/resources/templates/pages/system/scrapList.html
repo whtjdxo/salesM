@@ -60,12 +60,17 @@
                   data: 'act_status',
                   render: function(data, type, row) {
                     if (type === 'display') {
-                    if (
-                      (typeof data === 'string' && data.startsWith('N')) ||
-                      data === '스크래핑 기록이 없습니다'
-                    ) {
-                      return '<span style="color:red; font-weight:bold;">' + (data || '') + '</span>';
-                    }
+                      if ( 
+                        (typeof data === 'string' && data.startsWith('N')) ||
+                        data === '스크래핑 기록이 없습니다'
+                        ) 
+                      {
+                        if (data && data.toLowerCase().includes('no data found')) {
+                          return '<span style="color:blue;">' + data + '</span>';
+                        } else {
+                          return '<span style="color:red; font-weight:bold;">' + (data || '') + '</span>';
+                        }
+                      }
                     }
                     return data || '';
                   }
