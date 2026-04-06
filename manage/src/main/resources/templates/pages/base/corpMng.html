@@ -120,6 +120,7 @@
             $('#bank_cd').val(data.bank_cd);            
             $('#account_no').val(data.account_no);
             $('#account_pwd').val(data.account_pwd);
+            $('#account_auth_key').val(data.account_auth_key);
             $('#web_id').val(data.web_id);
             $('#web_pwd').val(data.web_pwd);           
             $('#depositor').val(data.depositor); 
@@ -305,13 +306,16 @@
                   </div>
                 </div>
                 <div class="input-group input-group-sm mb-2">
-                  <label class="col-sm-3 col-form-label col-form-label-sm" for="account_no">계좌번호/비번</label>
-                  <div class="col-sm-6">
+                  <label class="col-sm-3 col-form-label col-form-label-sm" for="account_no">계좌번호/비번/Key</label>
+                  <div class="col-sm-4">
                     <input class="form-control form-control-sm" id="account_no" type="text" name="account_no" required istyle="number"/>                    
                   </div>
+                  <div class="col-sm-2">
+                    <input class="form-control form-control-sm" id="account_pwd" type="text" name="account_pwd" maxlength="4" required istyle="number" />
+                  </div>
                   <div class="col-sm-3">
-                    <input class="form-control form-control-sm" id="account_pwd" type="text" name="account_pwd" required />
-                  </div>                  
+                    <input class="form-control form-control-sm" id="account_auth_key" type="text" name="account_auth_key" maxlength="6" required istyle="number" />
+                  </div>
                 </div>
 
                 <div class="input-group input-group-sm mb-2">

@@ -97,16 +97,20 @@
                         , BIZ_NO                AS bizNo
                         , BOSS_REGNO            AS bossRegNo
                         , ACCOUNT_NM            AS accountNm
-                        , CASE WHEN ACCOUNT_TP = 'PERS' THEN SUBSTR(BOSS_REGNO, 3, 6)
-                                 ELSE SUBSTR(BIZ_NO, 6, 5) END AS authNo                
+                        , ACCOUNT_AUTH_KEY  	AS authNo    
+                        <!-- , CASE WHEN ACCOUNT_TP = 'PERS' THEN SUBSTR(BOSS_REGNO, 3, 6)
+                                 ELSE SUBSTR(BIZ_NO, 6, 5) END AS authNo                 -->
                 FROM  (                                                                       
                         SELECT TC.CHAIN_NO              AS CHAIN_NO                                  
                                 , TC.CHAIN_NM     	AS CHAIN_NM                                 
                                 , TC.ABANK_CD           AS BANK_CD                                  
-                                , TC.ABANK_ACCOUNT_NO   AS ACCOUNT_NO                               
+                                , REPLACE(TC.ABANK_ACCOUNT_NO, '-', '')   AS ACCOUNT_NO                               
                                 , TC.ABANK_PWD   	AS ACCOUNT_PWD                              
                                 , TC.ABANK_SEARCH_ID	AS SEARCH_ID
-                                , TC.ABANK_SEARCH_PWD	AS SEARCH_PWD
+                                , TC.ABANK_SEARCH_PWD	AS SEARCH_PWD                                
+                                , CASE WHEN TC.ABANK_ACCOUNT_TP = 'LAW' THEN 
+                                                SUBSTR(REPLACE(TC.BIZ_NO, '-', ''), 6, 5)  
+                                       ELSE     SUBSTR(REPLACE(TC.CEO_BIRTH_DT, '-', ''), 3, 6) END           AS ACCOUNT_AUTH_KEY
                                 , CASE WHEN TC.ABANK_ACCOUNT_TP = 'LAW' THEN 'COMP' ELSE 'PERS' END  AS ACCOUNT_TP
                                 , REPLACE(TC.BIZ_NO, '-', '')       	AS BIZ_NO                               
                                 , REPLACE(TC.CEO_BIRTH_DT, '-', '')     AS BOSS_REGNO                           
@@ -131,10 +135,11 @@
                         SELECT  CORP_CD           	AS CHAIN_CD                                 
                                 , CORP_NM		AS CHAIN_NM                                               
                                 , BANK_CD          	AS BANK_CD                                  
-                                , ACCOUNT_NO      	AS ACCOUNT_NO                               
+                                , REPLACE(ACCOUNT_NO, '-', '')   AS ACCOUNT_NO                               
                                 , ACCOUNT_PWD   	AS ACCOUNT_PWD     
-                                , WEB_ID       		AS SEARCH_ID                               
-                                , WEB_PWD   		AS ACCOUNT_PWD                         
+                                , WEB_ID       		AS SEARCH_ID
+                                , WEB_PWD   		AS ACCOUNT_PWD
+                                , ACCOUNT_AUTH_KEY      AS ACCOUNT_AUTH_KEY
                                 , 'COMP'                AS ACCOUNT_TP                                
                                 , REPLACE(BIZ_NO, '-', '')   AS BIZ_NO                           
                                 , ''                    AS BOSS_REG_NO                              

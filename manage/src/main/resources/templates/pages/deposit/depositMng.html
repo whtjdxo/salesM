@@ -278,8 +278,10 @@
           var clickedCell = $(e.target).closest('td');
           var clickedColumnIndex = clickedCell.index();
           var row = tbl_depo_resv_summ.row(this).data();
-          $('#frm_sch_card')[0].reset();   
-          $('#frm_sch_list')[0].reset();
+          // $('#frm_sch_card')[0].reset();   
+          // $('#frm_sch_list')[0].reset();
+          fn_card_clear();
+          fn_list_clear();
           
           $('#sch_card_chain_no').val(row.chain_no);
           $('#sch_list_chain_no').val(row.chain_no);   // list 검색 조건
@@ -447,12 +449,12 @@
           $('#frm_sch_card')[0].reset();
           $('#sch_card_chain_no').val('');
           $('#sch_card_resv_date').val('');
-          $('#sch_depo_gb').val(''); 
+          $('#sch_depo_gb').val('');           
           tbl_card_summ.ajax.reload();
         }
 
         function fn_list_clear(){ 
-          $('#frm_sch_card')[0].reset();
+          $('#frm_sch_list')[0].reset();
           $('#sch_list_chain_no').val('');
           $('#sch_list_chain_nm').val('');
           $('#sch_list_resv_date').val('');
