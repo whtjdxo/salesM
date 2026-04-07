@@ -390,9 +390,10 @@
           //     $('#modal_risk').modal('show');   
           //     $('#tbl_risk_list').DataTable().ajax.reload(); 
           // }
-
-          $('#frm_sch_card')[0].reset();   
-          $('#frm_sch_list')[0].reset();
+          // $('#frm_sch_card')[0].reset();   
+          // $('#frm_sch_list')[0].reset();
+          fn_card_clear();
+          fn_list_clear();
 
           if (clickedColumnIndex == 9 && row.error_cnt > 0) { 
             $('#sch_list_wd_status_n').prop('checked', true);           
@@ -494,18 +495,28 @@
           tbl_wd_summ.ajax.reload(null, false);
         }
 
-        function fn_default_clear(){
-          // $('#frm_sch')[0].reset();
-          $('#frm_sch_card')[0].reset();   
-          $('#frm_sch_list')[0].reset();
-          $('#sch_card_chain_no').val('');
-          $('#sch_card_work_date').val('');
-          $('#select_chain_nm').text(''); // 가맹점명 설정
-          $('#sch_list_chain_no').val('');
-          $('#sch_list_work_date').val('');
-          $('#sch_list_card_acq').val('');  
+        function fn_default_clear(){          
+          fn_card_clear();
+          fn_list_clear();
           tbl_card_summ.ajax.reload(); 
           tbl_wd_resv_list.ajax.reload();  
+        }
+
+        function fn_card_clear(){
+          $('#frm_sch_card')[0].reset();
+          $('#sch_card_chain_no').val('');
+          $('#sch_card_work_date').val('');
+          $('#select_chain_nm').text(''); // 가맹점명 설정 
+          tbl_card_summ.ajax.reload();
+        }
+
+        function fn_list_clear(){ 
+          $('#frm_sch_list')[0].reset();
+          $('#sch_list_chain_no').val('');
+          $('#sch_list_chain_nm').val('');
+          $('#sch_list_work_date').val('');
+          $('#sch_list_card_acq').val('');            
+          tbl_wd_resv_list.ajax.reload();
         }
 
         // sch_list_wd_status 라디오 버튼 클릭 시 이벤트 처리

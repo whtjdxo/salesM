@@ -17,6 +17,7 @@ public class CorpVO {
     private String bank_cd_nm;
     private String account_no;
     private String account_pwd;
+    private String account_auth_key;
     private String web_id;
     private String web_pwd;
     private String depositor;
