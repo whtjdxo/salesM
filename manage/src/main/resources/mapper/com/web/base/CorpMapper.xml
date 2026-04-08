@@ -10,6 +10,12 @@
                 CORP_CD 		AS corp_cd
 				, CORP_NM 		AS corp_nm
 				, BIZ_NO 		AS biz_no
+				, BIZ_NM        AS biz_nm
+                , BIZ_CEO_NM    AS biz_ceo_nm
+                , BIZ_ADDR      AS biz_addr
+                , IFNULL(BIZ_EMAIL, '')     AS biz_email
+                , IFNULL(BIZ_UPTAE, '')     AS biz_uptae
+                , IFNULL(BIZ_UPJONG, '')    AS biz_upjong            
 				, CORP_TYPE 	AS corp_type
 				, GET_CODE_NM('CORP_TYPE', CORP_TYPE) AS corp_type_nm
 				, BANK_CD 		AS bank_cd
@@ -59,11 +65,15 @@
 	<insert id="corpCreate" parameterType="com.web.manage.base.domain.CorpVO">
 		INSERT INTO TB_CORP (  
 			CORP_CD			, CORP_NM		, BIZ_NO		, CORP_TYPE	
+			, BIZ_NM         , BIZ_UPTAE     , BIZ_UPJONG    , BIZ_CEO_NM
+			, BIZ_EMAIL      , BIZ_ADDR
 			, BANK_CD		, ACCOUNT_NO	, ACCOUNT_PWD	, ACCOUNT_AUTH_KEY
 			, WEB_ID		, WEB_PWD		, DEPOSITOR		, API_URL		, MEMO	
 			, USE_YN		, ENT_USER_ID	, ENT_DTTM
 		) VALUES (  
 			#{corp_cd}		, #{corp_nm}, #{biz_no} 		, #{corp_type}
+			, #{biz_nm}     , #{biz_uptae} , #{biz_upjong} , #{biz_ceo_nm}
+			, #{biz_email}  , #{biz_addr}
 			, #{bank_cd}	, #{account_no}	, #{account_pwd}, #{account_auth_key}
 			, #{web_id}		, #{web_pwd}	, #{depositor}	, #{api_url}	, #{memo}
 			, 'Y'			, #{ent_user_id}, NOW() 
@@ -73,6 +83,12 @@
 		UPDATE 	TB_CORP
 		   SET 	CORP_NM			= #{corp_nm}
 		   		, BIZ_NO		= #{biz_no}		
+				, BIZ_NM        = #{biz_nm}
+				, BIZ_UPTAE     = #{biz_uptae}
+				, BIZ_UPJONG    = #{biz_upjong}
+				, BIZ_CEO_NM    = #{biz_ceo_nm}
+				, BIZ_EMAIL     = #{biz_email}
+				, BIZ_ADDR      = #{biz_addr}
 				, CORP_TYPE		= #{corp_type}
 				, BANK_CD		= #{bank_cd}
 				, ACCOUNT_NO	= #{account_no}

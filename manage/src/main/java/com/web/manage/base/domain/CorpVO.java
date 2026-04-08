@@ -11,6 +11,14 @@ public class CorpVO {
     @NotNull(message="사업자번호를 입력해주십시오.")
     private String biz_no;
     @NotNull(message="여신사 유형을 선택해주십시오.")
+
+    private String biz_nm;
+    private String biz_uptae;   
+    private String biz_upjong;
+    private String biz_ceo_nm;
+    private String biz_email;
+    private String biz_addr;
+    
     private String corp_type;
     private String corp_type_nm;
     private String bank_cd;

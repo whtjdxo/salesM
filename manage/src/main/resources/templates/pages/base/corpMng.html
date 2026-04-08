@@ -117,6 +117,12 @@
             $('#corp_type').val(data.corp_type).attr('selected', 'selected');
             $('#corp_nm').val(data.corp_nm);
             $('#biz_no').val(data.biz_no);
+            $('#biz_nm').val(data.biz_nm);
+            $('#biz_uptae').val(data.biz_uptae);
+            $('#biz_upjong').val(data.biz_upjong);
+            $('#biz_ceo_nm').val(data.biz_ceo_nm);
+            $('#biz_email').val(data.biz_email);
+            $('#biz_addr').val(data.biz_addr);
             $('#bank_cd').val(data.bank_cd);            
             $('#account_no').val(data.account_no);
             $('#account_pwd').val(data.account_pwd);
@@ -288,15 +294,45 @@
                   <div class="col-sm-6">
                     <input class="form-control form-control-sm" id="corp_nm" type="text" name="corp_nm" required />
                   </div>
-                </div>
-                
+                </div>                
+                <hr class="my-2" />
                 <div class="input-group input-group-sm mb-2">
-                  <label class="col-sm-3 col-form-label col-form-label-sm" for="biz_no">사업자 번호</label>
-                  <div class="col-sm-9">
+                  <label class="col-sm-3 col-form-label col-form-label-sm" for="biz_no">사업자 번호/상호</label>
+                  <div class="col-sm-3">
                     <input class="form-control form-control-sm" id="biz_no" type="text" name="biz_no" placeholder="000-00-00000" required />
                   </div>
+                  <div class="col-sm-6">
+                    <input class="form-control form-control-sm" id="biz_nm" type="text" name="biz_nm" placeholder="상호" required />
+                  </div>
                 </div>
-
+                <div class="input-group input-group-sm mb-2">
+                  <label class="col-sm-3 col-form-label col-form-label-sm" for="biz_ceo_nm">대표자명</label>
+                  <div class="col-sm-9">
+                    <input class="form-control form-control-sm" id="biz_ceo_nm" type="text" name="biz_ceo_nm" placeholder="대표자명" required />
+                  </div>                  
+                </div>
+                <div class="input-group input-group-sm mb-2">
+                  <label class="col-sm-3 col-form-label col-form-label-sm" for="biz_uptae">업태/업종</label>
+                  <div class="col-sm-4">
+                    <input class="form-control form-control-sm" id="biz_uptae" type="text" name="biz_uptae" placeholder="업태" required />
+                  </div>
+                  <div class="col-sm-5">
+                    <input class="form-control form-control-sm" id="biz_upjong" type="text" name="biz_upjong" placeholder="업종" required />
+                  </div>
+                </div>
+                <div class="input-group input-group-sm mb-2">
+                  <label class="col-sm-3 col-form-label col-form-label-sm" for="biz_addr">사업자 주소</label>
+                  <div class="col-sm-9">
+                    <input class="form-control form-control-sm" id="biz_addr" type="text" name="biz_addr" placeholder="주소" required />
+                  </div>                  
+                </div>
+                <div class="input-group input-group-sm mb-2">
+                  <label class="col-sm-3 col-form-label col-form-label-sm" for="biz_email">사업자 Email</label>
+                  <div class="col-sm-9">
+                    <input class="form-control form-control-sm" id="biz_email" type="email" name="biz_email" placeholder="example@example.com" required />
+                  </div>                  
+                </div> 
+                <hr class="my-2" />
                 <div class="input-group input-group-sm mb-2">
                   <label class="col-sm-3 col-form-label col-form-label-sm" for="bank_cd">운영계좌 은행</label>
                   <div class="col-sm-9">
@@ -331,8 +367,7 @@
                   <label class="col-sm-3 col-form-label col-form-label-sm" for="depositor">예금주명</label>
                   <div class="col-sm-9">
                     <input class="form-control form-control-sm" id="depositor" type="text" name="depositor" maxlength="20" required />
-                  </div>
-                  
+                  </div>                  
                 </div>
 
                 <div class="input-group input-group-sm mb-2">
