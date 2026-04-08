@@ -40,7 +40,185 @@ public class AgencyFeeController {
         return "pages/billing/agencyFee";
     }
 
-    @RequestMapping(value = "agencyFee/feeSummary", method = RequestMethod.POST)
+    @RequestMapping(value = "agencyFee/totSummary", method = RequestMethod.POST)
+    public @ResponseBody String getAgencyTotSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        HashMap<String, Object> totalSumm = new HashMap<String, Object>();
+        Gson gson = new Gson();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        hashmapParam.put("user_id", member.getUserId());
+        hashmapParam.put("userCorpCd", member.getUserCorpCd());
+		hashmapParam.put("userCorpType", member.getUserCorpType());
+        String jString = null; 
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            // System.out.println(hashmapParam);
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                int ordCol = Integer.parseInt(String.valueOf(pageing.getOrder().get(0).get("column")));
+                hashmapParam.put("sidx", pageing.getColumns().get(ordCol).get("data"));
+                hashmapParam.put("sord", pageing.getOrder().get(0).get("dir"));                               
+            } else {
+                hashmapParam.put("sidx", pageing.getColumns().get(0).get("data"));
+                hashmapParam.put("sord", "");                
+            } 
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+            
+            list = agencyFeeService.getAgencyTotSummary(hashmapParam);
+            int records = agencyFeeService.getQueryTotalCnt();
+            totalSumm = agencyFeeService.getAgencyTotSummaryTotal(hashmapParam);
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+            hashmapResult.put("totalSumm", totalSumm);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jString;  
+    } 
+
+    @RequestMapping(value = "agencyFee/downTotalExcel", method = RequestMethod.POST)
+    public ResponseEntity<byte[]> getAgncyTotSummaryToExcel(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        try {
+            hashmapParam.put("userCorpCd", member.getUserCorpCd());
+		    hashmapParam.put("userCorpType", member.getUserCorpType());
+            hashmapParam.put("sidx", "");
+            hashmapParam.put("sord", "");
+            hashmapParam.put("start", "0");
+            hashmapParam.put("end", "9999");
+            List<HashMap<String, Object>> list = agencyFeeService.getAgencyTotSummary(hashmapParam);
+
+            // Create an Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Docu List");
+            ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
+
+            // Create header row
+            Row titleRow = sheet.createRow(0);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("대리점 수수료 현황");            
+            titleCell.setCellStyle(excelStyle.getStyle("title"));
+
+            // Create header row
+            Row headerRow = sheet.createRow(1);
+            String[] headers = {
+                "NO", "대리점 명"             
+                , "승인건수", "승인금액","정산 원금액", "정산 수수료", "여신수수료", "비즈론수수료"
+                , "대리점-정산수수료", "대리점-여신수수료", "대리점-비즈론수수료", "대리점-지급총액"
+            };
+            
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(excelStyle.getStyle("header"));
+                // 각 컬럼 너비 자동 조정
+                sheet.autoSizeColumn(i);                
+                // 한글의 경우 autoSizeColumn이 완벽하지 않을 수 있어 약간의 여백 추가
+                sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
+            }
+             
+            // Populate data rows
+            int rowIndex = 2;
+            for (HashMap<String, Object> row : list) {
+                Row dataRow = sheet.createRow(rowIndex++);
+                int colIndex = 0;
+                // 1. NO (row number)
+                dataRow.createCell(colIndex++).setCellValue(rowIndex - 2);                
+                // 2. 출금
+                dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("agency_nm", "").toString()); 
+
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_cnt")))); 
+                Cell cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("conf_cnt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));                 
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_base_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_base_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_svc_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_svc_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_crd_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("bank_in_crd_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("biz_crd_amt"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("biz_crd_amt"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_svc_fee"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("agent_svc_fee"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_crd_fee"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("agent_crd_fee"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_loan_fee"))));
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("agent_loan_fee"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+                // dataRow.createCell(colIndex++).setCellValue(Double.parseDouble(String.valueOf(row.get("agent_tot_fee"))));                  
+                cell = dataRow.createCell(colIndex++);
+                cell.setCellValue(Double.parseDouble(String.valueOf(row.get("agent_tot_fee"))));
+                cell.setCellStyle(excelStyle.getStyle("number"));
+            }    
+            Row sumRow = sheet.createRow(rowIndex);            
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowIndex, rowIndex, 0, 3));
+            Cell summTitle = sumRow.createCell(0);
+            summTitle.setCellValue("합계");            
+            summTitle.setCellStyle(excelStyle.getStyle("header"));
+
+            int[] sumCols = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+            for (int col : sumCols) {
+                String colLetter = CellReference.convertNumToColString(col);
+                String formula = String.format("SUM(%s2:%s%d)", colLetter, colLetter, rowIndex);
+                Cell sumCell = sumRow.createCell(col);
+                sumCell.setCellFormula(formula);
+                sumCell.setCellStyle(excelStyle.getStyle("subTotal")); 
+            }
+            
+            // 테두리 그리기
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 13);
+            // Write workbook to a byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            workbook.close();
+
+            // Set response headers
+            HttpHeaders hHeaders = new HttpHeaders();
+            hHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            hHeaders.setContentDispositionFormData("attachment", "agencyFee.xlsx");
+
+            return ResponseEntity.ok()
+                    .headers(hHeaders)
+                    .body(outputStream.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    } 
+
+
+    @RequestMapping(value = "agencyFee/agencyFeeSummary", method = RequestMethod.POST)
     public @ResponseBody String getAgencyFeeSummary(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
         List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
@@ -134,7 +312,7 @@ public class AgencyFeeController {
         return jString;  
     } 
 
-    @RequestMapping(value = "agencyFee/downExcel", method = RequestMethod.POST)
+    @RequestMapping(value = "agencyFee/downAgencyExcel", method = RequestMethod.POST)
     public ResponseEntity<byte[]> getAgncyFeeSummaryToExcel(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         try {
@@ -270,6 +448,10 @@ public class AgencyFeeController {
     public ResponseEntity<byte[]> getChainTaxExcel(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
         SessionVO member = (SessionVO) session.getAttribute("S_USER");
         try {
+            
+            HashMap<String, Object> opCorp = agencyFeeService.getOpCorpInfo(hashmapParam);
+            System.out.println(">>>>>>>>>>>>> opCorp Info : " + opCorp);
+
             hashmapParam.put("userCorpCd", member.getUserCorpCd());
 		    hashmapParam.put("userCorpType", member.getUserCorpType());
             hashmapParam.put("sidx", "");
@@ -323,14 +505,23 @@ public class AgencyFeeController {
                 // System.out.println("------------------------->> 공급자 정보 - 운영사 정보");
                 dataRow.createCell(colIndex++).setCellValue("01");                                
                 dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("tax_dt", "").toString());
-                dataRow.createCell(colIndex++).setCellValue("1618100518");
+                // dataRow.createCell(colIndex++).setCellValue("1618100518");
+                // dataRow.createCell(colIndex++).setCellValue("");
+                // dataRow.createCell(colIndex++).setCellValue("주식회사 마트페이");
+                // dataRow.createCell(colIndex++).setCellValue("권해진");
+                // dataRow.createCell(colIndex++).setCellValue("경기도 시흥시 거북섬공원로 27, 6층 651호(정왕동)");
+                // dataRow.createCell(colIndex++).setCellValue("서비스");
+                // dataRow.createCell(colIndex++).setCellValue("금융지원서비스업");
+                // dataRow.createCell(colIndex++).setCellValue("geetae@naver.com"); 
+
+                dataRow.createCell(colIndex++).setCellValue(opCorp.getOrDefault("biz_no", "").toString().replace("-", ""));
                 dataRow.createCell(colIndex++).setCellValue("");
-                dataRow.createCell(colIndex++).setCellValue("주식회사 마트페이");
-                dataRow.createCell(colIndex++).setCellValue("권해진");
-                dataRow.createCell(colIndex++).setCellValue("경기도 시흥시 거북섬공원로 27, 6층 651호(정왕동)");
-                dataRow.createCell(colIndex++).setCellValue("서비스");
-                dataRow.createCell(colIndex++).setCellValue("금융지원서비스업");
-                dataRow.createCell(colIndex++).setCellValue("geetae@naver.com"); 
+                dataRow.createCell(colIndex++).setCellValue(opCorp.getOrDefault("corp_nm", "").toString());
+                dataRow.createCell(colIndex++).setCellValue(opCorp.getOrDefault("biz_ceo_nm", "").toString());
+                dataRow.createCell(colIndex++).setCellValue(opCorp.getOrDefault("biz_addr", "").toString());
+                dataRow.createCell(colIndex++).setCellValue(opCorp.getOrDefault("biz_upjong", "").toString());
+                dataRow.createCell(colIndex++).setCellValue(opCorp.getOrDefault("biz_uptae", "").toString());
+                dataRow.createCell(colIndex++).setCellValue(opCorp.getOrDefault("biz_email", "").toString()); 
                 // System.out.println("------------------------->> 공급받는자 정보 - 가맹점 정보");
                 // 공급받는자 정보 - 가맹점 정보                
                 dataRow.createCell(colIndex++).setCellValue(row.getOrDefault("biz_no", "").toString().replace("-", ""));

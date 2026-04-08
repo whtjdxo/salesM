@@ -23,6 +23,14 @@ public class AgencyFeeService {
         return agencyFeeMapper.getQueryTotalCnt();
     }   
 
+    public List<HashMap<String, Object>> getAgencyTotSummary(HashMap<String, Object> hashmapParam) {
+        return agencyFeeMapper.getAgencyTotSummary(hashmapParam); 
+    }
+     
+    public HashMap<String, Object> getAgencyTotSummaryTotal(HashMap<String, Object> hashmapParam) {
+        return agencyFeeMapper.getAgencyTotSummaryTotal(hashmapParam);
+    } 
+
     public List<HashMap<String, Object>> getAgencyFeeSummary(HashMap<String, Object> hashmapParam) {
         return agencyFeeMapper.getAgencyFeeSummary(hashmapParam); 
     }
@@ -38,6 +46,10 @@ public class AgencyFeeService {
      
     public HashMap<String, Object> getAgencyFeeListTotal(HashMap<String, Object> hashmapParam) {
         return agencyFeeMapper.getAgencyFeeListTotal(hashmapParam);
+    }
+
+    public HashMap<String, Object> getOpCorpInfo(HashMap<String, Object> hashmapParam) {
+        return agencyFeeMapper.getOpCorpInfo(hashmapParam);
     }
 
     public List<HashMap<String, Object>> getChainTaxExcel(HashMap<String, Object> hashmapParam) {

@@ -8,7 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface AgencyFeeMapper {
     int getQueryTotalCnt(); 
-    
+    List<HashMap<String, Object>> getAgencyTotSummary(HashMap<String, Object> hashmapParam);
+
+    HashMap<String, Object> getAgencyTotSummaryTotal(HashMap<String, Object> hashmapParam); 
     List<HashMap<String, Object>> getAgencyFeeSummary(HashMap<String, Object> hashmapParam);
 
     HashMap<String, Object> getAgencyFeeSummaryTotal(HashMap<String, Object> hashmapParam); 
@@ -16,6 +18,7 @@ public interface AgencyFeeMapper {
     List<HashMap<String, Object>> getAgencyFeeList(HashMap<String, Object> hashmapParam);
 
     HashMap<String, Object> getAgencyFeeListTotal(HashMap<String, Object> hashmapParam); 
+    HashMap<String, Object> getOpCorpInfo(HashMap<String, Object> hashmapParam);
 
     List<HashMap<String, Object>> getChainTaxExcel(HashMap<String, Object> hashmapParam);    
 }
