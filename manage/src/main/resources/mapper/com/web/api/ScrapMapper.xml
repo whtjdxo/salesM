@@ -59,8 +59,8 @@
                         , TC.BIZ_NO 		AS bizNo
                         , VN.VAN_CD		AS vanCd
                         , CD.CODE_NM 		AS vanNm
-                        , VN.VAN_ID             AS loginId
-                        , VN.VAN_PWD            AS loginPwd
+                        , TRIM(VN.VAN_ID)       AS loginId
+                        , TRIM(VN.VAN_PWD)      AS loginPwd
                         , VN.TERM_ID            AS vanUrl
                 FROM 	TB_CHAIN TC
                         JOIN TB_CHAIN_VAN VN ON VN.CHAIN_NO = TC.CHAIN_NO
