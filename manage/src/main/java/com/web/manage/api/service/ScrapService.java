@@ -63,6 +63,8 @@ public class ScrapService {
     @Transactional
     public boolean scrapUploadVanData(String uploadData, ScrapLogVO logVO) {       
         // ScrapVanDataVO scrapVanDataVO = new ScrapVanDataVO();
+        ScrapProcTransVO procVo = new ScrapProcTransVO();
+                
         int totDataCnt = 0;
 		int succDataCnt  = 0;
 		int dupDataCnt   = 0;
@@ -107,6 +109,28 @@ public class ScrapService {
                 logger.debug(">> " + "Error writing scrap log: " + e.getMessage());
                 // System.err.println("Error writing scrap log: " + e.getMessage());
             } 
+
+            // ---------------------------------------------------------------------------//
+            // 신규 건이 있을때 만 실행
+            // batch에서 반복  호출하기 때문에...오류나도 pass
+            // ---------------------------------------------------------------------------//
+            if (succDataCnt > 0) {         
+                procVo.setChainNo(logVO.getChain_no());
+                procVo.setVanCd(logVO.getVan_cd());
+                procVo.setUserId(logVO.getLogin_id());
+
+                try {
+                    scrapMapper.callProcTransVanDocu(procVo);            
+                    if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
+                        logger.error("Scrap transaction VanDocu Data processing success~!!");
+                    } else {
+                        logger.error("VanDocu Data processing fail !!" + procVo.getResultMsg());    
+                    } 
+                } catch (Exception e) {
+                    logger.error("Scrap transaction VanDocu Data processing failed", e); 
+                } 
+            }
+
             return true;
 
         } catch (Exception e) {
@@ -117,6 +141,7 @@ public class ScrapService {
 
     @Transactional
     public boolean scrapUploadDeliData(String uploadData, ScrapLogVO logVO) {       
+        ScrapProcTransVO procVo = new ScrapProcTransVO();
         int totDataCnt = 0;
 		int succDataCnt  = 0;
 		int dupDataCnt   = 0;
@@ -139,7 +164,7 @@ public class ScrapService {
                     continue;
                 } catch (Exception e) {
                     // Rollback for other errors
-                    throw new RuntimeException("Error during scrapUploadVanData", e);
+                    throw new RuntimeException("Error during scrapUploadDeliData", e);
                 }
             }
 
@@ -159,18 +184,39 @@ public class ScrapService {
                 // Log the exception or handle it appropriately
                 System.err.println("Error writing scrap log: " + e.getMessage());
             } 
+
+            // ---------------------------------------------------------------------------//
+            // 신규 건이 있을때 만 실행
+            // batch에서 반복  호출하기 때문에...오류나도 pass
+            // ---------------------------------------------------------------------------//
+            if (succDataCnt > 0) {                
+                procVo.setChainNo(logVO.getChain_no());
+                procVo.setVanCd(logVO.getVan_cd());
+                procVo.setUserId(logVO.getLogin_id());
+
+                try {
+                    scrapMapper.callProcTransDeliDocu(procVo);            
+                    if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
+                        logger.error("Scrap transaction DeliDocu Data processing success~!!");
+                    } else {
+                        logger.error("DeliDocu Data processing fail !!" + procVo.getResultMsg());    
+                    } 
+                } catch (Exception e) {
+                    logger.error("Scrap transaction DeliDocu Data processing failed", e); 
+                }
+            }            
+
             return true;
 
         } catch (Exception e) {
             // Rollback for other errors
-            throw new RuntimeException("Error during scrapUploadVanData", e);
+            throw new RuntimeException("Error during scrapUploadDeliData", e);
         }
     }
 
-
     @Transactional
-    public boolean scrapUploadBankData(String uploadData, ScrapLogVO logVO) {       
-        
+    public boolean scrapUploadBankData(String uploadData, ScrapLogVO logVO) { 
+        ScrapProcTransVO procVo = new ScrapProcTransVO();
         int totDataCnt = 0;
 		int succDataCnt  = 0;
 		int dupDataCnt   = 0;
@@ -191,7 +237,7 @@ public class ScrapService {
                     continue;
                 } catch (Exception e) {
                     // Rollback for other errors
-                    throw new RuntimeException("Error during scrapUploadVanData", e);
+                    throw new RuntimeException("Error during scrapUploadBankData", e);
                 }
             }
 
@@ -213,6 +259,27 @@ public class ScrapService {
                 logger.debug(">> " + "Error writing scrap log: " + e.getMessage());
                 // System.err.println("Error writing scrap log: " + e.getMessage());
             } 
+
+            // ---------------------------------------------------------------------------//
+            // 신규 건이 있을때 만 실행
+            // batch에서 반복  호출하기 때문에...오류나도 pass
+            // ---------------------------------------------------------------------------//
+            if (succDataCnt > 0) {                
+                procVo.setChainNo(logVO.getChain_no());
+                procVo.setVanCd(logVO.getVan_cd());
+                procVo.setUserId(logVO.getLogin_id());
+
+                try {
+                    scrapMapper.callProcTransBankDeposit(procVo);            
+                    if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
+                        logger.error("Scrap transaction Bank Deposit Data processing success~!!");
+                    } else {
+                        logger.error("Bank Deposit Data processing fail !!" + procVo.getResultMsg());    
+                    } 
+                } catch (Exception e) {
+                    logger.error("Scrap transaction Bank Deposit Data processing failed", e); 
+                }
+            }       
             return true;
 
         } catch (Exception e) {
@@ -223,16 +290,17 @@ public class ScrapService {
 
     @Transactional
     public boolean scrapUploadCardSalesData(String uploadData, ScrapLogVO logVO) {       
+        ScrapProcTransVO procVo = new ScrapProcTransVO();
         int totDataCnt = 0;
 		int succDataCnt  = 0;
 		int dupDataCnt   = 0;
         try {
             // Parse JSON and populate scrapVanDataVO
             com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            List<ScrapCardSalesDataVO> scrapCradSalesData = objectMapper.readValue(uploadData, 
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, ScrapBankDataVO.class)
+            List<ScrapCardSalesDataVO> scrapCardSalesData = objectMapper.readValue(uploadData, 
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, ScrapCardSalesDataVO.class)
                     ); 
-            for (ScrapCardSalesDataVO upData : scrapCradSalesData) {
+            for (ScrapCardSalesDataVO upData : scrapCardSalesData) {
                 totDataCnt += 1;                
                 try {                    
                     scrapMapper.scrapUploadCardSalesData(upData);
@@ -243,7 +311,7 @@ public class ScrapService {
                     continue;
                 } catch (Exception e) {
                     // Rollback for other errors
-                    throw new RuntimeException("Error during scrapUploadVanData", e);
+                    throw new RuntimeException("Error during scrapUploadCardSalesData", e);
                 }
             }
 
@@ -264,18 +332,19 @@ public class ScrapService {
                 // Log the exception or handle it appropriately
                 logger.debug(">> " + "Error writing scrap log: " + e.getMessage());
                 // System.err.println("Error writing scrap log: " + e.getMessage());
-            } 
+            }  
+            
             return true;
 
         } catch (Exception e) {
             // Rollback for other errors
-            throw new RuntimeException("Error during scrapUploadBankData", e);
+            throw new RuntimeException("Error during scrapUploadCardSalesData", e);
         }
     }
 
     @Transactional
     public boolean scrapUploadKsolutionData(String uploadData, ScrapLogVO logVO) {       
-        
+        ScrapProcTransVO procVo = new ScrapProcTransVO();
         int totDataCnt = 0;
 		int succDataCnt  = 0;
 		int dupDataCnt   = 0;
@@ -296,7 +365,7 @@ public class ScrapService {
                     continue;
                 } catch (Exception e) {
                     // Rollback for other errors
-                    throw new RuntimeException("Error during scrapUploadVanData", e);
+                    throw new RuntimeException("Error during scrapUploadKsolutionData", e);
                 }
             }
 
@@ -318,11 +387,30 @@ public class ScrapService {
                 logger.debug(">> " + "Error writing scrap log: " + e.getMessage());
                 // System.err.println("Error writing scrap log: " + e.getMessage());
             } 
+            // ---------------------------------------------------------------------------//
+            // 신규 건이 있을때 만 실행
+            // batch에서 반복  호출하기 때문에...오류나도 pass
+            // ---------------------------------------------------------------------------//
+            if (succDataCnt > 0) {                
+                procVo.setChainNo(logVO.getChain_no());
+                procVo.setVanCd(logVO.getVan_cd());
+                procVo.setUserId(logVO.getLogin_id());
+                try {
+                    scrapMapper.callProcTransKsolution(procVo);            
+                    if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
+                        logger.error("Scrap transaction Ksolution Data processing success~!!");
+                    } else {
+                        logger.error("Ksolution Data processing fail !!" + procVo.getResultMsg());    
+                    } 
+                } catch (Exception e) {
+                    logger.error("Scrap transaction Ksolution Data processing failed", e); 
+                }
+            }       
             return true;
 
         } catch (Exception e) {
             // Rollback for other errors
-            throw new RuntimeException("Error during scrapUploadBankData", e);
+            throw new RuntimeException("Error during scrapUploadKsolutionData", e);
         }
     }
 
