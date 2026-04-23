@@ -117,12 +117,12 @@ public class ScrapService {
             if (succDataCnt > 0) {         
                 procVo.setChainNo(logVO.getChain_no());
                 procVo.setVanCd(logVO.getVan_cd());
-                procVo.setUserId(logVO.getLogin_id());
+                procVo.setUserId("SCRAPSYS"); // logVO.getLogin_id() 대신 고정값 사용 (예시)
 
                 try {
                     scrapMapper.callProcTransVanDocu(procVo);            
                     if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
-                        logger.error("Scrap transaction VanDocu Data processing success~!!");
+                        logger.info("Scrap transaction VanDocu Data processing success~!!");
                     } else {
                         logger.error("VanDocu Data processing fail !!" + procVo.getResultMsg());    
                     } 
@@ -192,12 +192,12 @@ public class ScrapService {
             if (succDataCnt > 0) {                
                 procVo.setChainNo(logVO.getChain_no());
                 procVo.setVanCd(logVO.getVan_cd());
-                procVo.setUserId(logVO.getLogin_id());
+                procVo.setUserId("SCRAPSYS"); // logVO.getLogin_id() 대신 고정값 사용 (예시)
 
                 try {
                     scrapMapper.callProcTransDeliDocu(procVo);            
                     if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
-                        logger.error("Scrap transaction DeliDocu Data processing success~!!");
+                        logger.info("Scrap transaction DeliDocu Data processing success~!!");
                     } else {
                         logger.error("DeliDocu Data processing fail !!" + procVo.getResultMsg());    
                     } 
@@ -267,12 +267,12 @@ public class ScrapService {
             if (succDataCnt > 0) {                
                 procVo.setChainNo(logVO.getChain_no());
                 procVo.setVanCd(logVO.getVan_cd());
-                procVo.setUserId(logVO.getLogin_id());
+                procVo.setUserId("SCRAPSYS"); // logVO.getLogin_id() 대신 고정값 사용 (예시)
 
                 try {
                     scrapMapper.callProcTransBankDeposit(procVo);            
                     if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
-                        logger.error("Scrap transaction Bank Deposit Data processing success~!!");
+                        logger.info("Scrap transaction Bank Deposit Data processing success~!!");
                     } else {
                         logger.error("Bank Deposit Data processing fail !!" + procVo.getResultMsg());    
                     } 
@@ -283,8 +283,8 @@ public class ScrapService {
             return true;
 
         } catch (Exception e) {
-            // Rollback for other errors
-            throw new RuntimeException("Error during scrapUploadBankData", e);
+                // Rollback for other errors
+                throw new RuntimeException("Error during scrapUploadBankData", e);
         }
     }
 
@@ -394,11 +394,11 @@ public class ScrapService {
             if (succDataCnt > 0) {                
                 procVo.setChainNo(logVO.getChain_no());
                 procVo.setVanCd(logVO.getVan_cd());
-                procVo.setUserId(logVO.getLogin_id());
+                procVo.setUserId("SCRAPSYS"); // logVO.getLogin_id() 대신 고정값 사용 (예시)
                 try {
                     scrapMapper.callProcTransKsolution(procVo);            
                     if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
-                        logger.error("Scrap transaction Ksolution Data processing success~!!");
+                        logger.info("Scrap transaction Ksolution Data processing success~!!");
                     } else {
                         logger.error("Ksolution Data processing fail !!" + procVo.getResultMsg());    
                     } 
@@ -420,7 +420,7 @@ public class ScrapService {
         try {
             scrapMapper.callProcTransVanDocu(procVo);            
             if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
-                logger.error("Scrap transaction VanDocu Data processing success~!!");
+                logger.info("Scrap transaction VanDocu Data processing success~!!");
             } else {
                 logger.error("VanDocu Data processing fail !!" + procVo.getResultMsg());    
             } 
@@ -434,7 +434,7 @@ public class ScrapService {
         try {
             scrapMapper.callProcTransDeliDocu(procVo);            
             if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
-                logger.error("Scrap transaction Deli Docu Data processing success~!!");
+                logger.info("Scrap transaction Deli Docu Data processing success~!!");
             } else {
                 logger.error("Deli Docu Data processing fail !!" + procVo.getResultMsg());    
             } 
@@ -448,7 +448,7 @@ public class ScrapService {
         try {
             scrapMapper.callProcTransBankDeposit(procVo);            
             if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
-                logger.error("Scrap transaction Bank Deposit Data processing success~!!");
+                logger.info("Scrap transaction Bank Deposit Data processing success~!!");
             } else {
                 logger.error("Bank Deposit Data processing fail !!" + procVo.getResultMsg());    
             } 
@@ -463,7 +463,7 @@ public class ScrapService {
         try {
             scrapMapper.callProcTransKsolution(procVo);            
             if (procVo.getResultCode() == 0) { // 성공 코드 가정 (프로시저 정의에 따라 조정)
-                logger.error("Scrap transaction Ksolution Data processing success~!!");
+                logger.info("Scrap transaction Ksolution Data processing success~!!");
                 // result.setResultCode("S000");
                 // result.setResultMsg(procVo.getResultMsg()); 
             } else {
