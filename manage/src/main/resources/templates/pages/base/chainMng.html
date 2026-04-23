@@ -127,6 +127,15 @@
               Object.assign(postData, formData);
               return JSON.stringify(postData);
             },
+            dataSrc: function (json) {
+                  // totalSummary 저장
+                  totalSumm = json.totalSumm || {};
+                  return json.data;
+            },
+            // 서버 에러 처리 등 추가 가능
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+            }
           },
             columns: [
                 { data: 'chain_no' }
@@ -184,6 +193,20 @@
             loadingRecords: '로딩중...',
             processing: '처리중...',
           },
+          footerCallback: function (row, data, start, end, display) {
+            var api = this.api();
+            const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+            const colMap = {
+                6: 'tot_use_amt',                
+            };
+            Object.entries(colMap).forEach(([colIdx, key]) => {
+                const footer = api.column(Number(colIdx)).footer();
+                if (footer) {
+                    const val = totalSumm[key] || 0;
+                    $(footer).html(renderNumber(val));
+                }
+            }); 
+          }, 
         });
 
         $('#schgb_chain_val').keypress(function(e) {
@@ -1434,6 +1457,13 @@
                   </tr>
                 </thead>
                 <tbody class="list"></tbody>
+                <tfoot>
+                  <tr>
+                    <th colspan="6" class="text-center">즉결 잔고 총계</th>
+                    <th class="text-right px-2"></th>
+                    <th colspan="4" class="text-center"></th>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>

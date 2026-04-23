@@ -119,7 +119,7 @@
         WHERE   1 = 1
           AND   TC.USE_YN = 'Y'
         <if test="sch_corp_cd != null and sch_corp_cd != ''">			
-			AND TC.CORP_NO = #{sch_corp_cd}
+			AND TC.CORP_CD = #{sch_corp_cd}
 		</if>
         <if test="sch_agency_cd != null and sch_agency_cd != ''">			
 			AND TC.AGENCY_CD = #{sch_agency_cd}
@@ -168,6 +168,59 @@
             </otherwise>
         </choose>
         LIMIT ${start}, ${end}
+    </select>
+
+
+    <select id="getChainTotUseAmt" parameterType="java.util.HashMap" resultType="hashMap">
+        /* ChainMapper.getChainTotUseAmt */
+        SELECT 	IFNULL(SUM(TC.TOT_USE_AMT), 0)        AS  tot_use_amt 
+          FROM  TB_CHAIN TC
+          JOIN  TB_CORP  CO     ON CO.CORP_CD = TC.CORP_CD
+          JOIN  TB_AGENCY AG    ON AG.AGENCY_CD  = TC.AGENCY_CD
+          LEFT OUTER JOIN  TB_USER  TU     ON TU.USER_ID = TC.CEO_ID
+        WHERE   1 = 1
+          AND   TC.USE_YN = 'Y'
+        <if test="sch_corp_cd != null and sch_corp_cd != ''">			
+			AND TC.CORP_CD = #{sch_corp_cd}
+		</if>
+        <if test="sch_agency_cd != null and sch_agency_cd != ''">			
+			AND TC.AGENCY_CD = #{sch_agency_cd}
+		</if>
+        <if test="schgb_chain_val != ''">
+			<choose>
+				<when test="schgb_chain == 'schgb_chain_no'">
+					AND TC.CHAIN_NO = #{schgb_chain_val}
+				</when>
+				<when test="schgb_chain == 'schgb_chain_nm'">
+					AND TC.CHAIN_NM LIKE CONCAT('%', #{schgb_chain_val}, '%')
+				</when>
+			</choose>
+		</if>
+        <if test="sch_use_yn != null and sch_use_yn != ''">			
+			AND TC.USE_YN = #{sch_use_yn}
+		</if>
+        <choose>
+            <when test="sch_svc_stat != null and sch_svc_stat != ''">
+                AND TC.SVC_STAT = #{sch_svc_stat}
+            </when>
+            <!-- <when test="sch_svc_stat == ''">
+                AND TC.SVC_STAT IN ('O', 'R')
+            </when> -->
+        </choose>
+        <choose>
+            <when test='userCorpType == "LN"'>
+                AND TC.CORP_CD = #{userCorpCd}
+            </when>
+            <when test='userCorpType == "OP"'>
+                AND 1 = 1
+            </when>
+            <when test='userCorpType == "AG"'>
+                AND TC.AGENCY_CD = #{userCorpCd}
+            </when>
+            <otherwise>
+                AND  1 = 0
+            </otherwise>
+        </choose>
     </select>
 
     <insert id="insertChain" parameterType="com.web.manage.base.domain.ChainVO">

@@ -28,6 +28,10 @@ public class ChainService {
         return chainMapper.getChainList(hashmapParam);
     }
 
+    public HashMap<String, Object> getChainTotUseAmt(HashMap<String, Object> hashmapParam) {
+        return chainMapper.getChainTotUseAmt(hashmapParam);
+    }
+
     public List<HashMap<String, Object>> getChainVanList(HashMap<String, Object> hashmapParam) {
         return chainMapper.getChainVanList(hashmapParam);
     }
