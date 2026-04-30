@@ -127,6 +127,15 @@
               Object.assign(postData, formData);
               return JSON.stringify(postData);
             },
+            dataSrc: function (json) {
+                  // totalSummary 저장
+                  totalSumm = json.totalSumm || {};
+                  return json.data;
+            },
+            // 서버 에러 처리 등 추가 가능
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("DataTables Ajax Error: ", textStatus, errorThrown);
+            }
           },
             columns: [
                 { data: 'chain_no' }
@@ -159,9 +168,9 @@
             { targets: 2, width: '110px', className: 'text-center' },
             { targets: 3, width: '90px', className: 'text-center' },
             { targets: 4, width: '110PX', className: 'text-center' },
-            { targets: 5, width: '120PX', className: 'text-end' , render: $.fn.dataTable.render.number(',', '.', 0, '')},
-            { targets: 6, width: '120PX', className: 'text-end' , render: $.fn.dataTable.render.number(',', '.', 0, '')},
-            { targets: 7, width: '90px', className: 'text-center' },
+            { targets: 5, width: '110PX', className: 'text-end' , render: $.fn.dataTable.render.number(',', '.', 0, '')},
+            { targets: 6, width: '110PX', className: 'text-end' , render: $.fn.dataTable.render.number(',', '.', 0, '')},
+            { targets: 7, width: '100px', className: 'text-center' },
             { targets: 8, width: '90px', className: 'text-center' },
             { targets: 9, width: '80px', className: 'text-center' },
             { targets: 10, width: '80px', className: 'text-center' },
@@ -184,6 +193,20 @@
             loadingRecords: '로딩중...',
             processing: '처리중...',
           },
+          footerCallback: function (row, data, start, end, display) {
+            var api = this.api();
+            const renderNumber = $.fn.dataTable.render.number(',', '.', 0, '').display;
+            const colMap = {
+                6: 'tot_use_amt',                
+            };
+            Object.entries(colMap).forEach(([colIdx, key]) => {
+                const footer = api.column(Number(colIdx)).footer();
+                if (footer) {
+                    const val = totalSumm[key] || 0;
+                    $(footer).html(renderNumber(val));
+                }
+            }); 
+          }, 
         });
 
         $('#schgb_chain_val').keypress(function(e) {
@@ -220,6 +243,7 @@
             $('#chain_nm').val(data.chain_nm);
             $('#select_chain_nm').text(data.chain_nm);
             $('#biz_no').val(data.biz_no);
+            $('#law_no').val(data.law_no);
             $('#upjong').val(data.upjong);            
             $('#uptae').val(data.uptae);
             $('#chain_zip_no').val(data.chain_zip_no);
@@ -1434,6 +1458,13 @@
                   </tr>
                 </thead>
                 <tbody class="list"></tbody>
+                <tfoot>
+                  <tr>
+                    <th colspan="6" class="text-center">즉결 잔고 총계</th>
+                    <th class="text-right px-2"></th>
+                    <th colspan="4" class="text-center"></th>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>

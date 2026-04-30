@@ -16,7 +16,7 @@ import com.web.manage.base.domain.LinkChainVO;
 public interface ChainMapper {
 
     List<HashMap<String, Object>> getChainList(HashMap<String, Object> hashmapParam);
-
+    HashMap<String, Object> getChainTotUseAmt(HashMap<String, Object> hashmapParam);
     List<HashMap<String, Object>> getChainVanList(HashMap<String, Object> hashmapParam);
     
     List<HashMap<String, Object>> getChainFileList(HashMap<String, Object> hashmapParam);
@@ -44,6 +44,8 @@ public interface ChainMapper {
     boolean updateChainCard(ChainCardVO chainCardVo);
 
     List<HashMap<String, Object>> getLinkChainList(HashMap<String, Object> hashmapParam);    
+
+    
     boolean insertLinkChain(LinkChainVO linkChainVo);
     boolean updateLinkChain(LinkChainVO linkChainVo);
 
