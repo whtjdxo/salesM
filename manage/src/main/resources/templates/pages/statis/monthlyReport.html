@@ -700,7 +700,7 @@
               var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
               var link = document.createElement('a');
               link.href = window.URL.createObjectURL(blob);
-              link.download = '영업일보_'+ schChainNo + '.xlsx';
+              link.download = '영업월보_'+ schChainNo + '.xlsx';
               link.click();
             },
             error: function (xhr, status, error) {

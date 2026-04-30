@@ -530,7 +530,7 @@
                 ORDER BY ${orderBy}
             </when>
             <otherwise>
-                ORDER BY 1
+                ORDER BY RM.CHAIN_NO, RM.REMIT_DT DESC
             </otherwise>
         </choose>                
         LIMIT  ${start}, ${end}
@@ -585,7 +585,7 @@
                                 AND CO.USE_YN = 'Y'
         WHERE	FIND_IN_SET(RM.REMIT_NO, #{sch_remit_no}) 
         AND     RM.REMIT_AMT > 0
-        ORDER   BY RM.CHAIN_NO DESC
+        ORDER   BY RM.CHAIN_NO, RM.REMIT_DT DESC
     </select>
 
     <select id="getRemitSummaryTotal" parameterType="java.util.HashMap" resultType="java.util.HashMap">

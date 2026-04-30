@@ -292,13 +292,13 @@
                 STRAIGHT_JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
         WHERE	AF.ADJUST_DATE BETWEEN CONCAT(#{sch_month}, '-01')
                                  AND CONCAT(#{sch_month}, '-31')
-          AND   AF.CHAIN_NO   = #{sch_chain_no}        
-        <!-- <if test="sch_chain_no != null and sch_chain_no != ''">                                  
+          <!-- AND   AF.CHAIN_NO   = #{sch_chain_no}         -->
+        <if test="sch_chain_no != null and sch_chain_no != ''">                                  
 	        AND    AF.CHAIN_NO   = #{sch_chain_no}  
         </if>
         <if test="sch_selected_agency_cd != null and sch_selected_agency_cd != ''">                                  
 	        AND    AF.AGENCY_CD   = #{sch_selected_agency_cd}  
-        </if>    -->
+        </if>   
         GROUP 	BY AF.ADJUST_DATE
         <choose>
             <when test="sidx != '' and sidx != null ">
@@ -356,13 +356,13 @@
                 JOIN TB_USER TU ON TU.USER_ID = TC.CEO_ID
         WHERE	AF.ADJUST_DATE BETWEEN CONCAT(#{sch_month}, '-01')
                                  AND CONCAT(#{sch_month}, '-31')
-          AND   AF.CHAIN_NO   = #{sch_chain_no}  
-		<!-- <if test="sch_chain_no != null and sch_chain_no != ''">                                  
+          <!-- AND   AF.CHAIN_NO   = #{sch_chain_no}   -->
+		<if test="sch_chain_no != null and sch_chain_no != ''">                                  
 	        AND    AF.CHAIN_NO   = #{sch_chain_no}  
         </if>
         <if test="sch_selected_agency_cd != null and sch_selected_agency_cd != ''">                                  
 	        AND    AF.AGENCY_CD   = #{sch_selected_agency_cd}  
-        </if>        -->
+        </if>       
     </select>
 
 

@@ -943,10 +943,9 @@ public class WithdrawController {
             // Create header row
             Row headerRow = sheet.createRow(1); 
             String[] headers = {
-                  "가맹점 명"       , "사업자 번호"         , "대표자명"          ,  "송금 상태"       
-                , "송금 금액"       , "매출 금액"           , "카드사 수수료"       , "입금예정액"
-                , "정산 원금"       , "정산 수수료"       , "여신수수료"         , "정산 금액"
-                , "과입금액"        , "차감 정산액"
+                  "가맹점 명"       , "사업자 번호"         , "대표자명"        , "출금일자"       ,  "송금 상태"       
+                , "송금 금액"       , "매출 금액"           , "카드사 수수료"   , "입금예정액"      , "정산 원금"       
+                , "정산 수수료"       , "여신수수료"         , "정산 금액"      , "과입금액"        , "차감 정산액"
             };
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -964,45 +963,46 @@ public class WithdrawController {
                 dataRow.createCell(0).setCellValue(String.valueOf(row.get("chain_nm")));
                 dataRow.createCell(1).setCellValue(String.valueOf(row.get("biz_no")));
                 dataRow.createCell(2).setCellValue(String.valueOf(row.get("ceo_nm")));
-                dataRow.createCell(3).setCellValue(String.valueOf(row.get("remit_status_nm")));
+                dataRow.createCell(3).setCellValue(String.valueOf(row.get("remit_dt")));
+                dataRow.createCell(4).setCellValue(String.valueOf(row.get("remit_status_nm")));
 
-                Cell c04 = dataRow.createCell(4);
+                Cell c04 = dataRow.createCell(5);
                 c04.setCellValue(Double.parseDouble(String.valueOf(row.get("remit_amt"))));
                 c04.setCellStyle(excelStyle.getStyle("number"));
                 
-                Cell c05 = dataRow.createCell(5);
+                Cell c05 = dataRow.createCell(6);
                 c05.setCellValue(Double.parseDouble(String.valueOf(row.get("conf_amt"))));
                 c05.setCellStyle(excelStyle.getStyle("number"));
 
-                Cell c06 = dataRow.createCell(6);
+                Cell c06 = dataRow.createCell(7);
                 c06.setCellValue(Double.parseDouble(String.valueOf(row.get("card_fee_amt"))));
                 c06.setCellStyle(excelStyle.getStyle("number"));
 
-                Cell c07 = dataRow.createCell(7);
+                Cell c07 = dataRow.createCell(8);
                 c07.setCellValue(Double.parseDouble(String.valueOf(row.get("card_resv_amt"))));
                 c07.setCellStyle(excelStyle.getStyle("number"));
 
-                Cell c08 = dataRow.createCell(8);
+                Cell c08 = dataRow.createCell(9);
                 c08.setCellValue(Double.parseDouble(String.valueOf(row.get("wd_base_amt"))));
                 c08.setCellStyle(excelStyle.getStyle("number"));
 
-                Cell c09 = dataRow.createCell(9);
+                Cell c09 = dataRow.createCell(10);
                 c09.setCellValue(Double.parseDouble(String.valueOf(row.get("svc_fee_amt"))));
                 c09.setCellStyle(excelStyle.getStyle("number"));
 
-                Cell c10 = dataRow.createCell(10);
+                Cell c10 = dataRow.createCell(11);
                 c10.setCellValue(Double.parseDouble(String.valueOf(row.get("crd_fee_amt"))));
                 c10.setCellStyle(excelStyle.getStyle("number"));
 
-                Cell c11 = dataRow.createCell(11);
+                Cell c11 = dataRow.createCell(12);
                 c11.setCellValue(Double.parseDouble(String.valueOf(row.get("wd_remit_amt"))));
                 c11.setCellStyle(excelStyle.getStyle("number"));
 
-                Cell c12 = dataRow.createCell(12);
+                Cell c12 = dataRow.createCell(13);
                 c12.setCellValue(Double.parseDouble(String.valueOf(row.get("exc_remit_amt"))));
                 c12.setCellStyle(excelStyle.getStyle("number"));
 
-                Cell c13 = dataRow.createCell(13);
+                Cell c13 = dataRow.createCell(14);
                 c13.setCellValue(Double.parseDouble(String.valueOf(row.get("sub_amt"))));
                 c13.setCellStyle(excelStyle.getStyle("number")); 
             }
@@ -1010,12 +1010,12 @@ public class WithdrawController {
             // 3. 합계 Row 생성           
 
             Row sumRow = sheet.createRow(rowIndex);            
-            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowIndex, rowIndex, 0, 3));
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowIndex, rowIndex, 0, 4));
             Cell summTitle = sumRow.createCell(0);
             summTitle.setCellValue("합계");            
             summTitle.setCellStyle(excelStyle.getStyle("header"));
 
-            int[] sumCols = {4,5,6,7,8,9,10,11,12,13};
+            int[] sumCols = {5,6,7,8,9,10,11,12,13,14};
             for (int col : sumCols) {
                 String colLetter = CellReference.convertNumToColString(col);
                 String formula = String.format("SUM(%s2:%s%d)", colLetter, colLetter, rowIndex);
@@ -1024,7 +1024,7 @@ public class WithdrawController {
                 sumCell.setCellStyle(excelStyle.getStyle("subTotal")); 
             }
 
-            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 13);
+            excelStyle.setRegionBorder(sheet, 2, rowIndex, 0, 14);
 
             // Write workbook to a byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
