@@ -530,7 +530,7 @@
                 ORDER BY ${orderBy}
             </when>
             <otherwise>
-                ORDER BY RM.CHAIN_NO, RM.REMIT_DT DESC
+                ORDER BY remit_dt desc, remit_status_nm desc, chain_no desc
             </otherwise>
         </choose>                
         LIMIT  ${start}, ${end}

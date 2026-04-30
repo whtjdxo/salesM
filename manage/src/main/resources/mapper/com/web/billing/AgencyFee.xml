@@ -305,7 +305,7 @@
                     ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>
-                    ORDER BY 1
+                    ORDER BY AF.ADJUST_DATE DESC
             </otherwise>
         </choose> 
         LIMIT  ${start}, ${end}

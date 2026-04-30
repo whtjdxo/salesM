@@ -509,10 +509,10 @@
           var schMonth = $('#sch_year').val() + '-' + $('#sch_mon').val();
           var schChainNm = $('#sch_chain_nm').val();
           $('#globalLoadingBar').show();
-          if (!schChainNo) {
-            alert('가맹점을 선택해주세요');
-            return;
-          }
+          // if (!schChainNo) {
+          //   alert('가맹점을 선택해주세요');
+          //   return false;
+          // }
           var formData = { 
             sch_month     : schMonth,
             sch_chain_no  : schChainNo, 
