@@ -105,10 +105,19 @@ public class AgencyFeeController {
             ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
 
             // Create header row
+            String agencyNm = "";
+            String strMon = hashmapParam.getOrDefault("sch_month", "").toString();
+            String strTitle = "";
+            if (hashmapParam.containsKey("sch_selected_agency_cd") ) {
+                agencyNm = String.valueOf(hashmapParam.get("sch_selected_agency_cd"));
+            } else {
+                agencyNm = "전체";
+            } 
+            strTitle = strMon + " 대리점 (" + agencyNm  + ") 수수료 현황";
             Row titleRow = sheet.createRow(0);
             sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("대리점 수수료 현황");            
+            titleCell.setCellValue(strTitle);            
             titleCell.setCellStyle(excelStyle.getStyle("title"));
 
             // Create header row
@@ -329,11 +338,21 @@ public class AgencyFeeController {
             Sheet sheet = workbook.createSheet("Docu List");
             ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
 
-            // Create header row
+            // Create header row            
+            String agencyNm = "";
+            String strMon = hashmapParam.getOrDefault("sch_month", "").toString();
+            String strTitle = "";
+            if (hashmapParam.containsKey("sch_selected_agency_cd") ) {
+                agencyNm = String.valueOf(hashmapParam.get("sch_selected_agency_cd"));
+            } else {
+                agencyNm = "전체";
+            } 
+            strTitle = strMon + " 대리점 (" + agencyNm  + ") 가맹점 수수료 현황";
+
             Row titleRow = sheet.createRow(0);
             sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("수수료 현황");            
+            titleCell.setCellValue(strTitle);            
             titleCell.setCellStyle(excelStyle.getStyle("title"));
 
             // Create header row
@@ -465,11 +484,15 @@ public class AgencyFeeController {
             Sheet sheet = workbook.createSheet("TAX List");
             ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
 
+            String strMon = hashmapParam.getOrDefault("sch_month", "").toString();
+            String strTitle = "";
+            
+            strTitle = strMon + " 계산서 발행 내역";
             // Create header row
             Row titleRow = sheet.createRow(0);
             sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("계산서 발행 내역");            
+            titleCell.setCellValue(strTitle);            
             titleCell.setCellStyle(excelStyle.getStyle("title"));
 
             // Create header row
@@ -631,14 +654,23 @@ public class AgencyFeeController {
             ExcelStyleUtil excelStyle = new ExcelStyleUtil(workbook);
 
             String chainNm = "";
+            String strMon = hashmapParam.getOrDefault("sch_month", "").toString();
+            String strTitle = "";
             if (hashmapParam.containsKey("sch_chain_nm")) {
-                chainNm = String.valueOf(hashmapParam.get("sch_chain_nm"));
+                chainNm = String.valueOf(hashmapParam.get("sch_chain_nm")); 
+            } else {
+                if (hashmapParam.containsKey("sch_selected_agency_cd") ) {
+                    chainNm = String.valueOf(hashmapParam.get("sch_selected_agency_cd"));
+                } else {
+                    chainNm = "전체";
+                }
             }
+            strTitle = strMon + " " + chainNm  + " 가맹점 수수료 상세내역";
             // Create header row
             Row titleRow = sheet.createRow(0);
             sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 5));
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue(chainNm + " 수수료 상세내역");            
+            titleCell.setCellValue(strTitle);            
             titleCell.setCellStyle(excelStyle.getStyle("title"));
 
             // Create header row
@@ -714,7 +746,7 @@ public class AgencyFeeController {
                 cell.setCellStyle(excelStyle.getStyle("number"));
             }    
             Row sumRow = sheet.createRow(rowIndex);            
-            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowIndex, rowIndex, 0, 3));
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowIndex, rowIndex, 0, 1));
             Cell summTitle = sumRow.createCell(0);
             summTitle.setCellValue("합계");            
             summTitle.setCellStyle(excelStyle.getStyle("header"));

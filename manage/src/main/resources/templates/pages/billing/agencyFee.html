@@ -24,11 +24,12 @@
 
         $('#btn_search').click(function () {
           selected_agency_cd = '';
-          tbl_agency_summary.ajax.reload();
-          tbl_chain_summary.ajax.reload();
-          tbl_chain_fee_list.clear().draw();
           $('#sch_chain_no').val('');
           $('#sch_chain_nm').val('');
+          $('#list_chain_nm').text('');
+          tbl_agency_summary.ajax.reload();
+          tbl_chain_summary.ajax.reload();
+          tbl_chain_fee_list.ajax.reload();     
         });
 
         var agencyTotalSumm = {};
@@ -142,10 +143,11 @@
                 $(this).addClass('selected');
                 selected_agency_cd = row.agency_cd;
             }
-            tbl_chain_summary.ajax.reload();
-            tbl_chain_fee_list.clear().draw();
             $('#sch_chain_no').val('');
             $('#sch_chain_nm').val('');
+            $('#list_chain_nm').text('');
+            tbl_chain_summary.ajax.reload();
+            tbl_chain_fee_list.ajax.reload();
         });
 
         var tbl_chain_summary = $('#tbl_chain_summary').DataTable({
@@ -274,6 +276,7 @@
           
           $('#sch_chain_no').val(row.chain_no);
           $('#sch_chain_nm').val(row.chain_nm);
+          $('#list_chain_nm').text(row.chain_nm);
           tbl_chain_fee_list.ajax.reload();
         });
     
@@ -283,7 +286,8 @@
           // var formData = $('#frm_sch').serializeObject();
           var formData = {
                 sch_month : $('#sch_year').val() + '-' + $('#sch_mon').val()
-                , sch_agency_cd : $('#sch_agency_cd').val()
+                ,sch_selected_agency_cd : selected_agency_cd || $('#sch_agency_cd').val()
+                // , sch_agency_cd : $('#sch_agency_cd').val()
               }
           $('#globalLoadingBar').show();
           $.ajax({
@@ -298,7 +302,7 @@
               var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
               var link = document.createElement('a');
               link.href = window.URL.createObjectURL(blob);
-              link.download = '수수료현황_' + $('#sch_year').val() + $('#sch_mon').val() + '.xlsx';
+              link.download = '대리점 수수료현황_' + $('#sch_year').val() + $('#sch_mon').val() + '.xlsx';
               link.click();
             },
             error: function (xhr, status, error) {
@@ -314,7 +318,7 @@
           // var formData = $('#frm_sch_list').serializeObject();
           var formData = {
                 sch_month : $('#sch_year').val() + '-' + $('#sch_mon').val()
-                , sch_agency_cd : $('#sch_agency_cd').val()
+                , sch_selected_agency_cd : selected_agency_cd || $('#sch_agency_cd').val()
               }
           $('#globalLoadingBar').show(); 
           $.ajax({
@@ -361,7 +365,7 @@
               var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
               var link = document.createElement('a');
               link.href = window.URL.createObjectURL(blob);
-              link.download = '수수료현황_' + $('#sch_year').val() + $('#sch_mon').val() + '.xlsx';
+              link.download = '대리점별 가맹점 수수료현황_' + $('#sch_year').val() + $('#sch_mon').val() + '.xlsx';
               link.click();
             },
             error: function (xhr, status, error) {
@@ -384,8 +388,9 @@
                 type: 'POST',
                 data: function (postData) { 
                     var formData = { 
-                      sch_month     : $('#sch_year').val() + '-' + $('#sch_mon').val(),
-                      sch_chain_no  : $('#sch_chain_no').val() 
+                      sch_month     : $('#sch_year').val() + '-' + $('#sch_mon').val()
+                      , sch_selected_agency_cd : selected_agency_cd || $('#sch_agency_cd').val()
+                      , sch_chain_no  : $('#sch_chain_no').val()
                     }; 
                     Object.assign(postData, formData);
                     return JSON.stringify(postData);
@@ -491,6 +496,7 @@
           tbl_chain_fee_list.clear().draw();
           $('#sch_chain_no').val('');
           $('#sch_chain_nm').val('');
+          $('#list_chain_nm').text('');
         });
 
         $('#sch_mon').change(function () {
@@ -500,13 +506,15 @@
           tbl_chain_fee_list.clear().draw();
           $('#sch_chain_no').val('');
           $('#sch_chain_nm').val('');
+          $('#list_chain_nm').text('');
         });
 
         // Excel download button click event
         $('#btn_list_excel').click(function () {
           // var formData = $('#frm_sch_list').serializeObject();
-          var schChainNo = $('#sch_chain_no').val();
           var schMonth = $('#sch_year').val() + '-' + $('#sch_mon').val();
+          var sch_selected_agency_cd = selected_agency_cd || $('#sch_agency_cd').val();
+          var sch_chain_no = $('#sch_chain_no').val();                    
           var schChainNm = $('#sch_chain_nm').val();
           $('#globalLoadingBar').show();
           // if (!schChainNo) {
@@ -515,7 +523,8 @@
           // }
           var formData = { 
             sch_month     : schMonth,
-            sch_chain_no  : schChainNo, 
+            sch_selected_agency_cd : sch_selected_agency_cd,
+            sch_chain_no  : sch_chain_no,
             sch_chain_nm  : schChainNm
           };
           $.ajax({
@@ -530,7 +539,7 @@
               var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
               var link = document.createElement('a');
               link.href = window.URL.createObjectURL(blob);
-              link.download = schChainNm + '_영업수수료_'+ schMonth + '.xlsx';
+              link.download = "가맹점_" + schChainNm + "_영업수수료_" + schMonth + ".xlsx";
               link.click();
             },
             error: function (xhr, status, error) {
@@ -716,8 +725,11 @@
       <div class="card">
         <div class="card-header" style="height:80px;">          
           <div class="row flex-between-end">
-            <div class="col-lg-10 align-self-center">
-              <h4 class="mb-0">상세 리스트</h4>
+            <div class="col-lg-4 align-self-center">
+              <h4 class="mb-0">상세 리스트</h4>              
+            </div>            
+            <div class="col-lg-6 align-self-left">
+              <h4 class="mb-0" id="list_chain_nm"></h4>
             </div>            
             <div class="col-lg-2">
               <form id="frm_sch_list" name="frm_sch_list" onsubmit="return false;" novalidate="">
