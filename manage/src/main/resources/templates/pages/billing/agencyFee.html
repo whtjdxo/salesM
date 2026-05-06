@@ -350,7 +350,7 @@
           // var formData = $('#frm_sch').serializeObject();
           var formData = {
                 sch_month : $('#sch_year').val() + '-' + $('#sch_mon').val()
-                , selected_agency_cd : selected_agency_cd || $('#sch_agency_cd').val()
+                , sch_selected_agency_cd : selected_agency_cd || $('#sch_agency_cd').val()
               }
           $('#globalLoadingBar').show();
           $.ajax({
