@@ -642,7 +642,7 @@ public class DepositController {
     public @ResponseBody ReturnDataVO callProcDepositAdjust(@ModelAttribute("ProcDepositVO") @Valid ProcDepositVO procVo, HttpSession session) {
         ReturnDataVO result = new ReturnDataVO(); 
         try {
-            System.out.println("procVo : " + procVo);
+            // System.out.println("procVo : " + procVo);
             SessionVO member = (SessionVO) session.getAttribute("S_USER");
             procVo.setUserId(member.getUserId());            
             return depositService.callProcDepositAdjust(procVo);             

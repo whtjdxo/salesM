@@ -415,7 +415,16 @@
           ConfirmdialogToAjax("execute","/deposit/deposit/depoMng/procDepositAdjust", dataParam, fn_deposit_result); 
         });
          
-        function fn_deposit_result(data){ 
+        function fn_deposit_result(data){           
+          if (data.resultCode != "S000") {
+            Swal.fire({
+              title: '실패',
+              text: data.resultMessage,
+              icon: 'error'
+            });
+            return;
+          }
+
           Swal.fire({
             title: '성공',
             text: '작업을 정상적으로 완료하였습니다.',
@@ -842,7 +851,20 @@
         });
 
         function fn_change_result(data){
-          swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');
+          if (data.resultCode != "S000") {
+            Swal.fire({
+              title: '실패',
+              text: data.resultMessage,
+              icon: 'error'
+            });
+            return;
+          }
+
+          Swal.fire({
+            title: '성공',
+            text: '작업을 정상적으로 완료하였습니다.',
+            icon: 'success'
+          });
           // fn_default_clear();           
           // 현재 선택된 행의 데이터 저장
           var selectedRowData = tbl_depo_resv_summ.row('.selected').data();            
@@ -1063,6 +1085,15 @@
           });
 
           function fn_depo_delete_result(data){
+            if (data.resultCode != "S000") {
+              Swal.fire({
+                title: '실패',
+                text: data.resultMessage,
+                icon: 'error'
+              });
+              return;
+            }
+            
             swal('성공', '작업을 정상적으로 완료하였습니다.', 'success');    
             // 현재 선택된 행의 데이터 저장
             var selectedRowData = tbl_depo_resv_summ.row('.selected').data();            
