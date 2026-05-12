@@ -418,6 +418,14 @@
         }); 
          
         function fn_deposit_result(data){ 
+          if (data.resultCode != "S000") {
+            Swal.fire({
+              title: '실패',
+              text: data.resultMsg || '작업을 완료하지 못했습니다.',
+              icon: 'error'
+            });
+            return;
+          }
           Swal.fire({
             title: '성공',
             text: '작업을 정상적으로 완료하였습니다.',
@@ -454,10 +462,7 @@
               $('#globalLoadingBar').hide();
             }
           });
-        });  
-
-         
-         
+        });           
       });
     </script>
   </head>
