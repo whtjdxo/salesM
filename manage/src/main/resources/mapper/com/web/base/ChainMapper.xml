@@ -132,6 +132,17 @@
 				<when test="schgb_chain == 'schgb_chain_nm'">
 					AND TC.CHAIN_NM LIKE CONCAT('%', #{schgb_chain_val}, '%')
 				</when>
+                <when test="schgb_chain == 'schgb_biz_no'">
+                    AND REPLACE(TC.BIZ_NO, "-", "") LIKE CONCAT('%', REPLACE(#{schgb_chain_val}, "-", ""), '%')
+                </when>
+                <when test="schgb_chain == 'schgb_ceo_nm'">
+                    AND TC.CEO_ID IN (
+                                    SELECT  USER_ID 
+                                      FROM  TB_USER 
+                                     WHERE  CORP_TYPE = 'CH'
+                                       AND  USER_NM LIKE CONCAT('%', #{schgb_chain_val}, '%')
+                                    )  
+                </when>
 			</choose>
 		</if>
         <if test="sch_use_yn != null and sch_use_yn != ''">			

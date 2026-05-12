@@ -668,7 +668,102 @@
             chainNo    : $('#chain_no').val() 
           }    
           ConfirmdialogToAjax('execute', '/deposit/exceed/excMng/setExceedCancelAll', dataParam, fn_return_result);
-        }); 
+        });
+
+        // 엑셀 다운로드 (전체 데이터)
+        $('#btn_exceed_excel').click(function () {
+          var chainNo = $('#chain_no').val();
+          if (!chainNo) {
+            swal('실패', '가맹점을 먼저 선택해주세요.', 'error');
+            return;
+          }
+
+          swal({
+            title: '다운로드',
+            text: '전체 데이터를 다운로드 중입니다...',
+            icon: 'info',
+            button: false,
+            closeOnClickOutside: false,
+            closeOnEsc: false
+          });
+
+          // 전체 데이터 조회 (페이지네이션 없음)
+          var formData = $('#frm_sch_chain').serializeObject();
+          formData = {
+            ...formData,
+            chain_no : chainNo
+          };
+
+          $.ajax({
+            url: '/deposit/exceed/excMng/chainExcList',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',
+            data: JSON.stringify({
+              draw: 1,
+              start: 0,
+              length: 10000,  // 전체 데이터 조회 (충분히 큰 값)
+              ...formData
+            }),
+            success: function(response) {
+              var excelData = response.data || [];
+              
+              if (excelData.length === 0) {
+                swal('실패', '다운로드할 데이터가 없습니다.', 'error');
+                return;
+              }
+
+              // 화면과 동일한 순서로 정렬 (등록일자 내림차순)
+              excelData.sort(function(a, b) {
+                return new Date(b.exc_date) - new Date(a.exc_date);
+              });
+
+              // 엑셀 헤더
+              var headers = ['과입사유코드', '등록일자', '상태', '발생금액', '미출금액', '비고', '출금일'];
+              
+              // 데이터 변환
+              var data = excelData.map(function(row) {
+                return [
+                  row.exc_code_nm,
+                  row.exc_date,
+                  row.exc_status_nm,
+                  row.occur_amt,
+                  row.remain_amt,
+                  row.exc_memo || '',
+                  row.remit_dt || ''
+                ];
+              });
+
+              // 워크북 생성
+              var wb = XLSX.utils.book_new();
+              var ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+              
+              // 컬럼 너비 설정
+              ws['!cols'] = [
+                { wch: 18 },  // 과입사유코드
+                { wch: 12 },  // 등록일자
+                { wch: 12 },  // 상태
+                { wch: 15 },  // 발생금액
+                { wch: 15 },  // 미출금액
+                { wch: 30 },  // 비고
+                { wch: 12 }   // 출금일
+              ];
+
+              XLSX.utils.book_append_sheet(wb, ws, '과입상세');
+              
+              // 파일명 설정 (가맹점명 포함)
+              var chainNm = $('#select_chain_nm').text().replace('상세정보', '').trim();
+              var fileName = '과입상세_' + (chainNm || '전체') + '_' + new Date().getTime() + '.xlsx';
+              
+              XLSX.writeFile(wb, fileName);
+              swal('성공', '엑셀 파일이 다운로드되었습니다. (총 ' + excelData.length + '건)', 'success');
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+              console.error("Export Error: ", textStatus, errorThrown);
+              swal('실패', '엑셀 다운로드 중 오류가 발생했습니다.', 'error');
+            }
+          });
+        });
            
       });
     </script>
@@ -773,13 +868,16 @@
                 </div>
                 <div class="col-sm-10">  
                   <div class="row mb-1">  
-                    <div class="col-sm-6 text-end"> 
+                    <div class="col-sm-5 text-end"> 
                       <button type="button" class="btn btn-success me-2" id="btn_exceed_ready">출금대기</button> 
                       <button type="button" class="btn btn-primary me-2" id="btn_exceed_ready_all">모두 출금대기</button>  
                     </div>
-                    <div class="col-sm-6 text-end">  
+                    <div class="col-sm-5 text-end">  
                       <button type="button" class="btn btn-success me-2" id="btn_exceed_cancel">출금대기 취소</button> 
                       <button type="button" class="btn btn-primary me-2" id="btn_exceed_cancel_all">모두 출금대기 취소</button>  
+                    </div>               
+                    <div class="col-sm-2 text-end">  
+                      <button type="button" class="btn btn-primary me-2" id="btn_exceed_excel">엑셀 다운로드</button>  
                     </div>               
                   </div>   
                 </div>
