@@ -485,6 +485,14 @@
         });
          
         function fn_remit_result(data){ 
+          if (data.resultCode != "S000") {
+            Swal.fire({
+              title: '실패',
+              text: data.resultMessage || '작업 중 오류가 발생하였습니다.',
+              icon: 'error'
+            });
+            return;
+          }
           Swal.fire({
             title: '성공',
             text: '작업을 정상적으로 완료하였습니다.',
