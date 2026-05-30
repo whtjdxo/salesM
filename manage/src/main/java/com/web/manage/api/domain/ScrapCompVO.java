@@ -16,4 +16,5 @@ public class ScrapCompVO {
     private String cardSalesPwd;
     private String apiAuthKey;
     private String authKey;
+    private String runMode;
 }

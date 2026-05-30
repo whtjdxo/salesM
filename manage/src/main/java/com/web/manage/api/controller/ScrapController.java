@@ -86,6 +86,7 @@ public class ScrapController {
                                                 , @RequestParam("userId") String userId
                                                 , @RequestParam("apiAuthKey") String apiAuthKey
                                                 , @RequestParam("authKey") String authKey
+                                                , @RequestParam("runMode") String runMode
                                                 ) {         		
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>(); 
         ScrapUserVO scrapUserVo = new ScrapUserVO();
@@ -95,7 +96,7 @@ public class ScrapController {
         String jString = null;
         // -- 사용자 인증키 체크
 
-        scrapUserVo.setUserId(userId);
+        scrapUserVo.setUserId(userId);        
         scrapUserVo.setUserAuthKey(apiAuthKey); 
 
 		if (scrapService.getUserAuthKeyCheck(scrapUserVo) <= 0){
@@ -114,6 +115,9 @@ public class ScrapController {
         scrapCompVO.setUserId(userId);
         scrapCompVO.setApiAuthKey(apiAuthKey);
         scrapCompVO.setAuthKey(authKey); 
+        scrapCompVO.setRunMode(runMode);
+
+        System.out.println("scrapCompVO : " + scrapCompVO.toString());
         
         try {
             resultList = scrapService.getVanChainList(scrapCompVO);
@@ -143,7 +147,7 @@ public class ScrapController {
                                                 , @RequestParam("userId") String userId
                                                 , @RequestParam("apiAuthKey") String apiAuthKey
                                                 , @RequestParam("authKey") String authKey
-                                                ) {         		
+                                                , @RequestParam("runMode") String runMode) {         		
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>(); 
         ScrapUserVO scrapUserVo = new ScrapUserVO();
         ScrapCompVO scrapCompVO = new ScrapCompVO(); 
@@ -171,7 +175,7 @@ public class ScrapController {
         scrapCompVO.setUserId(userId);
         scrapCompVO.setApiAuthKey(apiAuthKey);
         scrapCompVO.setAuthKey(authKey); 
-        
+        scrapCompVO.setRunMode(runMode);
         try {
             resultList = scrapService.getBankChainList(scrapCompVO);
             
@@ -201,7 +205,7 @@ public class ScrapController {
                                                 , @RequestParam("userId") String userId
                                                 , @RequestParam("apiAuthKey") String apiAuthKey
                                                 , @RequestParam("authKey") String authKey
-                                                ) {         		
+                                                , @RequestParam("runMode") String runMode) {         		
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>(); 
         ScrapUserVO scrapUserVo = new ScrapUserVO();
         ScrapCompVO scrapCompVO = new ScrapCompVO(); 
@@ -229,7 +233,7 @@ public class ScrapController {
         scrapCompVO.setUserId(userId);
         scrapCompVO.setApiAuthKey(apiAuthKey);
         scrapCompVO.setAuthKey(authKey); 
-        
+        scrapCompVO.setRunMode(runMode);
         try {
             resultList = scrapService.getScrapCardSalesList(scrapCompVO);
             
