@@ -93,7 +93,7 @@
                                     AND EL.LOGIN_ID     = VN.VAN_ID
                                     AND EL.VAN_CD       = VN.VAN_CD
                                     AND EL.VAN_CD       =  #{vanCd}
-                                    AND EL.SCRAP_DTTM &gt;= DATE_SUB(NOW(), INTERVAL 90 MINUTE)
+                                    AND EL.SCRAP_DTTM &gt;= DATE_SUB(NOW(), INTERVAL 30 MINUTE)
                                     AND INSTR(EL.ERROR_MSG, 'ERR09') &gt; 0
                                 )
                 </if>

@@ -191,7 +191,7 @@
                     ORDER BY ${sidx} ${sord}
             </when>
             <otherwise>
-                    ORDER BY 1
+                    ORDER BY AF.CHAIN_NO DESC
             </otherwise>
         </choose> 
         LIMIT  ${start}, ${end}
@@ -368,7 +368,7 @@
 
     <select id="getChainTaxExcel" parameterType="java.util.HashMap" resultType="java.util.HashMap">
         /*AgencyFeeMapper.getChainTaxExcel */
-        SELECT	DATE_FORMAT(LAST_DAY(DATE(CONCAT('2025-07', '-01'))), '%Y-%m-%d') AS tax_dt
+        SELECT	DATE_FORMAT(LAST_DAY(DATE(CONCAT(#{sch_month}, '-01'))), '%Y-%m-%d') AS tax_dt
                 , VT.CHAIN_NO                                       AS chain_no
                 , TC.BIZ_NO											AS biz_no
                 , TC.CHAIN_NM										AS chain_nm
