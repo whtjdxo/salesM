@@ -97,6 +97,23 @@
                                     AND INSTR(EL.ERROR_MSG, 'ERR09') &gt; 0
                                 )
                 </if>
+                <if test="runMode != null and runMode == 'error'">			
+                        AND   EXISTS (
+                                    SELECT 1 
+                                    FROM TB_SCRAP_ERROR_LOG EL 
+                                    WHERE EL.CHAIN_NO   = VN.CHAIN_NO
+                                    AND EL.LOGIN_ID     = VN.VAN_ID
+                                    AND EL.VAN_CD       = VN.VAN_CD
+                                    AND EL.VAN_CD       =  #{vanCd}
+                                    AND EL.SCRAP_DTTM &gt;= DATE_SUB(NOW(), INTERVAL 60 MINUTE)
+                                    AND (
+                                            INSTR(EL.ERROR_MSG, 'ERR01') &gt; 0
+                                            OR INSTR(EL.ERROR_MSG, 'ERR02') &gt; 0
+                                            OR INSTR(EL.ERROR_MSG, 'DB0') &gt; 0  
+                                            OR INSTR(EL.ERROR_MSG, 'UI0') &gt; 0
+                                        )
+                                )
+                </if>
                 ORDER 	BY TC.CHAIN_NO  
 	</select> 
         <select id="getBankChainList" parameterType="com.web.manage.api.domain.ScrapCompVO" resultType="java.util.HashMap">
