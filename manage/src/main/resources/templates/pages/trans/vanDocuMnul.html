@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}" layout:fragment="Content">
+  <head>
+    <title>수기 전문 입력</title>
+    <script src="/vendors/datatables.net/dataTables.min.js"></script>
+    <script src="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.js"></script>
+    <script src="/js/jquery.form.js"></script>
+    <script src="/js/common/fetchUtil.js"></script>
+    <script src="/js/common/modalUtil.js"></script>
+    <script src="/js/common/chainUtil.js"></script>
+    <link rel="stylesheet" href="/vendors/datatables.net-bs5/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="/css/custom-salesm.css" />
+
+    <script th:inline="none">
+      $(document).ready(function () {
+        $('#frm_van_docu_mnul').onLoadFunction();
+        $('#frm_sch_mnul').onLoadFunction();
+
+        var tbl_manual = null;
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('VAN_CD')", function (data) {
+          codeSetting('VAN_CD', data.data, '#van_cd', 'VAN', '', '');
+        });
+        callAjax('/common/totalCodelist', "code_grp_cd=('CARD_ISS')", function (data) {
+          codeSetting('CARD_ISS', data.data, '#card_iss', '발급사', '', '');
+        });
+        callAjax('/common/totalCodelist', "code_grp_cd=('CARD_ACQ')", function (data) {
+          codeSetting('CARD_ACQ', data.data, '#card_acq', '매입사', '', '');
+        });
+        callAjax('/common/totalCodelist', "code_grp_cd=('CARD_TYPE')", function (data) {
+          codeSetting('CARD_TYPE', data.data, '#card_type', '카드유형', '', '');
+        });
+        callAjax('/common/totalCodelist', "code_grp_cd=('CONF_GB')", function (data) {
+          codeSetting('CONF_GB', data.data, '#conf_gb', '승인구분', '', '');
+          codeSetting('CONF_GB', data.data, '#schgb_conf', '조회구분', '', '');
+        });
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('VAN_CD')", function (data) {
+          codeSetting('VAN_CD', data.data, '#sch_van', 'VAN', '', '');
+        });
+
+        setDefaultDateTime();
+        setDefaultSearchDate();
+
+        ChainUtil.bind({
+          chainNameId: 'sch_chain_nm',
+          chainNoId: 'sch_chain_no',
+          searchButtonId: 'btn_chain_find',
+          modalId: 'modal_chain_select',
+          tableBodySelector: '#tbl_chain_select tbody',
+          onSelected: function (item) {
+            syncChainFromSearch();
+          },
+          onNotFound: function () {
+            syncChainFromSearch();
+          }
+        });
+
+        $('#sch_chain_no, #sch_chain_nm').on('change keyup', function () {
+          syncChainFromSearch();
+        });
+
+        $('#btn_clear').on('click', function () {
+          resetFormToCreate();
+        });
+
+        $('#btn_save').on('click', function () {
+          syncChainFromSearch();
+          if (!$('#chain_no').val()) {
+            swal('실패', '검색조건에서 가맹점을 선택해 주세요.', 'error');
+            return;
+          }
+
+          var form = $('#frm_van_docu_mnul');
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity();
+            return;
+          }
+
+          $('#docu_type').val('M');
+          ConfirmdialogToAjax('create', '/trans/trans/vanDocuMng/insertManualVanDocu', form.serialize(), fn_return_result);
+        });
+
+        $('#btn_update').on('click', function () {
+          syncChainFromSearch();
+          if (!$('#chain_no').val()) {
+            swal('실패', '검색조건에서 가맹점을 선택해 주세요.', 'error');
+            return;
+          }
+
+          if (!$('#docu_seq').val()) {
+            swal('실패', '수정할 건을 리스트에서 선택해 주세요.', 'error');
+            return;
+          }
+          if (($('#proc_fg').val() || 'N') === 'Y') {
+            swal('안내', '다음 단계로 변환된 데이터(proc_fg=Y)는 수정할 수 없습니다.', 'warning');
+            return;
+          }
+          var form = $('#frm_van_docu_mnul');
+          if (!form[0].checkValidity()) {
+            form[0].reportValidity();
+            return;
+          }
+
+          $('#docu_type').val('M');
+          ConfirmdialogToAjax('update', '/trans/trans/vanDocuMng/updateManualVanDocu', form.serialize(), fn_return_result);
+        });
+
+        $('#btn_delete').on('click', function () {
+          if (!$('#docu_seq').val()) {
+            swal('실패', '삭제할 건을 리스트에서 선택해 주세요.', 'error');
+            return;
+          }
+          if (($('#proc_fg').val() || 'N') === 'Y') {
+            swal('안내', '다음 단계로 변환된 데이터(proc_fg=Y)는 삭제할 수 없습니다.', 'warning');
+            return;
+          }
+
+          ConfirmdialogToAjax('delete', '/trans/trans/vanDocuMng/deleteManualVanDocu', $('#frm_van_docu_mnul').serialize(), fn_return_result);
+        });
+
+        $('#btn_search').on('click', function () {
+          if (tbl_manual) {
+            tbl_manual.ajax.reload();
+          }
+        });
+
+        $('#schgb_conf_val').on('keypress', function (e) {
+          if (e.which === 13) {
+            $('#btn_search').click();
+            return false;
+          }
+        });
+
+        tbl_manual = $('#tbl_manual_docu').DataTable({
+          processing: true,
+          serverSide: true,
+          select: true,
+          responsive: true,
+          ajax: {
+            url: '/trans/trans/vanDocuMng/manualList',
+            contentType: 'application/json',
+            dataType: 'JSON',
+            type: 'POST',
+            data: function (postData) {
+              var formData = $('#frm_sch_mnul').serializeObject();
+              Object.assign(postData, formData);
+              return JSON.stringify(postData);
+            },
+          },
+          columns: [
+            {
+              data: 'docu_seq',
+              render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+              }
+            },
+            { data: 'docu_seq' },
+            { data: 'chain_no' },
+            { data: 'chain_nm' },
+            { data: 'van_cd_nm' },
+            { data: 'conf_dt' },
+            { data: 'conf_tm' },
+            { data: 'conf_no' },
+            { data: 'card_no' },
+            { data: 'conf_amt', render: $.fn.dataTable.render.number(',', '.', 0, '') },
+            { data: 'ent_dttm' }
+          ],
+          columnDefs: [
+            { targets: 0, width: '60px', className: 'text-center px-1' },
+            { targets: 1, width: '90px', className: 'text-right px-1' },
+            { targets: 2, width: '120px', className: 'text-center px-1' },
+            { targets: 3, width: '180px', className: 'text-left px-1' },
+            { targets: 4, width: '120px', className: 'text-left px-1' },
+            { targets: 5, width: '95px', className: 'text-center px-1' },
+            { targets: 6, width: '85px', className: 'text-center px-1' },
+            { targets: 7, width: '90px', className: 'text-center px-1' },
+            { targets: 8, width: '160px', className: 'text-center px-1' },
+            { targets: 9, width: '100px', className: 'text-right px-1' },
+            { targets: 10, width: '150px', className: 'text-center px-1' }
+          ],
+          order: [[1, 'desc']],
+          paging: true,
+          lengthChange: false,
+          searching: false,
+          ordering: true,
+          autoWidth: false,
+          pageLength: 20,
+          scrollY: '280px',
+          info: false,
+          language: {
+            emptyTable: '데이터가 없습니다.',
+            search: '검색:',
+            zeroRecords: '일치하는 데이터가 없습니다.',
+            loadingRecords: '로딩중...',
+            processing: '처리중...'
+          }
+        });
+
+        $('#tbl_manual_docu').on('click', 'tr', function () {
+          if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+            return;
+          }
+
+          tbl_manual.$('tr.selected').removeClass('selected');
+          $(this).addClass('selected');
+
+          var data = tbl_manual.row(this).data();
+          if (data) {
+            bindFormData(data);
+            if ((data.proc_fg || 'N') === 'Y') {
+              switchModeLocked();
+            } else {
+              switchMode(true);
+            }
+          }
+        });
+
+        function fn_return_result(data) {
+          if (data.resultCode === 'S000') {
+            swal('성공', data.resultMsg, 'success');
+            resetFormToCreate();
+            if (tbl_manual) {
+              tbl_manual.ajax.reload(null, false);
+            }
+          } else {
+            swal('실패', data.resultMsg, 'error');
+          }
+        }
+
+        function setDefaultDateTime() {
+          var now = new Date();
+          var yyyy = now.getFullYear();
+          var mm = String(now.getMonth() + 1).padStart(2, '0');
+          var dd = String(now.getDate()).padStart(2, '0');
+          var hh = String(now.getHours()).padStart(2, '0');
+          var mi = String(now.getMinutes()).padStart(2, '0');
+          var ss = String(now.getSeconds()).padStart(2, '0');
+
+          $('#recv_date').val(yyyy + '-' + mm + '-' + dd);
+          $('#conf_dt').val(yyyy + '-' + mm + '-' + dd);
+          $('#recv_time').val(hh + ':' + mi + ':' + ss);
+          $('#conf_tm').val(hh + ':' + mi + ':' + ss);
+        }
+
+        function setDefaultSearchDate() {
+          callAjax('/common/getPreWorkDay', '', function (data) {
+            $('#sch_conf_sdt').val(data.data);
+          });
+          callAjax('/common/getToDay', '', function (data) {
+            $('#sch_conf_edt').val(data.data);
+            if (tbl_manual) {
+              tbl_manual.ajax.reload();
+            }
+          });
+        }
+
+        function switchMode(isUpdateMode) {
+          if (isUpdateMode) {
+            $('#btn_save').hide();
+            $('#btn_update').show();
+            $('#btn_delete').show();
+          } else {
+            $('#btn_save').show();
+            $('#btn_update').hide();
+            $('#btn_delete').hide();
+          }
+        }
+
+        function switchModeLocked() {
+          $('#btn_save').hide();
+          $('#btn_update').hide();
+          $('#btn_delete').hide();
+        }
+
+        function resetFormToCreate() {
+          $('#frm_van_docu_mnul')[0].reset();
+          $('#docu_seq').val('');
+          $('#docu_type').val('M');
+          $('#cncl').val('N');
+          $('#dup').val('N');
+          $('#proc_fg').val('N');
+          $('#re_proc').val('N');
+          syncChainFromSearch();
+          setDefaultDateTime();
+          switchMode(false);
+          if (tbl_manual) {
+            tbl_manual.$('tr.selected').removeClass('selected');
+          }
+        }
+
+        function syncChainFromSearch() {
+          var schChainNo = $('#sch_chain_no').val() || '';
+          var schChainNm = $('#sch_chain_nm').val() || '';
+          $('#chain_no').val(schChainNo);
+          $('#chain_nm').val(schChainNm);
+        }
+
+        function bindFormData(data) {
+          $('#docu_seq').val(data.docu_seq || '');
+          $('#docu_type').val('M');
+          $('#chain_no').val(data.chain_no || '');
+          $('#chain_nm').val(data.chain_nm || '');
+          $('#sch_chain_no').val(data.chain_no || '');
+          $('#sch_chain_nm').val(data.chain_nm || '');
+          $('#van_cd').val(data.van_cd || '');
+          $('#card_reg_no').val(data.card_reg_no || '');
+          $('#recv_date').val(data.recv_date || '');
+          $('#recv_time').val(data.recv_time || '');
+          $('#conf_dt').val(data.conf_dt || '');
+          $('#conf_tm').val(data.conf_tm || '');
+          $('#conf_no').val(data.conf_no || '');
+          $('#conf_gb').val(data.conf_gb || '');
+          $('#conf_amt').val(data.conf_amt || '0');
+          $('#org_conf_dt').val(data.org_conf_dt || '');
+          $('#card_iss').val(data.card_iss || '');
+          $('#card_acq').val(data.card_acq || '');
+          $('#card_no').val(data.card_no || '');
+          $('#install_mon').val(data.install_mon || '00');
+          $('#card_type').val(data.card_type || '');
+          $('#proc_fg').val(data.proc_fg || 'N');
+        }
+
+      });
+    </script>
+  </head>
+
+  <div class="content">
+    <div class="row g-1 mb-1">
+      <div class="card">
+        <div class="card-header">
+          <div class="row flex-between-end">
+            <div class="col-lg-2 align-self-center">
+              <h4 class="mb-0">승인전문 조회</h4>
+            </div>            
+            <div class="col-lg-10">
+              <form id="frm_sch_mnul" name="frm_sch_mnul" onsubmit="return false;" novalidate=""> 
+                <div class="row mb-1">  
+                  <div class="col-sm-4">
+                    <div class="input-group">
+                      <div class="input-group input-group-sm mb-1 me-1">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="ceo_birth_dt">승인일</label>
+                        <div class="col-sm-4">
+                          <input class="form-control form-control-sm " id="sch_conf_sdt" type="text" name="sch_conf_sdt" istyle="date" maxlength="10" required />
+                        </div>   
+                        <span class="input-group-text">~</span>
+                        <div class="col-sm-4">
+                          <input class="form-control form-control-sm" id="sch_conf_edt" type="text" name="sch_conf_edt" istyle="date" maxlength="10" required />
+                        </div>   
+                      </div> 
+                    </div>
+                  </div>
+                  <div class="col-sm-5">
+                    <div class="input-group input-group-sm mb-1">
+                      <select class="form-select form-control-sm me-1" id="sch_van" name="sch_van" style="width: 75px">
+                        <option value="">VAN</option>
+                      </select>                      
+                      <!-- <select class="form-select form-control-sm me-1" id="sch_agency_cd" name="sch_agency_cd" style="width: 75px">
+                        <option value="">대리점</option>
+                      </select>                       -->
+                      <select class="form-select form-control-sm me-1" id="schgb_conf" name="schgb_conf" style="width: 75px">
+                        <option value="schgb_conf_no">승인 번호</option>
+                        <option value="schgb_card_no">카드 번호</option>
+                        <option value="schgb_conf_amt">승인 금액</option>
+                      </select>
+                      <input type="text" class="form-control form-control-sm me-1" id="schgb_conf_val" name="schgb_conf_val" style="width:150px" />
+                      <!-- <select class="form-select form-control-sm me-1" id="schgb_chain" name="schgb_chain" style="width: 100px">
+                        <option value="schgb_chain_nm">가맹점 명</option>
+                        <option value="schgb_biz_no">사업자 번호</option>
+                      </select> -->
+                      <!-- <input type="text" class="form-control form-control-sm me-1" id="schgb_chain_val" name="schgb_chain_val" style="width:150px" /> -->                      
+                    </div>
+                  </div> 
+                  <div class="col-sm-3">  
+                    <div class="input-group input-group-sm mb-1">
+                      <input type="hidden" id="sch_chain_no" name="sch_chain_no" />
+                      <input class="form-control form-control-sm" id="sch_chain_nm" name="sch_chain_nm" placeholder="가맹점명" autocomplete="off" />
+                      <button type="button" class="btn btn-outline-secondary btn-sm" id="btn_chain_find" name="btn_chain_find">검색</button>
+                      <button type="button" class="btn btn-primary btn-sm" id="btn_search" name="btn_search">조회</button>
+                    </div>                    
+                  </div>                  
+                </div> 
+              </form>
+            </div>
+          </div>          
+        </div> 
+
+        <div class="card-body pt-0">
+          <div class="table-responsive scrollbar">
+            <table class="table table-striped table-sm fs-9 mb-0 table-hover table-bordered" id="tbl_manual_docu">
+              <thead>
+                <tr>
+                  <th class="text-center">No</th>
+                  <th class="text-center">일련번호</th>
+                  <th class="text-center">가맹점코드</th>
+                  <th class="text-center">가맹점명</th>
+                  <th class="text-center">VAN</th>
+                  <th class="text-center">승인일자</th>
+                  <th class="text-center">승인시간</th>
+                  <th class="text-center">승인번호</th>
+                  <th class="text-center">카드번호</th>
+                  <th class="text-center">승인금액</th>
+                  <th class="text-center">등록일시</th>
+                </tr>
+              </thead>
+              <tbody class="list"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-body pt-0 border-top">
+          <form id="frm_van_docu_mnul" name="frm_van_docu_mnul" onsubmit="return false;" method="post" novalidate="">
+            <input type="hidden" id="docu_seq" name="docu_seq" />
+            <div class="row mb-2">
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="chain_nm">가맹점명</label>
+                <input class="form-control form-control-sm" id="chain_nm" name="chain_nm" readonly />
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="van_cd">VAN</label>
+                <select class="form-select form-control-sm" id="van_cd" name="van_cd" required>
+                  <option value="">선택</option>
+                </select>
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="card_reg_no">가맹번호</label>
+                <input class="form-control form-control-sm" id="card_reg_no" name="card_reg_no" />
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="card_type">카드유형</label>
+                <select class="form-select form-control-sm" id="card_type" name="card_type" required>
+                  <option value="">선택</option>
+                </select>
+              </div>
+               
+            </div>
+
+            <div class="row mb-2">
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="recv_date">수신일자</label>
+                <input class="form-control form-control-sm" id="recv_date" name="recv_date" istyle="date" maxlength="10" required  />
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="recv_time">수신시간</label>
+                <input class="form-control form-control-sm" id="recv_time" name="recv_time" istyle="time" maxlength="8" required  />
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="conf_dt">승인일자</label>
+                <input class="form-control form-control-sm" id="conf_dt" name="conf_dt" istyle="date" maxlength="10" required  />
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="conf_tm">승인시간</label>
+                <input class="form-control form-control-sm" id="conf_tm" name="conf_tm" istyle="time" maxlength="8" required  />
+              </div>
+            </div>
+
+            <div class="row mb-2">
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="conf_no">승인번호</label>
+                <input class="form-control form-control-sm" id="conf_no" name="conf_no" required />
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="conf_gb">승인구분</label>
+                <select class="form-select form-control-sm" id="conf_gb" name="conf_gb" required>
+                  <option value="">선택</option>
+                </select>
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="conf_amt">승인금액</label>
+                <input class="form-control form-control-sm" id="conf_amt" name="conf_amt" type="number" min="0" required />
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="org_conf_dt">원거래일자</label>
+                <input class="form-control form-control-sm" id="org_conf_dt" name="org_conf_dt" istyle="date" maxlength="10" placeholder="YYYY-MM-DD" />
+              </div>
+            </div>
+
+            <div class="row mb-2">
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="card_iss">발급사</label>
+                <select class="form-select form-control-sm" id="card_iss" name="card_iss" required>
+                  <option value="">선택</option>
+                </select>
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="card_acq">매입사</label>
+                <select class="form-select form-control-sm" id="card_acq" name="card_acq" required>
+                  <option value="">선택</option>
+                </select>
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="card_no">카드번호</label>
+                <input class="form-control form-control-sm" id="card_no" name="card_no" required />
+              </div>
+              <div class="col-sm-3">
+                <label class="form-label form-label-sm" for="install_mon">할부개월</label>
+                <input class="form-control form-control-sm" id="install_mon" name="install_mon" value="00" />
+              </div>
+            </div> 
+
+            <input type="hidden" id="cncl" name="cncl" value="N" />
+            <input type="hidden" id="dup" name="dup" value="N" />
+            <input type="hidden" id="proc_fg" name="proc_fg" value="N" />
+            <input type="hidden" id="re_proc" name="re_proc" value="N" />
+            <input type="hidden" id="docu_type" name="docu_type" value="M" />
+            <input type="hidden" id="chain_no" name="chain_no" />
+
+            <div class="d-flex justify-content-end gap-2 mt-3">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn_clear">초기화</button>
+              <button type="button" class="btn btn-primary btn-sm" id="btn_save">저장</button>
+              <button type="button" class="btn btn-warning btn-sm" id="btn_update" style="display: none;">수정</button>
+              <button type="button" class="btn btn-danger btn-sm" id="btn_delete" style="display: none;">삭제</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modal_chain_select" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">가맹점 선택</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-2">
+            <div class="table-responsive" style="max-height: 420px; overflow: auto;">
+              <table class="table table-sm table-hover table-bordered mb-0" id="tbl_chain_select">
+                <thead>
+                  <tr>
+                    <th class="text-center" style="width: 140px;">가맹점코드</th>
+                    <th class="text-center">가맹점명</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</html>

@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
 import com.web.manage.trans.domain.MapCodeVO;
 import com.web.manage.trans.domain.TransProcessVO;
 import com.web.manage.trans.domain.VanDocuVO;
-import com.web.manage.trans.domain.MapCodeVO;;
+
 @Mapper
 public interface VanDocuMapper {
     int getQueryTotalCnt(); 
@@ -34,6 +34,14 @@ public interface VanDocuMapper {
     List<HashMap<String, Object>> getUnprocessedList(HashMap<String, Object> hashmapParam);
 
     List<HashMap<String, Object>> getUnprocessedSumm(HashMap<String, Object> hashmapParam);
+
+    boolean insertManualVanDocu(VanDocuVO vanDocuVO);
+
+    List<HashMap<String, Object>> getManualVanDocuList(HashMap<String, Object> hashmapParam);
+
+    boolean updateManualVanDocu(VanDocuVO vanDocuVO);
+
+    boolean deleteManualVanDocu(VanDocuVO vanDocuVO);
     
     // void callScrapTransVanDocu(TransProcessVO procVo);
     void callScrapTransVanDocu(TransProcessVO procVo);    

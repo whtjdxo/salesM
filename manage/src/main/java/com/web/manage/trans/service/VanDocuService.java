@@ -17,6 +17,7 @@ import com.web.config.interceptor.AuthInterceptor;
 import com.web.manage.common.domain.ReturnDataVO;
 import com.web.manage.trans.domain.MapCodeVO;
 import com.web.manage.trans.domain.TransProcessVO; 
+import com.web.manage.trans.domain.VanDocuVO;
 
 @Service
 public class VanDocuService {
@@ -71,6 +72,22 @@ public class VanDocuService {
 
     public List<HashMap<String, Object>> getUnprocessedSumm(HashMap<String, Object> hashmapParam) {
         return vanDocuMapper.getUnprocessedSumm(hashmapParam);
+    }
+
+    public boolean insertManualVanDocu(VanDocuVO vanDocuVO) {
+        return vanDocuMapper.insertManualVanDocu(vanDocuVO);
+    }
+
+    public List<HashMap<String, Object>> getManualVanDocuList(HashMap<String, Object> hashmapParam) {
+        return vanDocuMapper.getManualVanDocuList(hashmapParam);
+    }
+
+    public boolean updateManualVanDocu(VanDocuVO vanDocuVO) {
+        return vanDocuMapper.updateManualVanDocu(vanDocuVO);
+    }
+
+    public boolean deleteManualVanDocu(VanDocuVO vanDocuVO) {
+        return vanDocuMapper.deleteManualVanDocu(vanDocuVO);
     }
  
     //  transaction 처리 는 Procedure 에서 처리하도록 함

@@ -76,6 +76,11 @@ public class VanDocuController {
         return "pages/trans/mapCodeMng";
     } 
 
+    @RequestMapping("manual")
+    public String manualInput() {
+        return "pages/trans/vanDocuMnul";
+    }
+
     @RequestMapping("mapPCodeList")    
     public @ResponseBody String getMapPcodeList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {         
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
@@ -748,6 +753,172 @@ public class VanDocuController {
         } catch (Exception e) {
             result.setResultCode("F000");
             result.setResultMsg("An error occurred while processing the file: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/insertManualVanDocu", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO insertManualVanDocu(@ModelAttribute("VanDocuVO") @Valid VanDocuVO vanDocuVO, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            if (bindingResult.hasErrors()) {
+                result.setResultCode("F000");
+                result.setResultMsg("입력값이 올바르지 않습니다.");
+                return result;
+            }
+
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            String userId = member.getUserId();
+
+            // 수기입력 화면은 docu_type 을 고정값 M 으로 저장한다.
+            vanDocuVO.setDocu_type("M");
+            vanDocuVO.setEnt_user_id(userId);
+            vanDocuVO.setUpt_user_id(userId);
+
+            if (vanDocuService.insertManualVanDocu(vanDocuVO)) {
+                result.setResultCode("S000");
+                result.setResultMsg("수기전문이 정상 등록되었습니다.");
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg("수기전문 등록에 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("수기전문 등록 중 오류가 발생했습니다.");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @RequestMapping("manualList")
+    public @ResponseBody String manualList(@RequestBody HashMap<String, Object> hashmapParam, HttpSession session) {
+        HashMap<String, Object> hashmapResult = new HashMap<String, Object>();
+        List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        Gson gson = new Gson();
+        String jString = null;
+
+        if (hashmapParam.get("sch_conf_sdt") == null || hashmapParam.get("sch_conf_sdt").toString().isEmpty()) {
+            hashmapParam.put("sch_conf_sdt", commonService.getPreWorkDay());
+        }
+        if (hashmapParam.get("sch_conf_edt") == null || hashmapParam.get("sch_conf_edt").toString().isEmpty()) {
+            hashmapParam.put("sch_conf_edt", commonService.getToDay());
+        }
+
+        try {
+            PageingVO pageing = new PageingVO();
+            pageing.setPageingVO(hashmapParam);
+
+            if (pageing.getOrder() != null && !pageing.getOrder().isEmpty()) {
+                Object orderObj = pageing.getOrder();
+                List<Map<String, Object>> orderList = new ArrayList<>();
+                if (orderObj instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> tempList = (List<Map<String, Object>>) orderObj;
+                    orderList = tempList;
+                } else if (orderObj instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) orderObj;
+                    orderList.add(tempMap);
+                }
+
+                StringBuilder orderBy = new StringBuilder();
+                for (Map<String, Object> ord : orderList) {
+                    int colIdx = Integer.parseInt(String.valueOf(ord.get("column")));
+                    String colName = String.valueOf(pageing.getColumns().get(colIdx).get("data"));
+                    String direction = String.valueOf(ord.get("dir"));
+                    if (orderBy.length() > 0) {
+                        orderBy.append(", ");
+                    }
+                    orderBy.append(colName).append(" ").append(direction);
+                }
+
+                if (orderBy.length() == 0) {
+                    orderBy.append("1");
+                }
+
+                hashmapParam.put("orderBy", orderBy.toString());
+            } else {
+                hashmapParam.put("orderBy", "");
+            }
+
+            hashmapParam.put("start", pageing.getStart());
+            hashmapParam.put("end", pageing.getLength());
+
+            list = vanDocuService.getManualVanDocuList(hashmapParam);
+            int records = vanDocuService.getQueryTotalCnt();
+
+            pageing.setRecords(records);
+            pageing.setTotal((int) Math.ceil((double) records / (double) pageing.getLength()));
+
+            hashmapResult.put("draw", pageing.getDraw());
+            hashmapResult.put("recordsTotal", pageing.getRecords());
+            hashmapResult.put("recordsFiltered", pageing.getRecords());
+            hashmapResult.put("data", list);
+
+            jString = gson.toJson(hashmapResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jString;
+    }
+
+    @RequestMapping(value = "/updateManualVanDocu", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO updateManualVanDocu(@ModelAttribute("VanDocuVO") @Valid VanDocuVO vanDocuVO, BindingResult bindingResult, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            if (bindingResult.hasErrors()) {
+                result.setResultCode("F000");
+                result.setResultMsg("입력값이 올바르지 않습니다.");
+                return result;
+            }
+
+            if (vanDocuVO.getDocu_seq() == null || vanDocuVO.getDocu_seq().isEmpty()) {
+                result.setResultCode("F000");
+                result.setResultMsg("수정할 수기전문을 선택해 주세요.");
+                return result;
+            }
+
+            SessionVO member = (SessionVO) session.getAttribute("S_USER");
+            vanDocuVO.setDocu_type("M");
+            vanDocuVO.setUpt_user_id(member.getUserId());
+
+            if (vanDocuService.updateManualVanDocu(vanDocuVO)) {
+                result.setResultCode("S000");
+                result.setResultMsg("수기전문이 정상 수정되었습니다.");
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg("다음 단계로 변환된 데이터(proc_fg=Y)는 수정할 수 없습니다.");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("수기전문 수정 중 오류가 발생했습니다.");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/deleteManualVanDocu", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO deleteManualVanDocu(@ModelAttribute("VanDocuVO") VanDocuVO vanDocuVO) {
+        ReturnDataVO result = new ReturnDataVO();
+        try {
+            if (vanDocuVO.getDocu_seq() == null || vanDocuVO.getDocu_seq().isEmpty()) {
+                result.setResultCode("F000");
+                result.setResultMsg("삭제할 수기전문을 선택해 주세요.");
+                return result;
+            }
+
+            if (vanDocuService.deleteManualVanDocu(vanDocuVO)) {
+                result.setResultCode("S000");
+                result.setResultMsg("수기전문이 정상 삭제되었습니다.");
+            } else {
+                result.setResultCode("F000");
+                result.setResultMsg("다음 단계로 변환된 데이터(proc_fg=Y)는 삭제할 수 없습니다.");
+            }
+        } catch (Exception e) {
+            result.setResultCode("F000");
+            result.setResultMsg("수기전문 삭제 중 오류가 발생했습니다.");
             e.printStackTrace();
         }
         return result;
