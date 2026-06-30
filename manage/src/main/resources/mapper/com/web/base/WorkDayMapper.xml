@@ -67,7 +67,7 @@
                             , DAYOFWEEK(DATE_WORK)  		AS DD  	
                             , QUARTER(DATE_WORK) 		AS QUARTER
                             , WEEK(DATE_WORK, 0) - WEEK(DATE_FORMAT(DATE_WORK, '%Y-%m-01'), 0) + 1 AS WEEK_OF_MONTH
-                            , WEEKOFYEAR(DATE_WORK) 		AS WEEK_OF_YEAR 
+                            , YEARWEEK(DATE_WORK, 0) 		AS WEEK_OF_YEAR 
                             , NOW() 				AS ENT_DTTM    
                             , #{upt_user_id}			AS ENT_USER_ID 
                     FROM 	(
