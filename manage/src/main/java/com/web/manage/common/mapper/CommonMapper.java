@@ -22,6 +22,8 @@ public interface CommonMapper {
 
     List<HashMap<String, Object>> getChainCardList(HashMap<String, String> hashmapParam);
 
+    List<HashMap<String, Object>> getChainCardRegList(HashMap<String, String> hashmapParam);
+
     List<HashMap<String, Object>> getChainList(HashMap<String, String> hashmapParam);
 
     List<HashMap<String, Object>> getChainSchList(String keyword);

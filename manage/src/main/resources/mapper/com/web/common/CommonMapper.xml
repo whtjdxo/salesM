@@ -107,6 +107,18 @@
          ORDER 	BY CD.ORD_NO
     </select>
 
+    <select id="getChainCardRegList" resultType="hashMap">
+        /*CommonMapper.getChainCardRegList*/
+        SELECT  CARD_REG_NO           AS code
+                , CARD_REG_NO         AS codeNm
+                , 'CARD_REG_NO'       AS group_code
+          FROM  TB_CHAIN_CARD 
+         WHERE	CHAIN_NO = #{sch_chain_no} 
+           AND  CARD_ACQ  = #{sch_card_acq} 
+           AND 	USE_YN  = 'Y'   
+         ORDER 	BY CARD_REG_NO 
+    </select> 
+
     <select id="getChainList" resultType="hashMap">
         /*CommonMapper.getChainList*/
         SELECT 	CHAIN_NO		  AS code 

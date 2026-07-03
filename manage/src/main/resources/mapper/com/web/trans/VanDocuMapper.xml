@@ -635,202 +635,128 @@
                 ORDER 	BY VD.SEQ 
     </select> 
 
-        <insert id="insertManualVanDocu" parameterType="com.web.manage.trans.domain.VanDocuVO">
-                /* VanDocuMapper.insertManualVanDocu */
-                INSERT INTO TB_VAN_DOCU (
-                        CHAIN_NO
-                        , VAN_CD
-                        , DOCU_TYPE
-                        , RECV_DATE
-                        , RECV_TIME
-                        , CARD_REG_NO
-                        , TRANS_ID
-                        , TERM_ID
-                        , CARD_ISS
-                        , CARD_ACQ
-                        , CARD_NO
-                        , INSTALL_MON
-                        , CONF_NO
-                        , CONF_GB
-                        , CONF_DT
-                        , CONF_TM
-                        , CONF_AMT
-                        , DEPO_RESV_AMT
-                        , DEPO_RESV_DT
-                        , CARD_TYPE
-                        , ORG_CONF_DT
-                        , CNCL
-                        , CNCL_DOCU_SEQ
-                        , CNCL_USER_ID
-                        , CNCL_DATE
-                        , CNCL_TIME
-                        , DUP
-                        , DUP_DOCU_SEQ
-                        , PROC_FG
-                        , PROC_RESULT_CD
-                        , PROC_RESULT
-                        , PROC_DATE
-                        , RE_PROC
-                        , RE_PROC_DATE
-                        , RE_PROC_USER_ID
-                        , RE_PROC_USER_NAME
-                        , SC_SEQ
-                        , ENT_USER_ID
-                        , ENT_DTTM
-                        , UPT_USER_ID
-                        , UPT_DTTM
-                )
-                VALUES (
-                        #{chain_no}
-                        , #{van_cd}
-                        , 'M'
-                        , #{recv_date}
-                        , #{recv_time}
-                        , #{card_reg_no}
-                        , #{trans_id}
-                        , #{term_id}
-                        , #{card_iss}
-                        , #{card_acq}
-                        , #{card_no}
-                        , IFNULL(#{install_mon}, '00')
-                        , #{conf_no}
-                        , #{conf_gb}
-                        , #{conf_dt}
-                        , #{conf_tm}
-                        , #{conf_amt}
-                        , IFNULL(#{depo_resv_amt}, 0)
-                        , #{depo_resv_dt}
-                        , #{card_type}
-                        , #{org_conf_dt}
-                        , IFNULL(#{cncl}, 'N')
-                        , #{cncl_docu_seq}
-                        , #{cncl_user_id}
-                        , #{cncl_date}
-                        , #{cncl_time}
-                        , IFNULL(#{dup}, 'N')
-                        , #{dup_docu_seq}
-                        , IFNULL(#{proc_fg}, 'N')
-                        , #{proc_result_cd}
-                        , #{proc_result}
-                        , #{proc_date}
-                        , IFNULL(#{re_proc}, 'N')
-                        , #{re_proc_date}
-                        , #{re_proc_user_id}
-                        , #{re_proc_user_name}
-                        , #{sc_seq}
-                        , #{ent_user_id}
-                        , NOW()
-                        , #{upt_user_id}
-                        , NOW()
-                )
-        </insert>
+    <insert id="insertManualVanDocu" parameterType="com.web.manage.trans.domain.VanDocuVO">
+        /* VanDocuMapper.insertManualVanDocu */
+        INSERT INTO TB_VAN_DOCU (
+            DOCU_SEQ
+            , CHAIN_NO          , VAN_CD        , DOCU_TYPE         , RECV_DATE         , RECV_TIME     , CARD_REG_NO
+            , TRANS_ID          , TERM_ID       , CARD_ISS          , CARD_ACQ          , CARD_NO       , INSTALL_MON
+            , CONF_NO           , CONF_GB       , CONF_DT           , CONF_TM           , CONF_AMT      , DEPO_RESV_AMT
+            , DEPO_RESV_DT      , CARD_TYPE     , ORG_CONF_DT       , ENT_USER_ID       , ENT_DTTM
+        ) VALUES (
+            GET_JOB_SEQ('TB_VAN_DOCU', 'DOCU_SEQ')
+            , #{chain_no}       , #{van_cd}     , 'M'               , #{recv_date}      , #{recv_time}   , #{card_reg_no}
+            , #{trans_id}       , #{term_id}    , #{card_iss}       , #{card_acq}       , #{card_no}     , IFNULL(#{install_mon}, '00')
+            , #{conf_no}        , #{conf_gb}    , #{conf_dt}        , #{conf_tm}        , #{conf_amt}    , IFNULL(#{depo_resv_amt}, 0)
+            , #{depo_resv_dt}   , #{card_type}  , #{org_conf_dt}    , #{ent_user_id}    , NOW()
+        )
+    </insert>
 
-        <select id="getManualVanDocuList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
-                /* VanDocuMapper.getManualVanDocuList */
-                SELECT  SQL_CALC_FOUND_ROWS
-                                VD.DOCU_SEQ                                  AS docu_seq
-                                , VD.DOCU_TYPE                               AS docu_type
-                                , VD.CHAIN_NO                                AS chain_no
-                                , IFNULL(TC.CHAIN_NM, '')                    AS chain_nm
-                                , VD.VAN_CD                                  AS van_cd
-                                , GET_CODE_NM('VAN_CD', VD.VAN_CD)           AS van_cd_nm
-                                , IFNULL(DATE_FORMAT(VD.RECV_DATE, '%Y-%m-%d'), VD.RECV_DATE) AS recv_date
-                                , VD.RECV_TIME                               AS recv_time
-                                , VD.CARD_REG_NO                             AS card_reg_no
-                                , VD.TRANS_ID                                AS trans_id
-                                , VD.TERM_ID                                 AS term_id
-                                , VD.CARD_ISS                                AS card_iss
-                                , GET_CODE_NM('CARD_ISS', VD.CARD_ISS)       AS card_iss_nm
-                                , VD.CARD_ACQ                                AS card_acq
-                                , GET_CODE_NM('CARD_ACQ', VD.CARD_ACQ)       AS card_acq_nm
-                                , VD.CARD_NO                                 AS card_no
-                                , VD.INSTALL_MON                             AS install_mon
-                                , VD.CONF_NO                                 AS conf_no
-                                , VD.CONF_GB                                 AS conf_gb
-                                , GET_CODE_NM('CONF_GB', VD.CONF_GB)         AS conf_gb_nm
-                                , IFNULL(DATE_FORMAT(VD.CONF_DT, '%Y-%m-%d'), VD.CONF_DT) AS conf_dt
-                                , VD.CONF_TM                                 AS conf_tm
-                                , VD.CONF_AMT                                AS conf_amt
-                                , IFNULL(VD.PROC_FG, 'N')                    AS proc_fg
-                                , VD.DEPO_RESV_AMT                           AS depo_resv_amt
-                                , IFNULL(DATE_FORMAT(VD.DEPO_RESV_DT, '%Y-%m-%d'), VD.DEPO_RESV_DT) AS depo_resv_dt
-                                , VD.CARD_TYPE                               AS card_type
-                                , GET_CODE_NM('CARD_TYPE', VD.CARD_TYPE)     AS card_type_nm
-                                , IFNULL(DATE_FORMAT(VD.ORG_CONF_DT, '%Y-%m-%d'), VD.ORG_CONF_DT) AS org_conf_dt
-                                , IFNULL(DATE_FORMAT(VD.ENT_DTTM, '%Y-%m-%d %H:%i:%s'), '') AS ent_dttm
-                        FROM  TB_VAN_DOCU VD
-                        LEFT OUTER JOIN TB_CHAIN TC ON TC.CHAIN_NO = VD.CHAIN_NO
-                WHERE VD.DOCU_TYPE = 'M'
-                  AND VD.CONF_DT  &gt;= #{sch_conf_sdt}
-                  AND VD.CONF_DT  &lt;= #{sch_conf_edt}
-                <if test="sch_chain_no != null and sch_chain_no != ''">
-                        AND VD.CHAIN_NO = #{sch_chain_no}
-                </if>
-                <if test="sch_van != null and sch_van != ''">
-                        AND VD.VAN_CD = #{sch_van}
-                </if>
-                <if test="schgb_conf_val != null and schgb_conf_val != ''">
-                        <choose>
-                                <when test="schgb_conf == 'schgb_conf_no'">
-                                        AND VD.CONF_NO = #{schgb_conf_val}
-                                </when>
-                                <when test="schgb_conf == 'schgb_card_no'">
-                                        AND VD.CARD_NO = #{schgb_conf_val}
-                                </when>
-                                <when test="schgb_conf == 'schgb_conf_amt'">
-                                        AND VD.CONF_AMT = #{schgb_conf_val}
-                                </when>
-                        </choose>
-                </if>
+    <select id="getManualVanDocuList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        /* VanDocuMapper.getManualVanDocuList */
+        SELECT  SQL_CALC_FOUND_ROWS
+                        VD.DOCU_SEQ                                  AS docu_seq
+                        , VD.DOCU_TYPE                               AS docu_type
+                        , VD.CHAIN_NO                                AS chain_no
+                        , IFNULL(TC.CHAIN_NM, '')                    AS chain_nm
+                        , VD.VAN_CD                                  AS van_cd
+                        , GET_CODE_NM('VAN_CD', VD.VAN_CD)           AS van_cd_nm
+                        , IFNULL(DATE_FORMAT(VD.RECV_DATE, '%Y-%m-%d'), VD.RECV_DATE) AS recv_date
+                        , VD.RECV_TIME                               AS recv_time
+                        , VD.CARD_REG_NO                             AS card_reg_no
+                        , VD.TRANS_ID                                AS trans_id
+                        , VD.TERM_ID                                 AS term_id
+                        , VD.CARD_ISS                                AS card_iss
+                        , GET_CODE_NM('CARD_ISS', VD.CARD_ISS)       AS card_iss_nm
+                        , VD.CARD_ACQ                                AS card_acq
+                        , GET_CODE_NM('CARD_ACQ', VD.CARD_ACQ)       AS card_acq_nm
+                        , VD.CARD_NO                                 AS card_no
+                        , VD.INSTALL_MON                             AS install_mon
+                        , VD.CONF_NO                                 AS conf_no
+                        , VD.CONF_GB                                 AS conf_gb
+                        , GET_CODE_NM('CONF_GB', VD.CONF_GB)         AS conf_gb_nm
+                        , IFNULL(DATE_FORMAT(VD.CONF_DT, '%Y-%m-%d'), VD.CONF_DT) AS conf_dt
+                        , VD.CONF_TM                                 AS conf_tm
+                        , VD.CONF_AMT                                AS conf_amt
+                        , IFNULL(VD.PROC_FG, 'N')                    AS proc_fg
+                        , VD.DEPO_RESV_AMT                           AS depo_resv_amt
+                        , IFNULL(DATE_FORMAT(VD.DEPO_RESV_DT, '%Y-%m-%d'), VD.DEPO_RESV_DT) AS depo_resv_dt
+                        , VD.CARD_TYPE                               AS card_type
+                        , GET_CODE_NM('CARD_TYPE', VD.CARD_TYPE)     AS card_type_nm
+                        , IFNULL(DATE_FORMAT(VD.ORG_CONF_DT, '%Y-%m-%d'), VD.ORG_CONF_DT) AS org_conf_dt
+                        , VD.ENT_USER_ID                                 AS ent_user_id
+                        , IFNULL(DATE_FORMAT(VD.ENT_DTTM, '%Y-%m-%d %H:%i:%s'), '') AS ent_dttm
+                FROM  TB_VAN_DOCU VD
+                LEFT OUTER JOIN TB_CHAIN TC ON TC.CHAIN_NO = VD.CHAIN_NO
+        WHERE VD.DOCU_TYPE = 'M'
+            AND VD.CONF_DT  &gt;= #{sch_conf_sdt}
+            AND VD.CONF_DT  &lt;= #{sch_conf_edt}
+        <if test="sch_chain_no != null and sch_chain_no != ''">
+                AND VD.CHAIN_NO = #{sch_chain_no}
+        </if>
+        <if test="sch_van != null and sch_van != ''">
+                AND VD.VAN_CD = #{sch_van}
+        </if>
+        <if test="schgb_conf_val != null and schgb_conf_val != ''">
                 <choose>
-                        <when test="orderBy != '' and orderBy != null">
-                                ORDER BY ${orderBy}
+                        <when test="schgb_conf == 'schgb_conf_no'">
+                                AND VD.CONF_NO = #{schgb_conf_val}
                         </when>
-                        <otherwise>
-                                ORDER BY VD.DOCU_SEQ DESC
-                        </otherwise>
+                        <when test="schgb_conf == 'schgb_card_no'">
+                                AND VD.CARD_NO = #{schgb_conf_val}
+                        </when>
+                        <when test="schgb_conf == 'schgb_conf_amt'">
+                                AND VD.CONF_AMT = #{schgb_conf_val}
+                        </when>
                 </choose>
-                LIMIT ${start}, ${end}
-        </select>
+        </if>
+        <choose>
+                <when test="orderBy != '' and orderBy != null">
+                        ORDER BY ${orderBy}
+                </when>
+                <otherwise>
+                        ORDER BY VD.DOCU_SEQ DESC
+                </otherwise>
+        </choose>
+        LIMIT ${start}, ${end}
+    </select>
 
-        <update id="updateManualVanDocu" parameterType="com.web.manage.trans.domain.VanDocuVO">
-                /* VanDocuMapper.updateManualVanDocu */
-                UPDATE TB_VAN_DOCU
+    <update id="updateManualVanDocu" parameterType="com.web.manage.trans.domain.VanDocuVO">
+            /* VanDocuMapper.updateManualVanDocu */
+            UPDATE TB_VAN_DOCU
                 SET CHAIN_NO      = #{chain_no}
-                        , VAN_CD      = #{van_cd}
-                        , RECV_DATE   = #{recv_date}
-                        , RECV_TIME   = #{recv_time}
-                        , CARD_REG_NO = #{card_reg_no}
-                        , TRANS_ID    = #{trans_id}
-                        , TERM_ID     = #{term_id}
-                        , CARD_ISS    = #{card_iss}
-                        , CARD_ACQ    = #{card_acq}
-                        , CARD_NO     = #{card_no}
-                        , INSTALL_MON = IFNULL(#{install_mon}, '00')
-                        , CONF_NO     = #{conf_no}
-                        , CONF_GB     = #{conf_gb}
-                        , CONF_DT     = #{conf_dt}
-                        , CONF_TM     = #{conf_tm}
-                        , CONF_AMT    = #{conf_amt}
-                        , DEPO_RESV_AMT = IFNULL(#{depo_resv_amt}, 0)
-                        , DEPO_RESV_DT = #{depo_resv_dt}
-                        , CARD_TYPE   = #{card_type}
-                        , ORG_CONF_DT = #{org_conf_dt}
-                        , DOCU_TYPE   = 'M'
-                        , UPT_USER_ID = #{upt_user_id}
-                        , UPT_DTTM    = NOW()
-                WHERE DOCU_SEQ = #{docu_seq}
-                  AND DOCU_TYPE = 'M'
-                                                                        AND IFNULL(PROC_FG, 'N') != 'Y'
-        </update>
+                    , VAN_CD      = #{van_cd}
+                    , RECV_DATE   = #{recv_date}
+                    , RECV_TIME   = #{recv_time}
+                    , CARD_REG_NO = #{card_reg_no}
+                    , TRANS_ID    = #{trans_id}
+                    , TERM_ID     = #{term_id}
+                    , CARD_ISS    = #{card_iss}
+                    , CARD_ACQ    = #{card_acq}
+                    , CARD_NO     = #{card_no}
+                    , INSTALL_MON = IFNULL(#{install_mon}, '00')
+                    , CONF_NO     = #{conf_no}
+                    , CONF_GB     = #{conf_gb}
+                    , CONF_DT     = #{conf_dt}
+                    , CONF_TM     = #{conf_tm}
+                    , CONF_AMT    = #{conf_amt}
+                    , DEPO_RESV_AMT = IFNULL(#{depo_resv_amt}, 0)
+                    , DEPO_RESV_DT = #{depo_resv_dt}
+                    , CARD_TYPE   = #{card_type}
+                    , ORG_CONF_DT = #{org_conf_dt}
+                    , DOCU_TYPE   = 'M'                    
+            WHERE   DOCU_SEQ = #{docu_seq}
+              AND   DOCU_TYPE = 'M'
+              AND   IFNULL(PROC_FG, 'N') != 'Y'
+    </update>
 
-        <delete id="deleteManualVanDocu" parameterType="com.web.manage.trans.domain.VanDocuVO">
-                /* VanDocuMapper.deleteManualVanDocu */
-                DELETE FROM TB_VAN_DOCU
-                WHERE DOCU_SEQ = #{docu_seq}
-                  AND DOCU_TYPE = 'M'
-                                                                        AND IFNULL(PROC_FG, 'N') != 'Y'
-        </delete>
+    <delete id="deleteManualVanDocu" parameterType="com.web.manage.trans.domain.VanDocuVO">
+            /* VanDocuMapper.deleteManualVanDocu */
+            DELETE  FROM TB_VAN_DOCU
+            WHERE   DOCU_SEQ = #{docu_seq}
+              AND   DOCU_TYPE = 'M'
+              AND   IFNULL(PROC_FG, 'N') != 'Y'
+    </delete>
 
     <update id="callScrapTransVanDocu" parameterType="com.web.manage.trans.domain.TransProcessVO" statementType="CALLABLE">
             { 

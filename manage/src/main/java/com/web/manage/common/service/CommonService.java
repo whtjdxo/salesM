@@ -44,6 +44,10 @@ public class CommonService {
         return commonMapper.getChainCardList(hashmapParam);
     }
 
+    public List<HashMap<String, Object>> getChainCardRegList(HashMap<String, String> hashmapParam) {
+        return commonMapper.getChainCardRegList(hashmapParam);
+    }
+
     public List<HashMap<String, Object>> getChainList(HashMap<String, String> hashmapParam) {
         return commonMapper.getChainList(hashmapParam);
     }    
