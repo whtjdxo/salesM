@@ -26,10 +26,19 @@
 								, IFNULL(SUM(OCCUR_AMT), 0)     AS OCCUR_AMT
 								, IFNULL(SUM(ISSUE_AMT), 0)     AS ISSUE_AMT
 								, IFNULL(SUM(REMAIN_AMT), 0)    AS REMAIN_AMT
-						FROM 	TB_EXCEED_MST
+						FROM 	TB_EXCEED_MST EM
 						WHERE 	USE_YN = 'Y'
 						AND  	EXC_DATE BETWEEN #{sch_exc_sdt} 
 		  									AND #{sch_exc_edt} 
+						<if test="sch_exc_type != null and sch_exc_type != ''"> 
+							AND  EM.EXC_TYPE = #{sch_exc_type}  
+						</if>
+						<if test="sch_exc_code != null and sch_exc_code != ''"> 
+							AND  EM.EXC_CODE = #{sch_exc_code}  
+						</if>
+						<if test="sch_exc_status != null and sch_exc_status != ''"> 
+							AND  EM.EXC_STATUS = #{sch_exc_status}  
+						</if>
 					<!-- <if test='sch_all == null'>
 						AND  EXC_STATUS IN ('100000', '000000')
 						AND  REMAIN_AMT  &gt; 0
@@ -48,7 +57,7 @@
 		</if>
 		<if test='sch_chain_all == null'>
 			AND  TC.SVC_STAT IN ('O', 'R')
-		</if>
+		</if>		
         <choose>
 			<when test="orderBy != '' and orderBy != null">
                 ORDER BY ${orderBy}
@@ -72,14 +81,23 @@
 								, IFNULL(SUM(OCCUR_AMT), 0)     AS OCCUR_AMT
 								, IFNULL(SUM(ISSUE_AMT), 0)     AS ISSUE_AMT
 								, IFNULL(SUM(REMAIN_AMT), 0)    AS REMAIN_AMT
-						FROM 	TB_EXCEED_MST
+						FROM 	TB_EXCEED_MST EM 
 						WHERE 	USE_YN = 'Y'
 						AND  	EXC_DATE BETWEEN #{sch_exc_sdt} 
 		  									AND #{sch_exc_edt} 
-					<if test='sch_all == null'>
-						AND  EXC_STATUS IN ('100000', '000000')
-						AND  REMAIN_AMT  &gt; 0
-					</if> 			
+						<if test="sch_exc_type != null and sch_exc_type != ''"> 
+							AND  EM.EXC_TYPE = #{sch_exc_type}  
+						</if>
+						<if test="sch_exc_code != null and sch_exc_code != ''"> 
+							AND  EM.EXC_CODE = #{sch_exc_code}  
+						</if>
+						<if test="sch_exc_status != null and sch_exc_status != ''"> 
+							AND  EM.EXC_STATUS = #{sch_exc_status}  
+						</if>
+						<!-- <if test='sch_all == null'>
+							AND  EXC_STATUS IN ('100000', '000000')
+							AND  REMAIN_AMT  &gt; 0
+						</if> 			 -->
 						GROUP 	BY CHAIN_NO
 				) EM ON EM.CHAIN_NO = TC.CHAIN_NO 
 		WHERE 	TC.USE_YN = 'Y'
@@ -94,7 +112,7 @@
 		</if>
 		<if test='sch_chain_all == null'>
 			AND  TC.SVC_STAT IN ('O', 'R')
-		</if>
+		</if> 
 	</select>
 
 	<select id="getChainExcList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
