@@ -17,4 +17,5 @@ public class ScrapCompVO {
     private String apiAuthKey;
     private String authKey;
     private String runMode;
+    private String scrapGroup;
 }

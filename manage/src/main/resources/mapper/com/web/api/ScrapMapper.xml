@@ -74,6 +74,9 @@
                 <if test="chainNo != null and chainNo != ''">			
                         AND   TC.CHAIN_NO = #{chainNo}
                 </if>
+                <if test="scrapGroup != null and scrapGroup != ''">			
+                        AND   TC.SCRAP_GROUP = #{scrapGroup}
+                </if>
                 AND  NOT EXISTS(
                                 SELECT 1 
                                   FROM TB_SCRAP_LOG SL          

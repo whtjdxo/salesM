@@ -100,4 +100,6 @@ public class ChainVO {
     private String ent_dttm;
     private String upt_user_id;
     private String upt_dttm;
+
+    private String scrap_group;
 }

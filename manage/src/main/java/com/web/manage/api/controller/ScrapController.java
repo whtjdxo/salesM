@@ -87,6 +87,7 @@ public class ScrapController {
                                                 , @RequestParam("apiAuthKey") String apiAuthKey
                                                 , @RequestParam("authKey") String authKey
                                                 , @RequestParam("runMode") String runMode
+                                                , @RequestParam(value = "scrapGroup", required = false) String scrapGroup
                                                 ) {         		
         HashMap<String, Object> hashmapResult = new HashMap<String, Object>(); 
         ScrapUserVO scrapUserVo = new ScrapUserVO();
@@ -99,6 +100,10 @@ public class ScrapController {
         scrapUserVo.setUserId(userId);        
         scrapUserVo.setUserAuthKey(apiAuthKey); 
 
+        /* ================================================================
+        // 동시 실행을 풀려면 AuthKey Check 를 막아야 함 
+        // 스크랩프로그램이 구동 될 때마다 새 키 발급됨
+        */
 		if (scrapService.getUserAuthKeyCheck(scrapUserVo) <= 0){
             hashmapResult.put("repCd", "9001");
             hashmapResult.put("repMsg", "User AuthKey Check Fail~");
@@ -116,6 +121,7 @@ public class ScrapController {
         scrapCompVO.setApiAuthKey(apiAuthKey);
         scrapCompVO.setAuthKey(authKey); 
         scrapCompVO.setRunMode(runMode);
+        scrapCompVO.setScrapGroup(scrapGroup);
 
         System.out.println("scrapCompVO : " + scrapCompVO.toString());
         

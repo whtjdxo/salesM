@@ -58,6 +58,11 @@
           codeSetting('AGENCY_CD', data.data, '#sch_agency_cd', '대리점', '', '');
           codeSetting('AGENCY_CD', data.data, '#agency_cd', '1', '', '');
         }
+
+        callAjax('/common/totalCodelist', "code_grp_cd=('SCRAP_GROUP')", fn_scrap_group_setting);      
+        function fn_scrap_group_setting(data) {
+          codeSetting('SCRAP_GROUP', data.data, '#scrap_group', '스크랩 그룹', '', ''); 
+        }
         
         callAjax('/common/totalCodelist', "code_grp_cd=('CONT_TP')", fn_cont_tp_setting);      
         function fn_cont_tp_setting(data) {
@@ -1668,6 +1673,16 @@
                         </div>
                       </div>
                     </div>   
+                    <div class="row mb-1">
+                      <div class="input-group input-group-sm mb-1">
+                        <label class="col-sm-2 col-form-label col-form-label-sm" for="uptae">스크랩 그룹</label>   
+                          <div class="col-sm-10">
+                            <select class="form-select form-control-sm" id="scrap_group" name="scrap_group" required>
+                              <option value="">스크랩 그룹</option>
+                            </select>    
+                          </div> 
+                      </div>                      
+                    </div>
                     <div class="row mb-1">
                       <div class="input-group input-group-sm mb-1">
                         <label class="col-sm-2 col-form-label col-form-label-sm" for="remark">Memo</label>
