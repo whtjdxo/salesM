@@ -183,11 +183,13 @@
 				   			( WD.REMIT_NO IS NULL
 								AND  WD.WORK_DATE &gt;= #{schSdt}
 								AND  WD.WORK_DATE &lt; DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
+								AND  'RESV' = #{remittGb}
 							)
 							OR
 							( WD.REMIT_NO IS NOT NULL
 								AND  REMIT_DT  &gt;= #{schSdt} 
 								AND  REMIT_DT  &lt;  DATE_FORMAT(DATE_ADD(DATE(#{schEdt}), INTERVAL 1 DAY), '%Y-%m-%d')
+								AND  'REMI' = #{remittGb}
 							)
 						)		
 				   AND 	USE_YN    = 'Y' 		 
