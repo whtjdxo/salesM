@@ -23,6 +23,7 @@
                 , TU.addr
                 , TU.addr_dtl
                 , TU.use_yn
+                , CASE WHEN TU.totp_secret_enc IS NULL THEN 'N' ELSE 'Y' END AS totp_enabled
                 , DATE_FORMAT(IFNULL(TU.upt_dttm, TU.ent_dttm), '%Y-%m-%m %H:%i:%s') 	AS upt_dttm
                 , IFNULL(TU.upt_user_id, TU.ent_user_id)								AS upt_user_id
           FROM  TB_USER TU
@@ -133,5 +134,14 @@
             , use_yn = #{use_yn}             
         </if>
         WHERE user_id = #{user_id}
+    </update>
+
+    <update id="resetTotp" parameterType="string">
+        UPDATE tb_user
+           SET totp_secret_enc = NULL
+             , totp_last_counter = -1
+             , totp_failed_attempts = 0
+             , totp_locked_until = NULL
+         WHERE user_id = #{userId}
     </update>
 </mapper>

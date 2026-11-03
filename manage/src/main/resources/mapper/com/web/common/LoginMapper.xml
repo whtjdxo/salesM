@@ -32,6 +32,78 @@
          LIMIT  1
 	</select>
 
+  <select id="getUserRetrieveById" parameterType="string" resultType="com.web.manage.common.domain.SessionVO">
+        SELECT  TU.user_id      AS  userId
+                , TU.user_nm    AS  userNm
+                , TU.user_gb    AS  userGb
+                , VC.CORP_GB    AS  userCorpGb
+                , TU.CORP_CD    AS  userCorpCd
+                , VC.CORP_NM    AS  userCorpNm
+                , TU.CORP_TYPE  AS  userCorpType
+                , TU.auth_grp_cd AS authGrpCd
+                , GET_CODE_NM('AUTH_GRP_CD', TU.auth_grp_cd) AS authGrpNm
+          FROM TB_USER TU
+          LEFT JOIN VW_CORP VC ON VC.CORP_CD = TU.CORP_CD
+                          AND VC.CORP_GB IN ('OP', 'AG')
+                          AND VC.SVC_STAT IN ('O', 'R')
+         WHERE TU.USER_ID = #{userId}
+           AND TU.USE_YN = 'Y'
+         LIMIT 1
+  </select>
+
+  <select id="getTotpSecret" parameterType="string" resultType="string">
+      SELECT totp_secret_enc
+        FROM tb_user
+       WHERE user_id = #{userId}
+         AND use_yn = 'Y'
+  </select>
+
+  <update id="enrollTotp" parameterType="hashMap">
+      UPDATE tb_user
+         SET totp_secret_enc = #{secret}
+           , totp_last_counter = #{counter}
+           , totp_failed_attempts = 0
+           , totp_locked_until = NULL
+       WHERE user_id = #{userId}
+         AND use_yn = 'Y'
+         AND totp_secret_enc IS NULL
+         AND (totp_locked_until IS NULL OR totp_locked_until &lt;= NOW())
+  </update>
+
+  <update id="acceptTotpCounter" parameterType="hashMap">
+      UPDATE tb_user
+         SET totp_last_counter = #{counter}
+           , totp_failed_attempts = 0
+           , totp_locked_until = NULL
+       WHERE user_id = #{userId}
+         AND use_yn = 'Y'
+         AND totp_secret_enc IS NOT NULL
+         AND totp_last_counter &lt; #{counter}
+         AND (totp_locked_until IS NULL OR totp_locked_until &lt;= NOW())
+  </update>
+
+  <select id="isTotpLocked" parameterType="string" resultType="int">
+      SELECT COALESCE(MAX(CASE WHEN totp_locked_until &gt; NOW() THEN 1 ELSE 0 END), 0)
+        FROM tb_user
+       WHERE user_id = #{userId}
+         AND use_yn = 'Y'
+  </select>
+
+  <update id="recordTotpFailure" parameterType="string">
+      UPDATE tb_user
+         SET totp_locked_until = CASE
+                 WHEN totp_failed_attempts + 1 &gt;= 5 THEN DATE_ADD(NOW(), INTERVAL 5 MINUTE)
+                 ELSE totp_locked_until
+             END
+           , totp_failed_attempts = CASE
+                 WHEN totp_failed_attempts + 1 &gt;= 5 THEN 0
+                 ELSE totp_failed_attempts + 1
+             END
+       WHERE user_id = #{userId}
+         AND use_yn = 'Y'
+         AND (totp_locked_until IS NULL OR totp_locked_until &lt;= NOW())
+  </update>
+
   <select id="getAuthGrp" parameterType="hashMap" resultType="string">
       SELECT a.auth_grp_cd    as authGrpCd
         FROM tb_user a

@@ -14,6 +14,18 @@ public interface LoginMapper {
 
 	SessionVO getUserRetrieve(HashMap<String, Object> loginMap);
 
+	SessionVO getUserRetrieveById(String userId);
+
+	String getTotpSecret(String userId);
+
+	int enrollTotp(HashMap<String, Object> parameters);
+
+	int acceptTotpCounter(HashMap<String, Object> parameters);
+
+	int isTotpLocked(String userId);
+
+	int recordTotpFailure(String userId);
+
     String getAuthGrp(String userId);
 
 	List<HashMap<String, Object>> getMenuRetrieve(SessionVO loginUserVo);

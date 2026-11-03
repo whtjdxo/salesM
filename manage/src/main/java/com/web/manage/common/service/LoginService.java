@@ -26,6 +26,37 @@ public class LoginService {
         return loginMapper.getUserRetrieve(loginMap);
     }
 
+    public SessionVO getUserRetrieveById(String userId) {
+        return loginMapper.getUserRetrieveById(userId);
+    }
+
+    public String getTotpSecret(String userId) {
+        return loginMapper.getTotpSecret(userId);
+    }
+
+    public boolean enrollTotp(String userId, String secret, long counter) {
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("userId", userId);
+        parameters.put("secret", secret);
+        parameters.put("counter", counter);
+        return loginMapper.enrollTotp(parameters) == 1;
+    }
+
+    public boolean acceptTotpCounter(String userId, long counter) {
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("userId", userId);
+        parameters.put("counter", counter);
+        return loginMapper.acceptTotpCounter(parameters) == 1;
+    }
+
+    public boolean isTotpLocked(String userId) {
+        return loginMapper.isTotpLocked(userId) == 1;
+    }
+
+    public void recordTotpFailure(String userId) {
+        loginMapper.recordTotpFailure(userId);
+    }
+
     public String getAuthGrp(String userId) {
         return loginMapper.getAuthGrp(userId);
     }

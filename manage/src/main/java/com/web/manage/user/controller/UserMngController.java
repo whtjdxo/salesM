@@ -1,12 +1,17 @@
 package com.web.manage.user.controller;
 
 import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
+import org.springframework.ui.Model;
 
 import com.google.gson.Gson;
 import com.web.common.util.StringUtil;
@@ -31,11 +36,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/base/user/userMng")
 public class UserMngController {
 
+    private static final String TOTP_RESET_CSRF_TOKEN = "S_TOTP_RESET_CSRF_TOKEN";
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     @Autowired
     private UserMngService userMngService;
 
     @RequestMapping("view")
-    public String view() {
+    public String view(HttpSession session, Model model) {
+        String csrfToken = (String) session.getAttribute(TOTP_RESET_CSRF_TOKEN);
+        if (csrfToken == null) {
+            byte[] tokenBytes = new byte[32];
+            RANDOM.nextBytes(tokenBytes);
+            csrfToken = Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
+            session.setAttribute(TOTP_RESET_CSRF_TOKEN, csrfToken);
+        }
+        model.addAttribute("totpResetToken", csrfToken);
         return "pages/user/userMng";
     }
 
@@ -158,5 +174,39 @@ public class UserMngController {
         }
         return result;
 	}
+
+    // 2중인증 적용시해제
+    // @RequestMapping(value = "/totpReset", method = RequestMethod.POST)
+    public @ResponseBody ReturnDataVO resetTotp(@RequestParam("user_id") String userId,
+            @RequestParam("csrf_token") String csrfToken, HttpSession session) {
+        ReturnDataVO result = new ReturnDataVO();
+        SessionVO member = (SessionVO) session.getAttribute("S_USER");
+        if (member == null || !"AG0001".equals(member.getAuthGrpCd())) {
+            result.setResultCode("F000");
+            result.setResultMsg("시스템 관리자만 2단계 인증을 초기화할 수 있습니다.");
+            return result;
+        }
+        String expectedToken = (String) session.getAttribute(TOTP_RESET_CSRF_TOKEN);
+        if (expectedToken == null || !MessageDigest.isEqual(
+                expectedToken.getBytes(StandardCharsets.UTF_8), csrfToken.getBytes(StandardCharsets.UTF_8))) {
+            result.setResultCode("F000");
+            result.setResultMsg("요청을 확인할 수 없습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.");
+            return result;
+        }
+        if (member.getUserId().equals(userId)) {
+            result.setResultCode("F000");
+            result.setResultMsg("현재 로그인한 계정은 다른 시스템 관리자가 초기화해야 합니다.");
+            return result;
+        }
+
+        if (userMngService.resetTotp(userId) == 1) {
+            result.setResultCode("S000");
+            result.setResultMsg("2단계 인증이 초기화되었습니다. 사용자는 다음 로그인 때 다시 등록해야 합니다.");
+        } else {
+            result.setResultCode("F000");
+            result.setResultMsg("사용자를 찾을 수 없거나 초기화에 실패했습니다.");
+        }
+        return result;
+    }
     
 }

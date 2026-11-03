@@ -59,6 +59,10 @@
                   , { data: 'email' }
                   , { data: 'auth_grp_nm' }
                   , { data: 'use_yn' }
+                  // 2중인증 적용시해제
+                  /*
+                  , { data: 'totp_enabled', render: function (value) { return value === 'Y' ? '설정됨' : '미설정'; } }
+                  */
                 ],
           columnDefs: [           
               { targets: 0, width: '10%', className: 'text-center' },
@@ -69,6 +73,8 @@
               { targets: 5, width: ''   , className: 'text-center' },
               { targets: 6, width: '10%', className: 'text-center' },
               { targets: 7, width: '5%' , className: 'text-center' },
+              // 2중인증 적용시해제
+              // { targets: 8, width: '8%' , className: 'text-center' },
             ],
           order: [1, 'desc'],
           paging: true,
@@ -131,6 +137,12 @@
           $('#btn_dupchk').hide();
           $('#btn_update').show();
           $('#btn_create').hide();
+          // 2중인증 적용시해제
+          /*
+          $('#btn_reset_totp').toggle(
+            data.user_id !== $('#btn_reset_totp').data('current-user') && data.totp_enabled === 'Y'
+          );
+          */
           $('#user_pwd').removeAttr("required");          
           editMode = 'update';
 
@@ -161,8 +173,34 @@
           $('#btn_dupchk').show();
           $('#btn_update').hide();
           $('#btn_create').show(); 
+          $('#btn_reset_totp').hide();
           editMode = 'create'; 
         }); 
+
+        // 2중인증 적용시해제
+        /*
+        $('#btn_reset_totp').click(function () {
+          var userId = $('#user_id').val();
+          if (!userId || !confirm(userId + ' 사용자의 2단계 인증을 초기화할까요? 다음 로그인 때 다시 등록해야 합니다.')) {
+            return;
+          }
+          $.ajax({
+            url: '/base/user/userMng/totpReset',
+            type: 'POST',
+            data: { user_id: userId, csrf_token: $('#btn_reset_totp').data('reset-token') },
+            success: function (result) {
+              alert(result.resultMsg);
+              if (result.resultCode === 'S000') {
+                $('#btn_reset_totp').hide();
+                tbl_user.ajax.reload(null, false);
+              }
+            },
+            error: function () {
+              alert('2단계 인증 초기화 요청에 실패했습니다.');
+            }
+          });
+        });
+        */
 
 
         $('#btn_create').click(function () {
@@ -313,6 +351,9 @@
                     <th class="text-center">이메일</th>
                     <th class="text-center">사용자 권한</th>
                     <th class="text-center">사용</th> 
+                    <!-- 2중인증 적용시해제
+                    <th class="text-center">2단계 인증</th>
+                    -->
                   </tr>
                 </thead>
                 <tbody class="list"></tbody>
@@ -429,6 +470,12 @@
               <button type="button" class="btn btn-info text-end" id="btn_clear"><i class="fa fa-check"></i>신규</button>
               <button type="button" class="btn btn-primary text-end" id="btn_update" style="display: none"><i class="fa fa-paste"></i>저장</button>
               <button type="button" class="btn btn-primary text-end" id="btn_create"><i class="fa fa-paste"></i>저장</button>
+              <!-- 2중인증 적용시해제
+              <button type="button" class="btn btn-warning text-end" id="btn_reset_totp"
+                th:if="${session.S_USER.authGrpCd == 'AG0001'}"
+                th:data-current-user="${session.S_USER.userId}"
+                th:data-reset-token="${totpResetToken}" style="display: none">2FA 초기화</button>
+              -->
             </p>
           </form>
         </div>

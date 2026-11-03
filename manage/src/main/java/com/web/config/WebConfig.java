@@ -68,8 +68,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
-        registry.addInterceptor(authInterceptor).excludePathPatterns("/login", "/chkLogin", "/register",
-                "/registerProcess", "/error", "/main", "/logout", "/upload/**", "/js/**", "/css/**", "/img/**",
+        // 2중인증 적용시해제: 활성화할 때 2FA 경로를 제외 목록에 추가합니다.
+        registry.addInterceptor(authInterceptor).excludePathPatterns("/login", "/chkLogin",
+                "/register", "/registerProcess", "/error", "/logout", "/upload/**", "/js/**", "/css/**", "/img/**",
                 "/vendors/**", "/data/**", "/logos/**", "/video/**", "/api/**", "/app/api/**");
         ;
     }

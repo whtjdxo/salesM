@@ -59,7 +59,52 @@
           $("#rememberId").prop("checked", true);
         }
 
-        // ✅ 로그인 버튼 클릭 시 처리
+        // 2중인증 적용시해제
+        /*
+        function showTotpStep(enrollment, secret) {
+          $("#loginForm").hide();
+          $("#totpTitle").text(enrollment ? "2단계 인증 등록" : "2단계 인증");
+          $("#totpDescription").text(enrollment
+            ? "인증 앱에서 QR 코드를 스캔한 뒤 앱에 표시된 6자리 코드를 입력해 주세요."
+            : "인증 앱에 표시된 6자리 코드를 입력해 주세요.");
+          $("#totpEnrollment").toggle(enrollment);
+          $("#totpSecret").text(secret || "");
+          if (enrollment) {
+            $("#totpQr").attr("src", "/totp/qr?t=" + Date.now());
+          }
+          $("#totpStep").show();
+          $("#totpCode").val("").trigger("focus");
+        }
+
+        function verifyTotp() {
+          var code = $("#totpCode").val().trim();
+          if (!/^\d{6}$/.test(code)) {
+            alert("인증 앱에 표시된 6자리 코드를 입력해 주세요.");
+            $("#totpCode").trigger("focus");
+            return;
+          }
+
+          var endpoint = $("#totpEnrollment").is(":visible") ? "/enrollTotp" : "/verifyTotp";
+          $.ajax({
+            url: endpoint,
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ code: code }),
+            success: function (data) {
+              if (data.resultCode === "00") {
+                location.href = "/main";
+              } else {
+                alert(data.resultMsg || "인증 코드 확인에 실패했습니다.");
+                $("#totpCode").val("").trigger("focus");
+              }
+            },
+            error: function () {
+              alert("2단계 인증 요청에 실패했습니다. 다시 시도해 주세요.");
+            }
+          });
+        }
+        */
+
         $("#btnLogin").on("click", function () {
           var userId = $("#userId").val().trim();
           var userPwd = $("#userPwd").val().trim();
@@ -83,17 +128,24 @@
             localStorage.removeItem("savedUserId");
           }
 
-          // ✅ AJAX 로그인 처리 (예시)
           $.ajax({
             url: "/chkLogin",
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify({ userId: userId, userPwd: userPwd }),
             success: function (data) {
+              // 2중인증 적용시해제
+              /*
+              if (data.resultCode === "ENROLL") {
+                showTotpStep(true, data.returnVal);
+              } else if (data.resultCode === "VERIFY") {
+                showTotpStep(false, "");
+              } else
+              */
               if (data.resultCode === "00") {
                 location.href = "/main";
               } else {
-                alert("아이디 또는 비밀번호가 일치하지 않습니다.");
+                alert(data.resultMsg || "아이디 또는 비밀번호가 일치하지 않습니다.");
               }
             },
             error: function () {
@@ -113,6 +165,21 @@
             $("#btnLogin").click();
           }
         });
+
+        // 2중인증 적용시해제
+        /*
+        $("#btnVerifyTotp").on("click", verifyTotp);
+        $("#totpCode").on("keydown", function (e) {
+          if (e.key === "Enter") {
+            verifyTotp();
+          }
+        });
+        $("#btnRestartLogin").on("click", function () {
+          $.post("/totp/cancel").always(function () {
+            location.reload();
+          });
+        });
+        */
       });
     </script>
   </head>
@@ -164,6 +231,24 @@
                     <button class="btn btn-primary d-block w-100 mt-3" type="button" name="btnLogin" id="btnLogin">Login</button>
                   </div>
                 </form>
+                <!-- 2중인증 적용시해제
+                <section id="totpStep" style="display: none;">
+                  <h5 id="totpTitle">2단계 인증</h5>
+                  <p id="totpDescription" class="small text-body-secondary"></p>
+                  <div id="totpEnrollment" class="text-center mb-3" style="display: none;">
+                    <img id="totpQr" alt="인증 앱 등록 QR 코드" width="240" height="240" />
+                    <p class="small mt-2 mb-1">QR 코드를 사용할 수 없다면 아래 키를 인증 앱에 직접 입력하세요.</p>
+                    <code id="totpSecret" class="user-select-all"></code>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label" for="totpCode">인증 코드</label>
+                    <input class="form-control" type="text" id="totpCode" inputmode="numeric"
+                      autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="6자리 코드" />
+                  </div>
+                  <button class="btn btn-primary d-block w-100" type="button" id="btnVerifyTotp">확인</button>
+                  <button class="btn btn-link d-block w-100 mt-2" type="button" id="btnRestartLogin">로그인 처음으로</button>
+                </section>
+                -->
                 </div>
             </div>
           </div>

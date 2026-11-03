@@ -24,5 +24,6 @@ public interface UserMngMapper {
     boolean userCreate(@ModelAttribute("UserVO") @Valid UserVO userVO);
 
     boolean userUpdate(@ModelAttribute("UserVO") @Valid UserVO userVO);
-}
 
+    int resetTotp(String userId);
+}

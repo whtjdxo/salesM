@@ -32,10 +32,13 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         String requestURI = request.getRequestURI();
 
-        if (session == null) {
-            logger.debug((String) request.getAttribute("S_LOGIN_YN"));
-            logger.debug("##################isLogon : XXXXXXX");
-            response.sendRedirect("/login");
+        if (session == null
+                || !"Y".equals(session.getAttribute("S_LOGIN_YN"))
+                // 2중인증 적용시해제
+                // || !"Y".equals(session.getAttribute("S_TOTP_VERIFIED"))
+                || session.getAttribute("S_USER") == null) {
+			logger.debug((String) request.getAttribute("S_LOGIN_YN"));
+			response.sendRedirect("/login");
 			return false;
         }
 

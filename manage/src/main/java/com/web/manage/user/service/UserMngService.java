@@ -45,4 +45,8 @@ public class UserMngService {
     public boolean userUpdate(@ModelAttribute("UserVO") @Valid UserVO userVO) {
         return userMngMapper.userUpdate(userVO);
     }
+
+    public int resetTotp(String userId) {
+        return userMngMapper.resetTotp(userId);
+    }
 }
