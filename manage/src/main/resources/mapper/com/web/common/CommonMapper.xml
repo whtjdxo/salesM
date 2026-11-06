@@ -195,6 +195,9 @@
         SELECT  AGENCY_CD       as code
                 , AGENCY_NM     as codeNm
                 , 'AGENCY_CD'   AS group_code
+                , IFNULL(LOAN_FEE_RATE, 0) AS agency_loan_fee
+                , IFNULL(CRD_FEE_RATE, 0) AS agency_crd_fee
+                , IFNULL(SVC_FEE_RATE, 0) AS agency_svc_fee
           FROM  TB_AGENCY
          WHERE  1= 1
         <choose>

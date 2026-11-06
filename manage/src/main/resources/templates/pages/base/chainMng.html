@@ -36,7 +36,14 @@
         $('#frm_card_info').onLoadFunction(); 
         $('#frm_file_info').onLoadFunction(); 
 
-        
+        function getAgencyFeeValue(data, fieldName) {
+          var value = data[fieldName];
+          if (value == null) {
+            value = data[fieldName.toUpperCase()];
+          }
+          return value == null ? '' : value;
+        }
+
         callAjax('/common/totalCodelist', "code_grp_cd=('BANK_CD') AND CHK_CD1 = 'COLL'", fn_abank_setting);      
         function fn_abank_setting(data) {
           codeSetting('BANK_CD', data.data, '#abank_cd', '은행', '', ''); 
@@ -53,11 +60,22 @@
           codeSetting('CORP_CD', data.data, '#corp_cd', '1', '', '');
         }
 
+        var agencyList = [];
         callAjax('/common/getAgencyList', "", fn_agency_list_setting);
         function fn_agency_list_setting(data) {
+          agencyList = data.data;
           codeSetting('AGENCY_CD', data.data, '#sch_agency_cd', '대리점', '', '');
           codeSetting('AGENCY_CD', data.data, '#agency_cd', '1', '', '');
         }
+
+        $('#agency_cd').on('change', function () {
+          var selectedAgency = agencyList.find(function (agency) {
+            return agency.code === $('#agency_cd').val();
+          });
+          $('#agency_loan_fee').val(selectedAgency ? selectedAgency.agency_loan_fee : '');
+          $('#agency_crd_fee').val(selectedAgency ? selectedAgency.agency_crd_fee : '');
+          $('#agency_svc_fee').val(selectedAgency ? selectedAgency.agency_svc_fee : '');
+        });
 
         callAjax('/common/totalCodelist', "code_grp_cd=('SCRAP_GROUP')", fn_scrap_group_setting);      
         function fn_scrap_group_setting(data) {
@@ -276,6 +294,9 @@
             $('#crd_fee_rate').val(data.crd_fee_rate);
             $('#crd_delay_rate').val(data.crd_delay_rate);
             $('#svc_fee_rate').val(data.svc_fee_rate);
+            $('#agency_loan_fee').val(getAgencyFeeValue(data, 'agency_loan_fee'));
+            $('#agency_crd_fee').val(getAgencyFeeValue(data, 'agency_crd_fee'));
+            $('#agency_svc_fee').val(getAgencyFeeValue(data, 'agency_svc_fee'));
             $('#etc_fee_rate').val(data.etc_fee_rate);
             $('#day_use_rate').val(data.day_use_rate);
             $('#day_use_amt').val(Number(data.day_use_amt).toLocaleString());
@@ -1514,6 +1535,19 @@
                           </div>         
                         </div>
                       </div>
+                      <!-- <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="agency_cd">대리점 A</label>  
+                          <div class="col-sm-8">
+                            <select class="form-select form-control-sm" id="agency_cd" name="agency_cd" required>
+                              <option value="">대리점</option>
+                            </select>    
+                          </div>
+                        </div>
+                      </div> -->
+                    </div>    
+                    <div class="row mb-3 mt-1 mb-1 fw-bold fs-8 border-bottom pb-1"></div> 
+                    <div class="row mb-1">
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">
                           <label class="col-sm-4 col-form-label col-form-label-sm" for="agency_cd">대리점</label>  
@@ -1524,7 +1558,43 @@
                           </div>
                         </div>
                       </div>
-                    </div>    
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="agency_svc_fee">정산 수수료</label>
+                          <div class="col-sm-8">
+                            <div class="input-group input-group-sm mb-1">
+                              <input class="form-control form-control-sm text-end" id="agency_svc_fee" type="text" name="agency_svc_fee" placeholder="00.00" istyle="float" maxlength="6" required />
+                              <span class="input-group-text">%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mb-1">
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="agency_loan_fee">비즈론수수료</label>
+                          <div class="col-sm-8">
+                            <div class="input-group input-group-sm mb-1">
+                              <input class="form-control form-control-sm text-end" id="agency_loan_fee" type="text" name="agency_loan_fee" placeholder="00.00" istyle="float" maxlength="6" required />
+                              <span class="input-group-text">%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-group input-group-sm mb-1">
+                          <label class="col-sm-4 col-form-label col-form-label-sm" for="agency_crd_fee">여신 수수료</label>
+                          <div class="col-sm-8">
+                            <div class="input-group input-group-sm mb-1">
+                              <input class="form-control form-control-sm text-end" id="agency_crd_fee" type="text" name="agency_crd_fee" placeholder="00.00" istyle="float" maxlength="6" required />
+                              <span class="input-group-text">%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>                      
+                    </div>
+                    <div class="row mb-3 mt-1 mb-1 fw-bold fs-8 border-bottom pb-1"></div> 
                     <div class="row mb-1">
                       <div class="col-sm-6">
                         <div class="input-group input-group-sm mb-1">

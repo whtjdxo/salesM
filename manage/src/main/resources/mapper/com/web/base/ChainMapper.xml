@@ -77,6 +77,9 @@
                 , IFNULL(TC.CRD_FEE_RATE, 0)        AS  crd_fee_rate
                 , IFNULL(TC.CRD_DELAY_RATE, 0)      AS  crd_delay_rate
                 , IFNULL(TC.SVC_FEE_RATE, 0)        AS  svc_fee_rate
+                , IFNULL(TC.AGENCY_LOAN_FEE, 0)     AS  agency_loan_fee
+                , IFNULL(TC.AGENCY_CRD_FEE, 0)      AS  agency_crd_fee
+                , IFNULL(TC.AGENCY_SVC_FEE, 0)      AS  agency_svc_fee
                 , IFNULL(TC.ETC_FEE_RATE, 0)        AS  etc_fee_rate
                 , IFNULL(TC.TOT_LIMIT_AMT, 0)      AS  tot_limit_amt
                 , IFNULL(TC.UNIT_LIMIT_AMT, 0)     AS  unit_limit_amt
@@ -242,6 +245,7 @@
             , BIZ_NO        , LAW_NO            , UPTAE             , UPJONG
             , CHAIN_TEL_NO  , CHAIN_ZIP_NO      , CHAIN_ADDR        , CHAIN_ADDR_DTL
             , CEO_ID        , CEO_BIRTH_DT      , CEO_REG_NO        , EMAIL
+            , AGENCY_LOAN_FEE, AGENCY_CRD_FEE    , AGENCY_SVC_FEE
             , REMARK        , SCRAP_GROUP           
             , ENT_DTTM      , ENT_USER_ID
         ) VALUES (
@@ -249,6 +253,7 @@
             , #{biz_no}         , #{law_no}         , #{uptae}          , #{upjong}
             , #{chain_tel_no}   , #{chain_zip_no}   , #{chain_addr}     , #{chain_addr_dtl}
             , #{ceo_id}         , #{ceo_birth_dt}   , #{ceo_reg_no}     , #{email}
+            , #{agency_loan_fee}, #{agency_crd_fee} , #{agency_svc_fee}
             , #{remark}         , #{scrap_group}
             , NOW()             , #{ent_user_id}
         ) 
@@ -273,6 +278,9 @@
                <!-- , CEO_REG_SEX       = #{ceo_reg_sex}
                , CEO_REG_NO        = #{ceo_reg_no} -->
                , EMAIL             = #{email}
+               , AGENCY_LOAN_FEE   = #{agency_loan_fee}
+               , AGENCY_CRD_FEE    = #{agency_crd_fee}
+               , AGENCY_SVC_FEE    = #{agency_svc_fee}
                , REMARK            = #{remark}               
                , SCRAP_GROUP       = #{scrap_group}
                , UPT_USER_ID       = #{upt_user_id}

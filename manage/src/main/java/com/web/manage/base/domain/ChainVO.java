@@ -64,6 +64,9 @@ public class ChainVO {
     private String crd_fee_rate;
     private String crd_delay_rate;
     private String svc_fee_rate;
+    private String agency_loan_fee;
+    private String agency_crd_fee;
+    private String agency_svc_fee;
     private String etc_fee_rate;
     private String tot_limit_amt;
     private String unit_limit_amt;
